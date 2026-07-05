@@ -1,4 +1,15 @@
-# IDS Prototyping Environment
+# SmartReview — Prototype C (Sequential Review Experience)
+
+**This prototype (ProtoC)** splits the AI-assisted tax return review into two explicit, sequential phases (research finding: CPAs want *data accuracy first, insights second*):
+
+1. **Phase 1 — Import Accuracy:** the source-document experience (essentially ProtoA) — orange field flags, edit/mark-correct, dynamic banner + dynamic tab badges. All import/OCR flags live here.
+2. **Phase 2 — AI Diagnostics:** the strategic AI review (compliance, YoY, opportunities) via `AgentReportPane`, with all import/OCR flags removed so there is zero redundancy between phases. Phase 2 is **hard-locked** (visible + explained) until Phase 1 is complete.
+
+Built as a fresh copy of ProtoB (which = ProtoA + AI panel). Single `DataReviewPage` with a `phase` state (`'welcome' | 'import' | 'diagnostics'`) toggling layout — no new store, no new routes. Dev server runs on **port 5175** (ProtoB was 5174) so both can run side-by-side. See `PROTO_C_REQUIREMENTS.md` for the full spec.
+
+---
+
+## IDS Prototyping Environment
 
 This is a prototyping playground for the **Intuit Design System (IDS)**. It's designed for designers — you don't need to be a developer to build things here. Describe what you want, and the AI will build it using real IDS components and tokens.
 
