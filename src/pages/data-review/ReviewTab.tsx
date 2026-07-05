@@ -2,11 +2,12 @@ import { PopOut, PopIn } from '@design-systems/icons'
 import sparklesIcon from '../../assets/icons/sparkles.svg'
 import styles from '../../styles/data-review/ReviewTab.module.css'
 
+// ProtoC: import docs first, Prior Year 1040 moved LAST (least relevant during import review)
 const TABS = [
-  { label: 'Prior Year 1040', key: 'prior-1040' as const },
   { label: 'W-2s', key: 'w2s' as const },
   { label: '1099-DIVs', key: '1099-divs' as const },
   { label: '1099-INTs', key: '1099-ints' as const },
+  { label: 'Prior Year 1040', key: 'prior-1040' as const },
 ]
 
 export type TopTab = 'w2s' | '1099-divs' | '1099-ints' | 'prior-1040'
@@ -17,9 +18,11 @@ interface ReviewTabProps {
   onTabChange?: (tab: string) => void
   onPopOut?: () => void
   isPopout?: boolean
+  /** ProtoC: per-tab count of unresolved import flags — drives dynamic tab badges */
+  flagCounts?: Record<string, number>
 }
 
-export default function ReviewTab({ activeTopTab = 'w2s', onTopTabChange, onTabChange, onPopOut, isPopout = false }: ReviewTabProps) {
+export default function ReviewTab({ activeTopTab = 'w2s', onTopTabChange, onTabChange, onPopOut, isPopout = false, flagCounts }: ReviewTabProps) {
 
   const handleTabClick = (key: string, label: string) => {
     if (key === 'w2s' || key === '1099-divs' || key === '1099-ints' || key === 'prior-1040') {
@@ -42,6 +45,9 @@ export default function ReviewTab({ activeTopTab = 'w2s', onTopTabChange, onTabC
               <span className={`${styles.tabLabel} ${tab.key === activeTopTab ? styles.tabLabelActive : styles.tabLabelInactive}`}>
                 {tab.label}
               </span>
+              {flagCounts && flagCounts[tab.key] > 0 && (
+                <span className={styles.tabFlagBadge}>{flagCounts[tab.key]}</span>
+              )}
             </div>
             <div className={styles.tabUnderline}>
               <div className={tab.key === activeTopTab ? styles.tabUnderlineActive : styles.tabUnderlineInactive} />

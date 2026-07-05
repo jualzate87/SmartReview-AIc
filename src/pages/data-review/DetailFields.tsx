@@ -279,9 +279,19 @@ export default function DetailFields({
     const isEditing = editingField === key
     const isReviewed = reviewedFields?.has(key)
     const isCommentOpen = commentField === key
+    // A flagged static row (e.g. missing EIN) shows the same orange dot + validation note as other import flags
+    const isFlagged = !!flaggedFields[fieldKey] && !isReviewed
     return (
-      <div className={`${styles.fieldRow} ${isCommentOpen ? styles.fieldRowCommentOpen : ''}`}>
-        <span className={styles.fieldLabel}>{label}</span>
+      <>
+      <div className={`${styles.fieldRow} ${isFlagged ? styles.fieldRowHasNote : ''} ${isCommentOpen ? styles.fieldRowCommentOpen : ''}`}>
+        {flaggedFields[fieldKey] ? (
+          <span className={`${styles.fieldLabel} ${isFlagged ? styles.fieldLabelFlagged : ''}`}>
+            {isFlagged && <span className={styles.issueIndicator} />}
+            {label}
+          </span>
+        ) : (
+          <span className={styles.fieldLabel}>{label}</span>
+        )}
         <input
           className={`${styles.fieldInput} ${inputClass} ${isEditing ? styles.fieldInputEditing : ''}`}
           readOnly={!isEditing}
@@ -312,6 +322,21 @@ export default function DetailFields({
         {savedField === key && <span className={styles.recalcBadge}>Saved</span>}
         {editedFields.has(key) && savedField !== key && <span className={styles.editedBadge}>Edited</span>}
       </div>
+      {flaggedFields[fieldKey] && (
+        <div className={styles.validationNote} style={isReviewed ? { color: '#1a6b35', borderBottomColor: '#e8edf0' } : {}}>
+          {isReviewed ? (
+            <CircleCheck size="small" style={{ flexShrink: 0 }} />
+          ) : (
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, marginTop: 1 }}>
+              <circle cx="6" cy="6" r="5.5" fill="#c9500f"/>
+              <path d="M6 3.5V6.5" stroke="white" strokeWidth="1.2" strokeLinecap="round"/>
+              <circle cx="6" cy="8.5" r="0.6" fill="white"/>
+            </svg>
+          )}
+          <span style={isReviewed ? { textDecoration: 'line-through', opacity: 0.7 } : {}}>{flaggedFields[fieldKey]}</span>
+        </div>
+      )}
+      </>
     )
   }
 

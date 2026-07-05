@@ -25,6 +25,9 @@ import DetailFieldsDiv from './data-review/DetailFieldsDiv'
 import PriorYear1040Fields from './data-review/PriorYear1040Fields'
 import AgentReportPane from './data-review/AgentReportPane'
 import AgentLoadingPane from './data-review/AgentLoadingPane'
+import WelcomePane from './data-review/WelcomePane'
+import Phase1Banner from './data-review/Phase1Banner'
+import { ChevronDown, ChevronUp } from '@design-systems/icons'
 import w2TechCircle from '../assets/jessica-w2-tech-circle.png'
 import img1040Prior from '../assets/jessica-1040-2024.png'
 import img1099Int from '../assets/jessica-1099-int.jpg'
@@ -35,8 +38,9 @@ import dragStyles from '../styles/data-review/DragHandle.module.css'
 export default function DataReviewPage() {
   // Selected field for cross-document highlighting
   const [selectedField, setSelectedField] = useState<string | null>(null)
-  // Active top tab — Prior Year 1040 is first
-  const [activeTopTab, setActiveTopTab] = useState<TopTab>('prior-1040')
+  // Active top tab — ProtoC Phase 1 starts on the first import doc (W-2);
+  // Prior Year 1040 is moved to the LAST tab position (least relevant during import review)
+  const [activeTopTab, setActiveTopTab] = useState<TopTab>('w2s')
   // Active W-2 sub-tab: only techCircle for Jessica Drake
   const [activeSubTab, setActiveSubTab] = useState<'techCircle'>('techCircle')
   // W-2 wages — drives 1040 line 1a dynamically (Jessica Drake: Tech Circle only)
@@ -86,6 +90,32 @@ export default function DataReviewPage() {
   const [notesOpen, setNotesOpen] = useState(false)
   const [notesClosing, setNotesClosing] = useState(false)
 
+  // --- ProtoC: two-phase sequential review ------------------------------------
+  // 'welcome'     → Intuit Assist orientation screen
+  // 'import'      → Phase 1: Import Accuracy (source-doc experience)
+  // 'diagnostics' → Phase 2: AI Diagnostics (agent panel primary)
+  type ReviewPhase = 'welcome' | 'import' | 'diagnostics'
+  const [phase, setPhase] = useState<ReviewPhase>('welcome')
+  // Phase 1: whether the 1040 panel is expanded (minimized by default in import phase)
+  const [show1040, setShow1040] = useState(false)
+
+  // The import/OCR flags owned by Phase 1. Each key matches the reviewed-field key
+  // emitted by the DetailFields "Edit+Save" / "Mark as correct" controls.
+  const PHASE1_FLAG_KEYS = ['wages-techCircle', 'withholding', 'box12', 'ein-techCircle', 'divCollectibles', 'divNonDiv'] as const
+  const phase1Total = PHASE1_FLAG_KEYS.length
+  const phase1Resolved = PHASE1_FLAG_KEYS.filter(k => reviewedFields.has(k)).length
+  // Counter of unresolved import flags — never below 0
+  const phase1Remaining = Math.max(0, phase1Total - phase1Resolved)
+  const phase1Complete = phase1Remaining === 0
+  // Per-document unresolved counts for dynamic tab badges
+  const tabFlagCounts: Record<string, number> = {
+    w2s:          ['wages-techCircle', 'withholding', 'box12', 'ein-techCircle'].filter(k => !reviewedFields.has(k)).length,
+    '1099-divs':  ['divCollectibles', 'divNonDiv'].filter(k => !reviewedFields.has(k)).length,
+    '1099-ints':  0,
+    'prior-1040': 0,
+  }
+  // ---------------------------------------------------------------------------
+
   const handleToggleChecked = (fieldName: string) => {
     setCheckedFields(prev => {
       const next = new Set(prev)
@@ -121,17 +151,8 @@ export default function DataReviewPage() {
     setSelectedField(null)
   }, [])
 
-  // Auto-open agent panel when launched from SmartReturn via ?agent=true
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.hash.split('?')[1] || '')
-    if (params.get('agent') === 'true') {
-      setAgentView('loading')
-      setTimeout(() => {
-        setAgentView('report')
-        sessionStorage.setItem('agentLoaded', '1')
-      }, 3200)
-    }
-  }, [])
+  // ProtoC: the agent panel is driven by the phase model (opens on entering Phase 2),
+  // not by the ?agent=true entry param. See handleBeginDiagnostics below.
 
   const handleAgentOpen = (subView?: 'overview' | 'yoyDetail') => {
     setSelectedField(null)
@@ -146,6 +167,23 @@ export default function DataReviewPage() {
         sessionStorage.setItem('agentLoaded', '1')
       }, 3200)
     }
+  }
+
+  // ProtoC: Phase 1 → Phase 2 transition. Switches layout to agent-primary and
+  // opens the AI diagnostics panel (plays the loading animation once).
+  const handleBeginDiagnostics = () => {
+    setPhase('diagnostics')
+    setShow1040(true)          // 1040 visible by default in Phase 2 (context for diagnostics)
+    setSelectedField(null)
+    handleAgentOpen()
+  }
+
+  // ProtoC: return to Phase 1 (source docs) from the completion banner
+  const handleReturnToImport = () => {
+    if (agentView !== 'idle') handleAgentClose()
+    setPhase('import')
+    setShow1040(false)
+    setSelectedField(null)
   }
 
   const handleAgentClose = (preserveSelection = false) => {
@@ -314,6 +352,21 @@ export default function DataReviewPage() {
     document.addEventListener('mouseup', onMouseUp)
   }, [previewHeight])
 
+  // ProtoC: welcome/orientation screen is the entry point (no header chrome)
+  if (phase === 'welcome') {
+    return (
+      <div className={styles.page}>
+        <WelcomePane
+          clientName="Jessica Drake"
+          flagCount={phase1Total}
+          onBegin={() => setPhase('import')}
+        />
+      </div>
+    )
+  }
+
+  const inImportPhase = phase === 'import'
+
   return (
     <div className={styles.page}>
       {/* Header */}
@@ -366,21 +419,45 @@ export default function DataReviewPage() {
             <Panel size="medium" />
             <span className={styles.intuitIntelLabel}>Source Documents</span>
           </button>
-          <button
-            className={`${styles.intuitIntelBtn} ${agentView !== 'idle' ? styles.intuitIntelBtnActive : ''}`}
-            aria-label="Intuit Intelligence"
-            onClick={() => handleAgentOpen()}
-          >
-            <img src={intuitAssistIcon} alt="" className={styles.intuitIntelIcon} />
-            <span className={styles.intuitIntelLabel}>AI Review</span>
-          </button>
+          {/* ProtoC: AI Review is Phase 2 only — hidden during Phase 1 (import accuracy) */}
+          {!inImportPhase && (
+            <button
+              className={`${styles.intuitIntelBtn} ${agentView !== 'idle' ? styles.intuitIntelBtnActive : ''}`}
+              aria-label="Intuit Intelligence"
+              onClick={() => handleAgentOpen()}
+            >
+              <img src={intuitAssistIcon} alt="" className={styles.intuitIntelIcon} />
+              <span className={styles.intuitIntelLabel}>AI Review</span>
+            </button>
+          )}
         </div>
       </div>
 
+      {/* ProtoC Phase 1 — Import Accuracy banner (dynamic progress + gated Phase 2 CTA) */}
+      {inImportPhase && (
+        <Phase1Banner
+          resolved={phase1Resolved}
+          total={phase1Total}
+          remaining={phase1Remaining}
+          complete={phase1Complete}
+          onContinue={handleBeginDiagnostics}
+        />
+      )}
+
       {/* Body — left panel + drag handle + right panel + agent panel */}
       <div className={styles.body} ref={bodyRef}>
-        {/* Left panel: flex:1 always (takes remaining space after fixed right/agent) */}
+        {/* ProtoC Phase 1: 1040 is minimized by default — collapse to a toggle strip */}
+        {inImportPhase && !show1040 ? (
+          <button className={styles.show1040Strip} onClick={() => setShow1040(true)} aria-label="Show 1040">
+            <ChevronDown size="small" /> <span>Show 1040</span>
+          </button>
+        ) : (
         <div className={styles.leftPanel} style={{ flex: 1, minWidth: 0 }}>
+          {inImportPhase && (
+            <button className={styles.hide1040Btn} onClick={() => setShow1040(false)} aria-label="Hide 1040">
+              <ChevronUp size="small" /> <span>Hide 1040</span>
+            </button>
+          )}
           <LeftPanel1040
             selectedField={selectedField}
             onFieldClick={setSelectedField}
@@ -429,6 +506,7 @@ export default function DataReviewPage() {
             }}
           />
         </div>
+        )}
 
         {!poppedOut && (
           <>
@@ -454,7 +532,8 @@ export default function DataReviewPage() {
             >
               {/* Source panel header — always visible, pop-out on right */}
               <div className={styles.sourcePanelHeader}>
-                {agentView === 'idle' && rightPanelVisible ? (
+                {/* "Back to agent insights" only makes sense in Phase 2, after navigating from the agent */}
+                {!inImportPhase && fromAgent && agentView === 'idle' && rightPanelVisible ? (
                   <button
                     className={styles.agentBackBtn}
                     onClick={() => { setFromAgent(false); setActiveIssueField(null); handleAgentOpen(agentSubView) }}
@@ -489,6 +568,7 @@ export default function DataReviewPage() {
               </div>
               <ReviewTab
                 activeTopTab={activeTopTab}
+                flagCounts={inImportPhase ? tabFlagCounts : undefined}
                 onTopTabChange={(tab) => {
                   setActiveTopTab(tab)
                   setFromAgent(false)
@@ -555,10 +635,10 @@ export default function DataReviewPage() {
                   onMarkReviewedBulk={handleMarkReviewedBulk}
                   reviewedFields={reviewedFields}
                   flaggedFields={{
-                    wages:       'Low confidence (72%) — wages may be misread. Verify Box 1 against source W-2.',
-                    withholding: 'Low confidence (85%) — federal withholding is lower than expected. Verify Box 2 against source W-2.',
-                    box12:       'Box 12 not imported — enter code and amount manually from source W-2.',
-                    ein:         'Employer EIN not found in document — required for e-filing. Enter manually.',
+                    wages:       'Wages may have been misread — verify Box 1 against the source W-2.',
+                    withholding: 'Federal withholding looks lower than expected — verify Box 2 against the source W-2.',
+                    box12:       'Box 12 was not imported — enter the code and amount manually from the source W-2.',
+                    ein:         'Employer EIN was not found in the document — required for e-filing. Enter it manually.',
                   }}
                 />
               )}

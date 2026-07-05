@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { CircleCheck } from '@design-systems/icons'
 import styles from '../../styles/data-review/DetailFields.module.css'
 
 // 1099-DIV — Unwavering Financial
@@ -65,6 +66,27 @@ export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue',
         )}
         <span style={resolved ? { textDecoration: 'line-through', opacity: 0.7 } : {}}>{issue}</span>
       </div>
+    )
+  }
+
+  // ProtoC: resolve control for "not imported" flagged DIV fields (collectibles, nondividend).
+  // Marking as correct confirms nothing needs to be entered from the source doc.
+  const renderFlagActions = (fieldKey: string) => {
+    if (!flaggedFields[fieldKey]) return null
+    const resolved = reviewedFields?.has(fieldKey)
+    if (resolved) {
+      return (
+        <button
+          className={styles.markCorrectBtn}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#1a8254', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+          onClick={e => { e.stopPropagation(); onMarkReviewed?.(fieldKey) }}
+        >
+          <CircleCheck size="small" /> Reviewed
+        </button>
+      )
+    }
+    return (
+      <button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.(fieldKey) }}>Mark as correct</button>
     )
   }
 
@@ -227,6 +249,7 @@ export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue',
             (2d) Collectibles (28%) gain
           </span>
           <input className={`${styles.fieldInput} ${styles.fieldInputSmall} ${flaggedFields['divCollectibles'] && !reviewedFields?.has('divCollectibles') ? styles.fieldInputHighlightedOrange : ''}`} readOnly value={FORM_DATA.box2d_collectibles} placeholder={flaggedFields['divCollectibles'] ? 'Not imported' : '—'} />
+          {renderFlagActions('divCollectibles')}
         </div>
         <ValidationNote fieldKey="divCollectibles" />
         <div className={`${styles.fieldRow} ${flaggedFields['divNonDiv'] && !reviewedFields?.has('divNonDiv') ? styles.fieldRowHasNote : ''}`}>
@@ -235,6 +258,7 @@ export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue',
             (3) Nondividend distributions
           </span>
           <input className={`${styles.fieldInput} ${styles.fieldInputSmall} ${flaggedFields['divNonDiv'] && !reviewedFields?.has('divNonDiv') ? styles.fieldInputHighlightedOrange : ''}`} readOnly value={FORM_DATA.box3_nonDivDistrib} placeholder={flaggedFields['divNonDiv'] ? 'Not imported' : '—'} />
+          {renderFlagActions('divNonDiv')}
         </div>
         <ValidationNote fieldKey="divNonDiv" />
         <div className={styles.fieldRow}>

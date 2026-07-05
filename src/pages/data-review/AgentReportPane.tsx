@@ -17,11 +17,13 @@ import QuestionnairePane from './QuestionnairePane'
 import Tooltip from './Tooltip'
 import styles from '../../styles/data-review/AgentReportPane.module.css'
 
-// 12 total items across all categories
-const TOTAL_REVIEW_ITEMS = 15
+// ProtoC Phase 2 — AI diagnostics ONLY. Import/OCR flags (w2Box12, w2Ein,
+// wagesConfidence, divCollectibles, divNonDiv) are owned by Phase 1 and removed here,
+// so there is zero redundancy between the two phases.
+const TOTAL_REVIEW_ITEMS = 10
 
-// Ordered list of issue keys for guided "Next" navigation
-const GUIDED_ORDER = ['w2Box12', 'w2Ein', 'divCollectibles', 'divNonDiv', 'wagesConfidence', 'capitalGainNew', 'irsEstPenalty', 'irsAmt', 'irsCapGainWithholding', 'missingPriorAgi', 'missingStateReturn', 'missingEstPayments', 'optW4Adjustment', 'optQbi', 'optIra'] as const
+// Ordered list of issue keys for guided "Next" navigation (Phase 2 diagnostics only)
+const GUIDED_ORDER = ['capitalGainNew', 'irsEstPenalty', 'irsAmt', 'irsCapGainWithholding', 'missingPriorAgi', 'missingStateReturn', 'missingEstPayments', 'optW4Adjustment', 'optQbi', 'optIra'] as const
 type IssueKey = typeof GUIDED_ORDER[number]
 
 interface AgentReportPaneProps {
@@ -45,10 +47,11 @@ interface AgentReportPaneProps {
   onFieldValueChange?: (key: 'withholding' | 'box12' | 'taxableInterest' | 'qualifiedDivs', value: number) => void
 }
 
+// ProtoC Phase 2 — diagnostics only. Import/OCR keys removed (owned by Phase 1).
 const REPORT_CARDS = [
-  { label: 'Critical',        keys: ['w2Ein', 'irsEstPenalty', 'irsAmt', 'missingPriorAgi'],                                                          badgeColor: 'red'    as const, position: 'first' },
-  { label: 'Review required', keys: ['w2Box12', 'wagesConfidence', 'divCollectibles', 'divNonDiv', 'irsCapGainWithholding', 'missingStateReturn', 'missingEstPayments', 'capitalGainNew'], badgeColor: 'orange' as const, position: 'middle' },
-  { label: 'Opportunities',   keys: ['optW4Adjustment', 'optQbi', 'optIra'],                                                                          badgeColor: 'blue'   as const, position: 'last' },
+  { label: 'Critical',        keys: ['irsEstPenalty', 'irsAmt', 'missingPriorAgi'],                                          badgeColor: 'red'    as const, position: 'first' },
+  { label: 'Review required', keys: ['irsCapGainWithholding', 'missingStateReturn', 'missingEstPayments', 'capitalGainNew'], badgeColor: 'orange' as const, position: 'middle' },
+  { label: 'Opportunities',   keys: ['optW4Adjustment', 'optQbi', 'optIra'],                                                 badgeColor: 'blue'   as const, position: 'last' },
 ]
 
 const CARD_ICONS = [
@@ -468,7 +471,9 @@ export default function AgentReportPane({
   fieldValues,
   onFieldValueChange,
 }: AgentReportPaneProps) {
-  const reviewedCount = reviewedFields.size
+  // ProtoC: count ONLY the Phase 2 diagnostic keys — Phase 1 import flags share the same
+  // reviewedFields map but must not inflate this counter.
+  const reviewedCount = GUIDED_ORDER.filter(k => reviewedFields.has(k)).length
   const progressPct = Math.round((reviewedCount / TOTAL_REVIEW_ITEMS) * 100)
   const allReviewed = reviewedCount >= TOTAL_REVIEW_ITEMS
   const [showCompletion, setShowCompletion] = useState(false)
@@ -680,15 +685,15 @@ export default function AgentReportPane({
             )}
           </div>
 
-          {/* Items to review scorecard */}
+          {/* Diagnostics review scorecard */}
           <div className={styles.scoreCard}>
-            <span className={styles.scoreTitle}>Items to review</span>
+            <span className={styles.scoreTitle}>Diagnostics to review</span>
             <div className={styles.progressTrack}>
               <div className={styles.progressFill} style={{ width: `${progressPct || 5}%`, background: '#00856d', transition: 'width 400ms ease' }} />
             </div>
             <div className={styles.scoreCountRow}>
-              <span className={styles.scoreCountNumber}>{TOTAL_REVIEW_ITEMS - reviewedCount}</span>
-              <span className={styles.scoreCountLabel}>items remaining</span>
+              <span className={styles.scoreCountNumber}>{Math.max(0, TOTAL_REVIEW_ITEMS - reviewedCount)}</span>
+              <span className={styles.scoreCountLabel}>diagnostics remaining</span>
             </div>
           </div>
 

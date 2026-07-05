@@ -142,3 +142,21 @@
   background: #f0f4f7;
   border-color: #93a3ab;
 }
+
+/* ProtoC — dynamic per-tab unresolved import-flag badge */
+.tabFlagBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  margin-left: 6px;
+  border-radius: 999px;
+  background: #d68000;
+  color: #ffffff;
+  font-family: var(--font-family-component, sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}

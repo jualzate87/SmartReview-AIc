@@ -1,0 +1,130 @@
+/* ProtoC — Welcome / orientation overlay */
+.overlay {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  background: linear-gradient(180deg, #f4f7f9 0%, #eef2f6 100%);
+  overflow-y: auto;
+}
+
+.card {
+  width: 100%;
+  max-width: 620px;
+  background: var(--color-container-background-primary, #ffffff);
+  border: 1px solid #e0e7ec;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(33, 38, 42, 0.08);
+  padding: 40px;
+}
+
+.assistHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.assistIcon {
+  width: 28px;
+  height: 28px;
+}
+
+.assistLabel {
+  font-family: var(--font-family-component, sans-serif);
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b21a8;
+  letter-spacing: 0.01em;
+}
+
+.title {
+  font-family: var(--font-family-component, sans-serif);
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #21262a;
+  margin: 0 0 8px;
+}
+
+.lede {
+  font-family: var(--font-family-component, sans-serif);
+  font-size: 16px;
+  color: #5d686f;
+  margin: 0 0 28px;
+}
+
+.steps {
+  list-style: none;
+  margin: 0 0 32px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px;
+  background: #f7f9fb;
+  border: 1px solid #e8edf0;
+  border-radius: 12px;
+}
+
+.stepNum {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #205ea3;
+  color: #ffffff;
+  font-family: var(--font-family-component, sans-serif);
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stepBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stepTitle {
+  font-family: var(--font-family-component, sans-serif);
+  font-size: 16px;
+  font-weight: 600;
+  color: #21262a;
+}
+
+.stepDesc {
+  font-family: var(--font-family-component, sans-serif);
+  font-size: 14px;
+  line-height: 1.5;
+  color: #5d686f;
+}
+
+.beginBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  background: #2ca01c;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-family-component, sans-serif);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.beginBtn:hover {
+  background: #248016;
+}
