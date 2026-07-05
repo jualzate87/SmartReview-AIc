@@ -1,0 +1,372 @@
+---
+description: Intuit Design System - Typography System Overview and Implementation
+alwaysApply: false
+---
+
+# Typography System Overview
+
+The Intuit Design System provides typography through the `@ids-ts/typography` package, which exports React components for rendering text with the correct design tokens applied automatically.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/typography
+```
+
+```tsx
+import {
+  Typography,
+  D1, D2, D3, D4,
+  H1, H2, H3, H4, H5, H6,
+  B1, B2, B3, B4,
+  Bold, Demi, Medium, Regular, Thin, Heavy,
+} from '@ids-ts/typography';
+import '@ids-ts/typography/dist/main.css';
+```
+
+Always import the CSS file alongside the component import. The CSS path is `@ids-ts/typography/dist/main.css`.
+
+## Preset Components
+
+The package exports shorthand preset components that map to specific typography scales and render the correct semantic HTML elements automatically.
+
+### Display Presets (D1–D4)
+
+For large, prominent text like hero sections or marketing pages. Renders as `<span>`.
+
+| Preset | Font Size Token | Resolved Size | Default Weight |
+|--------|----------------|---------------|----------------|
+| `D1` | `--font-size-display-1` | 84px | 700 (bold) |
+| `D2` | `--font-size-display-2` | 72px | 700 (bold) |
+| `D3` | `--font-size-display-3` | 60px | 700 (bold) |
+| `D4` | `--font-size-display-4` | 48px | 700 (bold) |
+
+```tsx
+<D1>Large Display Text</D1>
+<D3>Smaller Display Text</D3>
+```
+
+### Heading Presets (H1–H6)
+
+For section headings and page titles. Renders as the corresponding `<h1>`–`<h6>` element.
+
+| Preset | Font Size Token | Resolved Size | Default Weight |
+|--------|----------------|---------------|----------------|
+| `H1` | `--font-size-heading-1` | 48px | 600 (demi) |
+| `H2` | `--font-size-heading-2` | 40px | 600 (demi) |
+| `H3` | `--font-size-heading-3` | 34px | 600 (demi) |
+| `H4` | `--font-size-heading-4` | 28px | 600 (demi) |
+| `H5` | `--font-size-heading-5` | 24px | 600 (demi) |
+| `H6` | `--font-size-heading-6` | 20px | 600 (demi) |
+
+```tsx
+<H1>Page Title</H1>
+<H3>Section Heading</H3>
+<H6>Small Heading</H6>
+```
+
+### Body Presets (B1–B4)
+
+For paragraph and body text. Renders as `<span>`.
+
+| Preset | Font Size Token | Resolved Size | Default Weight |
+|--------|----------------|---------------|----------------|
+| `B1` | `--font-size-body-1` | 20px | 400 (regular) |
+| `B2` | `--font-size-body-2` | 16px | 400 (regular) |
+| `B3` | `--font-size-body-3` | 14px | 400 (regular) |
+| `B4` | `--font-size-body-4` | 12px | 400 (regular) |
+
+```tsx
+<B1>Large body text</B1>
+<B2>Default body text (most common)</B2>
+<B3>Small body text</B3>
+<B4>Caption or fine print</B4>
+```
+
+### Weight Presets
+
+For overriding font weight on any text. These render as `<span>` and are typically nested inside other presets.
+
+| Preset | Weight Value |
+|--------|-------------|
+| `Thin` | 200 |
+| `Regular` | 400 |
+| `Medium` | 500 |
+| `Demi` | 600 |
+| `Bold` | 700 |
+| `Heavy` | 800 |
+
+```tsx
+<B2>Normal text with <Bold>bold emphasis</Bold> inline.</B2>
+```
+
+## Typography Component Props
+
+The base `Typography` component accepts these props:
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `variant` | `'display-1'` \| `'display-2'` \| `'display-3'` \| `'display-4'` \| `'headline-1'` \| `'headline-2'` \| `'headline-3'` \| `'headline-4'` \| `'headline-5'` \| `'headline-6'` \| `'body-1'` \| `'body-2'` \| `'body-3'` \| `'body-4'` \| `'inherit'` | `'body-2'` | Typography scale variant |
+| `weight` | `'thin'` \| `'regular'` \| `'medium'` \| `'demi'` \| `'bold'` \| `'heavy'` | varies by variant | Font weight override |
+| `as` | `React.ElementType` | varies by variant | Override the rendered HTML element |
+| `children` | `React.ReactNode` | required | Text content |
+
+All preset components (`D1`, `H1`, `B2`, etc.) accept the same props.
+
+### Variant to HTML Element Mapping
+
+| Variant | Default HTML Element |
+|---------|---------------------|
+| `display-1` through `display-4` | `<span>` |
+| `headline-1` | `<h1>` |
+| `headline-2` | `<h2>` |
+| `headline-3` | `<h3>` |
+| `headline-4` | `<h4>` |
+| `headline-5` | `<h5>` |
+| `headline-6` | `<h6>` |
+| `body-1` through `body-4` | `<span>` |
+| `inherit` | `<span>` |
+
+## Usage Patterns
+
+### Basic Usage with Presets (Preferred)
+
+```tsx
+import { H1, H3, B2, B3 } from '@ids-ts/typography';
+import '@ids-ts/typography/dist/main.css';
+
+function MyPage() {
+  return (
+    <div>
+      <H1>Page Title</H1>
+      <H3>Section Heading</H3>
+      <B2>This is the default body text size, suitable for most content.</B2>
+      <B3>This is smaller body text for secondary information.</B3>
+    </div>
+  );
+}
+```
+
+### Using the Typography Component Directly
+
+```tsx
+import { Typography } from '@ids-ts/typography';
+import '@ids-ts/typography/dist/main.css';
+
+<Typography variant="headline-3">Section Heading</Typography>
+<Typography variant="body-2">Body paragraph text</Typography>
+<Typography variant="display-1" weight="heavy">Large Display</Typography>
+```
+
+### Overriding the HTML Element
+
+Use the `as` prop when you need a specific semantic element that differs from the default:
+
+```tsx
+<B2 as="h3" weight="demi">
+  Visually styled as B2 but renders as an h3 element
+</B2>
+
+<D1 as="h1">Hero Title</D1>
+```
+
+### Inline Weight Overrides
+
+```tsx
+<H3>
+  Text that has <strong>partial bolding</strong> automatically applied.
+</H3>
+
+<H3 weight="bold">
+  This entire heading uses bold weight.
+</H3>
+
+<B2>
+  Normal text with <Bold>bold</Bold> and <Demi>demi</Demi> inline.
+</B2>
+```
+
+### Text Alignment
+
+Typography components inherit text alignment from their parent container:
+
+```css
+.centered {
+  text-align: center;
+}
+```
+
+```tsx
+<div className={styles.centered}>
+  <H2>Centered Heading</H2>
+  <B2>Centered body text</B2>
+</div>
+```
+
+## Typography Design Tokens
+
+When you need to style custom elements (not using Typography components), use these token categories together:
+
+### Font Size Tokens
+
+| Category | Tokens | Sizes |
+|----------|--------|-------|
+| Display | `--font-size-display-1` to `--font-size-display-4` | 84px, 72px, 60px, 48px |
+| Heading | `--font-size-heading-1` to `--font-size-heading-6` | 48px, 40px, 34px, 28px, 24px, 20px |
+| Body | `--font-size-body-1` to `--font-size-body-4` | 20px, 16px, 14px, 12px |
+| Component | `--font-size-component-x-small` to `--font-size-component-x-large` | 12px, 14px, 16px, 20px, 24px |
+| Action | `--font-size-action-x-small` to `--font-size-action-large` | 12px, 14px, 16px, 20px |
+| Input | `--font-size-input-text`, `--font-size-input-label` | 16px, 14px |
+
+### Font Weight Tokens
+
+| Token | Value | Use Case |
+|-------|-------|----------|
+| `--font-weight-body` | 400 | Body/paragraph text |
+| `--font-weight-body-semibold` | 500 | Emphasized body text |
+| `--font-weight-body-bold` | 600 | Bold body text |
+| `--font-weight-heading` | 600 | Heading text |
+| `--font-weight-heading-bold` | 800 | Bold headings |
+| `--font-weight-display` | 700 | Display text |
+| `--font-weight-display-bold` | 900 | Bold display text |
+| `--font-weight-component` | 400 | Component text |
+| `--font-weight-component-semibold` | 500 | Emphasized component text |
+| `--font-weight-component-bold` | 600 | Bold component text |
+
+### Font Family Tokens
+
+| Token | Use Case |
+|-------|----------|
+| `--font-family-body` | Body/paragraph text |
+| `--font-family-heading` | Heading text |
+| `--font-family-display` | Display text |
+| `--font-family-component` | Component text |
+| `--font-family-mega` | Marketing mega text |
+
+All resolve to the Avenir Next forINTUIT font stack with appropriate fallbacks.
+
+### Line Height Tokens
+
+| Token | Value | Use Case |
+|-------|-------|----------|
+| `--line-height-body` | 1.5 | Body/paragraph text |
+| `--line-height-heading` | 1.3 | Heading text |
+| `--line-height-display` | 1.3 | Display text |
+| `--line-height-component` | 1.3 | Component text |
+| `--line-height-mega` | 1.2 | Marketing mega text |
+
+## Custom Typography with Tokens
+
+When styling text outside of Typography components, always apply all four core properties:
+
+```css
+.customHeading {
+  font-size: var(--font-size-heading-3);
+  font-weight: var(--font-weight-heading);
+  line-height: var(--line-height-heading);
+  font-family: var(--font-family-heading);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.customBody {
+  font-size: var(--font-size-body-2);
+  font-weight: var(--font-weight-body);
+  line-height: var(--line-height-body);
+  font-family: var(--font-family-body);
+  color: var(--color-text-primary);
+}
+
+.customCaption {
+  font-size: var(--font-size-body-4);
+  font-weight: var(--font-weight-body);
+  line-height: var(--line-height-body);
+  font-family: var(--font-family-body);
+  color: var(--color-text-tertiary);
+}
+```
+
+## Guidelines
+
+### Prefer Typography Components Over Raw Tokens
+
+Use `H1`, `B2`, etc. whenever possible. They handle font size, weight, line height, font family, and semantic HTML automatically. Only use raw tokens when styling elements that can't use Typography components.
+
+### Do Not Override Typography in IDS Components
+
+IDS components (`@ids-ts/button`, `@ids-ts/badge`, `@ids-ts/chip`, etc.) handle their own typography. Never override their font styles.
+
+### Body vs Component Tokens
+
+- **Body tokens** (`--font-size-body-*`, `--font-weight-body`) are for paragraph text and long-form content
+- **Component tokens** (`--font-size-component-*`, `--font-weight-component`) are for text inside UI components like labels, badges, and chips
+- Do not use body tokens inside atom-sized UI components; use component tokens instead
+
+### Heading Margins
+
+Typography heading presets do not add margins. If you need spacing between headings and body text, use spacing tokens:
+
+```css
+.sectionHeading {
+  margin-bottom: var(--space-component-gap-medium);
+}
+```
+
+## Common Anti-Patterns
+
+### Incorrect: Hardcoded Typography Values
+
+```css
+/* Never hardcode values that have tokens */
+.heading {
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1.2;
+  font-family: 'Arial';
+}
+```
+
+### Incorrect: Incomplete Typography Properties
+
+```css
+/* Missing font-weight, line-height, and font-family */
+.heading {
+  font-size: var(--font-size-heading-1);
+}
+```
+
+### Incorrect: Overriding IDS Component Typography
+
+```tsx
+/* Do not override IDS component styles */
+<Button style={{ fontSize: '20px', fontWeight: 700 }}>
+  Click Me
+</Button>
+```
+
+### Incorrect: Wrong CSS Import Path
+
+```tsx
+/* Wrong */
+import '@ids-ts/typography/typography.css';
+
+/* Correct */
+import '@ids-ts/typography/dist/main.css';
+```
+
+## Pre-Implementation Checklist
+
+- [ ] Typography CSS imported: `import '@ids-ts/typography/dist/main.css'`
+- [ ] Using preset components (`H1`, `B2`, etc.) where possible
+- [ ] Using `as` prop when semantic HTML element needs to differ from visual style
+- [ ] Custom text styles use all four token properties (font-size, font-weight, line-height, font-family)
+- [ ] No hardcoded typography values
+- [ ] No typography overrides on IDS components
+- [ ] Body tokens used for paragraph text; component tokens used for UI component text
+- [ ] Text color uses `--color-text-*` tokens
+- [ ] Heading elements have `margin: 0` when using custom CSS
+
+## References
+
+- [GitHub Source - Typography](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/Typography)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-typography&theme=quickbooks&colorScheme=light)

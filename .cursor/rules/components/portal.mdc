@@ -1,0 +1,169 @@
+---
+description: Complete guide for using the Portal component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# Portal
+
+This component is used to render content at the end of the document body.
+Portal is used in IDS components: Drawer, ModalDialog, Position, and ZIndex.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/portal
+```
+
+```tsx
+import { Portal } from '@ids-ts/portal';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `children` | `React.ReactNode` | Yes | * The elements to render inside the portal container |
+| `id` | `string` | No | * ID attribute to attach to the DOM element representing the portal |
+| `ownerDocument` | `Document | null` | No | * owner document inside which portal element has to be placed |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface PortalProps {
+  /**
+   * The elements to render inside the portal container
+   */
+  children: React.ReactNode;
+  /**
+   * ID attribute to attach to the DOM element representing the portal
+   */
+  id?: string;
+  /**
+   * owner document inside which portal element has to be placed
+   */
+  ownerDocument?: Document | null;
+}
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Showcase
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div>
+      <Button data-automation-id="basicButton" onClick={() => setOpen(!open)}>
+        Toggle Portal
+      </Button>
+
+      {open && (
+        <>
+          <p style={{ marginTop: 40 }}>
+            Portal is rendered at the end of the document.body.
+          </p>
+          <Portal>
+            This is a Portal, rendered at the end of the document.body!
+          </Portal>
+        </>
+      )}
+    </div>
+  );
+}
+```
+
+### Portal Inside Iframe
+
+```tsx
+() => {
+  const [iframeLoaded, setIframeLoaded] = useState(false);
+  const iframeRef = React.useRef<HTMLIFrameElement>(null);
+  return (
+    <iframe
+      ref={iframeRef}
+      title="testPortalIframe"
+      onLoad={() => setIframeLoaded(true)}
+    >
+      {iframeLoaded && iframeRef.current && (
+        <Portal ownerDocument={iframeRef.current.contentDocument}>
+          Portal Inside iframe
+        </Portal>
+      )}
+    </iframe>
+  );
+}
+```
+
+### Multiple Portals
+
+```tsx
+() => {
+  const [removedSecond, setRemovedSecond] = React.useState<boolean>(false);
+  useEffect(() => {
+    if (!removedSecond) {
+      setRemovedSecond(true);
+    }
+  }, [removedSecond]);
+  return (
+    <div>
+      <p>Portals are rendered at the end of the document.body.</p>
+      <Portal>1</Portal>
+      {!removedSecond && <Portal>2</Portal>}
+      <Portal>3</Portal>
+      {removedSecond && <Portal>4</Portal>}
+    </div>
+  );
+}
+```
+
+## Composes With
+
+- Button
+
+---
+
+## References
+
+- [GitHub Source - Portal](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/Portal)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-portal&theme=quickbooks&colorScheme=light)

@@ -1,0 +1,23 @@
+.contentArea {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-container-padding-large);
+  gap: var(--space-row-gap-large);
+  min-height: 100%;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: var(--space-container-padding-medium) var(--space-container-padding-large);
+  background: var(--color-container-background-inverse);
+  border-top: 1px solid var(--color-container-border-primary);
+}
+
+.footerRight {
+  display: flex;
+  gap: var(--space-component-gap-small);
+}

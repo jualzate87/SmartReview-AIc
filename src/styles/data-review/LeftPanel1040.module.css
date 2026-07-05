@@ -1,0 +1,1058 @@
+/* ── Left panel — HTML table 1040 ── */
+
+.leftPanel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+/* Scrollable viewer */
+.documentViewer {
+  flex: 1;
+  background: #ffffff;
+  overflow-y: auto;
+  overflow-x: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 32px 24px;
+}
+
+/* Form document — scaled to fill panel */
+.formDoc {
+  width: 100%;
+  max-width: 900px;
+  background: #ffffff;
+  border: 1px solid #d4d7dc;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  font-family: var(--font-family-component);
+  font-size: 95%;
+  flex-shrink: 0;
+  padding-bottom: 24px;
+  overflow: hidden;
+}
+
+/* ── IRS Header ── */
+.irsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px 6px;
+  border-bottom: 2px solid #000;
+  background: #eef3f7;
+}
+
+.irsLeft  { display: flex; flex-direction: column; gap: 2px; }
+.irsDept  { font-size: 12px; color: #444; line-height: 1.3; }
+.irsTitle { font-size: 13px; color: #1a1a1a; line-height: 1.4; }
+.irsTitle strong { font-weight: 800; font-size: 18px; }
+
+.irsRight  { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.irsYear   { font-size: 28px; font-weight: 800; color: #1a1a1a; letter-spacing: -1px; line-height: 1; }
+.irsOmb    { font-size: 12px; color: #666; }
+
+/* ── Taxpayer info grid ── */
+.infoGrid { border-bottom: 1px solid #d4d7dc; }
+
+.infoRow {
+  display: flex;
+  border-bottom: 1px solid #e8eaed;
+}
+.infoRow:last-child { border-bottom: none; }
+
+.infoField {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 4px 8px;
+  border-right: 1px solid #e8eaed;
+  min-width: 0;
+}
+.infoField:last-child { border-right: none; }
+
+.infoLabel {
+  font-size: 12px;
+  color: #888;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.infoValue {
+  font-size: 12px;
+  color: #1a1a1a;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* ── Filing status ── */
+.filingStatus {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 5px 10px;
+  border-bottom: 1px solid #e8eaed;
+  flex-wrap: wrap;
+}
+
+.filingLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: #393a3d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.filingOption {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #393a3d;
+  cursor: default;
+}
+
+.filingOption input[type="radio"] {
+  accent-color: #205ea3;
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+}
+
+
+/* ── Field type legend ── */
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 4px 10px 4px;
+  background: #f7f9fb;
+  border-bottom: 1px solid #e8eaed;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: #5d686f;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+.legendSwatch {
+  display: inline-block;
+  width: 20px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* Source swatch — mirrors .valueBoxSource */
+.legendSwatchSource {
+  background: #f0f6ff;
+  border: 1px solid #93c5fd;
+}
+
+/* Calc swatch — mirrors .valueBoxCalc */
+.legendSwatchCalc {
+  background: #f7f9fb;
+  border: 1px dashed #adb9c2;
+}
+
+/* ── Divider row ── */
+.dividerRow td { padding: 0; }
+.dividerLine {
+  height: 2px;
+  background: #c8d3da;
+  margin: 1px 0;
+}
+
+/* ── Column headers ── */
+.colHeaders {
+  display: grid;
+  grid-template-columns: 22px 1fr 22px 180px;
+  padding: 3px 0;
+  background: #f7f9fb;
+  border-bottom: 1px solid #d4d7dc;
+}
+
+.colLine, .colLineR {
+  font-size: 12px;
+  color: #aaa;
+  text-align: center;
+  padding: 2px 4px;
+}
+
+.colDesc {
+  font-size: 12px;
+  font-weight: 500;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+}
+
+.colVal {
+  font-size: 12px;
+  font-weight: 500;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  text-align: right;
+}
+
+/* ── Main table ── */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+/* ── Rows ── */
+.row {
+  border-bottom: 1px solid #eef0f2;
+  transition: background 100ms ease;
+}
+
+.rowClickable { cursor: pointer; }
+.rowClickable:hover { background: #f4f7fb; }
+
+.rowBold .cellLabel { font-weight: 500; color: #1a1a1a; }
+
+.rowShaded { background: #f7f9fb; }
+
+.rowSubdued { opacity: 0.45; }
+.rowSubdued .valueBox { border-color: #e8eaed; }
+
+.rowIndent .cellLabel { padding-left: 22px !important; }
+
+/* Selected row — orange left accent (issue field) */
+.rowSelected {
+  background: rgba(201, 80, 15, 0.03) !important;
+  box-shadow: inset 3px 0 0 #c9500f;
+}
+
+/* Selected row — blue left accent (generic field click / popover) */
+.rowSelectedBlue {
+  background: rgba(32, 94, 163, 0.03) !important;
+  box-shadow: inset 3px 0 0 #205ea3;
+}
+
+/* Reviewed row — green left accent */
+.rowReviewed {
+  box-shadow: inset 3px 0 0 var(--color-ui-positive, #108000);
+}
+
+.rowCommentOpen {
+  background: rgba(32, 94, 163, 0.04) !important;
+}
+
+/* ── YoY row tints — shown when YoY panel is open ── */
+/* Red: > 30% change — noticeable, needs attention */
+.rowYoyRed {
+  background: rgba(179, 38, 30, 0.05) !important;
+  box-shadow: inset 3px 0 0 #b3261e;
+}
+/* Orange: 5–30% change — moderate variation */
+.rowYoyOrange {
+  background: rgba(229, 161, 78, 0.08) !important;
+  box-shadow: inset 3px 0 0 #E5A14E;
+}
+/* Grey: < 5% change — within normal range */
+.rowYoyGrey {
+  background: rgba(138, 155, 165, 0.06) !important;
+  box-shadow: inset 3px 0 0 #8a9ba5;
+}
+
+/* "Amount you owe" — final result row, subtle accent (still part of the form) */
+.rowOwe {
+  background: #f7f9fb;
+  border-top: 2px solid #c8d3da;
+}
+.rowOwe .cellLabel {
+  color: #1a1a1a;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+.rowOwe .cellLine,
+.rowOwe .cellLineRight,
+.rowOwe .cellValue {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+/* Divider above the owe row — single solid rule, clean */
+.oweDividerRow td {
+  padding: 0;
+  height: 3px;
+  background: #c8d3da;
+}
+
+/* Section header */
+.sectionHeader td { padding: 8px 10px 3px; }
+.sectionTitle {
+  font-size: 12px;
+  font-weight: 500;
+  color: #5d686f;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+}
+
+/* ── Cells ── */
+.cellLine {
+  width: 22px;
+  font-size: 12px;
+  color: #aaa;
+  text-align: center;
+  padding: 5px 2px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.cellLineRight {
+  width: 22px;
+  font-size: 12px;
+  color: #aaa;
+  text-align: center;
+  padding: 5px 2px;
+  vertical-align: middle;
+}
+
+.cellLabel {
+  font-size: 12px;
+  color: #393a3d;
+  padding: 5px 6px;
+  vertical-align: middle;
+  line-height: 1.35;
+}
+
+/* Inner wrapper handles the flex — td itself must remain table-cell */
+.cellLabelInner {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cellValue {
+  width: 140px;
+  padding: 4px 6px 4px 0;
+  vertical-align: middle;
+}
+
+/* ── Value box — always visible container, color-coded by kind ── */
+.valueBox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  min-height: 22px;
+  min-width: 80px;
+  border: 1px solid #e0e4e8;   /* default: plain outline for any non-empty field */
+  background: #ffffff;
+  transition: border-color 100ms ease, background 100ms ease;
+  box-sizing: border-box;
+}
+
+/* Empty box — dashed ghost so user sees it's a fillable field */
+.valueBoxEmpty {
+  border: 1px dashed #d4d7dc;
+  background: transparent;
+  min-width: 60px;
+}
+
+/*
+ * SOURCE fields — value imported from documents (W-2, 1099, etc.)
+ * Blue tint + solid blue border → "this came from a document"
+ */
+/* Source — blue tint + solid blue border */
+.valueBoxSource {
+  background: #f0f6ff;
+  border: 1px solid #93c5fd;
+}
+
+/* Calc — neutral grey + dashed border */
+.valueBoxCalc {
+  background: #f7f9fb;
+  border: 1px dashed #adb9c2;
+}
+
+/* Selected — orange override regardless of kind (issue field) */
+.valueBoxSelected {
+  background: rgba(201, 80, 15, 0.06) !important;
+  border: 2px solid #c9500f !important;
+}
+
+/* Selected — blue override (generic field click / popover) */
+.valueBoxSelectedBlue {
+  background: rgba(32, 94, 163, 0.06) !important;
+  border: 2px solid #205ea3 !important;
+}
+
+.valueNum {
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+  color: #393a3d;   /* default for rows with no kind */
+}
+
+/* Source: bold blue — came from a document */
+.valueNumSource {
+  color: #1d4ed8;
+  font-weight: 500;
+}
+
+/* Calc: muted grey italic — derived on-form */
+.valueNumCalc {
+  color: #5d686f;
+  font-style: italic;
+}
+
+/* Selected: orange (issue field) */
+.valueNumSelected {
+  color: #c9500f !important;
+  font-style: normal !important;
+}
+
+/* Selected: blue (generic field click) */
+.valueNumSelectedBlue {
+  color: #205ea3 !important;
+  font-style: normal !important;
+}
+
+/* Reviewed: green value number */
+.valueNumReviewed {
+  color: var(--color-ui-positive, #108000);
+}
+
+
+/* ── YoY badges ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 5px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #ffffff;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+
+.badgeGrey   { background: #a08c6e; }
+.badgeOrange { background: #E5A14E; }
+.badgeRed    { background: #b3261e; }
+
+/* ── Reviewed state (AI review) ── */
+.reviewedIcon {
+  display: inline-flex;
+  color: var(--color-ui-positive, #108000);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* Reviewed value box override — green border */
+.valueBoxReviewed {
+  border-color: var(--color-ui-positive, #108000) !important;
+  background: #f0faf4 !important;
+}
+
+/* ── Manually checked state (preparer verified) ── */
+/* Slightly different green to distinguish from AI-reviewed */
+.rowChecked {
+  box-shadow: inset 3px 0 0 #0f766e;
+}
+
+.valueBoxChecked {
+  border-color: #0f766e !important;
+  background: #f0fdfa !important;
+}
+
+.valueBoxCommentOpen {
+  border-color: #205ea3 !important;
+  border-width: 2px !important;
+}
+
+.valueNumChecked {
+  color: #0f766e;
+}
+
+.checkedIcon {
+  display: inline-flex;
+  color: #0f766e;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* ── Hover check button ── */
+.checkBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  background: none;
+  border: 1px solid #c3ced5;
+  border-radius: 5px;
+  cursor: pointer;
+  padding: 0;
+  color: #5d686f;
+  flex-shrink: 0;
+  transition: color 100ms ease, background 100ms, border-color 100ms;
+}
+.checkBtn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.checkBtn:hover {
+  color: #0f766e;
+  background: rgba(15, 118, 110, 0.08);
+  border-color: #0f766e;
+}
+
+/* Active state — shown when field is already checked (to allow uncheck) */
+.checkBtnActive {
+  color: #0f766e;
+  border-color: #0f766e;
+}
+
+/* ── 1040 field-level comment button ── */
+.cellValueInner {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.commentBtn1040 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid #c3ced5;
+  border-radius: 5px;
+  background: none;
+  color: #5d686f;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 100ms, color 100ms, border-color 100ms;
+}
+.commentBtn1040 svg {
+  width: 16px;
+  height: 16px;
+}
+
+.commentBtn1040:hover,
+.commentBtn1040Active {
+  background: #e8f0f6;
+  color: #205ea3;
+  border-color: #205ea3;
+}
+
+/* ── 1040 comment popover (same style as DetailFields popover) ── */
+.commentPopover1040 {
+  position: fixed;
+  width: 280px;
+  background: #ffffff;
+  border: 1px solid #c3ced5;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  padding: 12px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.commentPopoverCtx {
+  display: flex;
+  align-items: center;
+}
+
+.commentPopoverChip {
+  display: inline-block;
+  font-family: var(--font-family-component);
+  font-size: 12px;
+  font-weight: 500;
+  color: #205ea3;
+  background: #e8f0f6;
+  border: 1px solid #b8d0e8;
+  border-radius: 12px;
+  padding: 2px 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.commentPopoverInput {
+  font-family: var(--font-family-component);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: #21262a;
+  background: #f4f5f8;
+  border: 1px solid #c3ced5;
+  border-radius: 4px;
+  padding: 8px;
+  resize: none;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.commentPopoverInput:focus {
+  border-color: #205ea3;
+  background: #fff;
+}
+
+.commentPopoverActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.commentPopoverCancel {
+  font-family: var(--font-family-component);
+  font-size: 13px;
+  font-weight: 500;
+  color: #5d686f;
+  background: none;
+  border: 1px solid #c3ced5;
+  border-radius: 4px;
+  padding: 4px 12px;
+  height: 28px;
+  cursor: pointer;
+}
+
+.commentPopoverCancel:hover {
+  background: #f0f4f6;
+}
+
+.commentPopoverPost {
+  font-family: var(--font-family-component);
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  background: #c3ced5;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 12px;
+  height: 28px;
+  cursor: not-allowed;
+  transition: background 120ms;
+}
+
+.commentPopoverPostActive {
+  background: #205ea3;
+  cursor: pointer;
+}
+
+.commentPopoverPostActive:hover {
+  background: #174a82;
+}
+
+/* ── View toggle ── */
+.viewToggle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 16px;
+  flex-shrink: 0;
+  background: #fff;
+}
+
+.viewTogglePill {
+  display: inline-flex;
+  background: #f0f2f5;
+  border-radius: 8px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.viewToggleTab {
+  font-family: var(--font-family-component) !important;
+  font-size: 13px;
+  font-weight: 500;
+  color: #5d686f;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  padding: 5px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 120ms ease, color 120ms ease, box-shadow 120ms ease;
+  line-height: 1.4;
+}
+
+.viewToggleTab:hover {
+  color: #21262a;
+  background: rgba(255,255,255,0.6);
+}
+
+.viewToggleTabActive {
+  background: #ffffff;
+  color: #21262a;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.10), 0 0 0 0.5px rgba(0,0,0,0.06);
+}
+
+/* ── Chevron (shared) ── */
+.tvChevron {
+  color: #93a3ab;
+  display: inline-flex;
+  align-items: center;
+  transition: transform 160ms ease;
+  flex-shrink: 0;
+}
+.tvChevronOpen { transform: rotate(180deg); }
+
+/* ── Summary view ── */
+.summaryWrapper {
+  flex: 1;
+  overflow-y: auto;
+  padding: 40px 32px 32px;
+  background: #f4f6f8;
+}
+
+.summaryCard {
+  background: #fff;
+  border: 1px solid #eef0f3;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(28,32,42,0.06), 0 1px 2px rgba(28,32,42,0.03);
+  overflow: hidden;
+}
+
+.summaryCardHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 14px 20px 10px;
+}
+
+.summaryCardLabel {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small); /* 12px */
+  font-weight: var(--font-weight-component-bold); /* 600 */
+  color: #393a3d;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.summaryCardSub {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small); /* 12px */
+  font-weight: var(--font-weight-component); /* 400 */
+  color: var(--color-text-secondary);
+}
+
+/*
+ * Typography rule: ALL value columns use the same font-size and weight.
+ * Only COLOR differentiates them — current year = dark, prior = muted, diff = colored.
+ *
+ * Column widths (fixed, px):
+ *   current year: 96  prior year: 88  change $: 76  change %: 52
+ *
+ * Both header and data rows share these widths exactly.
+ */
+.summaryColHeaders {
+  display: flex;
+  align-items: center;
+  padding: 5px 32px;
+  border-top: 1px solid #f1f3f7;
+  background: #fafbfc;
+  gap: 40px; /* matches gap between .summaryRowLeft and .summaryRowRight */
+}
+
+/* Spacer stretches to fill the same space as .summaryRowLeft in data rows */
+.summaryColSpacer {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Group the 4 col labels to mirror .summaryRowRight layout exactly */
+.summaryColValues {
+  display: flex;
+  align-items: center;
+  gap: 40px; /* matches .summaryRowRight gap */
+  flex-shrink: 0;
+}
+
+/* Width set via inline style in TSX to match value columns exactly */
+.summaryColLabel {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small); /* 12px */
+  font-weight: var(--font-weight-component-semibold); /* 500 */
+  color: var(--color-text-secondary); /* #6B6C72 — 4.6:1 on white, AA */
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  text-align: right;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.summaryBody {
+  border-top: 1px solid #f1f3f7;
+}
+
+/* ── Section rows (Income, Deductions, …) ── */
+.summarySectionRow {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 32px;
+  background: #f7f8fa;
+  border: none;
+  border-top: 1px solid #eef0f3;
+  cursor: pointer;
+  text-align: left;
+  gap: 40px;
+}
+.summarySectionRow:first-child { border-top: none; }
+.summarySectionRow:hover { background: #f0f2f5; }
+
+.summaryRowLeft {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.summaryChevron {
+  display: flex;
+  align-items: center;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+  transition: transform 160ms ease;
+}
+.summaryChevronOpen { transform: rotate(90deg); }
+
+.summarySectionLabel {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small); /* 14px */
+  font-weight: var(--font-weight-component-bold); /* 600 */
+  color: #1c202a;
+}
+
+/* ── Value columns — ALL share the same font-size/weight; only color varies ── */
+.summaryRowRight {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  flex-shrink: 0;
+}
+
+/* Current year — relative container; buttons slide in from the right on hover */
+.summaryCurrVal {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 88px;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.summaryCurrValText {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small); /* 14px */
+  font-weight: var(--font-weight-component-bold); /* 600 */
+  color: #1c202a;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+  line-height: var(--line-height-component);
+  transition: transform 130ms ease;
+}
+/* On row hover: slide value left to make room for 2 buttons (56px = 2×26px + 4px gap) */
+.summarySubRow:hover .summaryCurrValText {
+  transform: translateX(-60px);
+}
+
+/* Modifiers apply to the inner text span */
+.summaryCurrValCalc {
+  color: #6b6c72;
+  font-style: italic;
+  font-weight: var(--font-weight-component-semibold); /* 500 */
+}
+.summaryCurrValBlue   { color: #0265ac; }
+.summaryCurrValOrange { color: #c9500f; }
+.summaryCurrValClickable {
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 1px 4px;
+  transition: background 80ms, transform 130ms ease;
+}
+.summaryCurrValClickable:hover { background: #e0ecf8; }
+
+/* Action buttons — absolutely positioned at right edge, slide in on hover */
+.summaryRowActions {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%) translateX(8px);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 130ms ease, transform 130ms ease;
+}
+.summarySubRow:hover .summaryRowActions {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(-50%) translateX(0);
+}
+/* Keep visible when active (checked or comment open) */
+.summaryRowActionsVisible {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  transform: translateY(-50%) translateX(0) !important;
+}
+
+/* Prior year — same size/weight as current, secondary text color */
+.summaryPriorVal {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small); /* 14px — same as current */
+  font-weight: var(--font-weight-component-semibold); /* 500 */
+  color: var(--color-text-secondary); /* #6B6C72 — AA compliant */
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  width: 80px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  line-height: var(--line-height-component);
+}
+
+/* Change $ — secondary color when no direction; colored when directional */
+.summaryDiffVal {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small); /* 14px — same as current */
+  font-weight: var(--font-weight-component-semibold); /* 500 */
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  width: 72px;
+  flex-shrink: 0;
+  color: var(--color-text-secondary); /* #6B6C72 — AA compliant */
+  white-space: nowrap;
+  line-height: var(--line-height-component);
+}
+
+/* Change % — secondary color when no direction; colored when directional */
+.summaryPctVal {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small); /* 14px — same as current */
+  font-weight: var(--font-weight-component-semibold); /* 500 */
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  width: 52px;
+  flex-shrink: 0;
+  color: var(--color-text-secondary); /* #6B6C72 — AA compliant */
+  white-space: nowrap;
+  line-height: var(--line-height-component);
+}
+
+.summaryDiffPos { color: #287f39; }
+.summaryDiffNeg { color: #c55a1b; }
+
+/* ── Sub-rows — indented, same value typography, white bg ── */
+.summarySubRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 32px 8px 52px; /* 52px left = 32px margin + 20px indent */
+  border-top: 1px solid #f1f3f7;
+  gap: 40px;
+  transition: background 80ms;
+  background: #fff;
+}
+.summarySubRowClickable { cursor: pointer; }
+.summarySubRowClickable:hover { background: #f8f9fb; }
+.summarySubRowBlue   { background: #f0f5ff; }
+.summarySubRowOrange { background: #fff8f3; }
+.summarySubRowReviewed { opacity: 0.65; }
+
+.summarySubLabelGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+/* Sub-row field name — component-small (14px), normal weight */
+.summarySubLabel {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small); /* 14px */
+  font-weight: var(--font-weight-component); /* 400 */
+  color: #393a3d;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  line-height: var(--line-height-component);
+}
+.summarySubLabelCalc {
+  color: #6b6c72;
+  font-style: italic;
+}
+
+/* Sub-row values: same shared typography — no separate class needed.
+   summaryCurrVal / summaryPriorVal / summaryDiffVal / summaryPctVal apply directly */
+
+/* Sub-row line note — x-small, secondary text */
+.summarySubNote {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small); /* 12px */
+  font-weight: var(--font-weight-component); /* 400 */
+  color: var(--color-text-secondary); /* #6B6C72 — AA compliant */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+.summaryReviewedIcon {
+  color: #287f39;
+  display: inline-flex;
+  align-items: center;
+}
+
+.summaryHoverActions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 4px;
+}
+
+/* Amount owed row */
+.summaryOweRow {
+  background: #fff8f3;
+  border-top: 2px solid #f5c5a3;
+  padding-left: 32px;
+}
+.summaryOweRow:hover { background: #fff3ec; }
+.summaryOweLabel {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small); /* 14px */
+  font-weight: var(--font-weight-component-bold); /* 600 */
+  color: #c9500f;
+}
+.summaryOweAmt {
+  color: #c9500f;
+}
+
+/* Change indicators (kept for badge reuse) */
+.tvPos { color: #287f39; }
+.tvNeg { color: #955d2b; }

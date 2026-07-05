@@ -1,0 +1,179 @@
+---
+description: Complete guide for using the Panel component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# Panel
+
+Panels are surfaces that are rendered to the right of the main application content. When the screen width is below 1200, a drawer is rendered in place of the panel.
+
+Unlike drawers, panels do not require the user to focus their attention on them while they are open. They can be used for functionality such as a help menu.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/panel
+```
+
+```tsx
+import {
+  Panel,
+  PanelContent,
+  PanelHeader,
+  PanelSearchHeader,
+  PanelMenuIcon,
+  PanelFooter,
+} from '@ids-ts/panel';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `automationId` | `string` | No | ID used to refer to the panel element in tests |
+| `onClose` | `ReactEventHandler` | No | Callback when the panel is closed |
+| `onShow` | `EnterHandler<HTMLElement>` | No | Callback when the panel is opened |
+| `open` | `boolean` | No | - |
+| `size` | `PanelSize` | No | - |
+| `backActionLabel` | `string` | No | Label for the left action icon, if there is one |
+| `onBackActionClick` | `MouseEventFunction` | No | Callback that handles the back action being clicked |
+| `sideBySide` | `boolean` | No | - |
+| `focusLock` | `boolean` | No | - |
+| `param1` | `ReactEvent) => void` | No | - |
+| `param1` | `React.MouseEvent) => void` | No | - |
+| `param1` | `ReactEvent) => void` | No | - |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface PanelProps extends ThemeableElement<'div'> {
+  /** ID used to refer to the panel element in tests */
+  automationId?: string;
+  /** Callback when the panel is closed */
+  onClose?: ReactEventHandler;
+  /** Callback when the panel is opened */
+  onShow?: EnterHandler<HTMLElement>;
+  /**
+   * Whether the panel is opened or not
+   *
+   * @default false
+   */
+  open?: boolean;
+  /**
+   * Possible sizes of the panel ('small', 'medium', 'large')
+   *
+   * @default 'small'
+   */
+  size?: PanelSize;
+  /** Label for the left action icon, if there is one */
+  backActionLabel?: string;
+  /** Callback that handles the back action being clicked */
+  onBackActionClick?: MouseEventFunction;
+  /**
+   * Whether to keep the panel in side-by-side mode until a smaller breakpoint is hit
+   *
+   * @default false
+   */
+  sideBySide?: boolean;
+  /**
+   * Whether to lock focus inside opened panel.
+   *
+   * @default true
+   */
+  focusLock?: boolean;
+}
+
+export type ReactEventHandler = (param1?: ReactEvent) => void;
+
+type ReactEvent =
+  | React.KeyboardEvent
+  | React.MouseEvent
+  | React.TouchEvent
+  | React.FocusEvent;
+
+export type PanelSize = 'small' | 'medium' | 'large';
+
+export type MouseEventFunction = (param1?: React.MouseEvent) => void;
+export type ReactEventHandler = (param1?: ReactEvent) => void;
+```
+
+</details>
+
+## Sub-Components
+
+### PanelContent
+
+### PanelHeader
+
+### PanelSearchHeader
+
+### PanelMenuIcon
+
+### PanelFooter
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+The following usage patterns are documented in Storybook:
+
+- **Basic Panel**
+- **Widget Stack**
+- **Multiple Panels**
+
+## Code Example
+
+```tsx
+const Panel = lazyReact('@ids-ts/panel', 'Panel');
+const PanelHeader = lazyReact('@ids-ts/panel', 'PanelHeader');
+const PanelContent = lazyReact('@ids-ts/panel', 'PanelContent');
+```
+
+## Composes With
+
+- Button
+- Radio
+- Typography
+
+---
+
+## References
+
+- [GitHub Source - Panel](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/Panel)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/panel.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-panel&theme=quickbooks&colorScheme=light)

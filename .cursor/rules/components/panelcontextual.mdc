@@ -1,0 +1,523 @@
+---
+description: Complete guide for using the PanelContextual component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# PanelContextual
+
+Welcome to `PanelContextual` component.
+
+We show customers a panel when they need to add items or information about items to a transaction. In trowsers, a panel can slide into place to help customers add items or information about items to a transaction.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/panel-contextual
+```
+
+```tsx
+import { PanelContextual } from '@ids-ts/panel-contextual';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `automationId` | `string` | No | Test automation ID |
+| `placement` | `Placement` | No | Direction for the panel (Placement.Left, Placement.Right) |
+| `open` | `boolean` | No | Whether the panel is opened or not |
+| `showPanel` | `boolean` | No | [internal] The current Panel state |
+| `hasCollapseControl` | `boolean` | No | Whether the panel is Collapsible or not |
+| `onClose` | `React.ReactEventHandler<Element>` | No | Callback when component is closed/collapsed. |
+| `onOpen` | `React.ReactEventHandler<Element>` | No | Callback when component is opened/expanded. |
+| `children` | `React.ReactNode[] | React.ReactNode` | No | The children to be displayed within the Panel |
+| `autoFocus` | `boolean` | No | If true, would put focus on first tabbable element inside panel after being opened |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface PanelContextualProps extends ThemeableElement<'div'> {
+  /** Test automation ID */
+  automationId?: string;
+  /** Direction for the panel (Placement.Left, Placement.Right) */
+  placement?: Placement;
+  /** Whether the panel is opened or not */
+  open?: boolean;
+  /** [internal] The current Panel state */
+  showPanel?: boolean;
+  /** Whether the panel is Collapsible or not */
+  hasCollapseControl?: boolean;
+  /** Callback when component is closed/collapsed. */
+  onClose?: React.ReactEventHandler<Element>;
+  /** Callback when component is opened/expanded. */
+  onOpen?: React.ReactEventHandler<Element>;
+  /** The children to be displayed within the Panel */
+  children?: React.ReactNode[] | React.ReactNode;
+  /** If true, would put focus on first tabbable element inside panel after being opened */
+  autoFocus?: boolean;
+}
+
+export enum Placement {
+  Left = 'left',
+  Right = 'right'
+}
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Basic Usage
+
+```tsx
+({ placement, collapsible }) => {
+  const panelStateLeft = usePanelContextual(true);
+  const panelStateRight = usePanelContextual(true);
+
+  const onCloseLeft = () => {
+    panelStateLeft.onClose();
+  };
+
+  const onOpenLeft = () => {
+    panelStateLeft.onOpen();
+  };
+
+  const onCloseRight = () => {
+    panelStateRight.onClose();
+  };
+
+  const onOpenRight = () => {
+    panelStateRight.onOpen();
+  };
+
+  const isPanelOpen =
+    (placement === Placement.Left && panelStateLeft.showPanel) ||
+    (placement === Placement.Right && panelStateRight.showPanel);
+  return (
+    <div
+      className={clsx(styles.galleryContainer, {
+        [styles.open]: isPanelOpen,
+        [styles.close]: !isPanelOpen
+      })}
+    >
+      {placement === Placement.Left && (
+        <PanelContextual
+          open
+          autoFocus={false}
+          showPanel={panelStateLeft.showPanel}
+          hasCollapseControl={collapsible}
+          placement={Placement.Left}
+          onOpen={onOpenLeft}
+          onClose={onCloseLeft}
+        >
+          <PanelHeader title={panelTitle} />
+          <PanelContent>
+            <CardDummyComponent />
+          </PanelContent>
+        </PanelContextual>
+      )}
+      <div className={styles.dummyComponent} />
+      {placement === Placement.Right && (
+        <PanelContextual
+          open
+          autoFocus={false}
+          showPanel={panelStateRight.showPanel}
+          hasCollapseControl={collapsible}
+          placement={Placement.Right}
+          onOpen={onOpenRight}
+          onClose={onCloseRight}
+        >
+          <PanelHeader title={panelTitle} />
+          <PanelContent>
+            <CardDummyComponent />
+          </PanelContent>
+        </PanelContextual>
+      )}
+    </div>
+  );
+}
+```
+
+### With Trowser
+
+```tsx
+({ placement, collapsible }) => {
+  const footerCenterLinkLabels = [
+    'Action 1',
+    'Action 2',
+    'Action 3',
+    'Action 4'
+  ];
+  return (
+    <Trowser
+      help
+      settings
+      dismissible
+      open
+      history
+      disableAutoFocus
+      moreButton={
+        <Button colorScheme={colorSchemeOptions[1]} priority="tertiary">
+          More
+        </Button>
+      }
+      title="Basic Trowser"
+      stageContent="Stage Content is optional. Add stageContent prop to see staging."
+      panelContent={
+        <PanelContextual
+          open
+          hasCollapseControl={collapsible}
+          placement={placement}
+        >
+          <PanelHeader title={panelTitle} />
+          <PanelContent>
+            <CardDummyComponent />
+          </PanelContent>
+        </PanelContextual>
+      }
+      automationId="Default_Theme"
+      footerButton={[
+        <Button key="btn-primary" purpose="standard">
+          Primary
+        </Button>,
+        <Button key="btn-secondary" purpose="passive" priority="secondary">
+          Secondary
+        </Button>
+      ]}
+      footerCenterLinkLabels={footerCenterLinkLabels}
+    >
+      <section>
+        <TrowserDummyContent />
+      </section>
+    </Trowser>
+  );
+}
+```
+
+### With Step Flow In Trowser
+
+```tsx
+({ placement, collapsible }) => {
+  return (
+    <Trowser
+      help
+      settings
+      dismissible
+      open
+      stepFlow
+      history
+      title="Trowser StepFlow and Panel"
+      panelContent={
+        <PanelContextual
+          open
+          hasCollapseControl={collapsible}
+          placement={placement}
+        >
+          <PanelHeader title={panelTitle} />
+          <PanelContent>{panelData}</PanelContent>
+        </PanelContextual>
+      }
+      automationId="Default_Theme"
+    >
+      <StepFlow theme="quickbooks" width="medium">
+        <Step title="Welcome" />
+        <Step title="Enter your business name" />
+        <Step title="Enter your business address" />
+        <Step title="Congratulations" type="confirmation" />
+      </StepFlow>
+    </Trowser>
+  );
+}
+```
+
+### With Collapse Control Default Closed
+
+```tsx
+({ placement }) => {
+  return (
+    <div className={styles.container}>
+      {placement === Placement.Left && (
+        <PanelContextual hasCollapseControl placement={Placement.Left}>
+          <PanelHeader title={panelTitle} />
+          <PanelContent>
+            <CardDummyComponent />
+          </PanelContent>
+        </PanelContextual>
+      )}
+      <DummyComponent placement={placement} />
+      {placement === Placement.Right && (
+        <PanelContextual hasCollapseControl placement={Placement.Right}>
+          <PanelHeader title={panelTitle} />
+          <PanelContent>
+            <CardDummyComponent />
+          </PanelContent>
+        </PanelContextual>
+      )}
+    </div>
+  );
+}
+```
+
+### With Segmented View
+
+```tsx
+() => {
+  return (
+    <div className={styles.segmentedContainer}>
+      <SegmentedButton
+        ariaLabel="segmented button"
+        buttonInfos={[
+          {
+            content: (
+              <div className={styles.segmentedContent}>
+                <DummyComponent />
+                <PanelContextual
+                  open
+                  hasCollapseControl={false}
+                  placement={panelDirectionRight}
+                >
+                  <PanelHeader title={panelTitle} />
+                  <PanelContent>{panelData}</PanelContent>
+                </PanelContextual>
+              </div>
+            ),
+            label: 'Segmented 1 with panel',
+
+            selected: true
+          },
+          {
+            content:
+              'Illum ad tenetur reiciendis recusandae illum et. Totam laborum doloremque occaecati. Adipisci ab qui cum',
+            label: 'Segmented 2',
+            onClick: undefined,
+            selected: false
+          },
+          {
+            content:
+              'Illum ad tenetur reiciendis recusandae illum et. Totam laborum doloremque occaecati. Adipisci ab qui cum',
+            label: 'Segmented 3',
+            onClick: undefined,
+            selected: false
+          }
+        ]}
+      />
+    </div>
+  );
+}
+```
+
+### Without Title
+
+```tsx
+({
+  placement,
+  collapsible,
+  showOnEmpty
+}) => {
+  return (
+    <div className={styles.container}>
+      {placement === Placement.Left && (
+        <PanelContextual
+          open
+          hasCollapseControl={collapsible}
+          placement={Placement.Left}
+        >
+          <PanelHeader showOnEmptyTitle={showOnEmpty} />
+          <PanelContent>{panelData}</PanelContent>
+        </PanelContextual>
+      )}
+      <DummyComponent placement={placement} />
+      {placement === Placement.Right && (
+        <PanelContextual
+          open
+          hasCollapseControl={collapsible}
+          placement={Placement.Right}
+        >
+          <PanelHeader showOnEmptyTitle={showOnEmpty} />
+          <PanelContent>{panelData}</PanelContent>
+        </PanelContextual>
+      )}
+    </div>
+  );
+}
+```
+
+### Without Header
+
+```tsx
+() => {
+  return (
+    <div className={styles.container}>
+      <DummyComponent placement={Placement.Right} />
+      <PanelContextual open hasCollapseControl placement={panelDirectionRight}>
+        <PanelContent>{panelData}</PanelContent>
+      </PanelContextual>
+    </div>
+  );
+}
+```
+
+### panel With Big Title
+
+```tsx
+() => {
+  return (
+    <div className={styles.container}>
+      <DummyComponent placement={Placement.Right} />
+      <PanelContextual open hasCollapseControl placement={panelDirectionRight}>
+        <PanelHeader title={shortPanelData} />
+        <PanelContent>{panelData}</PanelContent>
+      </PanelContextual>
+    </div>
+  );
+}
+```
+
+### Playground
+
+```tsx
+({
+  placement,
+  panelTitle,
+  panelContentLength,
+  collapsible
+}) => {
+  const panelData = faker.lorem.sentence(panelContentLength);
+
+  const panelStateLeft = usePanelContextual(true);
+  const panelStateRight = usePanelContextual(true);
+
+  const onCloseLeft = () => {
+    panelStateLeft.onClose();
+  };
+
+  const onOpenLeft = () => {
+    panelStateLeft.onOpen();
+  };
+
+  const onCloseRight = () => {
+    panelStateRight.onClose();
+  };
+
+  const onOpenRight = () => {
+    panelStateRight.onOpen();
+  };
+
+  const isPanelOpen =
+    (placement === Placement.Left && panelStateLeft.showPanel) ||
+    (placement === Placement.Right && panelStateRight.showPanel);
+  return (
+    <div
+      className={clsx(styles.galleryContainer, {
+        [styles.open]: isPanelOpen,
+        [styles.close]: !isPanelOpen
+      })}
+    >
+      {placement === Placement.Left && (
+        <PanelContextual
+          open
+          hasCollapseControl={collapsible}
+          showPanel={panelStateLeft.showPanel}
+          placement={Placement.Left}
+          onOpen={onOpenLeft}
+          onClose={onCloseLeft}
+        >
+          <PanelHeader title={panelTitle} />
+          <PanelContent>{panelData}</PanelContent>
+        </PanelContextual>
+      )}
+      <div className={styles.dummyComponent} />
+      {placement === Placement.Right && (
+        <PanelContextual
+          open
+          hasCollapseControl={collapsible}
+          showPanel={panelStateRight.showPanel}
+          placement={Placement.Right}
+          onOpen={onOpenRight}
+          onClose={onCloseRight}
+        >
+          <PanelHeader title={panelTitle} />
+          <PanelContent>{panelData}</PanelContent>
+        </PanelContextual>
+      )}
+    </div>
+  );
+}
+```
+
+## Code Example
+
+```tsx
+import React from 'react';
+import PanelContextual, {
+  PanelContent,
+  PanelHeader,
+  Placement
+} from '@ids-ts/panel-contextual';
+
+const PanelContextualExample = () => {
+  return (
+    <PanelContextual open hasCollapseControl placement={Placement.Left}>
+      <PanelHeader title="PanelContextual title" />
+      <PanelContent>Panel Content</PanelContent>
+    </PanelContextual>
+  );
+};
+
+export default PanelContextualExample;
+```
+
+## Composes With
+
+- Menu
+- Dropdown
+- Button
+- Cards
+- SegmentedButton
+- Trowser
+- StepFlow
+
+---
+
+## References
+
+- [GitHub Source - PanelContextual](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/PanelContextual)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/panel-contextual.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-panel-contextual&theme=quickbooks&colorScheme=light)

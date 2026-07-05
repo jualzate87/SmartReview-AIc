@@ -1,0 +1,16 @@
+.fadeIn {
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 0.4s ease-out,
+    transform 0.4s ease-out;
+}
+
+.fadeIn.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.root {
+  display: contents;
+}

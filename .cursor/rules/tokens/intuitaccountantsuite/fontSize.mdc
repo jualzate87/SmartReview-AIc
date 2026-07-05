@@ -1,0 +1,61 @@
+---
+description: Intuit Design System - FontSize Token Library - Complete primitive and semantic fontSize tokens
+globs: ["src/**/*.{ts,tsx,js,jsx,scss,css}"]
+alwaysApply: true
+---
+
+# Intuit Design System - FontSize Token Library
+
+## Primitive FontSize Tokens (DO NOT USE DIRECTLY IN PLUGINS)
+
+- `--font-size-12`: 12px
+- `--font-size-14`: 14px
+- `--font-size-16`: 16px
+- `--font-size-20`: 20px
+- `--font-size-24`: 24px
+- `--font-size-28`: 28px
+- `--font-size-34`: 34px
+- `--font-size-40`: 40px
+- `--font-size-48`: 48px
+- `--font-size-60`: 60px
+- `--font-size-72`: 72px
+- `--font-size-84`: 84px
+- `--font-size-96`: 96px
+- `--font-size-108`: 108px
+- `--font-size-120`: 120px
+- `--font-size-132`: 132px
+
+## Semantic FontSize Tokens (USE THESE IN PLUGINS)
+
+### Size
+- `--font-size-action-large`: --font-size-20 /* Large action component text */
+- `--font-size-action-medium`: --font-size-16 /* Medium action component text */
+- `--font-size-action-small`: --font-size-14 /* Small action component text */
+- `--font-size-action-x-small`: --font-size-12 /* Extra Small action component text */
+- `--font-size-body-1`: --font-size-20 /* For body 01 text styles, used in paragraph text. Do not use these in atom sized UI components instead use font-component tokens. */
+- `--font-size-body-2`: --font-size-16 /* For body 02 text styles, used in paragraph text. Do not use these in atom sized UI components instead use font-component tokens. */
+- `--font-size-body-3`: --font-size-14 /* For body 03 text styles, used in paragraph text. Do not use these in atom sized UI components instead use font-component tokens. */
+- `--font-size-body-4`: --font-size-12 /* For body 04 text styles, used in paragraph text. Do not use these in atom sized UI components instead use font-component tokens. */
+- `--font-size-component-large`: --font-size-20 /* Large sized component text */
+- `--font-size-component-medium`: --font-size-16 /* Medium (default) sized component text */
+- `--font-size-component-small`: --font-size-14 /* Small sized component text */
+- `--font-size-component-x-large`: --font-size-24 /* X-Large sized component text */
+- `--font-size-component-x-small`: --font-size-12 /* X-small sized component text */
+- `--font-size-display-1`: --font-size-84 /* For display 01 text styles, which responsively adapt to different text sizes based on viewport width */
+- `--font-size-display-2`: --font-size-72 /* For display 02 text styles, which responsively adapt to different text sizes based on viewport width */
+- `--font-size-display-3`: --font-size-60 /* For display 03 text styles, which responsively adapt to different text sizes based on viewport width */
+- `--font-size-display-4`: --font-size-48 /* For display 04 text styles, which responsively adapt to different text sizes based on viewport width */
+- `--font-size-heading-1`: --font-size-48 /* For heading 01 text styles, which responsively adapt to different text sizes based on viewport width */
+- `--font-size-heading-2`: --font-size-40 /* For heading 02 text styles, which responsively adapt to different text sizes based on viewport width */
+- `--font-size-heading-3`: --font-size-34 /* For heading 03 text styles, which responsively adapt to different text sizes based on viewport width */
+- `--font-size-heading-4`: --font-size-28 /* For heading 04 text styles, which responsively adapt to different text sizes based on viewport width */
+- `--font-size-heading-5`: --font-size-24 /* For heading 05 text styles, which responsively adapt to different text sizes based on viewport width. Do not use these in atom sized UI components instead use font-component tokens. */
+- `--font-size-heading-6`: --font-size-20 /* For heading 06 text styles, which responsively adapt to different text sizes based on viewport width. Do not use these in atom sized UI components instead use font-component tokens. */
+- `--font-size-input-label`: --font-size-14 /* For input labels text */
+- `--font-size-input-label-small`: --font-size-14 /* Font size for small input label text */
+- `--font-size-input-text`: --font-size-16 /* For input text */
+- `--font-size-input-text-small`: --font-size-14 /* Font size for small input text */
+- `--font-size-mega-1`: --font-size-132 /* For mega 01 text styles, which responsively adapt to different text sizes based on viewport width. This font size should only be used on Marketing front door web sites. */
+- `--font-size-mega-2`: --font-size-120 /* For mega 02 text styles, which responsively adapt to different text sizes based on viewport width. This font size should only be used on Marketing front door web sites. */
+- `--font-size-mega-3`: --font-size-108 /* For mega 03 text styles, which responsively adapt to different text sizes based on viewport width. This font size should only be used on Marketing front door web sites. */
+- `--font-size-mega-4`: --font-size-96 /* For mega 04 text styles, which responsively adapt to different text sizes based on viewport width. This font size should only be used on Marketing front door web sites. */

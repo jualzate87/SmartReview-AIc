@@ -1,0 +1,34 @@
+---
+description: Intuit Design System - Ease Token Library - Complete primitive and semantic ease tokens
+globs: ["src/**/*.{ts,tsx,js,jsx,scss,css}"]
+alwaysApply: false
+---
+
+# Intuit Design System - Ease Token Library
+
+## Primitive Ease Tokens (DO NOT USE DIRECTLY IN PLUGINS)
+
+- `--ease-accelerate-10`: cubic-bezier(0.35, 0, 1, 1)
+- `--ease-accelerate-elastic-10`: cubic-bezier(0.4, 0, 0.6, -0.4)
+- `--ease-decelerate-10`: cubic-bezier(0, 0, 0.25, 1)
+- `--ease-decelerate-elastic-10`: cubic-bezier(0.35, 1.4, 0.25, 1)
+- `--ease-smooth-10`: cubic-bezier(0.35, 0, 0.5, 1)
+- `--ease-decelerate-elastic-20`: cubic-bezier(0.15, 1.4, 0.25, 1)
+- `--ease-smooth-20`: cubic-bezier(0.35, 0, 0.25, 1)
+
+## Semantic Ease Tokens (USE THESE IN PLUGINS)
+
+### Appear
+- `--ease-appear`: --ease-decelerate-10 /* Applies to elements that move into view. This style of ease has a fast start and slow end, creating an animation that decelerates into view. */
+- `--ease-appear-emphasize`: --ease-decelerate-elastic-20 /* Similar to Appear, with an added subtle overshoot.  This style of ease starts quick, overshoots the target value and slowly pulls back at the end. Creating a fast animation that decelerates into view with added emphasis. */
+
+### Disappear
+- `--ease-disappear`: --ease-accelerate-10 /* Applies to elements that move out of view. This style of ease has a slow start and fast end, creating an animation that accelerates out of view. */
+- `--ease-disappear-emphasize`: --ease-accelerate-elastic-10 /* Similar to Disappear, with an added subtle anticipation. This style of ease starts by slowly moving in the opposite direction of the target value and then ends quickly. Creating a fast animation with added emphasis before accelerating out of view. */
+
+### Fade
+- `--ease-fade`: --ease-smooth-10 /* Applies to color and opacity transitions, such as fading between two colors, or an element fading in and out of view. This style of ease has a slow start, moderate middle, and slow end, creating a subtle transition. */
+
+### Transform
+- `--ease-transform`: --ease-smooth-20 /* Applies to elements that are continuously visible throughout the animation, beginning and ending within view.           This style of ease has a slow start, quick middle, and slow end, creating a fast animation with smooth transitions. */
+- `--ease-transform-emphasize`: --ease-decelerate-elastic-10 /* Similar to Transform, with an added subtle overshoot bounce. This ease applies to elements that are continuously visible throughout the animation, beginning and ending within view, with a smaller mass traversing a small area of the screen.           This style of ease has a quick start, overshoots the target value and slowly pulls back at the end, creating a fast animation with added emphasis. */

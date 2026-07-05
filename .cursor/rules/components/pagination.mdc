@@ -1,0 +1,283 @@
+---
+description: Complete guide for using the Pagination component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# Pagination
+
+A IDS pagination is a component for switching between multiple pages of data in a table or a long list.
+
+This is used primarily in our other IDS components, such as `DataGrid`, and `Table`.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/pagination
+```
+
+```tsx
+import { Pagination } from '@ids-ts/pagination';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `totalPages` | `number` | Yes | - |
+| `totalItems` | `number` | Yes | total number of items |
+| `pageSize` | `number` | Yes | Number of items/rows to show per page |
+| `activePage` | `number` | Yes | the current active page number |
+| `isLoadingTotals` | `boolean` | No | when true, shows loading state instead of total pages count and total items |
+| `loadingComponent` | `JSX.Element` | No | - |
+| `allowNextWhenLoading` | `boolean` | No | when true, allows the next button to remain enabled when in loading mode (isLoadingTotals === true) |
+| `showBoundaryControls` | `boolean` | No | when true, shows the first and last buttons |
+| `preventPageJump` | `boolean` | No | when true, prevents the ability to jump to a specific page |
+| `labels` | `{ page?: string; of?: string; items?: string }` | No | Labels for i18n (e.g., `'Page'`, `'of'`, `'items'`). |
+| `fullSummaryContent` | `string` | No | - |
+| `of` | `string` | No | label for the 'of' word, ex: Page 1 of 5 or 1-50 of 600 items |
+| `summaryItems` | `string` | No | label applied to summary section as kind of data, ex: 1 of 5 items |
+| `previousPageButtonAriaLabel` | `string` | No | aria label applied to the previous page button |
+| `nextPageButtonAriaLabel` | `string` | No | aria label applied to the next page button |
+| `goToPageButtonAriaLabel` | `string` | No | aria label applied to each page button, ex: Go to page 2, where the number 2 will be automatically assign |
+| `pageNumberTextFieldAriaLabel` | `string` | No | aria label applied to the page number text field |
+| `goToFirstPageButtonAriaLabel` | `string` | No | aria label applied to the 'Go to first page' button |
+| `goToLastPageButtonAriaLabel` | `string` | No | aria label applied to the 'Go to last page' button |
+| `onPageChange` | `(selectedPage: number) => void` | Yes | - |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface PaginationProps extends ThemeableElement<'div'> {
+  /** total number of pages of data available. you should calculate this
+   * number based on the total number of rows of data and the page size */
+  totalPages: number;
+  /** total number of items */
+  totalItems: number;
+  /** Number of items/rows to show per page */
+  pageSize: number;
+  /** the current active page number */
+  activePage: number;
+  /** when true, shows loading state instead of total pages count and total items */
+  isLoadingTotals?: boolean;
+  /**
+   * Specify the loading component to render when isLoadingTotals === true
+   * When not specified, will render pagination data no matter the value of isLoadingTotals
+   */
+  loadingComponent?: JSX.Element;
+  /** when true, allows the next button to remain enabled when in loading mode (isLoadingTotals === true) */
+  allowNextWhenLoading?: boolean;
+  /** when true, shows the first and last buttons */
+  showBoundaryControls?: boolean;
+  /** when true, prevents the ability to jump to a specific page */
+  preventPageJump?: boolean;
+  /** Labels for i18n related to pagination */
+  labels?: {
+    /** label for the 'Page' word, ex: Page 1 of 5   */
+    page?: string;
+    /** pass the full summary content,
+     * this assumes all calculations are done by
+     * consumer so that this content to make sense. */
+    fullSummaryContent?: string;
+    /** label for the 'of' word, ex: Page 1 of 5  or  1-50 of 600 items */
+    of?: string;
+    /** label applied to summary section as kind of data, ex: 1 of 5 items */
+    summaryItems?: string;
+    /** aria label applied to the previous page button */
+    previousPageButtonAriaLabel?: string;
+    /** aria label applied to the next page button */
+    nextPageButtonAriaLabel?: string;
+    /** aria label applied to each page button, ex: Go to page 2, where the number 2 will be automatically assign */
+    goToPageButtonAriaLabel?: string;
+    /** aria label applied to the page number text field */
+    pageNumberTextFieldAriaLabel?: string;
+    /** aria label applied to the 'Go to first page' button */
+    goToFirstPageButtonAriaLabel?: string;
+    /** aria label applied to the 'Go to last page' button */
+    goToLastPageButtonAriaLabel?: string;
+  };
+  /** onPageChange callback to be use when changing page via Previous, Next buttons or
+   * when changing page via the page number text field. This function will be called
+   * with the new page number as the first argument. Consuming teams should use this
+   * to update the activePage prop in this pagination object. */
+  onPageChange: (selectedPage: number) => void;
+}
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**action** — Interactive element colors and hover/active/focus states
+- `--color-action-complementary`
+- `--color-action-complementary-active`
+- `--color-action-complementary-border`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**component** — Component-level spacing (padding, gap)
+- `--space-component-gap-large`
+- `--space-component-gap-medium`
+- `--space-component-gap-small`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Basic
+
+```tsx
+() => {
+  const [activePage, setActivePage] = useState(4);
+  const totalItems = 700;
+
+  return (
+    <div>
+      <Pagination
+        totalPages={14}
+        pageSize={50}
+        totalItems={totalItems}
+        activePage={activePage}
+        labels={{
+          page: 'Page',
+          of: 'of',
+          summaryItems: 'items',
+          previousPageButtonAriaLabel: 'Go to previous page, currently on page',
+          nextPageButtonAriaLabel: 'Go to next page, currently on page',
+          goToPageButtonAriaLabel: 'Go to page',
+          pageNumberTextFieldAriaLabel: 'Page number'
+        }}
+        onPageChange={(page) => {
+          setActivePage(page);
+        }}
+      />
+    </div>
+  );
+}
+```
+
+### Custom Summary Section
+
+```tsx
+() => {
+  const settings = {
+    totalItems: 700,
+    pageSize: 50,
+    totalPages: 14,
+    activePage: 4,
+    labels: {
+      fullSummaryContent: '151 - 200 of 700 accounts'
+    }
+  };
+
+  return (
+    <div>
+      <Pagination {...settings} onPageChange={(page) => page} />
+    </div>
+  );
+}
+```
+
+### Async Loading Transition
+
+```tsx
+() => {
+  const [activePage, setActivePage] = useState(1);
+  const [isLoadingTotals, setIsLoadingTotals] = useState(true);
+  const totalItems = 250;
+
+  // Simulate async data loading - after 5 seconds, show loaded state
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoadingTotals(false);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, []); // Empty dependency array to run only once on mount
+
+  const handlePageChange = (page: number) => {
+    setActivePage(page);
+  };
+
+  // Create loading component using Activity from @ids-ts/loader for a11y compliance
+  const loadingComponent = (
+    <Activity shape="dots" size="small" aria-label="Loading data" />
+  );
+
+  return (
+    <div>
+      <h3>Async Loading Transition</h3>
+      <p>
+        Demonstrates practical usage: starts with loading state, then
+        transitions to loaded state after 5 seconds.
+      </p>
+      <Pagination
+        totalPages={10}
+        pageSize={25}
+        totalItems={totalItems}
+        activePage={activePage}
+        isLoadingTotals={isLoadingTotals}
+        loadingComponent={loadingComponent}
+        labels={{
+          page: 'Page',
+          of: 'of',
+          summaryItems: 'items',
+          previousPageButtonAriaLabel: 'Go to previous page, currently on page',
+          nextPageButtonAriaLabel: 'Go to next page, currently on page',
+          goToPageButtonAriaLabel: 'Go to page',
+          pageNumberTextFieldAriaLabel: 'Page number'
+        }}
+        onPageChange={handlePageChange}
+      />
+      <div style={{ marginTop: '16px', fontSize: '14px', color: '#666' }}>
+        Status: {isLoadingTotals ? 'Loading...' : 'Loaded'}
+      </div>
+    </div>
+  );
+}
+```
+
+## Code Example
+
+```tsx
+import { Activity } from '@ids-ts/loader';
+
+const loadingComponent = (
+  <Activity shape="dots" size="small" aria-label="Loading data" />
+);
+
+<Pagination
+  totalPages={10}
+  pageSize={20}
+  totalItems={200}
+  activePage={currentPage}
+  isLoadingTotals={isLoading}
+  loadingComponent={loadingComponent}
+  onPageChange={handlePageChange}
+/>;
+```
+
+## Composes With
+
+- Loader
+
+---
+
+## References
+
+- [GitHub Source - Pagination](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/Pagination)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/pagination.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-pagination&theme=quickbooks&colorScheme=light)

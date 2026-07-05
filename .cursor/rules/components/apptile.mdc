@@ -1,0 +1,187 @@
+---
+description: Complete guide for using the AppTile component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# AppTile
+
+An AppTile is used to display basic information about an App the user can access. It renders a label and an icon related to the App.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/app-tile
+```
+
+```tsx
+import { AppTile } from '@ids-ts/app-tile';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `label` | `string` | Yes | label text to render underneath the icon |
+| `icon` | `React.ReactElement<IconProps>` | Yes | icon to render inside the tile |
+| `product` | `Product` | No | what product this tile is displaying |
+| `onClick` | `React.MouseEventHandler` | No | Callback when this tile is selected |
+| `recommendation` | `boolean` | No | whether this tile is being used to recommend an App to the user |
+| `animated` | `boolean` | No | whether to animate the size of this component when hovered. Defaults to true |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface AppTileProps extends ThemeableElement<'button'> {
+  /** label text to render underneath the icon */
+  label: string;
+  /** icon to render inside the tile */
+  icon: React.ReactElement<IconProps>;
+  /** what product this tile is displaying */
+  product?: Product;
+  /** Callback when this tile is selected */
+  onClick?: React.MouseEventHandler;
+  /** whether this tile is being used to recommend an App to the user */
+  recommendation?: boolean;
+  /** whether to animate the size of this component when hovered. Defaults to true */
+  animated?: boolean;
+}
+
+export type Product = 'intuit' | 'quickbooks' | 'turbotax' | 'mailchimp';
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Basic Usage
+
+```tsx
+() => {
+  return (
+    <AppTile
+      label="Home"
+      icon={<Home />}
+      product="intuit"
+      onClick={action('Clicked tile')}
+    />
+  );
+}
+```
+
+### Quickbooks Tile
+
+```tsx
+() => {
+  return (
+    <AppTile
+      label="Sales & Payments"
+      icon={<Quickbooks />}
+      product="quickbooks"
+      onClick={action('Clicked tile')}
+    />
+  );
+}
+```
+
+### Multi Theme Tiles
+
+```tsx
+() => {
+  return (
+    <div className={styles.tilesList}>
+      <AppTile label="Home" icon={<Home />} />
+      <AppTile label="Customers" icon={<Mailchimp />} product="mailchimp" />
+      <AppTile
+        label="Sales & Payments"
+        icon={<Quickbooks />}
+        product="quickbooks"
+      />
+      <AppTile
+        label="Bills & Expenses"
+        icon={<Quickbooks />}
+        product="quickbooks"
+      />
+      <AppTile label="Bookkeeping" icon={<Quickbooks />} product="quickbooks" />
+      <AppTile
+        label="Lending & Banking"
+        icon={<Quickbooks />}
+        product="quickbooks"
+      />
+    </div>
+  );
+}
+```
+
+### Recommendations
+
+```tsx
+() => {
+  return (
+    <div className={styles.tilesList}>
+      <AppTile
+        recommendation
+        label="Payroll & HR"
+        icon={<Quickbooks />}
+        product="quickbooks"
+      />
+      <AppTile
+        recommendation
+        label="Business Tax"
+        icon={<Turbotax />}
+        product="turbotax"
+      />
+      <AppTile
+        recommendation
+        label="Marketing"
+        icon={<Mailchimp />}
+        product="mailchimp"
+      />
+    </div>
+  );
+}
+```
+
+---
+
+## References
+
+- [GitHub Source - AppTile](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/AppTile)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/app-tile.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-app-tile&theme=quickbooks&colorScheme=light)

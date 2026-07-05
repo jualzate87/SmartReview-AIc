@@ -1,0 +1,564 @@
+---
+description: Intuit Design System - Color Token Library - Complete primitive and semantic color tokens
+globs: ["src/**/*.{ts,tsx,js,jsx,scss,css}"]
+alwaysApply: false
+---
+
+# Intuit Design System - Color Token Library
+
+## Primitive Color Tokens (DO NOT USE DIRECTLY IN PLUGINS)
+
+- `--color-agave-0`: #F0FDFF
+- `--color-blueberry-0`: #F4F9FF
+- `--color-dragonfruit-0`: #FFF5FB
+- `--color-eggplant-0`: #F9F7FF
+- `--color-agave-10`: #E1F9FF
+- `--color-blueberry-10`: #E0EDFF
+- `--color-dragonfruit-10`: #FFE6F4
+- `--color-eggplant-10`: #F0E9FF
+- `--color-agave-20`: #C2F5FF
+- `--color-blueberry-20`: #C5E1FF
+- `--color-dragonfruit-20`: #FFD1E9
+- `--color-eggplant-20`: #E2D9FF
+- `--color-agave-30`: #81F2FE
+- `--color-blueberry-30`: #A0CFFF
+- `--color-dragonfruit-30`: #FFB5DF
+- `--color-eggplant-30`: #D0C2FF
+- `--color-agave-40`: #38E8F6
+- `--color-blueberry-40`: #7CBCFF
+- `--color-eggplant-40`: #C0ABFF
+- `--color-agave-50`: #00D0E0
+- `--color-blue-tint`: #EBF9FF
+- `--color-dragonfruit-40`: #FF95D3
+- `--color-blueberry-50`: #5DABFF
+- `--color-dragonfruit-50`: #FF77C7
+- `--color-eggplant-50`: #B496FF
+- `--color-agave-60`: #00B3C2
+- `--color-blueberry-60`: #3492EF
+- `--color-dragonfruit-60`: #F54BAC
+- `--color-eggplant-60`: #A275FF
+- `--color-agave-70`: #009EAC
+- `--color-blueberry-70`: #2B77CC
+- `--color-dragonfruit-70`: #D72792
+- `--color-eggplant-70`: #8F4BFF
+- `--color-agave-80`: #00828D
+- `--color-blueberry-80`: #205EA3
+- `--color-dragonfruit-80`: #B30078
+- `--color-eggplant-80`: #7C00F6
+- `--color-agave-90`: #006771
+- `--color-blueberry-90`: #17497F
+- `--color-dragonfruit-90`: #8D005D
+- `--color-agave-100`: #005056
+- `--color-basil-100`: #315B41
+- `--color-blue-100`: #055393
+- `--color-blueberry-100`: #103661
+- `--color-cardamom-100`: #ECF6EF
+- `--color-dragonfruit-100`: #6C0046
+- `--color-agave-110`: #003C42
+- `--color-basil-110`: #274933
+- `--color-blueberry-110`: #00254A
+- `--color-dragonfruit-110`: #4D0031
+- `--color-agave-120`: #002A2E
+- `--color-basil-120`: #1C3525
+- `--color-black`: #000000
+- `--color-honey-0`: #FFFBE9
+- `--color-kiwi-0`: #EFFFF0
+- `--color-honey-10`: #FFF2C1
+- `--color-kiwi-10`: #D8FFDB
+- `--color-honey-20`: #FDE68C
+- `--color-kiwi-20`: #AFFFB9
+- `--color-honey-30`: #FEDB5E
+- `--color-kiwi-30`: #7FFA94
+- `--color-honey-40`: #F9C741
+- `--color-kiwi-40`: #5BEF76
+- `--color-honey-50`: #EDA700
+- `--color-kiwi-50`: #3BD85E
+- `--color-honey-60`: #D99001
+- `--color-kiwi-60`: #00BB42
+- `--color-honey-70`: #C27A00
+- `--color-kiwi-70`: #00A63B
+- `--color-honey-80`: #AC6500
+- `--color-kiwi-80`: #00892E
+- `--color-eggplant-90`: #6100C2
+- `--color-honey-90`: #8D4D00
+- `--color-kiwi-90`: #006C23
+- `--color-eggplant-100`: #490097
+- `--color-fig-100`: #275582
+- `--color-gray-100`: #393A3D
+- `--color-green-100`: #108000
+- `--color-honey-100`: #703A00
+- `--color-ice-100`: #EAF6F7
+- `--color-kale-100`: #325F6B
+- `--color-kiwi-100`: #005419
+- `--color-nutmeg-100`: #F6F3F3
+- `--color-cardamom-110`: #DDECE1
+- `--color-eggplant-110`: #33006E
+- `--color-fig-110`: #1A3D5F
+- `--color-honey-110`: #562A00
+- `--color-ice-110`: #D5ECEF
+- `--color-kale-110`: #244750
+- `--color-kiwi-110`: #004012
+- `--color-nutmeg-110`: #EDE7E8
+- `--color-blueberry-120`: #001D3C
+- `--color-cardamom-120`: #D1E0D6
+- `--color-dragonfruit-120`: #3F0027
+- `--color-eggplant-120`: #28005A
+- `--color-fig-120`: #14324F
+- `--color-honey-120`: #3E1C00
+- `--color-ice-120`: #BEE3E7
+- `--color-kale-120`: #19343B
+- `--color-kiwi-120`: #002C09
+- `--color-blue-200`: #0077C5
+- `--color-gray-200`: #6B6C72
+- `--color-green-200`: #2CA01C
+- `--color-blue-300`: #0097E6
+- `--color-gray-300`: #8D9096
+- `--color-green-300`: #53B700
+- `--color-blue-400`: #21ABF6
+- `--color-gray-400`: #BABEC5
+- `--color-green-400`: #7FD000
+- `--color-blue-500`: #34BFFF
+- `--color-gray-500`: #D4D7DC
+- `--color-green-500`: #A9E838
+- `--color-gray-600`: #E3E5E8
+- `--color-gray-700`: #ECEEF1
+- `--color-gray-800`: #F4F5F8
+- `--color-gray-900`: #F1F1F1
+- `--color-logo-creditkarma`: #2E971A
+- `--color-logo-intuit`: #236CFF
+- `--color-logo-mailchimp`: #FFE01B
+- `--color-logo-mint`: #00A38F
+- `--color-logo-quickbooks`: #2CA01C
+- `--color-logo-turbotax`: #D52B1E
+- `--color-olive-0`: #F3FFE3
+- `--color-pepper-0`: #F0F4F6
+- `--color-pepper-00`: #F8FAFB
+- `--color-persimmon-0`: #FFF7EC
+- `--color-spearmint-0`: #ECFFF7
+- `--color-watermelon-0`: #FFF6F6
+- `--color-olive-10`: #E7FDC8
+- `--color-pepper-10`: #E2E9ED
+- `--color-persimmon-10`: #FFEAC7
+- `--color-spearmint-10`: #D7FDEF
+- `--color-watermelon-10`: #FFE7E7
+- `--color-olive-20`: #D3FA90
+- `--color-pepper-20`: #D5DEE3
+- `--color-persimmon-20`: #FFD8A0
+- `--color-spearmint-20`: #A6FDE2
+- `--color-watermelon-20`: #FFD4D8
+- `--color-olive-30`: #C5EF71
+- `--color-pepper-30`: #C3CED5
+- `--color-persimmon-30`: #FFBE6F
+- `--color-spearmint-30`: #50FBD4
+- `--color-watermelon-30`: #FFB8BE
+- `--color-olive-40`: #B9E15E
+- `--color-pepper-40`: #ADBAC2
+- `--color-persimmon-40`: #FCA354
+- `--color-spearmint-40`: #00EEC5
+- `--color-watermelon-40`: #FF9BA4
+- `--color-olive-50`: #A1CC3B
+- `--color-pepper-50`: #9AA7B0
+- `--color-persimmon-50`: #F88A42
+- `--color-spearmint-50`: #00D5B0
+- `--color-watermelon-50`: #FF808C
+- `--color-olive-60`: #86B000
+- `--color-pepper-60`: #859299
+- `--color-persimmon-60`: #E56C1D
+- `--color-spearmint-60`: #00B797
+- `--color-watermelon-60`: #F7576C
+- `--color-olive-70`: #769C00
+- `--color-pepper-70`: #727E85
+- `--color-persimmon-70`: #C84F00
+- `--color-spearmint-70`: #00A286
+- `--color-superblue-70`: #236CFF
+- `--color-watermelon-70`: #DB334D
+- `--color-olive-80`: #618000
+- `--color-pepper-80`: #5D686F
+- `--color-persimmon-80`: #A53900
+- `--color-spearmint-80`: #00856D
+- `--color-watermelon-80`: #B61A37
+- `--color-olive-90`: #4C6600
+- `--color-pepper-90`: #4C555B
+- `--color-persimmon-90`: #832900
+- `--color-spearmint-90`: #006A56
+- `--color-watermelon-90`: #8F1229
+- `--color-olive-100`: #3A4F00
+- `--color-orange-100`: #F95700
+- `--color-pepper-100`: #3C4348
+- `--color-persimmon-100`: #651E00
+- `--color-pink-100`: #9C005E
+- `--color-plum-100`: #564B7D
+- `--color-purple-100`: #4E2B8F
+- `--color-red-100`: #B80000
+- `--color-skin-100`: #FBE4CA
+- `--color-spearmint-100`: #005244
+- `--color-teal-100`: #008481
+- `--color-tofu-100`: #F4F4EF
+- `--color-watermelon-100`: #6E0B1E
+- `--color-wintermint-100`: #EFF4F9
+- `--color-yellow-100`: #FFAD00
+- `--color-olive-110`: #2B3B00
+- `--color-pepper-110`: #2B3135
+- `--color-persimmon-110`: #481200
+- `--color-plum-110`: #3F365C
+- `--color-skin-110`: #F8D4AB
+- `--color-spearmint-110`: #003E31
+- `--color-tofu-110`: #EAEAE3
+- `--color-watermelon-110`: #4F0513
+- `--color-wintermint-110`: #E4EBF3
+- `--color-nutmeg-120`: #DFD4D8
+- `--color-olive-120`: #1D2900
+- `--color-pepper-120`: #21262A
+- `--color-persimmon-120`: #390E00
+- `--color-plum-120`: #342C4C
+- `--color-skin-120`: #F9DCB2
+- `--color-spearmint-120`: #002B21
+- `--color-tofu-120`: #DFDFD8
+- `--color-watermelon-120`: #40030E
+- `--color-wintermint-120`: #D1DEE9
+- `--color-pepper-130`: #181C1F
+- `--color-skin-130`: #F5CD91
+- `--color-skin-140`: #E1A373
+- `--color-skin-150`: #D2854A
+- `--color-skin-160`: #A15F3C
+- `--color-skin-170`: #7A3F20
+- `--color-skin-180`: #5F3927
+- `--color-skin-190`: #4A2411
+- `--color-orange-200`: #FF6A00
+- `--color-pink-200`: #C9007A
+- `--color-purple-200`: #6436AF
+- `--color-red-200`: #D52B1E
+- `--color-teal-200`: #00A6A4
+- `--color-yellow-200`: #FFBB00
+- `--color-orange-300`: #FF8000
+- `--color-pink-300`: #E31C9E
+- `--color-purple-300`: #7A3DD8
+- `--color-red-300`: #E43834
+- `--color-teal-300`: #00C1BF
+- `--color-yellow-300`: #FFCA00
+- `--color-orange-400`: #FF9331
+- `--color-pink-400`: #FF59CC
+- `--color-purple-400`: #9457FA
+- `--color-red-400`: #F25A52
+- `--color-teal-400`: #00D7D7
+- `--color-yellow-400`: #FFDC00
+- `--color-orange-500`: #FFAC61
+- `--color-pink-500`: #FF88EC
+- `--color-purple-500`: #A898FF
+- `--color-red-500`: #FF8979
+- `--color-teal-500`: #15EFE9
+- `--color-white`: #FFFFFF
+- `--color-yellow-500`: #FFEE00
+
+## Semantic Color Tokens (USE THESE IN PLUGINS)
+
+### Action
+- `--color-action-complementary`: --color-pepper-80 /* Used for complementary primary button backgrounds. Must be used with complementary backgrounds. */
+- `--color-action-complementary-active`: --color-pepper-100 /* Used for complementary primary button backgrounds in the active state. Must be used with complementary backgrounds. */
+- `--color-action-complementary-border`: --color-white /* Used for the border of secondary buttons on dark backgrounds with a complementary container background. */
+- `--color-action-complementary-focus`: --color-pepper-80 /* Used for complementary primary button backgrounds in the focus state. Must be used with complementary backgrounds. */
+- `--color-action-complementary-hover`: --color-pepper-90 /* Used for complementary primary button backgrounds in the hover state. Must be used with complementary backgrounds. */
+- `--color-action-complementary-subtle`: --color-white /* Background color intended to be very light or invisible on complementary/dark backgrounds in the default state. Use for complementary secondary and tertiary button backgrounds, as well as icon control fill colors on complementary/dark backgrounds. */
+- `--color-action-complementary-subtle-active`: --color-white /* Complementary passive secondary/tertiary button background color in an active state; to be used with complementary backgrounds */
+- `--color-action-complementary-subtle-focus`: --color-white /* Complementary passive secondary/tertiary button background color in a focus state; to be used with complementary backgrounds */
+- `--color-action-complementary-subtle-hover`: --color-white /* Used to render secondary buttons, tertiary buttons, and icon control fill colors on dark backgrounds with a complementary container background. Applied in the hover state. */
+- `--color-action-negative`: --color-ui-negative /* Used for destructive primary button backgrounds, destructive secondary/tertiary button text, and destructive secondary border colors. */
+- `--color-action-negative-active`: --color-ui-negative-active /* Used for destructive primary button backgrounds in the active state. */
+- `--color-action-negative-focus`: --color-ui-negative /* Used for destructive primary button backgrounds in the focus state. */
+- `--color-action-negative-hover`: --color-ui-negative-hover /* Used for destructive primary button backgrounds in the hover state. */
+- `--color-action-negative-subtle`: --color-watermelon-70 /* Used for destructive secondary/tertiary button backgrounds. Subtle tokens are for backgrounds that are not visible or very light. */
+- `--color-action-negative-subtle-active`: --color-watermelon-70 /* Used for destructive secondary/tertiary button backgrounds in the active state. Subtle tokens are for backgrounds that are not visible or very light. */
+- `--color-action-negative-subtle-focus`: --color-watermelon-70 /* Used for destructive secondary/tertiary button backgrounds in the focus state. Subtle tokens are for backgrounds that are not visible or very light. */
+- `--color-action-negative-subtle-hover`: --color-watermelon-70 /* Used for destructive secondary/tertiary button backgrounds in the hover state. Subtle tokens are for backgrounds that are not visible or very light. */
+- `--color-action-passive`: --color-pepper-10 /* Used for passive button backgrounds. Passive buttons are for actions unrelated to the primary action—optional or less important than the primary action. */
+- `--color-action-passive-active`: --color-pepper-30 /* Used for passive button backgrounds in the active state. Passive buttons are for actions unrelated to the primary action—optional or less important than the primary action. */
+- `--color-action-passive-border`: --color-pepper-20 /* Passive button border color */
+- `--color-action-passive-focus`: --color-pepper-10 /* Used for passive button backgrounds in the focus state. Passive buttons are for actions unrelated to the primary action—optional or less important than the primary action. */
+- `--color-action-passive-hover`: --color-pepper-20 /* Used for passive button backgrounds in the hover state. Passive buttons are for actions unrelated to the primary action—optional or less important than the primary action. */
+- `--color-action-passive-subtle`: --color-pepper-60 /* Used for passive buttons that require a background color that is not visible or very light in the default state. Commonly used on passive secondary and tertiary buttons. */
+- `--color-action-passive-subtle-active`: --color-pepper-60 /* Used for passive buttons that require a background color that is not visible or very light in the active state. Commonly used on passive secondary and tertiary buttons. */
+- `--color-action-passive-subtle-focus`: --color-pepper-60 /* Used for passive buttons that require a background color that is not visible or very light in the focus state. Commonly used on passive secondary and tertiary buttons. */
+- `--color-action-passive-subtle-hover`: --color-pepper-60 /* Used for passive buttons that require a background color that is not visible or very light in the hover state. Commonly used on passive secondary and tertiary buttons. */
+- `--color-action-special-use`: --color-blueberry-70 /* Special use should only be used in race occurrences for marketing upsells to have a customer purchase or upgrade their product or service. Used for special use primary button backgrounds, special use secondary/tertiary button text, and special use secondary button border colors. */
+- `--color-action-special-use-active`: --color-blueberry-90 /* Used for special use primary button backgrounds in the active state. Special use should only be used in race occurrences for marketing upsells to have a customer purchase or upgrade their product or service. */
+- `--color-action-special-use-focus`: --color-blueberry-70 /* Used for special use primary button backgrounds in the focus state. Special use should only be used in race occurrences for marketing upsells to have a customer purchase or upgrade their product or service. */
+- `--color-action-special-use-hover`: --color-blueberry-80 /* Used for special use primary button backgrounds in the hover state. Special use should only be used in race occurrences for marketing upsells to have a customer purchase or upgrade their product or service. */
+- `--color-action-special-use-subtle`: --color-blueberry-70 /* Used for special use secondary/tertiary button backgrounds. Subtle tokens are for backgrounds that are not visible or very light. Special use should only be used in race occurrences for marketing upsells to have a customer purchase or upgrade their product or service. */
+- `--color-action-special-use-subtle-active`: --color-blueberry-70 /* Used for special use secondary/tertiary button backgrounds in the active state. Subtle tokens are for backgrounds that are not visible or very light. Special use should only be used in race occurrences for marketing upsells to have a customer purchase or upgrade their product or service. */
+- `--color-action-special-use-subtle-focus`: --color-blueberry-70 /* Used for special use secondary/tertiary button backgrounds in the focus state. Subtle tokens are for backgrounds that are not visible or very light. Special use should only be used in race occurrences for marketing upsells to have a customer purchase or upgrade their product or service. */
+- `--color-action-special-use-subtle-hover`: --color-blueberry-70 /* Used for special use secondary/tertiary button backgrounds in the hover state. Subtle tokens are for backgrounds that are not visible or very light. Special use should only be used in race occurrences for marketing upsells to have a customer purchase or upgrade their product or service. */
+- `--color-action-standard`: --color-ui-primary /* Used for primary button backgrounds, secondary/tertiary button text, and secondary border colors. */
+- `--color-action-standard-active`: --color-ui-primary-active /* Used for primary button backgrounds in the active state. */
+- `--color-action-standard-focus`: --color-ui-primary-focus /* Used for primary button backgrounds in the focus state. */
+- `--color-action-standard-hover`: --color-ui-primary-hover /* Used for primary button backgrounds in the hover state. */
+- `--color-action-standard-subtle`: --color-spearmint-80 /* Used for secondary and tertiary button backgrounds. */
+- `--color-action-standard-subtle-active`: --color-spearmint-80 /* Used for secondary and tertiary button backgrounds in the active state. */
+- `--color-action-standard-subtle-focus`: --color-spearmint-80 /* Used for secondary and tertiary button backgrounds in the focus state. */
+- `--color-action-standard-subtle-hover`: --color-spearmint-80 /* Used for secondary and tertiary button backgrounds in the hover state. */
+
+### Code
+- `--color-code-attribute`: --color-kiwi-80 /* Used for attribute text when writing code. */
+- `--color-code-boolean`: --color-eggplant-90 /* Used for boolean text when writing code. */
+- `--color-code-comment`: --color-text-quaternary /* Used for comment text when writing code. */
+- `--color-code-keyword`: --color-dragonfruit-70 /* Used for writing text code and differentiating the keyword text. */
+- `--color-code-line-highlight`: --color-pepper-0 /* Used for highlighting text code. */
+- `--color-code-line-number`: --color-pepper-60 /* Used for writing text code and differentiating the line number text. */
+- `--color-code-number`: --color-persimmon-70 /* Used for number text when writing code. */
+- `--color-code-operator`: --color-pepper-60 /* Used for writing text code and differentiating the operator text. */
+- `--color-code-qualifier`: --color-kiwi-50 /* Used for writing text code and differentiating the qualifier text. */
+- `--color-code-string`: --color-agave-80 /* Used for string text when writing code. */
+- `--color-code-text`: --color-pepper-120 /* Used for writing text code and differentiating the code text. */
+- `--color-code-type`: --color-persimmon-40 /* Used for writing text code and differentiating the type text. */
+- `--color-code-variable-1`: --color-pepper-120 /* Used for writing text code and differentiating the primary variable text. */
+- `--color-code-variable-2`: --color-pepper-120 /* Used for writing text code and differentiating the secondary variable text. */
+- `--color-code-variable-3`: --color-persimmon-40 /* Used for writing text code and differentiating the tertiary variable text. */
+
+### Container
+- `--color-container-background-accent`: --color-blueberry-10 /* Optional background for brand expression to accent and differentiate content and layout. Either low-contrast or a subtle color value. */
+- `--color-container-background-accent-active`: --color-blueberry-30 /* Optional, brand expression, container background to accent and differentiate content and layout in the active state. It is either low-contrast or subtle color value. */
+- `--color-container-background-accent-focus`: --color-blueberry-10 /* Optional, brand expression, container background to accent and differentiate content and layout in the focus state. It is either low-contrast or subtle color value. */
+- `--color-container-background-accent-hover`: --color-blueberry-20 /* Optional, brand expression, container background to accent and differentiate content and layout in the hover state. It is either low-contrast or subtle color value. */
+- `--color-container-background-accent-selected`: --color-blueberry-30 /* Optional, brand expression, container background to accent and differentiate content and layout in the selected state. It is either low-contrast or subtle color value. */
+- `--color-container-background-attention`: --color-persimmon-10 /* Background color for containers with 'soft negative' sentiment content. For example, used on search highlights to bring attention to relevant/matching areas. */
+- `--color-container-background-attention-secondary`: --color-persimmon-20 /* Secondary background color for containers with "soft negative" sentiment content. Use when more visual prominence is needed than the primary attention background. This token needs to have higher contrast visibility and must be darker than —color-container-background-attention. When using text it must be paired with —color-text-primary. For example Secondary Text Badge. */
+- `--color-container-background-attention-tertiary`: --color-page-background-primary /* Tertiary background color for containers with "soft negative" sentiment content. Lightest variation for subtle emphasis. Commonly used in page messages when minimal visual prominence is needed. */
+- `--color-container-background-beta`: --color-agave-10 /* Used as background color for containers with beta content. */
+- `--color-container-background-beta-secondary`: --color-page-background-primary /* Secondary background color for containers with "beta" content. Use when more visual prominence is needed than the primary beta background. This token needs to have higher contrast visibility and must be darker than —color-container-background-beta. When using text it must be paired with —color-text-primary. For example Secondary Text Badge. */
+- `--color-container-background-beta-tertiary`: --color-page-background-primary /* Tertiary background color for containers with "beta" content. Lightest variation for subtle emphasis. Commonly used in page messages when minimal visual prominence is needed. */
+- `--color-container-background-complementary`: --color-pepper-120 /* Used for containers that are dark in both light and dark modes. Common in tooltips and similar components. To ensure dark mode stays dark, follow these contrast ratios: light mode 11:1, dark mode 1.3:1. */
+- `--color-container-background-info`: --color-blueberry-10 /* Background color for containers with informative content. */
+- `--color-container-background-info-secondary`: --color-blueberry-20 /* Secondary background color for small components and containers with informative content. Use when more visual prominence is needed than the primary info background. This token needs to have higher contrast visibility and must be darker than —color-container-background-info. When using text it must be paired with —color-text-primary. For example Secondary Text Badge. */
+- `--color-container-background-info-tertiary`: --color-page-background-primary /* Tertiary background color for containers with informative content. Lightest variation for subtle emphasis. Commonly used in page messages when minimal visual prominence is needed. */
+- `--color-container-background-inverse`: --color-pepper-120 /* Dark background color for containers in light mode not to be confused with complementary tokens. This color is always an inverse of color-page-background-primary. Use sparingly because of the brightness in dark mode and preferably use complementary tokens which have a much larger set that work together and do not have such a bright level in dark mode. */
+- `--color-container-background-negative`: --color-watermelon-10 /* Background color for containers with negative content. */
+- `--color-container-background-negative-secondary`: --color-watermelon-20 /* Secondary background color for small components and containers with negative content. Use when more visual prominence is needed than the primary negative background. This token needs to have higher contrast visibility and must be darker than —color-container-background-negative. When using text it must be paired with —color-text-primary. For example Secondary Text Badge. */
+- `--color-container-background-negative-tertiary`: --color-page-background-primary /* Tertiary background color for containers with negative content. Lightest variation for subtle emphasis. Commonly used in page messages when minimal visual prominence is needed. */
+- `--color-container-background-neutral`: --color-pepper-10 /* Used as background color for containers with neutral content, undefined content, or placeholders. */
+- `--color-container-background-neutral-secondary`: --color-page-background-primary /* Secondary background color for containers with "neutral" sentiment content. Use when more visual prominence is needed than the primary neutral background. This token needs to have higher contrast visibility and must be darker than —color-container-background-neutral. When using text it must be paired with —color-text-primary. For example Secondary Text Badge. */
+- `--color-container-background-neutral-tertiary`: --color-page-background-primary /* Tertiary background color for containers with "neutral" sentiment content. Lightest variation for subtle emphasis. Commonly used in page messages when minimal visual prominence is needed. */
+- `--color-container-background-new`: --color-dragonfruit-10 /* Applied to the background of a container with content describing something new. */
+- `--color-container-background-new-secondary`: --color-page-background-primary /* Secondary background color for containers with content describing something new. Use when more visual prominence is needed than the primary new background. This token needs to have higher contrast visibility and must be darker than —color-container-background-new. When using text it must be paired with —color-text-primary. For example Secondary Text Badge. */
+- `--color-container-background-new-tertiary`: --color-page-background-primary /* Tertiary background color for containers with content describing something new. Lightest variation for subtle emphasis. Commonly used in page messages when minimal visual prominence is needed. */
+- `--color-container-background-positive`: --color-kiwi-10 /* Background color for containers with positive content. */
+- `--color-container-background-positive-secondary`: --color-kiwi-20 /* Secondary background color for small components and containers with positive content. Use when more visual prominence is needed than the primary positive background. This token needs to have higher contrast visibility and must be darker than —color-container-background-positive. When using text it must be paired with —color-text-primary. For example Secondary Text Badge. */
+- `--color-container-background-positive-tertiary`: --color-page-background-primary /* Tertiary background color for containers with positive content. Lightest variation for subtle emphasis. Commonly used in page messages when minimal visual prominence is needed. */
+- `--color-container-background-primary`: --color-white /* Default container background color in the majority of instances. If you don't know what container background color to use, default to this one. */
+- `--color-container-background-quaternary`: --color-pepper-10 /* Used sparingly. It can be used for states or fills for container elements that may sit on top of primary or secondary background colors. It can also be used for hover states for example in zebra rows in tables. */
+- `--color-container-background-secondary`: --color-pepper-00 /* Used sparingly to create further separation and sectioning of content. Allows for greater contrast and emphasis against primary page backgrounds. */
+- `--color-container-background-special-use-1`: --color-blueberry-40 /* Deprecated. Do not use! Reach out to #ask-ids if you are attempting to use this. */
+- `--color-container-background-special-use-2`: --color-spearmint-50 /* Deprecated. Do not use! Reach out to #ask-ids if you are attempting to use this. */
+- `--color-container-background-special-use-3`: --color-watermelon-50 /* Deprecated. Do not use! Reach out to #ask-ids if you are attempting to use this. */
+- `--color-container-background-special-use-4`: --color-pepper-20 /* Deprecated. Do not use! Reach out to #ask-ids if you are attempting to use this. */
+- `--color-container-background-tertiary`: --color-pepper-0 /* Used sparingly for states or fills for container elements that sit on top of primary or secondary backgrounds. Can also be used for hover states in default table rows. */
+- `--color-container-border-accent`: --color-spearmint-80 /* Used for containers that need to be accessible on primary page backgrounds with brand expression via accent color. */
+- `--color-container-border-attention`: --color-persimmon-70 /* Used for containers with 'soft-negative' sentiment content. Can be used for important and time-sensitive information that requires the user's attention and potential action. */
+- `--color-container-border-complementary`: --color-pepper-80 /* Used on borders for containers that are dark in both light and dark modes. */
+- `--color-container-border-info`: --color-blueberry-60 /* Used for containers with an informative attribute. */
+- `--color-container-border-negative`: --color-watermelon-70 /* Used for containers that require attention and action. Can be used with negative content. */
+- `--color-container-border-positive`: --color-kiwi-70 /* Used for containers with a positive attribute. */
+- `--color-container-border-primary`: --color-pepper-30 /* Default container border color. Use most often. */
+- `--color-container-border-secondary`: --color-pepper-20 /* Lighter container border color for interactive elements that sit on top of primary page backgrounds. */
+- `--color-container-border-tertiary`: --color-pepper-10 /* For decorative use only. Should never be used on components that are required to meet AA accessibility criteria. */
+- `--color-container-overlay`: --color-page-background-primary /* A translucent color used to separate containers from the main application or page. Use to intentionally obscure elements to focus the user's attention on specific content or actions. */
+
+### Data
+- `--color-data-attention`: --color-persimmon-60 /* Used in data visualizations to call attention to something important and time-sensitive that requires the user's attention and potential action. If your data visualization only requires one color in this set, use the attention variant. */
+- `--color-data-attention-100`: --color-persimmon-50 /* Used in data visualizations to call attention to something important and time-sensitive that requires the user's attention and potential action. If your data visualization only requires one color in this set, use the attention variant. */
+- `--color-data-attention-200`: --color-persimmon-60 /* Used in data visualizations to call attention to something important and time-sensitive that requires the user's attention and potential action. If your data visualization only requires one color in this set, use the attention variant. */
+- `--color-data-attention-300`: --color-persimmon-70 /* Used in data visualizations to call attention to something important and time-sensitive that requires the user's attention and potential action. If your data visualization only requires one color in this set, use the attention variant. */
+- `--color-data-attention-400`: --color-persimmon-80 /* Used in data visualizations to call attention to something important and time-sensitive that requires the user's attention and potential action. If your data visualization only requires one color in this set, use the attention variant. */
+- `--color-data-category-1`: --color-spearmint-60 /* Used to represent different categories in a data visualization. Categorical data uses a qualitative color scale with various hues to map non-numeric meaning to categories that do not have an inherent correlation. Graphic only, not safe for text. */
+- `--color-data-category-1-background`: --color-spearmint-40 /* This background color is typically paired with its partner color.data.category color and used in data visualizations. eg: color.data.category.1 is paired with color.data.category.1.background. */
+- `--color-data-category-10`: --color-persimmon-60 /* Used to represent different categories in a data visualization. Categorical data uses a qualitative color scale with various hues to map non-numeric meaning to categories that do not have an inherent correlation. Graphic only, not safe for text. */
+- `--color-data-category-10-background`: --color-persimmon-40 /* This background color is typically paired with its partner color.data.category color and used in data visualizations. eg: color.data.category.10 is paired with color.data.category.10.background. */
+- `--color-data-category-2`: --color-blueberry-90 /* Used to represent different categories in a data visualization. Categorical data uses a qualitative color scale with various hues to map non-numeric meaning to categories that do not have an inherent correlation. Graphic only, not safe for text. */
+- `--color-data-category-2-background`: --color-blueberry-40 /* This background color is typically paired with its partner color.data.category color and used in data visualizations. eg: color.data.category.2 is paired with color.data.category.2.background. */
+- `--color-data-category-3`: --color-eggplant-70 /* Used to represent different categories in a data visualization. Categorical data uses a qualitative color scale with various hues to map non-numeric meaning to categories that do not have an inherent correlation. Graphic only, not safe for text. */
+- `--color-data-category-3-background`: --color-eggplant-40 /* This background color is typically paired with its partner color.data.category color and used in data visualizations. eg: color.data.category.3 is paired with color.data.category.3.background. */
+- `--color-data-category-4`: --color-agave-50 /* Used to represent different categories in a data visualization. Categorical data uses a qualitative color scale with various hues to map non-numeric meaning to categories that do not have an inherent correlation. Graphic only, not safe for text. */
+- `--color-data-category-4-background`: --color-agave-30 /* This background color is typically paired with its partner color.data.category color and used in data visualizations. eg: color.data.category.4 is paired with color.data.category.4.background. */
+- `--color-data-category-5`: --color-dragonfruit-70 /* Used to represent different categories in a data visualization. Categorical data uses a qualitative color scale with various hues to map non-numeric meaning to categories that do not have an inherent correlation. Graphic only, not safe for text. */
+- `--color-data-category-5-background`: --color-dragonfruit-40 /* This background color is typically paired with its partner color.data.category color and used in data visualizations. eg: color.data.category.5 is paired with color.data.category.5.background. */
+- `--color-data-category-6`: --color-honey-40 /* Used to represent different categories in a data visualization. Categorical data uses a qualitative color scale with various hues to map non-numeric meaning to categories that do not have an inherent correlation. Graphic only, not safe for text. */
+- `--color-data-category-6-background`: --color-honey-30 /* This background color is typically paired with its partner color.data.category color and used in data visualizations. eg: color.data.category.6 is paired with color.data.category.6.background. */
+- `--color-data-category-7`: --color-blueberry-70 /* Used to represent different categories in a data visualization. Categorical data uses a qualitative color scale with various hues to map non-numeric meaning to categories that do not have an inherent correlation. Graphic only, not safe for text. */
+- `--color-data-category-7-background`: --color-blueberry-30 /* This background color is typically paired with its partner color.data.category color and used in data visualizations. eg: color.data.category.7 is paired with color.data.category.7.background. */
+- `--color-data-category-8`: --color-olive-50 /* Used to represent different categories in a data visualization. Categorical data uses a qualitative color scale with various hues to map non-numeric meaning to categories that do not have an inherent correlation. Graphic only, not safe for text. */
+- `--color-data-category-8-background`: --color-olive-30 /* This background color is typically paired with its partner color.data.category color and used in data visualizations. eg: color.data.category.8 is paired with color.data.category.8.background. */
+- `--color-data-category-9`: --color-watermelon-60 /* Used to represent different categories in a data visualization. Categorical data uses a qualitative color scale with various hues to map non-numeric meaning to categories that do not have an inherent correlation. Graphic only, not safe for text. */
+- `--color-data-category-9-background`: --color-watermelon-40 /* This background color is typically paired with its partner color.data.category color and used in data visualizations. eg: color.data.category.9 is paired with color.data.category.9.background. */
+- `--color-data-negative`: --color-watermelon-70 /* Used in data visualizations to indicate critical areas that require attention and potential action. If your data visualization only requires one color in this set, use the negative variant. */
+- `--color-data-negative-100`: --color-watermelon-50 /* Used in data visualizations to indicate critical areas that require attention and potential action. If your data visualization only requires one color in this set, use the negative variant. */
+- `--color-data-negative-200`: --color-watermelon-60 /* Used in data visualizations to indicate critical areas that require attention and potential action. If your data visualization only requires one color in this set, use the negative variant. */
+- `--color-data-negative-300`: --color-watermelon-70 /* Used in data visualizations to indicate critical areas that require attention and potential action. If your data visualization only requires one color in this set, use the negative variant. */
+- `--color-data-negative-400`: --color-watermelon-80 /* Used in data visualizations to indicate critical areas that require attention and potential action. If your data visualization only requires one color in this set, use the negative variant. */
+- `--color-data-neutral`: --color-pepper-10 /* Flexible token used with other data colors. Can be used for zero states, historical data, neutral data, pending data, undefined data, placeholders, uncategorized data, or to deemphasize certain data areas. */
+- `--color-data-neutral-100`: --color-pepper-40 /* Flexible token used with other data colors. Can be used for zero states, historical data, neutral data, pending data, undefined data, placeholders, uncategorized data, or to deemphasize certain data areas. */
+- `--color-data-neutral-200`: --color-pepper-60 /* Flexible token used with other data colors. Can be used for zero states, historical data, neutral data, pending data, undefined data, placeholders, uncategorized data, or to deemphasize certain data areas. */
+- `--color-data-neutral-300`: --color-pepper-80 /* Flexible token used with other data colors. Can be used for zero states, historical data, neutral data, pending data, undefined data, placeholders, uncategorized data, or to deemphasize certain data areas. */
+- `--color-data-neutral-400`: --color-pepper-100 /* Flexible token used with other data colors. Can be used for zero states, historical data, neutral data, pending data, undefined data, placeholders, uncategorized data, or to deemphasize certain data areas. */
+- `--color-data-positive`: --color-kiwi-80 /* Used in data visualizations to indicate positive reinforcement or a desirable state. Can be combined with negative data colors to create a positive-negative diverging palette. If your data visualization only requires one color in this set, use the positive variant. */
+- `--color-data-positive-100`: --color-kiwi-50 /* Used in data visualizations to indicate positive reinforcement or a desirable state. Can be combined with negative data colors to create a positive-negative diverging palette. If your data visualization only requires one color in this set, use the positive variant. */
+- `--color-data-positive-200`: --color-kiwi-60 /* Used in data visualizations to indicate positive reinforcement or a desirable state. Can be combined with negative data colors to create a positive-negative diverging palette. If your data visualization only requires one color in this set, use the positive variant. */
+- `--color-data-positive-300`: --color-kiwi-70 /* Used in data visualizations to indicate positive reinforcement or a desirable state. Can be combined with negative data colors to create a positive-negative diverging palette. If your data visualization only requires one color in this set, use the positive variant. */
+- `--color-data-positive-400`: --color-kiwi-80 /* Used in data visualizations to indicate positive reinforcement or a desirable state. Can be combined with negative data colors to create a positive-negative diverging palette. If your data visualization only requires one color in this set, use the positive variant. */
+- `--color-data-primary`: --color-spearmint-60 /* Used for primary data visualizations. Multiple shades may be used together to create a sequential scale, or used with secondary data colors to create a diverging palette. If your data visualization only requires one color in this set, use the primary variant. */
+- `--color-data-primary-100`: --color-spearmint-50 /* Used for primary data visualizations. Multiple shades may be used together to create a sequential scale, or used with secondary data colors to create a diverging palette. If your data visualization only requires one color in this set, use the primary variant. */
+- `--color-data-primary-200`: --color-spearmint-60 /* Used for primary data visualizations. Multiple shades may be used together to create a sequential scale, or used with secondary data colors to create a diverging palette. If your data visualization only requires one color in this set, use the primary variant. */
+- `--color-data-primary-300`: --color-spearmint-70 /* Used for primary data visualizations. Multiple shades may be used together to create a sequential scale, or used with secondary data colors to create a diverging palette. If your data visualization only requires one color in this set, use the primary variant. */
+- `--color-data-primary-400`: --color-spearmint-80 /* Used for primary data visualizations. Multiple shades may be used together to create a sequential scale, or used with secondary data colors to create a diverging palette. If your data visualization only requires one color in this set, use the primary variant. */
+- `--color-data-secondary`: --color-blueberry-90 /* Used for secondary data visualizations. Multiple shades may be used together to create a sequential scale, or used with primary data colors to create a diverging palette. If your data visualization only requires one color in this set, use the secondary variant. */
+- `--color-data-secondary-100`: --color-blueberry-80 /* Used for secondary data visualizations. Multiple shades may be used together to create a sequential scale, or used with primary data colors to create a diverging palette. If your data visualization only requires one color in this set, use the secondary variant. */
+- `--color-data-secondary-200`: --color-blueberry-90 /* Used for secondary data visualizations. Multiple shades may be used together to create a sequential scale, or used with primary data colors to create a diverging palette. If your data visualization only requires one color in this set, use the secondary variant. */
+- `--color-data-secondary-300`: --color-blueberry-100 /* Used for secondary data visualizations. Multiple shades may be used together to create a sequential scale, or used with primary data colors to create a diverging palette. If your data visualization only requires one color in this set, use the secondary variant. */
+- `--color-data-secondary-400`: --color-blueberry-110 /* Used for secondary data visualizations. Multiple shades may be used together to create a sequential scale, or used with primary data colors to create a diverging palette. If your data visualization only requires one color in this set, use the secondary variant. */
+- `--color-data-tertiary`: --color-eggplant-70 /* Multipurpose data color for all other sequential data visualizations beyond primary and secondary. If your data visualization only requires one color in this set, use the tertiary variant. */
+- `--color-data-tertiary-100`: --color-eggplant-60 /* Multipurpose data color for all other sequential data visualizations beyond primary and secondary. If your data visualization only requires one color in this set, use the tertiary variant. */
+- `--color-data-tertiary-200`: --color-eggplant-70 /* Multipurpose data color for all other sequential data visualizations beyond primary and secondary. If your data visualization only requires one color in this set, use the tertiary variant. */
+- `--color-data-tertiary-300`: --color-eggplant-80 /* Multipurpose data color for all other sequential data visualizations beyond primary and secondary. If your data visualization only requires one color in this set, use the tertiary variant. */
+- `--color-data-tertiary-400`: --color-eggplant-90 /* Multipurpose data color for all other sequential data visualizations beyond primary and secondary. If your data visualization only requires one color in this set, use the tertiary variant. */
+
+### Divider
+- `--color-divider-inverse`: --color-white /* An inverse version of high contrast dividers for use when content requires a strong divider against dark color backgrounds like color.container.background.inverse. */
+- `--color-divider-primary`: --color-pepper-40 /* The darkest divider color in the system. Use when the connecting line or separator should be prominent to the user. */
+- `--color-divider-secondary`: --color-pepper-30 /* Used for mid-contrast divider to separate content. */
+- `--color-divider-tertiary`: --color-pepper-20 /* The lightest divider color in the system in the majority of instances to provide a subtle, but not glaring, distinction between elements. */
+
+### Focus
+- `--color-focus-indicator`: --color-spearmint-90 /* Border or outline color used around most interactive components when in focus state. When navigating via the keyboard and tabbing through the UI, the focused state allows users to visually see which component or element they’re on. Input fields use a separate focus indicator token. */
+
+### Icon
+- `--color-icon-accent`: --color-text-accent /* Used for the product color 'brand' in icon element. This color is paired with color.container.background.accent. */
+- `--color-icon-complementary`: --color-text-complementary /* Used with icons on a complementary container background or complementary action. */
+- `--color-icon-disabled`: --color-text-disabled /* Used when the icon is associated with disabled content */
+- `--color-icon-inverse`: --color-text-inverse /* Inverse light color icon placed over any UI colors (e.g darker color background). When dark mode is turned on, the icon will change to the inverse and be dark color. */
+- `--color-icon-primary`: --color-text-primary /* Default icon color. Use for most icons in our design system. */
+- `--color-icon-secondary`: --color-text-secondary /* The default color for supporting static icons and icon control. Use when less hierarchy is needed. */
+
+### Input
+- `--color-input-background-disabled`: --color-pepper-10 /* Used for the background of an input, like a Text Field, in a disabled state. */
+- `--color-input-background-error`: --color-watermelon-10 /* Used for the background of an input, like a Text Field, in an error state. */
+- `--color-input-background-error-focus`: --color-watermelon-0 /* Used for the background of an input, like a Text Field, in an error focus state. */
+- `--color-input-background-primary`: --color-white /* Used for the background of an input, like a Text Field, in a default state. */
+- `--color-input-background-primary-active`: --color-white /* Used for the background of an input, like a Text Field, in an active state. */
+- `--color-input-background-primary-focus`: --color-white /* Used for the background of an input, like a Text Field, in a default focus state. */
+- `--color-input-background-primary-hover`: --color-pepper-00 /* Used for the background of an input, like a Text Field, in a hover state. */
+- `--color-input-background-primary-selected`: --color-spearmint-90 /* Used for the background of an input in a selected state, like when a checkbox is checked or a radio button is selected. */
+- `--color-input-background-readonly`: --color-pepper-0 /* Used for the background of an input, like a Text Field, in a read only state. */
+- `--color-input-background-secondary`: --color-pepper-50 /* Used for the background of an input, like a Text Field, in a default state. This optional token is to allow input backgrounds with different coloration than the default, primary tokens. */
+- `--color-input-background-secondary-active`: --color-pepper-70 /* Used for the background of an input, like a Text Field, in an active state. This optional token is to allow input backgrounds with different coloration than the default, primary tokens. */
+- `--color-input-background-secondary-focus`: --color-pepper-50 /* Used for the background of an input, like a Text Field, in a focus state. This optional token is to allow input backgrounds with different coloration than the default, primary tokens. */
+- `--color-input-background-secondary-hover`: --color-pepper-60 /* Used for the background of an input, like a Text Field, in a hover state. This optional token is to allow input backgrounds with different coloration than the default, primary tokens. */
+- `--color-input-background-tertiary`: --color-white /* Used for the background of an input, like a Text Field, in a default state. This optional token is to allow input backgrounds with different coloration than primary and secondary inputs. */
+- `--color-input-background-tertiary-active`: --color-white /* Used for the background of an input, like a Text Field, in an active state. This optional token is to allow input backgrounds with different coloration than primary and secondary inputs. */
+- `--color-input-background-tertiary-focus`: --color-white /* Used for the background of an input, like a Text Field, in a focus state. This optional token is to allow input backgrounds with different coloration than primary and secondary inputs. */
+- `--color-input-background-tertiary-hover`: --color-pepper-00 /* Used for the background of an input, like a Text Field, in a hover state. This optional token is to allow input backgrounds with different coloration than primary and secondary inputs. */
+- `--color-input-background-warning`: --color-persimmon-10 /* Used for the background of an input, like a Text Field, in a warning state. */
+- `--color-input-background-warning-focus`: --color-persimmon-0 /* Used for the background of an input, like a Text Field, in a warning focus state. */
+- `--color-input-border-disabled`: --color-pepper-30 /* Applied to the stroke of an input field when it is in a disabled state. */
+- `--color-input-border-error`: --color-ui-negative /* Applied to the stroke of an input field when it is in an error state. */
+- `--color-input-border-primary`: --color-pepper-30 /* Applied to the stroke of an input field when it is in a default state. Using the primary option gives the input field more visual prominence than the secondary option as it may be used on any possible page or container background. */
+- `--color-input-border-primary-active`: --color-spearmint-90 /* Applied to the stroke of an input field when it is in an active state. Using the primary option gives the input field more visual prominence than the secondary option as it may be used on any possible page or container background. */
+- `--color-input-border-primary-focus`: --color-spearmint-90 /* Applied to the stroke of an input field when it is in a focus state. Using the primary option gives the input field more visual prominence than the secondary option as it may be used on any possible page or container background. */
+- `--color-input-border-primary-hover`: --color-pepper-100 /* Applied to the stroke of an input field when it is in a hover state. Using the primary option gives the input field more visual prominence than the secondary option as it may be used on any possible page or container background. */
+- `--color-input-border-primary-selected`: --color-selection-indicator /* Applied to the stroke of an input field when it is in a selected state. Using the primary option gives the input field more visual prominence than the secondary option as it may be used on any possible page or container background. */
+- `--color-input-border-readonly`: --color-pepper-60 /* Applied to the stroke of an input field when it is in a read only state. */
+- `--color-input-border-secondary`: --color-pepper-40 /* Applied to the stroke of an input field when it is in a default state. Using the secondary option gives the input field less visual prominence than the primary option. It should only be used on primary/secondary page or container background. */
+- `--color-input-border-secondary-active`: --color-spearmint-90 /* Applied to the stroke of an input field when it is in an active state. Using the secondary option gives the input field less visual prominence than the primary option. It should only be used on primary/secondary page or container background. */
+- `--color-input-border-secondary-focus`: --color-spearmint-90 /* Applied to the stroke of an input field when it is in a focus state. Using the secondary option gives the input field less visual prominence than the primary option. It should only be used on primary/secondary page or container background. */
+- `--color-input-border-secondary-hover`: --color-pepper-100 /* Applied to the stroke of an input field when it is in a hover state. Using the secondary option gives the input field less visual prominence than the primary option. It should only be used on primary/secondary page or container background. */
+- `--color-input-border-tertiary`: --color-pepper-60 /* Applied to the stroke of an input field when it is in a default state. Using the tertiary option gives the input field less visual prominence than the secondary option. It should be used on primary page backgrounds or container backgrounds that provide high contrast with the tertiary border color. */
+- `--color-input-border-tertiary-active`: --color-spearmint-90 /* Applied to the stroke of an input field when it is in a active state. Using the tertiary option gives the input field less visual prominence than the secondary option. It should be used on primary page backgrounds or container backgrounds that provide high contrast with the tertiary border color. */
+- `--color-input-border-tertiary-focus`: --color-spearmint-90 /* Applied to the stroke of an input field when it is in a focus state. Using the tertiary option gives the input field less visual prominence than the secondary option. It should be used on primary page backgrounds or container backgrounds that provide high contrast with the tertiary border color. */
+- `--color-input-border-tertiary-hover`: --color-pepper-100 /* Applied to the stroke of an input field when it is in a hover state. Using the tertiary option gives the input field less visual prominence than the secondary option. It should be used on primary page backgrounds or container backgrounds that provide high contrast with the tertiary border color. */
+- `--color-input-border-warning`: --color-ui-attention /* Applied to the stroke of an input field when it is in a warning state. */
+- `--color-input-label`: --color-text-secondary /* Used for label text that appears above an input field to describe what information is needed. */
+- `--color-input-placeholder`: --color-text-tertiary /* Used for placeholder text inside an input field to clarify what information is needed and possibly in what format. */
+- `--color-input-placeholder-disabled`: --color-text-tertiary /* Used for placeholder text inside an input field that is in a disabled state. Placeholder textUsed to clarify what information is needed and possibly in what format. */
+
+### Link
+- `--color-link-background`: --color-blueberry-10 /* Used for the links that need a background. */
+- `--color-link-background-visited`: --color-eggplant-10 /* Used for the links in a visited state that need a background. */
+- `--color-link-text`: --color-blueberry-80 /* Easily noticeable as a clickable element. It stands out against background colors and ensures that users can recognize links, or actions styled like a link, without ambiguity. Use for most Link components in our system. */
+- `--color-link-text-active`: --color-blueberry-100 /* Used for links or actions styled like a link in a active state. */
+- `--color-link-text-complementary`: --color-blueberry-50 /* Used for the default state of a link that is used on any complementary container background. */
+- `--color-link-text-complementary-active`: --color-blueberry-30 /* Used for the active state of a link on complementary container backgrounds */
+- `--color-link-text-complementary-hover`: --color-blueberry-40 /* Used for the hover state of a link on complementary container backgrounds */
+- `--color-link-text-complementary-visited`: --color-eggplant-50 /* For links, or actions styled like a link in a visited state used on any complementary page/container */
+- `--color-link-text-focus`: --color-blueberry-80 /* Used for links or actions styled like a link in a focus state. */
+- `--color-link-text-hover`: --color-blueberry-90 /* Used for links, or actions styled like a link in a hover state. */
+- `--color-link-text-visited`: --color-eggplant-80 /* Used for links or actions styled like a link in a visited state. */
+
+### Loading
+- `--color-loading-indicator`: --color-ui-primary /* Applied to loading components that show an item on the page is actively loading. Not to be used for progress bars to track a users progress. */
+
+### Message
+- `--color-message-background-received`: --color-blueberry-10 /* Used as the background color for received bubble messages like in customer support chat or AI responses. */
+- `--color-message-background-sent`: --color-container-background-tertiary /* Used as the background color for bubble messages sent by the user in a chat with customer support or to ask questions to bots or AI */
+- `--color-message-text-received`: --color-text-primary /* Used for any text for received bubble messages like in customer support chat or AI responses. */
+- `--color-message-text-sent`: --color-text-primary /* Used for any text for bubble messages sent by the user in a chat with customer support or to ask questions to bots or AI */
+
+### Overlay
+- `--color-overlay`: --color-black /* Translucent color used to separate modal views from the main application or page. */
+
+### Page
+- `--color-page-background-accent`: --color-pepper-10 /* Optional background for brand expression to accent and differentiate content and layout. */
+- `--color-page-background-primary`: --color-white /* Default page background for an application in the majority of instances. If you don't know what page color to use, default to this one. */
+- `--color-page-background-secondary`: --color-pepper-00 /* Used sparingly to create hierarchy, section content, group elements visually, or emphasize primary containers. */
+- `--color-page-background-tertiary`: --color-pepper-0 /* Optional page background to differentiate content or layout. */
+
+### Progress
+- `--color-progress-indicator`: --color-spearmint-90 /* Applied to the completed portion of components like progress bars. To help track a users progress. Not to be used for system processes like loaders. */
+
+### Selection
+- `--color-selection-indicator`: --color-spearmint-90 /* Used to indicate when a navigational element, like a tab, is active. Can be applied to borders or background colors. */
+
+### Shadow
+- `--color-shadow`: --color-pepper-90 /* Used to create translucent shadows on all components with elevation. */
+
+### Text
+- `--color-text-accent`: --color-spearmint-90 /* Accent token tied to your brand. Can be used as a brand accent that differentiates from primary or secondary UI colors, which may be more monochromatic depending on your theme. By default aligns to primary UI until overridden by a theme owner. */
+- `--color-text-complementary`: --color-white /* Used for text on top of complementary container backgrounds or complementary actions. */
+- `--color-text-disabled`: --color-pepper-60 /* Used for text content of any component in a disabled state. */
+- `--color-text-highlight`: --color-spearmint-10 /* Used to highlight text to bring attention to the relevant/matching area in a text field */
+- `--color-text-inverse`: --color-white /* Inverse light color text placed over darker color backgrounds. When dark mode is enabled, the text changes to the inverse and becomes dark color. */
+- `--color-text-negative`: --color-ui-negative /* Used for negative text content. Commonly applied to error messages, destructive action labels, or text indicating critical issues requiring user attention. Used in page message titles and error states. */
+- `--color-text-primary`: --color-pepper-120 /* Default text color. Use for most text on any page and/or container. If you don't know what text color to use, default to this one. */
+- `--color-text-quaternary`: --color-pepper-40 /* Optional for supporting text content (less important than tertiary text). Use with caution on colored backgrounds as it may cause accessibility issues. */
+- `--color-text-secondary`: --color-pepper-90 /* Used for supporting text with lower visual hierarchy (less important than primary text). Use with caution on colored backgrounds as it may cause accessibility issues. */
+- `--color-text-tertiary`: --color-pepper-60 /* Optional for supporting text content (less important than secondary text). Use with caution on colored backgrounds as it may cause accessibility issues. */
+
+### Track
+- `--color-track-primary`: --color-pepper-10 /* Used for the uncompleted part of a progress track bar or progress track bar that does not need to show progress like a simple line. The primary option is used to show more visual prominence than the secondary option. */
+- `--color-track-secondary`: --color-pepper-30 /* Used for the uncompleted part of a progress track bar. Primarily used when a progress indicator is used on top of this color. It offers a lower visual prominence than the primary option. */
+
+### Ui
+- `--color-ui-attention`: --color-persimmon-60 /* Used to call attention to something important and time-sensitive that requires the user’s attention and potential action. This token can be used to the link to other attention semantic tokens to build a systematic theme. It can be used in backgrounds, borders, text, and/or icon colors across many different components. */
+- `--color-ui-attention-active`: --color-persimmon-80 /* Used to call attention to something important and time-sensitive that requires the user’s attention and potential action in the active state. This token can be used to the link to other attention semantic tokens to build a systematic theme.It can be used in backgrounds, borders, text, and/or icon colors across many different components. */
+- `--color-ui-attention-hover`: --color-persimmon-70 /* Used to call attention to something important and time-sensitive that requires the user’s attention and potential action in the hover state. This token can be used to the link to other attention semantic tokens to build a systematic theme.It can be used in backgrounds, borders, text, and/or icon colors across many different components. */
+- `--color-ui-beta`: --color-agave-80 /* Used to indicate that a feature is in beta release. This token can be used to the link to other beta semantic tokens to build a systematic theme. It can be used in backgrounds, borders, text, and/or icon colors across many different components. */
+- `--color-ui-completed`: --color-spearmint-90 /* Used for any completed state like a progress bar at its final state or when a user completes a task. */
+- `--color-ui-discover`: --color-blueberry-60 /* Used to tell users about an aspect of the product, such as a specific action or flow, that might be helpful. This token can be used to the link to other discover semantic tokens to build a systematic theme. It can be used in backgrounds, borders, text, and/or icon colors across many different components. */
+- `--color-ui-info`: --color-blueberry-70 /* Used to call out an object or action as having an informative attribute. This token can be used to the link to other positive semantic tokens to build a systematic theme. It can be used in backgrounds, borders, text, and/or icon colors across many different components. */
+- `--color-ui-negative`: --color-watermelon-80 /* Used for critical and irreversible elements that require attention and potential action. This token can be used to the link to other negative semantic tokens to build a systematic theme. It can be used in backgrounds, borders, text, and/or icon colors across many different components. */
+- `--color-ui-negative-active`: --color-watermelon-100 /* Used for critical and irreversible elements that require attention and potential action in the active state. This token can be used to the link to other negative semantic tokens to build a systematic theme. It can be used in backgrounds, borders, text, and/or icon colors across many different components. */
+- `--color-ui-negative-hover`: --color-watermelon-90 /* Used for critical and irreversible elements that require attention and potential action in the hover state. This token can be used to the link to other negative semantic tokens to build a systematic theme. It can be used in backgrounds, borders, text, and/or icon colors across many different components. */
+- `--color-ui-neutral`: --color-pepper-80 /* Used to give a non-critical status update on information or an action without grabbing too much attention. Can link to other neutral semantic tokens to build a systematic theme. Apply to backgrounds, borders, text, and/or icon colors across many components. */
+- `--color-ui-neutral-active`: --color-pepper-100 /* Used to give a non-critical status update on a piece of information or an action, without grabbing too much attention in the active state. This token can be used to the link to other neutral semantic tokens to build a systematic theme. It can be used in backgrounds, borders, text, and/or icon colors across many different components. */
+- `--color-ui-neutral-focus`: --color-pepper-80 /* Used to give a non-critical status update on a piece of information or an action, without grabbing too much attention in the focus state. This token can be used to the link to other neutral semantic tokens to build a systematic theme. It can be used in backgrounds, borders, text, and/or icon colors across many different components. */
+- `--color-ui-neutral-hover`: --color-pepper-90 /* Used to give a non-critical status update on a piece of information or an action, without grabbing too much attention in the hover state. This token can be used to the link to other neutral semantic tokens to build a systematic theme. It can be used in backgrounds, borders, text, and/or icon colors across many different components. */
+- `--color-ui-neutral-selected`: --color-pepper-100 /* Used to give a non-critical status update on a piece of information or an action, without grabbing too much attention in the selected state. This token can be used to the link to other neutral semantic tokens to build a systematic theme. It can be used in backgrounds, borders, text, and/or icon colors across many different components. */
+- `--color-ui-new`: --color-dragonfruit-70 /* Used to bring awareness to a new feature or item. This token can be used to the link to other new semantic tokens to build a systematic theme. It can be used in backgrounds, borders, text, and/or icon colors across many different components. */
+- `--color-ui-positive`: --color-kiwi-80 /* Used to indicate a successful, completed, or desirable state when it’s important to provide positive reinforcement. This token can be used to the link to other positive semantic tokens to build a systematic theme. It can be used in backgrounds, borders, text, and/or icon colors across many different components. */
+- `--color-ui-primary`: --color-spearmint-110 /* Not meant to be used in design or code but instead map to other semantic tokens like backgrounds, borders, text, icons, etc. The UI primary, secondary, and tertiary colors represent the product's UI brand. */
+- `--color-ui-primary-active`: --color-spearmint-120 /* Not meant to be used in design or code but instead map to other semantic tokens like backgrounds, borders, text, icons, etc in an active state. The UI primary, secondary, and tertiary colors represent the product's UI brand. */
+- `--color-ui-primary-focus`: --color-spearmint-110 /* Not meant to be used in design or code but instead map to other semantic tokens like backgrounds, borders, text, icons, etc in a focus state. The UI primary, secondary, and tertiary colors represent the product's UI brand. */
+- `--color-ui-primary-hover`: --color-spearmint-100 /* Not meant to be used in design or code but instead map to other semantic tokens like backgrounds, borders, text, icons, etc in a hover state. The UI primary, secondary, and tertiary colors represent the product's UI brand. */
+- `--color-ui-secondary`: --color-pepper-110 /* Not meant to be used in design or code but instead map to other semantic tokens like backgrounds, borders, text, icons, etc. The UI primary, secondary, and tertiary colors represent the product's UI brand. */
+- `--color-ui-secondary-active`: --color-pepper-130 /* Not meant to be used in design or code but instead map to other semantic tokens like backgrounds, borders, text, icons, etc in an active state. The UI primary, secondary, and tertiary colors represent the product's UI brand. */
+- `--color-ui-secondary-focus`: --color-pepper-110 /* Not meant to be used in design or code but instead map to other semantic tokens like backgrounds, borders, text, icons, etc in a focus state. The UI primary, secondary, and tertiary colors represent the product's UI brand. */
+- `--color-ui-secondary-hover`: --color-pepper-120 /* Not meant to be used in design or code but instead map to other semantic tokens like backgrounds, borders, text, icons, etc in a hover state. The UI primary, secondary, and tertiary colors represent the product's UI brand. */
+- `--color-ui-tertiary`: --color-pepper-0 /* Not meant to be used in design or code but instead map to other semantic tokens like backgrounds, borders, text, icons, etc. The UI primary, secondary, and tertiary colors represent the product's UI brand. */
+- `--color-ui-tertiary-active`: --color-pepper-20 /* Not meant to be used in design or code but instead map to other semantic tokens like backgrounds, borders, text, icons, etc in an active state. The UI primary, secondary, and tertiary colors represent the product's UI brand. */
+- `--color-ui-tertiary-focus`: --color-pepper-0 /* Not meant to be used in design or code but instead map to other semantic tokens like backgrounds, borders, text, icons, etc in a focus state. The UI primary, secondary, and tertiary colors represent the product's UI brand. */
+- `--color-ui-tertiary-hover`: --color-pepper-10 /* Not meant to be used in design or code but instead map to other semantic tokens like backgrounds, borders, text, icons, etc in a hover state. The UI primary, secondary, and tertiary colors represent the product's UI brand. */

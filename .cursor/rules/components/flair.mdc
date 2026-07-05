@@ -1,0 +1,148 @@
+---
+description: Complete guide for using the Flair component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# Flair
+
+The Flair component, used on marketing front doors, helps users quickly scan content for important information and to view categorized content. It is used to display contextual or decorative information (e.g. Blog, Article, Video, Sale, Discount, etc) that is not a state.
+
+This component is not a replacement for Text Badges. Use Text Badge to display contextual information related to state (information, warning, error, positive, new, etc)
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/flair
+```
+
+```tsx
+import { Flair } from '@ids-ts/flair';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `size` | `'small' | 'medium'` | No | The size of the flair |
+| `colorStyle` | `keyof typeof colorStyles` | No | Color 2.0 theme of flair component |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface FlairProps extends React.ComponentProps<'div'> {
+  /** The size of the flair */
+  size?: 'small' | 'medium';
+  /** Color 2.0 theme of flair component */
+  colorStyle?: keyof typeof colorStyles;
+}
+```
+
+</details>
+
+## Design Variants
+
+The following variant axes control the component's visual appearance:
+
+### Color → use prop `colorStyle`
+
+- `2.0` **(default)**
+- `1.0`
+
+> **2 design variants** are defined in Figma. [View in Figma](https://www.figma.com/design/VO8rsMYDqsDY44J9yEVyES9Y?node-id=42287%3A193066&m=dev)
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Basic
+
+```tsx
+() => (
+  <Flair colorStyle={1} style={{ marginBottom: '4px' }}>
+    Flair Label
+  </Flair>
+)
+```
+
+### Sizes
+
+```tsx
+() => (
+  <div
+    style={{
+      display: 'flex',
+      flexDirection: 'column',
+      flexWrap: 'wrap',
+      gap: '16px'
+    }}
+  >
+    {sizes.map((size) => (
+      <div key={size}>
+        <h3>{upperCaseUtil(size)}</h3>
+        <Flair colorStyle={1} size={size} style={{ marginRight: '8px' }}>
+          Flair Label
+        </Flair>
+        <br />
+      </div>
+    ))
+```
+
+## Guidelines
+
+**Use when:**
+- To highlight or emphasize specific pieces of information.
+
+
+## Code Example
+
+```tsx
+import Flair from `@ids-ts/flair`;
+
+<Flair size="medium" colorStyle={1}>
+  New
+</Flair>;
+```
+
+---
+
+## References
+
+- [GitHub Source - Flair](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/Flair)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/flair.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-flair&theme=quickbooks&colorScheme=light)
+- [Figma Design](https://www.figma.com/design/VO8rsMYDqsDY44J9yEVyES9Y?node-id=42287%3A193066&m=dev)

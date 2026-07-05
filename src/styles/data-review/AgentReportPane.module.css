@@ -1,0 +1,836 @@
+/* ─────────────────────────────────────────────
+   Agent Report Panel  — exact Figma values
+   node-id: 29575:20109  w=384  max-w=575  min-w=384
+───────────────────────────────────────────── */
+
+@keyframes panelSlideIn {
+  from { opacity: 0; transform: translateX(100%); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes panelSlideOut {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(100%); }
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: var(--color-container-background-primary, #ffffff);
+  border-left: 1px solid var(--color-divider-tertiary, #d4d7dc);
+  overflow: hidden;
+  animation: panelSlideIn var(--duration-appear-moderate, 300ms) var(--ease-appear, cubic-bezier(0, 0, 0.25, 1));
+}
+
+/* Embedded inside AgentLoadingPane — no independent animation, no border */
+.panelEmbedded {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: var(--color-container-background-primary, #ffffff);
+  overflow: hidden;
+  flex: 1;
+  min-height: 0;
+}
+
+.panelClosing {
+  animation: panelSlideOut var(--duration-transform-fast, 350ms) var(--ease-transform, cubic-bezier(0.35, 0, 0.25, 1)) forwards;
+}
+
+/* ── Header — 60px ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  padding: 0 16px;
+  background: var(--color-container-background-primary, #ffffff);
+  border-bottom: 1px solid var(--color-container-border-primary, #d4d7dc);
+  flex-shrink: 0;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 80px;
+}
+
+.headerTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 20px;
+}
+
+.assistIcon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.titleText {
+  font-family: var(--font-family-component) !important;
+  font-size: var(--font-size-component-medium, 16px);
+  font-weight: var(--font-weight-component-bold, 600);
+  line-height: 1.3;
+  color: var(--color-text-primary, #393a3d);
+  white-space: nowrap;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  width: 80px;
+}
+
+/* ── Shared icon button ── */
+.iconBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  color: #393a3d;
+  flex-shrink: 0;
+}
+.iconBtn:hover {
+  background: rgba(57, 58, 61, 0.06);
+}
+
+/* ── Scrollable pane ── */
+.pane {
+  flex: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 15px;
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+}
+
+/* ── Agent message ── */
+.agentMessage {
+  font-family: var(--font-family-component) !important;
+  font-size: var(--font-size-body-2, 16px);
+  font-weight: var(--font-weight-body, 400);
+  line-height: 1.5;
+  color: var(--color-message-text-received, #393a3d);
+  margin: 0;
+  border-radius: 0 12px 12px 12px;
+  width: fit-content;
+  max-width: min(100%, 480px);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+/* ── ScoreCard — Figma node 31630-208723 ── */
+.scoreCard {
+  background: #e0edff;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.scoreTitle {
+  font-family: var(--font-family-component) !important;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #21262a;
+  margin: 0;
+}
+
+/* Progress bar — white track, 12px tall, rounded pill, teal fill */
+.progressTrack {
+  height: 12px;
+  background: #ffffff;
+  border-radius: 100px;
+  overflow: hidden;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 100px;
+}
+
+/* Bottom row: large number + "items remaining" — baseline-aligned */
+.scoreCountRow {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+/* Large number: 34px bold, pixel-verified #21262a */
+.scoreCountNumber {
+  font-family: var(--font-family-component) !important;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #21262a;
+}
+
+/* "items remaining": 14px regular, same dark color as number */
+.scoreCountLabel {
+  font-family: var(--font-family-component) !important;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: #21262a;
+}
+
+/* ── Imported Documents card ── */
+.importedDocsCard {
+  border: 1px solid #d5dee3;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+  background: #ffffff;
+}
+
+.importedDocsHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 16px 20px;
+  background: var(--page\/background\/primary, #ffffff);
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+.importedDocsHeader:hover {
+  background: #f5f7f9;
+}
+
+/* ── Imported documents expanded list — table style ── */
+.docList {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid #e3e8eb;
+}
+
+/* Column header row */
+.docTableHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: #f5f7f9;
+  border-bottom: 1px solid #e3e8eb;
+}
+
+.docColDocument {
+  font-family: var(--font-family-component) !important;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #5d686f;
+}
+
+.docColConfidence {
+  font-family: var(--font-family-component) !important;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #5d686f;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.docConfidenceInfo {
+  font-size: 12px;
+  color: #859299;
+  cursor: default;
+}
+
+/* Document row — flat, full-width, clickable */
+.docRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid #f0f1f3;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  gap: 12px;
+}
+.docRow:last-child { border-bottom: none; }
+.docRow:hover { background: #f8fafb; }
+
+.docRowLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+/* File type icon — DS Document icon, neutral grey */
+.docFileIcon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #5d686f;
+}
+
+.docMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.docName {
+  font-family: var(--font-family-component) !important;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--color-text-primary, #21262a);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.docSub {
+  font-family: var(--font-family-component) !important;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: #4a90c4;
+}
+
+/* Confidence badge — pill, color by level */
+.confidenceBadge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 10px;
+  border-radius: 100px;
+  font-family: var(--font-family-component) !important;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  min-width: 52px;
+}
+.confidenceBadge[data-level='low']    { background: #fde8ec; color: #db334d; }
+.confidenceBadge[data-level='medium'] { background: #fff3e0; color: #c9500f; }
+.confidenceBadge[data-level='high']   { background: #e6f6ef; color: #006b4f; }
+
+.importedDocsContent {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-width: 0;
+}
+
+.importedDocsLabel {
+  font-family: var(--font-family-component) !important;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--text\/primary, #21262a);
+}
+
+/* ── Guided review button row — inside chat, right-aligned ── */
+.guidedReviewRow {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 4px;
+  flex-shrink: 0;
+  width: 100%;
+}
+.guidedReviewRow :global([class*='button']) {
+  --color-action-standard: #205ea3;
+  --color-action-standard-hover: #174d87;
+  --color-action-standard-active: #174d87;
+}
+
+/* ── Expandable card bundle ── */
+.cardBundle {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+/* All cards share border, overlap by 1px */
+.card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--container\/background\/primary, #ffffff);
+  border: 1px solid #c3ced5;
+  margin-bottom: -1px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+.card:hover { background: #f5f7f9; }
+.card:focus  { outline: none; }
+
+.card_first  { border-radius: 8px 8px 0 0; }
+.card:focus  { outline: none; }
+.card_middle { border-radius: 0; }
+.card_last   { border-radius: 0 0 8px 8px; margin-bottom: 0; }
+
+.cardIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.cardContent {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 20px;
+  min-width: 0;
+}
+
+.cardLabel {
+  font-family: 'Avenir Next forINTUIT', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  color: #21262a;
+  flex: 1;
+  text-align: left;
+}
+
+/* 02 - Text Status Badge: px-4px py-2px, border-radius: 4px, 12px Demi allcaps white */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: 'Avenir Next forINTUIT', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  color: #ffffff;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.badgeRed    { background: #db334d; }
+.badgeOrange { background: #d68000; }
+.badgeBlue   { background: #205ea3; }
+.badgeGreen  { background: #1a8254; }
+
+/* Active card state */
+.cardActive {
+  background: var(--container\/background\/secondary, #f0f4f6);
+  transition: background var(--duration-fade-moderate, 200ms) var(--ease-fade, cubic-bezier(0.35, 0, 0.5, 1));
+}
+
+/* Chevron on cards */
+.chevron {
+  color: #393a3d;
+  flex-shrink: 0;
+  transition: transform var(--duration-transform-fast, 350ms) var(--ease-transform, cubic-bezier(0.35, 0, 0.25, 1));
+}
+.chevronUp {
+  transform: rotate(180deg);
+}
+
+/* Finding card entrance */
+@keyframes findingCardAppear {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.findingCard {
+  padding: 16px;
+  background: var(--container\/background\/primary, #ffffff);
+  border: 1px solid #c3ced5;
+  border-top: none;
+  display: flex;
+  flex-direction: column;
+  animation: findingCardAppear 300ms cubic-bezier(0, 0, 0.25, 1);
+}
+
+.findingInner {
+  background: #ffffff;
+  border: 1px solid #c3ced5;
+  border-radius: 4px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  /* Reset button styles when used as a clickable card */
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+.findingInner:hover {
+  background: #f0f4f6;
+}
+
+.findingTitleRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.findingDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #db334d;
+  flex-shrink: 0;
+  margin-top: 6px; /* vertically centre against 20px line-height text */
+}
+
+.findingTitle {
+  font-family: var(--font-family-component) !important;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: #21262a;
+}
+
+.findingBody {
+  font-family: var(--font-family-component) !important;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #393a3d;
+  margin: 0;
+}
+
+.findingActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Reviewed state — keep original card color, just badge + checkmark signal it */
+.findingInnerReviewed {}
+
+/* Green checkmark icon replacing the red dot */
+.findingCheckIcon {
+  display: flex;
+  align-items: center;
+  color: #1a8254;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* "Reviewed" pill badge — matches YoYDetailPane reviewedBtn style */
+.findingReviewedBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border: 1px solid #1a8254;
+  border-radius: 4px;
+  background: #e6f6ef;
+  color: #1a8254;
+  font-family: var(--font-family-component) !important;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.viewSourcesBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 1px solid #205ea3;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font-family-component) !important;
+  font-size: 13px;
+  font-weight: 600;
+  color: #205ea3;
+  white-space: nowrap;
+  min-height: 30px;
+  transition: background 120ms ease;
+}
+.viewSourcesBtn:hover {
+  background: rgba(32, 94, 163, 0.06);
+}
+
+/* Issue position chip — "1 of 6" shown next to finding title */
+.issueChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border: 1px solid #d4d7dc;
+  border-radius: 100px;
+  background: #f4f5f8;
+  font-family: var(--font-family-component) !important;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: #5d686f;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* Sign-off attribution line under finding cards */
+.findingSignOff {
+  font-family: var(--font-family-component) !important;
+  font-size: 12px;
+  font-weight: 400;
+  color: #8a9299;
+  padding: 0 2px 4px;
+}
+
+/* ── Completion screen ── */
+.completionScreen {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  background: #ffffff;
+  border: 1px solid #c3ced5;
+  border-radius: 4px;
+  margin: 0;
+}
+
+.completionHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1a8254;
+}
+
+.completionCheckIcon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.completionTitle {
+  font-family: var(--font-family-component) !important;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: #21262a;
+  margin: 0;
+}
+
+.completionBody {
+  font-family: var(--font-family-component) !important;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #393a3d;
+  margin: 0;
+}
+
+.completionSignOff {
+  font-family: var(--font-family-component) !important;
+  font-size: 13px;
+  font-weight: 400;
+  color: #8a9299;
+  margin: 0;
+}
+
+.completionActions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  padding-top: 4px;
+}
+
+.completionSecondaryBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-family-component) !important;
+  font-size: 13px;
+  font-weight: 500;
+  color: #5d686f;
+  text-decoration: underline;
+  padding: 0;
+}
+.completionSecondaryBtn:hover { color: #21262a; }
+
+/* ── Input area ── */
+.inputArea {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 16px 8px;
+  background: #ffffff;
+  position: relative;
+}
+
+/* Fade gradient above input */
+.inputFade {
+  position: absolute;
+  top: -16px;
+  left: 0;
+  right: 0;
+  height: 16px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0), #ffffff);
+  pointer-events: none;
+}
+
+/* border-radius: 32px, border: 1px solid #d4d7dc, shadow: 0 2px 8px rgba(0,0,0,0.1) */
+.inputBox {
+  background: var(--color-input-background-primary, #ffffff);
+  border: 1px solid var(--color-container-border-primary, #d4d7dc);
+  border-radius: 32px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.inputTextField {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 4px;
+  min-height: 21px;
+  overflow: hidden;
+}
+
+.inputAssistIcon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.textarea {
+  width: 100%;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: var(--font-family-component) !important;
+  font-size: var(--font-size-component-medium, 16px);
+  font-weight: var(--font-weight-component, 400);
+  line-height: 1.3;
+  color: var(--color-text-primary, #393a3d);
+  background: transparent;
+  min-height: 21px;
+}
+.textarea::placeholder {
+  color: var(--color-input-placeholder, #babec5);
+}
+
+.inputActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.inputActionsLeft  { display: flex; align-items: center; gap: 12px; }
+.inputActionsRight { display: flex; align-items: center; gap: 12px; }
+
+/* Attach button: bg #393a3d at 5% opacity, pill shape, h=36px */
+.attachBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 36px;
+  padding: 0 6px;
+  border: none;
+  border-radius: 9999px;
+  background: rgba(57, 58, 61, 0.05);
+  cursor: pointer;
+  color: #393a3d;
+  position: relative;
+}
+
+/* Send button: circle, disabled = #e3e5e8 bg */
+.sendBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  border: none;
+  background: #e3e5e8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  flex-shrink: 0;
+}
+.sendBtnActive {
+  background: #393a3d;
+  cursor: pointer;
+}
+
+.sendIcon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Legal/Disclaimer — #0365ac, 12px, body font, centered */
+.legal {
+  font-family: var(--font-family-component) !important;
+  font-size: var(--font-size-body-4, 12px);
+  font-weight: var(--font-weight-body, 400);
+  line-height: 1.5;
+  color: var(--color-link-text, #0365ac);
+  text-align: center;
+  cursor: pointer;
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .panel, .panelClosing, .findingCard { animation: none; }
+  .chevron, .cardActive { transition: none; }
+}

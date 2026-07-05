@@ -1,0 +1,1516 @@
+---
+description: Complete guide for using the DropdownTypeahead component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# DropdownTypeahead
+
+Welcome to `DropdownTypeahead` component.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/dropdown-typeahead
+```
+
+```tsx
+import { DropdownTypeahead } from '@ids-ts/dropdown-typeahead';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `addNew` | `boolean` | No | - |
+| `addNewIndex` | `number` | No | - |
+| `addNewItemProps` | `any` | No | The props need to pass down to add-new Menu Item |
+| `addNewText` | `string` | No | - |
+| `assignInputRef` | `(ref: HTMLInputElement | null) => void` | No | Function that will assign the text field input ref to the ref.current passed in by consumers |
+| `automationId` | `string` | No | Id used for automation testing |
+| `dataSource` | `Array<Record<string, any>>` | Yes | The dataSource is array of object used for rendering MenuItems. This prop is REQUIRED. |
+| `disabled` | `boolean` | No | - |
+| `focusOnRender` | `boolean` | No | - |
+| `errorText` | `string` | No | Error message to be rendered. |
+| `validationError` | `boolean` | No | renders error styles in text field. |
+| `helperText` | `string` | No | helper message to be rendered. |
+| `infoText` | `string` | No | Info message to be rendered. |
+| `inputValue` | `string` | Yes | A string value need to pass down to TextField. This prop is REQUIRED |
+| `label` | `string` | No | Label to be displayed for the TextField. |
+| `menuClass` | `string` | No | Class to be applied to menu. |
+| `multiselect` | `boolean` | No | - |
+| `onBlur` | `ReactEventHandler` | No | Callback function to execute on DropdownTypeahead get blurred. |
+| `is` | `onChange(event, { selectedItem, highlightedInde...` | Yes | - |
+| `onClick` | `ReactEventHandler` | No | Callback function to be executed when the DropdownTypeahead gets clicked. |
+| `onClose` | `() => void` | No | Callback function to be executed when the menu gets closed. |
+| `onFocus` | `React.FocusEventHandler` | No | Callback function to be executed when the DropdownTypeahead gets focus. |
+| `is` | `onKeyDown(event, { highlightedItem, highlighted...` | Yes | - |
+| `onSearch` | `(e: React.ChangeEvent<HTMLInputElement>) => void` | No | Callback function to execute when user typing in the TextField. |
+| `placeholder` | `string` | No | Placeholder to be displayed for the TextField. |
+| `preventMenuOverflow` | `an object variable` | Yes | - |
+| `preventMenuOverflow` | `PreventOverflow` | No | - |
+| `readOnly` | `boolean` | No | * To set the component to "readonly" mode. Input will not be accepted but still focusable for a11y. The dropdown menu will be disabled. |
+| `renderItem` | `(data: DropdownTypeaheadStateProps & Record<string, any>) => ReactNode` | No | Custom item renderer for dropdown options. |
+| `selectTextOnFocus` | `boolean` | No | - |
+| `showCheckmark` | `boolean` | No | - |
+| `size` | `TextFieldProps['size']` | No | Size to render the TextField at |
+| `stylePosition` | `React.CSSProperties` | No | The optional styles applied to the position node wrapped around the root node. |
+| `suggestedText` | `string` | No | suggestedText to be displayed for the TextField. |
+| `textFieldId` | `string` | No | id to override the generated id that gets applied to underlying textfield |
+| `themeClass` | `string` | No | theme class from theme wrapper |
+| `value` | `string | string[]` | Yes | Selected value. This prop is REQUIRED |
+| `warningText` | `string` | No | Warning message to be rendered. |
+| `width` | `string` | No | Width prop to set a custom width needed for TextField |
+| `event` | `ReactEvent) => void` | Yes | - |
+| `selectedItem` | `Record<string, any>` | No | A selected item |
+| `highlightedIndex` | `number` | No | Index of highlighted item in Menu |
+| `method` | `string` | No | A string shows user selected the item: 'click' or 'enter'. |
+| `highlightedItem` | `Record<string, any>` | No | A highlighted item |
+| `highlightedIndex` | `number` | No | Index of highlighted item in Menu |
+| `label` | `string` | No | display label to show in the dropdown menu for a given row option |
+| `value` | `any` | No | system value that corresponds to the label |
+| `isLoading` | `boolean` | No | enable loading state in menu popover for Dropdown Typeahead |
+| `hasError` | `boolean` | No | enable error state in menu popover for Dropdown Typeahead |
+| `hasNoResults` | `boolean` | No | enable no result state in menu popover for Dropdown Typeahead |
+| `loadingAriaLabel` | `string` | No | Used for accessibility purposes. |
+| `noResultsMessage` | `string` | No | label used for no result state in menuItem for Dropdown Typeahead |
+| `errorLoadingMessage` | `string` | No | label used for error message state in menuItem for Dropdown Typeahead |
+| `errorActionCallbackLabel` | `string` | No | label used for error mesaage button in menuItem for Dropdown Typeahead |
+| `errorActionCallback` | `() => void` | No | call back method used for error mesaage button click in menu popover for Dropdown Typeahead |
+| `addNew` | `boolean` | No | - |
+| `addNewIndex` | `number` | No | - |
+| `addNewItemProps` | `any` | No | The props need to pass down to add-new Menu Item |
+| `addNewText` | `string` | No | - |
+| `assignInputRef` | `(ref: HTMLInputElement | null) => void` | No | Function that will assign the text field input ref to the ref.current passed in by consumers |
+| `automationId` | `string` | No | Id used for automation testing |
+| `dataSource` | `Array<Record<string, any>>` | Yes | The dataSource is array of object used for rendering MenuItems. This prop is REQUIRED. |
+| `disabled` | `boolean` | No | - |
+| `focusOnRender` | `boolean` | No | - |
+| `errorText` | `string` | No | Error message to be rendered. |
+| `validationError` | `boolean` | No | renders error styles in text field. |
+| `helperText` | `string` | No | helper message to be rendered. |
+| `infoText` | `string` | No | Info message to be rendered. |
+| `inputValue` | `string` | Yes | A string value need to pass down to TextField. This prop is REQUIRED |
+| `label` | `string` | No | Label to be displayed for the TextField. |
+| `menuClass` | `string` | No | Class to be applied to menu. |
+| `multiselect` | `boolean` | No | - |
+| `onBlur` | `ReactEventHandler` | No | Callback function to execute on DropdownTypeahead get blurred. |
+| `is` | `onChange(event, { selectedItem, highlightedInde...` | Yes | - |
+| `onClick` | `ReactEventHandler` | No | Callback function to be executed when the DropdownTypeahead gets clicked. |
+| `onClose` | `() => void` | No | Callback function to be executed when the menu gets closed. |
+| `onFocus` | `React.FocusEventHandler` | No | Callback function to be executed when the DropdownTypeahead gets focus. |
+| `is` | `onKeyDown(event, { highlightedItem, highlighted...` | Yes | - |
+| `onSearch` | `(e: React.ChangeEvent<HTMLInputElement>) => void` | No | Callback function to execute when user typing in the TextField. |
+| `placeholder` | `string` | No | Placeholder to be displayed for the TextField. |
+| `preventMenuOverflow` | `an object variable` | Yes | - |
+| `preventMenuOverflow` | `PreventOverflow` | No | - |
+| `readOnly` | `boolean` | No | * To set the component to "readonly" mode. Input will not be accepted but still focusable for a11y. The dropdown menu will be disabled. |
+| `renderItem` | `(data: DropdownTypeaheadStateProps & Record<string, any>) => ReactNode` | No | Custom item renderer for dropdown options. |
+| `selectTextOnFocus` | `boolean` | No | - |
+| `showCheckmark` | `boolean` | No | - |
+| `size` | `TextFieldProps['size']` | No | Size to render the TextField at |
+| `stylePosition` | `React.CSSProperties` | No | The optional styles applied to the position node wrapped around the root node. |
+| `suggestedText` | `string` | No | suggestedText to be displayed for the TextField. |
+| `textFieldId` | `string` | No | id to override the generated id that gets applied to underlying textfield |
+| `themeClass` | `string` | No | theme class from theme wrapper |
+| `value` | `string | string[]` | Yes | Selected value. This prop is REQUIRED |
+| `warningText` | `string` | No | Warning message to be rendered. |
+| `width` | `string` | No | Width prop to set a custom width needed for TextField |
+| `ariaLabel` | `string` | No | A aria label need give to the input element. |
+| `textFieldId` | `string` | No | id to override the generated id that gets applied to underlying textfield |
+| `addNewValue` | `string` | No | A text string value for add new, |
+| `addNewValue` | `string` | No | A text string value for add new, |
+| `ariaDTAId` | `string` | Yes | the aria id for the dropdown typeahead |
+| `itemSelected` | `boolean` | Yes | whether or not an item is selected |
+| `autoFilled` | `boolean` | Yes | whether or not something is autoFilled; only for addnew usecase |
+| `selectedItem` | `Record<string, any>` | No | A selected item |
+| `highlightedIndex` | `number` | No | Index of highlighted item in Menu |
+| `method` | `string` | No | A string shows user selected the item: 'click' or 'enter'. |
+| `highlightedItem` | `Record<string, any>` | No | A highlighted item |
+| `highlightedIndex` | `number` | No | Index of highlighted item in Menu |
+| `label` | `string` | No | display label to show in the dropdown menu for a given row option |
+| `value` | `any` | No | system value that corresponds to the label |
+| `isLoading` | `boolean` | No | enable loading state in menu popover for Dropdown Typeahead |
+| `hasError` | `boolean` | No | enable error state in menu popover for Dropdown Typeahead |
+| `hasNoResults` | `boolean` | No | enable no result state in menu popover for Dropdown Typeahead |
+| `loadingAriaLabel` | `string` | No | Used for accessibility purposes. |
+| `noResultsMessage` | `string` | No | label used for no result state in menuItem for Dropdown Typeahead |
+| `errorLoadingMessage` | `string` | No | label used for error message state in menuItem for Dropdown Typeahead |
+| `errorActionCallbackLabel` | `string` | No | label used for error mesaage button in menuItem for Dropdown Typeahead |
+| `errorActionCallback` | `() => void` | No | call back method used for error mesaage button click in menu popover for Dropdown Typeahead |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface DropdownTypeaheadProps
+  extends Omit<ThemeableElement<'div'>, 'onChange'>,
+    DropdownTypeaheadStateProps {
+  /**
+   * Determine whether DropdownTypeahead render add-new Menu Item
+   *
+   * @default false
+   */
+  addNew?: boolean;
+  /**
+   * 0-based index of where to insert the add-new Menu item into the menu. 0 inserts it as the first element. any number large than dataSource.length puts it at the end.
+   *
+   * @default 0
+   */
+  addNewIndex?: number;
+  /** The props need to pass down to add-new Menu Item */
+  addNewItemProps?: any;
+  /**
+   * The text for add-new Menu Item, default is 'Add'
+   *
+   * @default 'Add'
+   */
+  addNewText?: string;
+  /** Used for accessibility purposes. */
+  'aria-label'?: string;
+  /**
+   * Used for accessibility purposes.
+   *
+   * @default false
+   */
+  'aria-required'?: boolean;
+  /** Function that will assign the text field input ref to the ref.current passed in by consumers */
+  assignInputRef?: (ref: HTMLInputElement | null) => void;
+  /** Id used for automation testing */
+  automationId?: string;
+  /** The dataSource is array of object used for rendering MenuItems. This prop is REQUIRED. */
+  dataSource: Array<Record<string, any>>;
+  /**
+   * Disable dropdown if true.
+   *
+   * @default false
+   */
+  disabled?: boolean;
+  /**
+   * focusOnRender if true brings focus on the initial render
+   *
+   * @default false
+   */
+  focusOnRender?: boolean;
+  /** Error message to be rendered. */
+  errorText?: string;
+  /**  renders error styles in text field. */
+  validationError?: boolean;
+  /** helper message to be rendered. */
+  helperText?: string;
+  /** Info message to be rendered. */
+  infoText?: string;
+  /** A string value need to pass down to TextField. This prop is REQUIRED */
+  inputValue: string;
+  /** Label to be displayed for the TextField. */
+  label?: string;
+  /** Class to be applied to menu. */
+  menuClass?: string;
+  /**
+   * Enable Multi Select dropdown if true
+   *
+   * @default false
+   */
+  multiselect?: boolean;
+  /** Callback function to execute on DropdownTypeahead get blurred. */
+  onBlur?: ReactEventHandler;
+  /**
+   * Callback function to be executed when a MenuItem gets selected.
+   * The signature is: onChange(event, { selectedItem, highlightedIndex, method }),
+   * where 'event' - the actual DOM event object, which is either the menu-item div or text-input,
+   *       'selectedItem' - the selected item,
+   *       'highlightedIndex' - the index of highlighted item in Menu,
+   *       'method' - string to tell how user selected the item: 'click' or 'enter'.
+   */
+  onChange?: (event: ReactEvent, infoObject?: OnChangeInfoType) => void;
+  /** Callback function to be executed when the DropdownTypeahead gets clicked. */
+  onClick?: ReactEventHandler;
+  /** Callback function to be executed when the menu gets closed. */
+  onClose?: () => void;
+  /** Callback function to be executed when the DropdownTypeahead gets focus. */
+  onFocus?: React.FocusEventHandler;
+  /**
+   * Callback function to execute when user press a key in the TextField.
+   * The signature is: onKeyDown(event, { highlightedItem, highlightedIndex }),
+   * where 'event' - the actual DOM event object, which is text-input,
+   *       'highlightedItem' - the highlighted item,
+   *       'highlightedIndex' - the index of highlighted item in Menu,
+   * If key name is 'Enter' and an item is highlighted, it will fire onChange callback as well.
+   */
+  onKeyDown?: (
+    event: React.KeyboardEvent,
+    infoObject?: OnKeyDownInfoType
+  ) => void;
+  /** Callback function to execute when user typing in the TextField. */
+  onSearch?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  /** Placeholder to be displayed for the TextField. */
+  placeholder?: string;
+  /**
+   * preventMenuOverflow: an object variable; used to prevent DropdownTypeahead Menu from being positioned outside the boundary.
+   *  More detail in @ids-ts/position preventOverflow API document.
+   */
+  preventMenuOverflow?: PreventOverflow;
+  /**
+   * To set the component to "readonly" mode. Input will not be accepted but still focusable for a11y. The dropdown menu will be disabled.
+   */
+  readOnly?: boolean;
+  /**
+   * A required function is used for rendering MenuItems. This prop is REQUIRED.
+   * First "data" argument must present, second "index" argument is optional.
+   * The return item mush be any React element.
+   */
+  renderItem: (
+    data: DropdownTypeaheadStateProps & Record<string, any>,
+    /** index in the array */
+    index?: number
+  ) => JSX.Element;
+  /**
+   * An option to select all input text when DropdownTypeahead gets keyboard TAB in focused.
+   *
+   * @default false
+   */
+  selectTextOnFocus?: boolean;
+  /**
+   * Determine whether it shows checkmark for selected Menu Item
+   *
+   * @default false
+   */
+  showCheckmark?: boolean;
+  /** Size to render the TextField at */
+  size?: TextFieldProps['size'];
+  /** The optional styles applied to the position node wrapped around the root node. */
+  stylePosition?: React.CSSProperties;
+  /** suggestedText to be displayed for the TextField. */
+  suggestedText?: string;
+  /** id to override the generated id that gets applied to underlying textfield */
+  textFieldId?: string;
+  /** theme class from theme wrapper */
+  themeClass?: string;
+  /** Selected value. This prop is REQUIRED */
+  value: string | string[];
+  /** Warning message to be rendered. */
+  warningText?: string;
+  /** Width prop to set a custom width needed for TextField */
+  width?: string;
+}
+
+export type ReactEventHandler = (event: ReactEvent) => void;
+
+export type OnChangeInfoType = {
+  /** A selected item */
+  selectedItem?: Record<string, any>;
+  /** Index of highlighted item in Menu */
+  highlightedIndex?: number;
+  /** A string shows user selected the item: 'click' or 'enter'. */
+  method?: string;
+};
+
+export type OnKeyDownInfoType = {
+  /** A highlighted item */
+  highlightedItem?: Record<string, any>;
+  /** Index of highlighted item in Menu */
+  highlightedIndex?: number;
+};
+
+export type DropdownTypeaheadStateProps = {
+  /** display label to show in the dropdown menu for a given row option */
+  label?: string;
+  /** system value that corresponds to the label */
+  value?: any;
+  /** enable loading state in menu popover for Dropdown Typeahead */
+  isLoading?: boolean;
+  /** enable error state in menu popover for Dropdown Typeahead */
+  hasError?: boolean;
+  /** enable no result state in menu popover for Dropdown Typeahead */
+  hasNoResults?: boolean;
+  /** Used for accessibility purposes. */
+  loadingAriaLabel?: string;
+  /** label used for no result state in menuItem for Dropdown Typeahead */
+  noResultsMessage?: string;
+  /** label used for error message state in menuItem for Dropdown Typeahead */
+  errorLoadingMessage?: string;
+  /** label used for error mesaage button in menuItem for Dropdown Typeahead */
+  errorActionCallbackLabel?: string;
+  /** call back method used for error mesaage button click in menu popover for Dropdown Typeahead */
+  errorActionCallback?: () => void;
+};
+
+export interface DropdownTypeaheadProps
+  extends Omit<ThemeableElement<'div'>, 'onChange'>,
+    DropdownTypeaheadStateProps {
+  /**
+   * Determine whether DropdownTypeahead render add-new Menu Item
+   *
+   * @default false
+   */
+  addNew?: boolean;
+  /**
+   * 0-based index of where to insert the add-new Menu item into the menu. 0 inserts it as the first element. any number large than dataSource.length puts it at the end.
+   *
+   * @default 0
+   */
+  addNewIndex?: number;
+  /** The props need to pass down to add-new Menu Item */
+  addNewItemProps?: any;
+  /**
+   * The text for add-new Menu Item, default is 'Add'
+   *
+   * @default 'Add'
+   */
+  addNewText?: string;
+  /** Used for accessibility purposes. */
+  'aria-label'?: string;
+  /**
+   * Used for accessibility purposes.
+   *
+   * @default false
+   */
+  'aria-required'?: boolean;
+  /** Function that will assign the text field input ref to the ref.current passed in by consumers */
+  assignInputRef?: (ref: HTMLInputElement | null) => void;
+  /** Id used for automation testing */
+  automationId?: string;
+  /** The dataSource is array of object used for rendering MenuItems. This prop is REQUIRED. */
+  dataSource: Array<Record<string, any>>;
+  /**
+   * Disable dropdown if true.
+   *
+   * @default false
+   */
+  disabled?: boolean;
+  /**
+   * focusOnRender if true brings focus on the initial render
+   *
+   * @default false
+   */
+  focusOnRender?: boolean;
+  /** Error message to be rendered. */
+  errorText?: string;
+  /**  renders error styles in text field. */
+  validationError?: boolean;
+  /** helper message to be rendered. */
+  helperText?: string;
+  /** Info message to be rendered. */
+  infoText?: string;
+  /** A string value need to pass down to TextField. This prop is REQUIRED */
+  inputValue: string;
+  /** Label to be displayed for the TextField. */
+  label?: string;
+  /** Class to be applied to menu. */
+  menuClass?: string;
+  /**
+   * Enable Multi Select dropdown if true
+   *
+   * @default false
+   */
+  multiselect?: boolean;
+  /** Callback function to execute on DropdownTypeahead get blurred. */
+  onBlur?: ReactEventHandler;
+  /**
+   * Callback function to be executed when a MenuItem gets selected.
+   * The signature is: onChange(event, { selectedItem, highlightedIndex, method }),
+   * where 'event' - the actual DOM event object, which is either the menu-item div or text-input,
+   *       'selectedItem' - the selected item,
+   *       'highlightedIndex' - the index of highlighted item in Menu,
+   *       'method' - string to tell how user selected the item: 'click' or 'enter'.
+   */
+  onChange?: (event: ReactEvent, infoObject?: OnChangeInfoType) => void;
+  /** Callback function to be executed when the DropdownTypeahead gets clicked. */
+  onClick?: ReactEventHandler;
+  /** Callback function to be executed when the menu gets closed. */
+  onClose?: () => void;
+  /** Callback function to be executed when the DropdownTypeahead gets focus. */
+  onFocus?: React.FocusEventHandler;
+  /**
+   * Callback function to execute when user press a key in the TextField.
+   * The signature is: onKeyDown(event, { highlightedItem, highlightedIndex }),
+   * where 'event' - the actual DOM event object, which is text-input,
+   *       'highlightedItem' - the highlighted item,
+   *       'highlightedIndex' - the index of highlighted item in Menu,
+   * If key name is 'Enter' and an item is highlighted, it will fire onChange callback as well.
+   */
+  onKeyDown?: (
+    event: React.KeyboardEvent,
+    infoObject?: OnKeyDownInfoType
+  ) => void;
+  /** Callback function to execute when user typing in the TextField. */
+  onSearch?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  /** Placeholder to be displayed for the TextField. */
+  placeholder?: string;
+  /**
+   * preventMenuOverflow: an object variable; used to prevent DropdownTypeahead Menu from being positioned outside the boundary.
+   *  More detail in @ids-ts/position preventOverflow API document.
+   */
+  preventMenuOverflow?: PreventOverflow;
+  /**
+   * To set the component to "readonly" mode. Input will not be accepted but still focusable for a11y. The dropdown menu will be disabled.
+   */
+  readOnly?: boolean;
+  /**
+   * A required function is used for rendering MenuItems. This prop is REQUIRED.
+   * First "data" argument must present, second "index" argument is optional.
+   * The return item mush be any React element.
+   */
+  renderItem: (
+    data: DropdownTypeaheadStateProps & Record<string, any>,
+    /** index in the array */
+    index?: number
+  ) => JSX.Element;
+  /**
+   * An option to select all input text when DropdownTypeahead gets keyboard TAB in focused.
+   *
+   * @default false
+   */
+  selectTextOnFocus?: boolean;
+  /**
+   * Determine whether it shows checkmark for selected Menu Item
+   *
+   * @default false
+   */
+  showCheckmark?: boolean;
+  /** Size to render the TextField at */
+  size?: TextFieldProps['size'];
+  /** The optional styles applied to the position node wrapped around the root node. */
+  stylePosition?: React.CSSProperties;
+  /** suggestedText to be displayed for the TextField. */
+  suggestedText?: string;
+  /** id to override the generated id that gets applied to underlying textfield */
+  textFieldId?: string;
+  /** theme class from theme wrapper */
+  themeClass?: string;
+  /** Selected value. This prop is REQUIRED */
+  value: string | string[];
+  /** Warning message to be rendered. */
+  warningText?: string;
+  /** Width prop to set a custom width needed for TextField */
+  width?: string;
+}
+
+export type InputProps = Pick<
+  DropdownTypeaheadProps,
+  | 'disabled'
+  | 'errorText'
+  | 'validationError'
+  | 'inputValue'
+  | 'infoText'
+  | 'suggestedText'
+  | 'theme'
+  | 'warningText'
+  | 'themeClass'
+  | 'size'
+> &
+  Omit<ThemeableElement<'input'>, 'size'> & {
+    /** A aria label need give to the input element. */
+    ariaLabel?: string;
+
+    /** id to override the generated id that gets applied to underlying textfield */
+    textFieldId?: string;
+  };
+
+export type AddItemProps = Pick<
+  DropdownTypeaheadProps,
+  'addNewText' | 'addNewItemProps' | 'size' | 'theme' | 'themeClass'
+> & {
+  /** A text string value for add new, */
+  addNewValue?: string;
+};
+
+export type ItemProps = Pick<
+  DropdownTypeaheadProps,
+  | 'addNew'
+  | 'addNewIndex'
+  | 'addNewText'
+  | 'addNewItemProps'
+  | 'dataSource'
+  | 'inputValue'
+  | 'renderItem'
+  | 'size'
+  | 'theme'
+  | 'themeClass'
+  | 'isLoading'
+  | 'hasError'
+  | 'hasNoResults'
+  | 'loadingAriaLabel'
+  | 'noResultsMessage'
+  | 'errorLoadingMessage'
+  | 'errorActionCallbackLabel'
+  | 'errorActionCallback'
+> & {
+  /** A text string value for add new, */
+  addNewValue?: string;
+  /** the aria id for the dropdown typeahead */
+  ariaDTAId: string;
+  /** whether or not an item is selected */
+  itemSelected: boolean;
+  /** whether or not something is autoFilled; only for addnew usecase */
+  autoFilled: boolean;
+};
+
+export type ReactEvent =
+  | React.MouseEvent
+  | React.KeyboardEvent
+  | React.TouchEvent
+  | React.FocusEvent;
+
+export type OnChangeInfoType = {
+  /** A selected item */
+  selectedItem?: Record<string, any>;
+  /** Index of highlighted item in Menu */
+  highlightedIndex?: number;
+  /** A string shows user selected the item: 'click' or 'enter'. */
+  method?: string;
+}
+
+export type OnKeyDownInfoType = {
+  /** A highlighted item */
+  highlightedItem?: Record<string, any>;
+  /** Index of highlighted item in Menu */
+  highlightedIndex?: number;
+}
+
+export type DropdownTypeaheadStateProps = {
+  /** display label to show in the dropdown menu for a given row option */
+  label?: string;
+  /** system value that corresponds to the label */
+  value?: any;
+  /** enable loading state in menu popover for Dropdown Typeahead */
+  isLoading?: boolean;
+  /** enable error state in menu popover for Dropdown Typeahead */
+  hasError?: boolean;
+  /** enable no result state in menu popover for Dropdown Typeahead */
+  hasNoResults?: boolean;
+  /** Used for accessibility purposes. */
+  loadingAriaLabel?: string;
+  /** label used for no result state in menuItem for Dropdown Typeahead */
+  noResultsMessage?: string;
+  /** label used for error message state in menuItem for Dropdown Typeahead */
+  errorLoadingMessage?: string;
+  /** label used for error mesaage button in menuItem for Dropdown Typeahead */
+  errorActionCallbackLabel?: string;
+  /** call back method used for error mesaage button click in menu popover for Dropdown Typeahead */
+  errorActionCallback?: () => void;
+}
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+**action** — Interactive element colors and hover/active/focus states
+- `--color-action-complementary`
+- `--color-action-complementary-active`
+- `--color-action-complementary-border`
+
+**input** — Input background, border, placeholder, and focus colors
+- `--color-input-background-disabled`
+- `--color-input-background-error`
+- `--color-input-background-error-focus`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+**component** — Component-level spacing (padding, gap)
+- `--space-component-gap-large`
+- `--space-component-gap-medium`
+- `--space-component-gap-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+**radius** — Input border radius
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Showcase
+
+```tsx
+() => {
+  const {
+    value,
+    inputValue,
+    showFullData,
+    handleBlur,
+    handleChange,
+    handleClick,
+    handleKeyDown,
+    handleInputChange,
+    handleRenderItem
+  } = useDropdownTypeaheadState(itemData[8].value, itemData[8].label);
+  const data = showFullData ? itemData : filterData(itemData, inputValue);
+
+  const {
+    value: value2,
+    inputValue: inputValue2,
+    showFullData: showFullData2,
+    handleBlur: handleBlur2,
+    handleChange: handleChange2,
+    handleClick: handleClick2,
+    handleKeyDown: handleKeyDown2,
+    handleInputChange: handleInputChange2,
+    handleRenderItem: handleRenderItem2
+  } = useDropdownTypeaheadState(itemData[0].value, itemData[0].label);
+  const data2 = showFullData2 ? itemData : filterData(itemData, inputValue2);
+
+  const {
+    value: value3,
+    inputValue: inputValue3,
+    showFullData: showFullData3,
+    handleBlur: handleBlur3,
+    handleChange: handleChange3,
+    handleClick: handleClick3,
+    handleKeyDown: handleKeyDown3,
+    handleInputChange: handleInputChange3,
+    handleRenderItem: handleRenderItem3
+  } = useDropdownTypeaheadState(itemData[2].value, itemData[2].label);
+  const data3 = showFullData3 ? itemData : filterData(itemData, inputValue3);
+
+  return (
+    <>
+      <DropdownTypeahead
+        automationId="basicDTA"
+        label="Fruit"
+        dataSource={data}
+        inputValue={inputValue}
+        renderItem={handleRenderItem}
+        value={value}
+        onBlur={handleBlur}
+        onChange={handleChange}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        onSearch={handleInputChange}
+      />
+      <DropdownTypeahead
+        automationId="basicDTA2"
+        label="Fruit 2"
+        dataSource={data2}
+        inputValue={inputValue2}
+        renderItem={handleRenderItem2}
+        value={value2}
+        onBlur={handleBlur2}
+        onChange={handleChange2}
+        onClick={handleClick2}
+        onKeyDown={handleKeyDown2}
+        onSearch={handleInputChange2}
+      />
+      <DropdownTypeahead
+        automationId="infoDTA"
+        label="Fruit with info"
+        dataSource={data3}
+        infoText="This is helpful information about your selection"
+        inputValue={inputValue3}
+        renderItem={handleRenderItem3}
+        value={value3}
+        onBlur={handleBlur3}
+        onChange={handleChange3}
+        onClick={handleClick3}
+        onKeyDown={handleKeyDown3}
+// ...
+```
+
+### Basic Feature
+
+```tsx
+() => {
+  const {
+    value,
+    inputValue,
+    showFullData,
+    handleBlur,
+    handleChange,
+    handleClick,
+    handleKeyDown,
+    handleInputChange,
+    handleRenderItem
+  } = useDropdownTypeaheadState(itemData[8].value, itemData[8].label);
+
+  const data = showFullData ? itemData : filterData(itemData, inputValue);
+
+  return (
+    <DropdownTypeahead
+      automationId="basicDTA"
+      label="Fruit"
+      dataSource={data}
+      inputValue={inputValue}
+      renderItem={handleRenderItem}
+      value={value}
+      onBlur={handleBlur}
+      onChange={handleChange}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      onSearch={handleInputChange}
+    />
+  );
+}
+```
+
+### Read Only
+
+```tsx
+() => {
+  const {
+    value,
+    inputValue,
+    showFullData,
+    handleBlur,
+    handleChange,
+    handleClick,
+    handleKeyDown,
+    handleInputChange,
+    handleRenderItem
+  } = useDropdownTypeaheadState(itemData[8].value, itemData[8].label);
+
+  const data = showFullData ? itemData : filterData(itemData, inputValue);
+
+  return (
+    <DropdownTypeahead
+      readOnly
+      automationId="basicDTA"
+      label="Fruit"
+      dataSource={data}
+      inputValue={inputValue}
+      renderItem={handleRenderItem}
+      value={value}
+      onBlur={handleBlur}
+      onChange={handleChange}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      onSearch={handleInputChange}
+    />
+  );
+}
+```
+
+### Focus On Render Feature
+
+```tsx
+() => {
+  const {
+    value,
+    inputValue,
+    showFullData,
+    handleBlur,
+    handleChange,
+    handleClick,
+    handleKeyDown,
+    handleInputChange,
+    handleRenderItem
+  } = useDropdownTypeaheadState(itemData[8].value, itemData[8].label);
+
+  const data = showFullData ? itemData : filterData(itemData, inputValue);
+
+  return (
+    <DropdownTypeahead
+      focusOnRender
+      automationId="focusOnRenderDTA"
+      label="Fruit"
+      dataSource={data}
+      inputValue={inputValue}
+      renderItem={handleRenderItem}
+      value={value}
+      onBlur={handleBlur}
+      onChange={handleChange}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      onSearch={handleInputChange}
+    />
+  );
+}
+```
+
+### Auto Filling Feature
+
+```tsx
+() => {
+  const [textValue, setTextValue] = React.useState('');
+  const [showSuggestion, setShowSuggestion] = React.useState(true);
+  const [suggestedText, setSuggestedText] = React.useState<string>();
+
+  const {
+    value,
+    inputValue,
+    setInputValue,
+    showFullData,
+    setShowFullData,
+    handleBlur: onBlur,
+    handleChange: onHandleChange,
+    handleClick,
+    handleInputChange: onInputChange,
+    handleRenderItem
+  } = useDropdownTypeaheadState();
+
+  const handleBlur = (e: ReactEvent) => {
+    onBlur(e);
+    setTextValue('');
+    setShowSuggestion(true);
+  };
+
+  const addToData = (newValue: string) => {
+    const itemCount = itemData.length;
+    const filterArr = itemData.filter(
+      (item) => item.label.toLowerCase() === newValue.toLowerCase()
+    );
+    if (filterArr.length === 0) {
+      itemData.push({ value: itemCount.toString(), label: newValue });
+    }
+  };
+
+  const handleChange = (e: ReactEvent, info?: OnChangeInfoType) => {
+    const { selectedItem, highlightedIndex, method } = info || {};
+    onHandleChange(e, info);
+    // check if use keyboard to select an addNew item
+    if (highlightedIndex === 0 && method === 'enter' && selectedItem) {
+      addToData(selectedItem.label);
+    }
+
+    setTextValue('');
+    setShowSuggestion(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent, info?: OnKeyDownInfoType) => {
+    const targetElement = e.target as HTMLInputElement;
+
+    const { highlightedItem } = info || {};
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      const data = filterData(itemData, targetElement.value);
+      const newInputValue = (highlightedItem && highlightedItem.label) || '';
+      setShowFullData(data.length === 0);
+      setShowSuggestion(false);
+      setInputValue(newInputValue);
+    }
+
+    if (e.key === 'Tab' && suggestedText) {
+      e.preventDefault();
+      setInputValue(suggestedText);
+      setTextValue('');
+      setShowFullData(true);
+      setShowSuggestion(false);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const targetElement = e.target as HTMLInputElement;
+    onInputChange(e);
+    setTextValue(targetElement.value);
+    setShowSuggestion(true);
+  };
+
+  const data = showFullData ? itemData : filterData(itemData, textValue);
+  const firstItem = data[0];
+  if (
+    showSuggestion &&
+    textValue &&
+    firstItem &&
+// ...
+```
+
+### Validation Feature
+
+```tsx
+() => {
+  const [dirty, setDirty] = React.useState(false);
+
+  const {
+    value,
+    inputValue,
+    showFullData,
+    handleBlur: onBlur,
+    handleChange,
+    handleClick,
+    handleKeyDown,
+    handleInputChange,
+    handleRenderItem
+  } = useDropdownTypeaheadState(itemData[8].value, itemData[8].label);
+
+  const handleBlur = (e: ReactEvent) => {
+    onBlur(e);
+    setDirty(true);
+  };
+
+  const data = showFullData ? itemData : filterData(itemData, inputValue);
+  return (
+    <DropdownTypeahead
+      automationId="validationDTA"
+      dataSource={data}
+      errorText={dirty && !inputValue ? 'Error! Invalid data' : undefined}
+      inputValue={inputValue}
+      label="Required Field *"
+      renderItem={handleRenderItem}
+      value={value}
+      onBlur={handleBlur}
+      onChange={handleChange}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      onSearch={handleInputChange}
+    />
+  );
+}
+```
+
+### Validation Error Prop
+
+```tsx
+() => {
+  const [errors, setErrors] = React.useState(false);
+
+  const {
+    value,
+    inputValue,
+    showFullData,
+    handleBlur: onBlur,
+    handleChange,
+    handleClick,
+    handleKeyDown,
+    handleInputChange,
+    handleRenderItem
+  } = useDropdownTypeaheadState(itemData[8].value, itemData[8].label);
+
+  const handleBlur = (e: ReactEvent) => {
+    onBlur(e);
+    setErrors(true);
+  };
+
+  const data = showFullData ? itemData : filterData(itemData, inputValue);
+  return (
+    <div>
+      <p>
+        <strong>validationError</strong> prop set to true without{' '}
+        <strong>errorText</strong> set
+      </p>
+      <DropdownTypeahead
+        validationError
+        automationId="validationDTA"
+        dataSource={data}
+        errorText={errors && !inputValue ? 'Error! Invalid data' : undefined}
+        inputValue={inputValue}
+        label="Required Field *"
+        renderItem={handleRenderItem}
+        value={value}
+        onBlur={handleBlur}
+        onChange={handleChange}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        onSearch={handleInputChange}
+      />
+    </div>
+  );
+}
+```
+
+### With Info Text
+
+```tsx
+() => {
+  const {
+    value,
+    inputValue,
+    showFullData,
+    handleBlur,
+    handleChange,
+    handleClick,
+    handleKeyDown,
+    handleInputChange,
+    handleRenderItem
+  } = useDropdownTypeaheadState(itemData[8].value, itemData[8].label);
+
+  const data = showFullData ? itemData : filterData(itemData, inputValue);
+
+  return (
+    <DropdownTypeahead
+      automationId="infoDTA"
+      dataSource={data}
+      infoText="This is helpful information about your selection"
+      inputValue={inputValue}
+      label="Select a fruit"
+      renderItem={handleRenderItem}
+      value={value}
+      onBlur={handleBlur}
+      onChange={handleChange}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      onSearch={handleInputChange}
+    />
+  );
+}
+```
+
+### Select Input Text On Focus
+
+```tsx
+() => {
+  const {
+    value,
+    inputValue,
+    showFullData,
+    handleBlur,
+    handleChange,
+    handleClick,
+    handleKeyDown,
+    handleInputChange,
+    handleRenderItem
+  } = useDropdownTypeaheadState(itemData[1].value, itemData[1].label);
+
+  const data = showFullData ? itemData : filterData(itemData, inputValue);
+  return (
+    <DropdownTypeahead
+      selectTextOnFocus
+      automationId="selectTextOnFocusDTA"
+      label="Fruit"
+      dataSource={data}
+      inputValue={inputValue}
+      renderItem={handleRenderItem}
+      value={value}
+      onBlur={handleBlur}
+      onChange={handleChange}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      onSearch={handleInputChange}
+    />
+  );
+}
+```
+
+### Disabled Feature
+
+```tsx
+() => {
+  const {
+    value,
+    inputValue,
+    showFullData,
+    handleBlur,
+    handleChange,
+    handleClick,
+    handleKeyDown,
+    handleInputChange,
+    handleRenderItem
+  } = useDropdownTypeaheadState(itemData[8].value, itemData[8].label);
+
+  const data = showFullData ? itemData : filterData(itemData, inputValue);
+  const disabledDTA = true;
+
+  return (
+    <DropdownTypeahead
+      disabled={disabledDTA}
+      automationId="disabledDTA"
+      label="Fruit"
+      dataSource={data}
+      inputValue={inputValue}
+      renderItem={handleRenderItem}
+      value={value}
+      // onBlur also fires on the root element, so need to remove the callback here
+      onBlur={disabledDTA ? undefined : handleBlur}
+      onChange={handleChange}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      onSearch={handleInputChange}
+    />
+  );
+}
+```
+
+### Multiselect Feature
+
+```tsx
+() => {
+  const [selectedValues, setSelectedValues] = React.useState([
+    itemData[1].value,
+    itemData[3].value
+  ]);
+  const [selectedLabels, setSelectedLabels] = React.useState([
+    itemData[1].label,
+    itemData[3].label
+  ]);
+  const [showFullData, setShowFullData] = React.useState(true);
+  const [inputValue, setInputValue] = React.useState(selectedLabels.join(', '));
+
+  const handleChange = (
+    e: ReactEvent,
+    infoObject: OnChangeInfoType | undefined
+  ) => {
+    const selectedItem = infoObject ? infoObject.selectedItem : undefined;
+
+    if (!selectedItem || !selectedItem.value || !selectedItem.label) {
+      return;
+    }
+
+    const updatedValues = [...selectedValues];
+    const updatedLabels = [...selectedLabels];
+
+    if (updatedValues.includes(selectedItem.value)) {
+      updatedValues.splice(updatedValues.indexOf(selectedItem.value), 1);
+      updatedLabels.splice(updatedLabels.indexOf(selectedItem.label), 1);
+    } else {
+      updatedValues.push(selectedItem.value);
+      updatedLabels.push(selectedItem.label);
+    }
+
+    setSelectedValues(updatedValues);
+    setSelectedLabels(updatedLabels);
+    setInputValue(updatedLabels.join(', '));
+    setShowFullData(true);
+  };
+
+  const handleClick = () => {
+    setShowFullData(true);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setShowFullData(false);
+    setInputValue(e.target.value);
+  };
+
+  const handleClose = () => {
+    setShowFullData(true);
+    setInputValue(selectedLabels.join(', '));
+  };
+
+  const handleRenderItem: DropdownTypeaheadProps['renderItem'] = (data) => {
+    return <MenuItem value={data.value}>{data.label}</MenuItem>;
+  };
+
+  const data = showFullData ? itemData : filterData(itemData, inputValue);
+
+  return (
+    <DropdownTypeahead
+      multiselect
+      showCheckmark
+      selectTextOnFocus
+      automationId="multiselectDTA"
+      aria-label="Fruit"
+      dataSource={data}
+      inputValue={inputValue}
+      renderItem={handleRenderItem}
+      value={selectedValues}
+      onChange={handleChange}
+      onClick={handleClick}
+      onSearch={handleInputChange}
+      onClose={handleClose}
+    />
+  );
+}
+```
+
+### Custom Rendering
+
+```tsx
+() => {
+  const {
+    value,
+    inputValue,
+    showFullData,
+    handleChange,
+    handleClick,
+    handleKeyDown,
+    handleInputChange
+  } = useDropdownTypeaheadState(itemData[8].value, itemData[8].label);
+
+  const handleRenderItem: DropdownTypeaheadProps['renderItem'] = (data) => {
+    return (
+      <MenuItem value={data.value}>
+        <div className={styles.customContainer}>
+          {data.label}
+          <div className={styles.customValue}> (value {data.value})</div>
+        </div>
+      </MenuItem>
+    );
+  };
+
+  const data = showFullData ? itemData : filterData(itemData, inputValue);
+
+  return (
+    <DropdownTypeahead
+      disabled={false}
+      automationId="customDTA"
+      label="Fruit"
+      dataSource={data}
+      inputValue={inputValue}
+      renderItem={handleRenderItem}
+      value={value}
+      onChange={handleChange}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      onSearch={handleInputChange}
+    />
+  );
+}
+```
+
+### Loading State
+
+```tsx
+() => {
+  const [loading, setLoading] = React.useState(true);
+  const {
+    value,
+    inputValue,
+    handleBlur,
+    handleChange,
+    handleClick,
+    handleKeyDown,
+    handleInputChange
+  } = useDropdownTypeaheadState();
+  const dataSource = loading ? [] : itemData;
+
+  React.useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setLoading(false);
+    }, 6000); // show loader for 6 seconds
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, []);
+
+  const handleRenderItem: DropdownTypeaheadProps['renderItem'] = (
+    { isLoading, loadingAriaLabel, value: itemValue, label },
+    index
+  ) => {
+    if (isLoading) {
+      return <LoadingMenuItem loadingAriaLabel={loadingAriaLabel} />;
+    }
+
+    return (
+      <MenuItem key={index} value={itemValue}>
+        {label}
+      </MenuItem>
+    );
+  };
+
+  return (
+    <DropdownTypeahead
+      isLoading={loading}
+      loadingAriaLabel="Data Loading..."
+      automationId="basicDTA"
+      label="Loading state"
+      dataSource={dataSource}
+      inputValue={inputValue}
+      renderItem={handleRenderItem}
+      value={value}
+      onBlur={handleBlur}
+      onChange={handleChange}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      onSearch={handleInputChange}
+    />
+  );
+}
+```
+
+### Error State
+
+```tsx
+() => {
+  const { inputValue, value } = useDropdownTypeaheadState();
+
+  const handleRenderItem: DropdownTypeaheadProps['renderItem'] = ({
+    errorLoadingMessage,
+    errorActionCallbackLabel,
+    errorActionCallback
+  }) => {
+    return (
+      <ErrorMenuItem
+        errorLoadingMessage={errorLoadingMessage}
+        errorActionCallbackLabel={errorActionCallbackLabel}
+        errorActionCallback={errorActionCallback}
+      />
+    );
+  };
+
+  return (
+    <DropdownTypeahead
+      hasError
+      errorLoadingMessage="We couldn’t load this info."
+      errorActionCallbackLabel="Try again"
+      errorActionCallback={action('Button clicked')}
+      automationId="basicDTA"
+      label="Error state"
+      dataSource={[]}
+      inputValue={inputValue}
+      renderItem={handleRenderItem}
+      value={value}
+    />
+  );
+}
+```
+
+### No Result State
+
+```tsx
+() => {
+  const { value, inputValue } = useDropdownTypeaheadState();
+
+  const handleRenderItem: DropdownTypeaheadProps['renderItem'] = ({
+    noResultsMessage
+  }) => {
+    return <NoResultsMenuItem noResultsMessage={noResultsMessage} />;
+  };
+
+  return (
+    <DropdownTypeahead
+      hasNoResults
+      noResultsMessage="No results found."
+      automationId="basicDTA"
+      label="No result state"
+      dataSource={[]}
+      inputValue={inputValue}
+      renderItem={handleRenderItem}
+      value={value}
+    />
+  );
+}
+```
+
+## Code Example
+
+```tsx
+import React from 'react';
+import { DropdownTypeahead, MenuItem } from '@ids-ts/dropdown-typeahead';
+
+export const itemData = [
+  { value: '0', label: 'Banana' },
+  { value: '1', label: 'Apple' },
+  { value: '2', label: 'Guava' },
+  { value: '3', label: 'Mango' },
+  { value: '4', label: 'Broccoli' },
+  { value: '5', label: 'Carrot' },
+  { value: '6', label: 'Cherry' },
+  { value: '7', label: 'Melon' },
+  { value: '8', label: 'Pineapple' },
+  { value: '9', label: 'Cereal' },
+  { value: '10', label: 'Grape' },
+  { value: '11', label: 'Kiwi' }
+];
+
+export const filterData = (data, inputValue) => {
+  if (!inputValue) {
+    return data;
+  }
+
+  return data.filter(
+    (item) => item.label.toLowerCase().indexOf(inputValue.toLowerCase()) > -1
+  );
+};
+
+export const ExampleDropdownTypeahead = () => {
+  const [value, setValue] = React.useState('');
+  const [inputValue, setInputValue] = React.useState('');
+  const [showFullData, setShowFullData] = React.useState(true);
+
+  const handleBlur = (e) => {
+    const relatedElement = e.relatedTarget;
+    const targetElement = e.target;
+
+    const valueElement =
+      targetElement.value === undefined
+        ? relatedElement.innerText
+        : targetElement.value;
+    const data = itemData.filter(
+      (item) =>
+        valueElement && item.label.toLowerCase() === valueElement.toLowerCase()
+    );
+    const newValue = data.length > 0 ? data[0].value : '';
+    const newInputValue = newValue ? data[0].label : '';
+    setValue(newValue);
+    setInputValue(newInputValue);
+    setShowFullData(true);
+  };
+
+  const handleChange = (e, info) => {
+    const { selectedItem } = info || {};
+    if (!selectedItem || !selectedItem.value || !selectedItem.label) {
+      return;
+    }
+
+    setInputValue(selectedItem.label);
+    setShowFullData(true);
+    setValue(selectedItem.value);
+  };
+
+  const handleClick = () => {
+    setShowFullData(true);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      const targetElement = e.target;
+      const data = filterData(itemData, targetElement.value);
+      if (value || data.length === 0) {
+        setShowFullData(true);
+      }
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const targetElement = e.target;
+    setShowFullData(false);
+    setInputValue(targetElement.value);
+    setValue('');
+  };
+
+  const handleRenderItem = (data) => {
+    return <MenuItem value={data.value}>{data.label}</MenuItem>;
+  };
+
+  const data = showFullData ? itemData : filterData(itemData, inputValue);
+
+  return (
+    <DropdownTypeahead
+      label="Example Label"
+      dataSource={data}
+      inputValue={inputValue}
+      renderItem={handleRenderItem}
+      value={value}
+      onBlur={handleBlur}
+      onChange={handleChange}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      onSearch={handleInputChange}
+    />
+  );
+};
+
+export default ExampleDropdownTypeahead;
+```
+
+## Composes With
+
+- Typography
+- Drawer
+
+---
+
+## References
+
+- [GitHub Source - DropdownTypeahead](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/DropdownTypeahead)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/dropdown-typeahead.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-dropdown-typeahead&theme=quickbooks&colorScheme=light)

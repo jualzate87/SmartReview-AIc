@@ -1,0 +1,125 @@
+---
+description: Complete guide for using the ClickAwayListener component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# ClickAwayListener
+
+IDS ClickAwayListener is used to monitor when the element loses focus because of a click-away.
+This component is used in IDS Dropdown, DropdownButton, and SplitButton if you would like to see good examples of its usage.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/click-away-listener
+```
+
+```tsx
+import { ClickAwayListener } from '@ids-ts/click-away-listener';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `children` | `(ref: (c?: HTMLElement \| null) => void) => ReactNode` | Yes | Function that receives a ref callback and returns a React node. |
+| `onClickAway` | `(event: React.MouseEvent | React.KeyboardEvent)...` | No | * Callback on click away. |
+| `useOnClick` | `boolean` | No | * Boolean prop to determine whether to use onClick event instead of onMouseUp. |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface ClickAwayListenerProps
+  extends Omit<React.HTMLAttributes<any>, 'children'> {
+  /**
+   * Children prop, it should be a function to return a React node.
+   */
+  children: (
+    ref: (c?: HTMLElement | null) => void | React.RefObject<HTMLElement>,
+    props?: any
+  ) => JSX.IntrinsicElements | React.ReactNode;
+  /**
+   * Callback on click away.
+   */
+  onClickAway?: (event: React.MouseEvent | React.KeyboardEvent) => void;
+  /**
+   * Boolean prop to determine whether to use onClick event instead of onMouseUp.
+   */
+  useOnClick?: boolean;
+}
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Showcase
+
+```tsx
+() => {
+  const [focused, setFocused] = useState(false);
+
+  return (
+    <>
+      <ClickAwayListener onClickAway={() => setFocused(false)}>
+        {(setRefNode) => (
+          <Button innerRef={setRefNode} onClick={() => setFocused(true)}>
+            Test focus
+          </Button>
+        )}
+      </ClickAwayListener>
+      <div>
+        {focused === true ? 'Focused on button' : 'Focused on document'}
+      </div>
+    </>
+  );
+}
+```
+
+## Composes With
+
+- Button
+
+---
+
+## References
+
+- [GitHub Source - ClickAwayListener](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/ClickAwayListener)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-clickawaylistener&theme=quickbooks&colorScheme=light)

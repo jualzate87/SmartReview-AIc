@@ -1,0 +1,82 @@
+---
+description: Complete guide for using the ProductHeader component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# ProductHeader
+
+The IDS Product Header displays important actions the user can perform in the application.
+
+This component is currently experimental and its API is subject to change.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/product-header
+```
+
+```tsx
+import { ProductHeader } from '@ids-ts/product-header';
+```
+
+## Props API
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export type ProductHeaderProps = ThemeableElement<'header'>;
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Composes With
+
+- Typography
+- LeftNavigation
+- Popover
+- AppTile
+
+---
+
+## References
+
+- [GitHub Source - ProductHeader](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/ProductHeader)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/product-header.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-product-header-(beta)&theme=quickbooks&colorScheme=light)

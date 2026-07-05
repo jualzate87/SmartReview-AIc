@@ -1,0 +1,66 @@
+/* IntuitAssistPage — Intuit Assist Access Point + Drawer */
+
+.fab {
+  position: fixed;
+  bottom: var(--space-container-padding-large);
+  right: var(--space-container-padding-large);
+  z-index: 100;
+}
+
+.drawerBody {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.chatArea {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-container-padding-xx-small) var(--space-container-padding-small);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-container-padding-xx-small);
+}
+
+.greetingSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-component-inline-padding-small);
+  padding: var(--space-container-padding-large) 0 var(--space-container-padding-xx-small);
+  text-align: center;
+}
+
+.brandWrapper {
+  margin-bottom: var(--space-component-gap-small);
+}
+
+.subtitle {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.messages {
+  width: 100%;
+}
+
+.suggestionChips {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-component-gap-small) 0;
+}
+
+.inputArea {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-small);
+  padding: var(--space-component-inline-padding-small) var(--space-container-padding-small)
+    var(--space-container-padding-xx-small);
+  border-top: 1px solid var(--color-container-border-primary);
+  background-color: var(--color-container-background-primary);
+  box-sizing: border-box;
+}

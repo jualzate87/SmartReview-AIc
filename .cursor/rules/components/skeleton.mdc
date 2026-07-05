@@ -1,0 +1,298 @@
+---
+description: Complete guide for using the Skeleton component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# Skeleton
+
+The IDS and QBDS team plan to deprecate the QBDS repo and most of its components in the upcoming fiscal year (2026). At that point, QBDS components will continue to exist but will no longer be maintained. If you have an existing usage of this component in your repo under the `@qbds` namespace, we recommend migrating to the `@ids-ts` version.
+
+If you have any bug fixes or new features you'd like to report or contribute, please post in the [#ask-ids](https://intuit.enterprise.slack.com/archives/C53V5U3S5) Slack channel so that we can help coordinate your work between both namespaces.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/skeleton
+```
+
+```tsx
+import {
+  Skeleton,
+  SkeletonContainer,
+  SkeletonText,
+  SkeletonIcon,
+  SkeletonChip,
+  SkeletonAction,
+} from '@ids-ts/skeleton';
+```
+
+## Sub-Components
+
+### SkeletonContainer
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `className` | `string` | No | The class name to apply |
+
+<details>
+<summary>Full SkeletonContainer TypeScript Interface</summary>
+
+```typescript
+export interface SkeletonContainerProps extends ThemeableElement<'div'> {
+  /** The class name to apply */
+  className?: string;
+}
+```
+
+</details>
+
+### SkeletonText
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `numberOfLines` | `number` | Yes | The number of lines to render |
+| `spacing` | `number` | Yes | The spacing between lines |
+| `className` | `string` | No | The class name to apply |
+
+<details>
+<summary>Full SkeletonText TypeScript Interface</summary>
+
+```typescript
+export interface SkeletonTextProps extends ThemeableElement<'div'> {
+  /** The number of lines to render */
+  numberOfLines: number;
+  /** The spacing between lines */
+  spacing: number;
+  /** The class name to apply */
+  className?: string;
+}
+```
+
+</details>
+
+### SkeletonIcon
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `size` | `Sizes` | Yes | The Skeleton size |
+| `className` | `string` | No | The class name to apply |
+
+<details>
+<summary>Full SkeletonIcon TypeScript Interface</summary>
+
+```typescript
+export interface SkeletonIconProps extends ThemeableElement<'div'> {
+  /** The Skeleton size */
+  size: Sizes;
+  /** The class name to apply */
+  className?: string;
+}
+
+export type Sizes = 'xsmall' | 'small' | 'medium' | 'large';
+```
+
+</details>
+
+### SkeletonChip
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `className` | `string` | No | The class name to apply |
+
+<details>
+<summary>Full SkeletonChip TypeScript Interface</summary>
+
+```typescript
+export interface SkeletonChipProps extends ThemeableElement<'div'> {
+  /** The class name to apply */
+  className?: string;
+}
+```
+
+</details>
+
+### SkeletonAction
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `size` | `Sizes` | Yes | The Skeleton size |
+| `className` | `string` | No | The class name to apply |
+
+<details>
+<summary>Full SkeletonAction TypeScript Interface</summary>
+
+```typescript
+export interface SkeletonActionProps extends ThemeableElement<'div'> {
+  /** The Skeleton size */
+  size: Sizes;
+  /** The class name to apply */
+  className?: string;
+}
+
+export type Sizes = 'xsmall' | 'small' | 'medium' | 'large';
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+## Usage Patterns
+
+### Container
+
+```tsx
+() => {
+  return (
+    <div style={{ width: '100%', height: '500px' }}>
+      <p>Skeleton for container with flex width</p>
+      <SkeletonContainer />
+    </div>
+  );
+}
+```
+
+### Skeleton For Icon
+
+```tsx
+() => {
+  return (
+    <div>
+      <p>X small icon</p>
+      <SkeletonIcon size="xsmall" />
+
+      <p>Small icon</p>
+      <SkeletonIcon size="small" />
+
+      <p>Medium icon</p>
+      <SkeletonIcon size="medium" />
+
+      <p>Large icon</p>
+      <SkeletonIcon size="large" />
+    </div>
+  );
+}
+```
+
+### Skeleton For Action And Input
+
+```tsx
+() => {
+  return (
+    <div>
+      <p>Small action / input</p>
+      <SkeletonAction size="small" />
+
+      <p>Medium action / input</p>
+      <SkeletonAction size="medium" />
+
+      <p>Large action / input</p>
+      <SkeletonAction size="large" />
+    </div>
+  );
+}
+```
+
+### Skeleton For Text
+
+```tsx
+(args: {
+  numberOfLines: number;
+  spacing: number;
+}) => {
+  const [lines, setLines] = useState(1);
+
+  useEffect(() => {
+    setLines(args.numberOfLines);
+  }, [args.numberOfLines]);
+
+  return (
+    <div>
+      <p>Text skeleton with flex width and multiple lines</p>
+      <SkeletonText spacing={args.spacing} numberOfLines={lines} />
+    </div>
+  );
+}
+```
+
+### Skeleton For Chip
+
+```tsx
+() => {
+  return (
+    <div>
+      <p>
+        The chip configuration has a full radius, fixed height, and flexible
+        width.
+      </p>
+      <p>Chip may be used for:</p>
+      <ul>
+        <li>Chips</li>
+        <li>Intuit Assist access point</li>
+      </ul>
+      <SkeletonChip />
+    </div>
+  );
+}
+```
+
+### Showcase
+
+```tsx
+() => {
+  return (
+    <div className={styles.showcase}>
+      Action Skeleton
+      <SkeletonAction size="medium" />
+      Chip Skeleton
+      <SkeletonChip />
+      Icon Skeleton
+      <SkeletonIcon size="medium" />
+      Text Skeleton (4 lines)
+      <SkeletonText numberOfLines={4} spacing={4} />
+      Container Skeleton
+      <SkeletonContainer className={styles.containerSkeleton} />
+    </div>
+  );
+}
+```
+
+## Code Example
+
+```tsx
+import React from 'react';
+import { SkeletonAction } from '@ids-ts/skeleton';
+
+const ExampleSkeleton = () => <SkeletonAction size="small" />;
+
+export default ExampleSkeleton;
+```
+
+---
+
+## References
+
+- [GitHub Source - Skeleton](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/Skeleton)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/skeleton.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-skeleton&theme=quickbooks&colorScheme=light)

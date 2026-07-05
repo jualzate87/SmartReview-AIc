@@ -1,0 +1,70 @@
+---
+description: Complete guide for using the Icon component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# Icon
+
+A React implementation of the IDS icon font, using SVG components.
+
+⚠️ **Deprecation warning** ⚠️
+
+This component has been deprecated and is no longer maintained. We recommend using the `@design-systems/icons` package instead.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/icon
+```
+
+```tsx
+import { Icon } from '@ids-ts/icon';
+```
+
+## Props
+
+> **Deprecated** — Use `@design-systems/icons` instead.
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `name` | `string` | Yes | Icon name from the IDS icon set. |
+| `size` | `'small' \| 'medium' \| 'large'` | No | Icon size. |
+| `color` | `string` | No | Icon color override. |
+
+## Token Usage
+
+### Color
+
+**icon** — Icon fill and stroke colors
+- `--color-icon-accent`
+- `--color-icon-complementary`
+- `--color-icon-disabled`
+
+### Size
+
+**icon** — Standard icon dimensions
+
+## Usage Patterns
+
+### Basic
+
+```tsx
+({ fill, size }) => (
+  <CircleCheckIcon data-automation-id="basic" size={size} fill={fill} />
+)
+```
+
+## Code Example
+
+```tsx
+// Renders text for screen readers
+import VisuallyHidden from '@reach/visually-hidden';
+```
+
+---
+
+## References
+
+- [GitHub Source - Icon](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/Icon)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-icon&theme=quickbooks&colorScheme=light)

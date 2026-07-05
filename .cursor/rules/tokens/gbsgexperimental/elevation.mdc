@@ -1,0 +1,32 @@
+---
+description: Intuit Design System - Elevation Token Library - Complete primitive and semantic elevation tokens
+globs: ["src/**/*.{ts,tsx,js,jsx,scss,css}"]
+alwaysApply: false
+---
+
+# Intuit Design System - Elevation Token Library
+
+## Primitive Elevation Tokens (DO NOT USE DIRECTLY IN PLUGINS)
+
+- `--elevation-0`: 0 0 0 0
+- `--elevation-1`: 0 1px 4px 0
+- `--elevation-2`: 0 2px 8px 0
+- `--elevation-3`: 0 4px 16px 0
+- `--elevation-4`: 0 6px 24px 0
+
+## Semantic Elevation Tokens (USE THESE IN PLUGINS)
+
+### Level0
+- `--elevation-level-0`: --elevation-0 /* elevation.level.4 elevation.4 Modal dialog */
+
+### Level1
+- `--elevation-level-1`: --elevation-1 /* Internal component parts (slider handle, switch handle) */
+
+### Level2
+- `--elevation-level-2`: --elevation-2 /* Menu, tooltip, toast */
+
+### Level3
+- `--elevation-level-3`: --elevation-3 /* Drawer */
+
+### Level4
+- `--elevation-level-4`: --elevation-4 /* Modal dialog */

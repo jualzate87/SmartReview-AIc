@@ -1,0 +1,30 @@
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.errorBoundary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--space-container-padding-x-large, 32px);
+  text-align: center;
+  gap: var(--space-row-gap-medium, 20px);
+}
+
+.errorDetails {
+  background-color: var(--color-container-background-secondary, #f4f5f8);
+  border: 1px solid var(--color-divider-tertiary, #e3e5e8);
+  border-radius: var(--radius-medium, 8px);
+  padding: var(--space-container-padding-medium, 20px);
+  max-width: 600px;
+  width: 100%;
+  font-family: monospace;
+  font-size: var(--font-size-body-4);
+  color: var(--color-text-secondary, #6b6c72);
+  text-align: left;
+  white-space: pre-wrap;
+  word-break: break-word;
+}

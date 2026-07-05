@@ -1,0 +1,1169 @@
+---
+description: Complete guide for using the Dropdown component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# Dropdown
+
+Dropdowns are used to select a value from a series of options in a list.
+Dropdowns support mouse and key input.
+If you are not using a string or number for the child of MenuItem, use the displayedLabel prop on Dropdown to provide the name of a prop on MenuItem with a string to be displayed when selected.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/dropdown
+```
+
+```tsx
+import { Dropdown } from '@ids-ts/dropdown';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `automationId` | `string` | No | ID for automation test. |
+| `addonBeforeContent` | `ReactElement` | No | Prop to set desired Icon/ addonBefore element |
+| `children` | `ReactElement<MenuItemProps> | ReactElement<Menu...` | No | Children of Menu, which are MenuItem types in the dropdown |
+| `disabled` | `boolean` | No | Disable dropdown if true. |
+| `enableFilterItems` | `boolean` | No | - |
+| `filterFieldWidth` | `string` | No | * Control filter textfield width |
+| `enableOnBlurOnMultiselect` | `boolean` | No | - |
+| `errorText` | `string` | No | Error message to be rendered. |
+| `hasWeightedLabel` | `boolean` | No | Boolean flag to allow label to be bold |
+| `infoText` | `string` | No | Info message to be rendered. |
+| `filterPlaceholder` | `string` | No | - |
+| `helperText` | `string` | No | helper message to be rendered. |
+| `id` | `string` | No | Id for component. |
+| `label` | `string` | No | Label to be displayed for the field. |
+| `menuClass` | `string` | No | Class to be applied to menu. |
+| `multiselect` | `boolean` | No | Enable Multi Select dropdown if true. |
+| `name` | `string` | No | Name to be assigned to the input field. |
+| `onBlur` | `(e: FocusEvent, infoObject?: OnEventInfoType) =...` | No | Callback function to be executed on blur event. |
+| `onChange` | `(e: KeyboardEvent \| MouseEvent, infoObject?: object) => void` | No | Callback on change, receives event and value info. |
+| `onClose` | `(type: 'clickAway' \| 'select') => void` | No | Called when the dropdown closes, with close reason. |
+| `onOpen` | `() => void` | No | Callback function to be executed on dropdown open event. |
+| `onClick` | `(e: MouseEvent) => void` | No | - |
+| `preventMenuOverflow` | `an object variable` | Yes | - |
+| `preventMenuOverflow` | `PreventOverflow` | No | - |
+| `readOnly` | `boolean` | No | - |
+| `renderFromProps` | `boolean` | No | Display value directly from props, do not memoize it |
+| `searchMode` | `searchType` | No | - |
+| `validationError` | `boolean` | No | change text field color to warn user without text and icon |
+| `value` | `string | number | (string | number)[]` | No | Selected value. |
+| `warningText` | `string` | No | warning message to be rendered. |
+| `stylePosition` | `CSSProperties` | No | The optional styles applied to the position node wrapped around the root node. |
+| `positions` | `string[]` | No | Vertical positions: `'top'`, `'bottom'`. |
+| `alignments` | `string[]` | No | Alignment of the dropdown menu relative to the trigger. |
+| `offsetSkidding` | `number` | No | Cross-axis pixel offset of the popup. |
+| `offsetDistance` | `number` | No | Main-axis pixel offset of the popup. |
+| `width` | `string \| number` | No | Width of the dropdown. Defaults to `'fit-content'`. |
+| `size` | `'small' \| 'medium'` | No | Font size variant: `'small'` (14px) or `'medium'` (16px). |
+| `positionDependencies` | `unknown[]` | No | - |
+| `controlled` | `boolean` | No | When true, component won't manage its own open state. |
+| `selectedItem` | `ReactEventRelatedTarget | ReactFocusEventRelate...` | No | A selected item |
+| `target` | `{ e?: ReactEventRelatedTarget }` | No | Index of highlighted item in Menu. |
+| `name` | `string` | No | name |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface DropdownProps
+  extends Omit<
+    ThemeableElement<'input'>,
+    'onChange' | 'onBlur' | 'size' | 'value'
+  > {
+  /** ID for automation test. */
+  automationId?: string;
+  /** Prop to set desired Icon/ addonBefore element */
+  addonBeforeContent?: ReactElement;
+  /** Children of Menu, which are MenuItem types in the dropdown */
+  children?: ReactElement<MenuItemProps> | ReactElement<MenuItemProps>[];
+  /**  Disable dropdown if true. */
+  disabled?: boolean;
+  /**
+   * Filter option for dropdown menu items
+   *
+   * @default false
+   */
+  enableFilterItems?: boolean;
+  /**
+   * Control filter textfield width
+   */
+  filterFieldWidth?: string;
+  /**
+   * Flag to set if onBlur should be called on multiSelect.
+   * Added to ensure we do not break existing users.
+   *
+   * @default false
+   */
+  enableOnBlurOnMultiselect?: boolean;
+  /**  Error message to be rendered. */
+  errorText?: string;
+  /** Boolean flag to allow label to be bold */
+  hasWeightedLabel?: boolean;
+  /**  Info message to be rendered. */
+  infoText?: string;
+  /**  Placeholder string for the search filter.
+   *
+   * @default 'Filter'
+   */
+  filterPlaceholder?: string;
+  /** helper message to be rendered. */
+  helperText?: string;
+  /**  Id for component. */
+  id?: string;
+  /** Label to be displayed for the field. */
+  label?: string;
+  /** Class to be applied to menu. */
+  menuClass?: string;
+  /** Enable Multi Select dropdown if true. */
+  multiselect?: boolean;
+  /** Name to be assigned to the input field. */
+  name?: string;
+  /** Callback function to be executed on blur event. */
+  onBlur?: (e: FocusEvent, infoObject?: OnEventInfoType) => void;
+  /** Callback function to be executed on change, receives 2 params: event object and value. */
+  onChange?: (
+    e: KeyboardEvent | MouseEvent,
+    infoObject?: OnEventInfoType
+  ) => void;
+  /**
+   * Callback function to handle filter, also performs callback with value { type: 'clickAway' }
+   * when clicked away from the filter input field
+   */
+  onItemsFilter?: (arg?: Record<'type', string>) => void;
+  /** Callback function to be executed on dropdown open event. */
+  onOpen?: () => void;
+  /**
+   * Callback function to be executed upon receiving a click event on menu
+   * anchor element.
+   */
+  onClick?: (e: MouseEvent) => void;
+  /**
+   * preventMenuOverflow: an object variable; used to prevent Dropdown Menu from being positioned outside the boundary.
+   * More detail in @ids-ts/position preventOverflow API document.
+   */
+  preventMenuOverflow?: PreventOverflow;
+  /**
+   * Readonly prop to pass on to root when set as true.
+   *
+   * @default false
+   */
+  readOnly?: boolean;
+  /** Display value directly from props, do not memoize it */
+  renderFromProps?: boolean;
+  /**
+   * Determine which search type to apply while typing
+   * full - search sequentially adding typed symbol from the beginning
+   * first - mimic all behavior to match first char only
+   * partial - search for the first occurrence in the middle of displayed items
+   *
+   * @default 'full'
+   */
+  searchMode?: searchType;
+  /** change text field color to warn user without text and icon */
+  validationError?: boolean;
+  /** Selected value. */
+  value?: string | number | (string | number)[];
+  /** warning message to be rendered. */
+  warningText?: string;
+  /** The optional styles applied to the position node wrapped around the root node. */
+  stylePosition?: CSSProperties;
+  /**
+   * vertical positions: top, bottom
+   * horizontal positions: left, right
+   * NOTE: horizontal alignments cannot be paired with horizontal positions
+   *
+   * @default 'bottom'
+   */
+  position?: Positions;
+  /**
+   * vertical alignments: top, bottom, middle
+   * horizontal alignments: left, right, center
+   * NOTE: horizontal alignments cannot be paired with horizontal positions
+   *
+   * @default 'right'
+   */
+  alignment?: Alignments;
+  /**
+   * offsetSkidding: the cross-axis pixel distance that the popup should be offset from targetElement
+   *
+   * @default 0
+   */
+  offsetSkidding?: number;
+  /**
+   * offsetDistance: the main-axis pixel distance that the popup should be offset from targetElement
+   *
+   * @default 0
+   */
+  offsetDistance?: number;
+  /**
+   * width: width of the dropdown
+   *
+   * @default 'fit-content'
+   */
+  width?: string | number;
+  /**
+   * size: choose whether to render with small (14px) or medium (16px) font-size for children
+   *
+   * @default 'medium'
+   */
+  size?: 'small' | 'medium';
+  /**
+   * Dependencies that will cause the Menu's popperjs instance to recalculate its position, whenever any of the dependencies change.
+   * These dependencies work the same way as the list you would pass into a React useEffect()
+   */
+  positionDependencies?: unknown[];
+  /**
+   * controlled: when true, the component will not manage its own selection state.
+   * The parent must update the value prop in the onChange callback.
+   * Note: onChange is required when controlled is true.
+   *
+   * @default false
+   */
+  controlled?: boolean;
+}
+
+export type OnEventInfoType = {
+  /** A selected item */
+  selectedItem?: ReactEventRelatedTarget | ReactFocusEventRelatedTarget;
+  /** Index of highlighted item in Menu */
+  target?: {
+    /** ReactEventRelatedTarget */
+    e?: ReactEventRelatedTarget;
+    /** name */
+    name?: string;
+  };
+}
+
+export type ReactEventRelatedTarget = ReactDropdownEvent & {
+
+export type ReactFocusEventRelatedTarget = React.FocusEvent & {
+
+export type Positions = 'top' | 'bottom' | 'left' | 'right';
+
+export type Alignments =
+  | 'left'
+  | 'right'
+  | 'top'
+  | 'bottom'
+  | 'middle'
+  | 'center';
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+**action** — Interactive element colors and hover/active/focus states
+- `--color-action-complementary`
+- `--color-action-complementary-active`
+- `--color-action-complementary-border`
+
+**input** — Input background, border, placeholder, and focus colors
+- `--color-input-background-disabled`
+- `--color-input-background-error`
+- `--color-input-background-error-focus`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+**component** — Component-level spacing (padding, gap)
+- `--space-component-gap-large`
+- `--space-component-gap-medium`
+- `--space-component-gap-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+**radius** — Input border radius
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Playground
+
+```tsx
+({
+  alignment,
+  changeDisplayWhenSelected,
+  disabled,
+  disableFirstMenuItem,
+  disableSecondMenuItem,
+  errorText,
+  helperText,
+  infoText,
+  label,
+  multiselect,
+  offsetDistance,
+  offsetSkidding,
+  placeholder,
+  position,
+  searchMode,
+  warningText
+}) => {
+  const [value, setValue] = useState<string | undefined>(undefined);
+  const [values, setValues] = useState(['']);
+
+  const onChange = (e: KeyboardEvent | MouseEvent) => {
+    const target = e.target as HTMLSelectElement;
+
+    if (!multiselect) {
+      action('onChange: ')(target.value);
+      setValue(target.value);
+    } else if (values.includes(target.value)) {
+      values.splice(values.indexOf(target.value), 1);
+      setValues(values);
+    } else {
+      values.push(target.value);
+      setValues(values);
+    }
+  };
+
+  return (
+    <Dropdown
+      width="305px"
+      disabled={disabled}
+      multiselect={multiselect}
+      validationError={errorText !== '' || warningText !== ''}
+      label={label}
+      placeholder={placeholder}
+      helperText={helperText}
+      errorText={errorText}
+      warningText={warningText}
+      infoText={infoText}
+      searchMode={searchMode}
+      value={multiselect ? values : value}
+      data-automation-id="basic"
+      position={position}
+      alignment={alignment}
+      offsetSkidding={offsetSkidding}
+      offsetDistance={offsetDistance}
+      onChange={onChange}
+    >
+      <MenuItem
+        disabled={disableFirstMenuItem}
+        menuItemLabel={
+          changeDisplayWhenSelected ? 'Africa selected' : undefined
+        }
+        value="1"
+      >
+        Africa
+      </MenuItem>
+      <MenuItem
+        disabled={disableSecondMenuItem}
+        menuItemLabel={
+          changeDisplayWhenSelected ? 'Antartica selected' : undefined
+        }
+        value="2"
+      >
+        Antartica
+      </MenuItem>
+      <MenuItem
+        menuItemLabel={changeDisplayWhenSelected ? 'Asia selected' : undefined}
+        value="3"
+      >
+        Asia
+// ...
+```
+
+### Showcase
+
+```tsx
+() => {
+  const [value, setValue] = useState<string | undefined>(undefined);
+  const [value1, setValue1] = useState<string | undefined>(undefined);
+  const [value2, setValue2] = useState<string | undefined>(undefined);
+  const [value3, setValue3] = useState<string | undefined>(undefined);
+  const [validationError, setValidationError] = useState(true);
+  const [values, setValues] = useState(['']);
+  const [errorText, setErrorText] = useState('Error !! Invalid selection');
+  const [warningText, setWarningText] = useState('Warning !! Change selection');
+  const infoText = 'Additional information about this selection';
+
+  const onChange1 = (e: KeyboardEvent | MouseEvent) => {
+    const target = e.target as HTMLSelectElement;
+    action('onChange: ')(target.value);
+    setValue(target.value);
+    setErrorText('');
+  };
+
+  const onChange2 = (e: KeyboardEvent | MouseEvent) => {
+    const target = e.target as HTMLSelectElement;
+    action('onChange: ')(target.value);
+    setValue1(target.value);
+    setWarningText('');
+  };
+
+  const onChange3 = (e: KeyboardEvent | MouseEvent) => {
+    const target = e.target as HTMLSelectElement;
+    action('onChange: ')(target.value);
+    setValue3(target.value);
+  };
+
+  const onChange4 = (e: KeyboardEvent | MouseEvent) => {
+    const target = e.target as HTMLSelectElement;
+    action('onChange: ')(target.value);
+    setValue2(target.value);
+    setValidationError(false);
+  };
+
+  const onChangeMultiSelect = (e: KeyboardEvent | MouseEvent) => {
+    const target = e.target as HTMLSelectElement;
+    action('Selected Value:')(values.toString());
+    if (values.includes(target.value)) {
+      values.splice(values.indexOf(target.value), 1);
+      setValues(values);
+    } else {
+      values.push(target.value);
+      setValues(values);
+    }
+  };
+
+  return (
+    <div>
+      <div style={{ marginBottom: '20px' }}>
+        <Dropdown
+          width="305px"
+          label="Choose a continent:"
+          placeholder="Select"
+          aria-label="basic-dropdown"
+          className={styles.exampleDropdown}
+          id="basic-dropdown"
+        >
+          <MenuItem value="1">Africa</MenuItem>
+          <MenuItem value="2">Antartica</MenuItem>
+          <MenuItem value="3">Asia</MenuItem>
+          <MenuItem value="4">Europe</MenuItem>
+          <MenuItem value="5">Oceania</MenuItem>
+          <MenuItem value="6">North America</MenuItem>
+          <MenuItem value="7">South America</MenuItem>
+        </Dropdown>
+      </div>
+
+      <div style={{ marginBottom: '20px' }}>
+        <Dropdown
+          width="305px"
+          label="Targeted FY"
+          placeholder="Select"
+          id="targeted-dropdown"
+          aria-label="Targeted Fiscal year"
+          helperText="Aria label is used to provide labels to screenreader users"
+          className={styles.exampleDropdown}
+// ...
+```
+
+### Controlled
+
+```tsx
+() => {
+  const [value, setValue] = useState<string | undefined>(undefined);
+  const [multiselectValues, setMultiselectValues] = useState<string[]>([]);
+
+  const handleSingleChange = (e: KeyboardEvent | MouseEvent) => {
+    const target = e.target as HTMLSelectElement;
+    action('Controlled onChange: ')(target.value);
+    setValue(target.value);
+  };
+
+  const handleMultiselectChange = (e: KeyboardEvent | MouseEvent) => {
+    const target = e.target as HTMLSelectElement;
+    // In controlled mode, the component provides the complete updated array
+    const newValue = Array.isArray(target.value)
+      ? target.value
+      : [target.value];
+    action('Controlled multiselect onChange: ')(newValue);
+    setMultiselectValues(newValue as string[]);
+  };
+
+  const handleReset = () => {
+    setValue(undefined);
+    setMultiselectValues([]);
+  };
+
+  return (
+    <div>
+      <div style={{ marginBottom: '20px' }}>
+        <Dropdown
+          controlled
+          width="305px"
+          label="Controlled Single Select Dropdown"
+          placeholder="Select a continent"
+          value={value}
+          className={styles.exampleDropdown}
+          aria-label="controlled-single-select"
+          id="controlled-single-select"
+          onChange={handleSingleChange}
+        >
+          <MenuItem value="1">Africa</MenuItem>
+          <MenuItem value="2">Antartica</MenuItem>
+          <MenuItem value="3">Asia</MenuItem>
+          <MenuItem value="4">Europe</MenuItem>
+          <MenuItem value="5">Oceania</MenuItem>
+          <MenuItem value="6">North America</MenuItem>
+          <MenuItem value="7">South America</MenuItem>
+        </Dropdown>
+        <div style={{ marginTop: '10px', fontSize: '14px', color: '#666' }}>
+          Selected Value: {value || 'None'}
+        </div>
+      </div>
+
+      <div style={{ marginBottom: '20px' }}>
+        <Dropdown
+          controlled
+          multiselect
+          width="305px"
+          label="Controlled Multi-Select Dropdown"
+          placeholder="Select continents"
+          value={multiselectValues}
+          className={styles.exampleDropdown}
+          aria-label="controlled-multi-select"
+          id="controlled-multi-select"
+          onChange={handleMultiselectChange}
+        >
+          <MenuItem value="1">Africa</MenuItem>
+          <MenuItem value="2">Antartica</MenuItem>
+          <MenuItem value="3">Asia</MenuItem>
+          <MenuItem value="4">Europe</MenuItem>
+          <MenuItem value="5">Oceania</MenuItem>
+          <MenuItem value="6">North America</MenuItem>
+          <MenuItem value="7">South America</MenuItem>
+        </Dropdown>
+        <div style={{ marginTop: '10px', fontSize: '14px', color: '#666' }}>
+          Selected Values:{' '}
+          {multiselectValues.length > 0 ? multiselectValues.join(', ') : 'None'}
+        </div>
+      </div>
+
+      <button
+// ...
+```
+
+### No Visible Label Use Aria Label For Accessibility
+
+```tsx
+() => (
+  <div>
+    <h3>No Visible Label Example</h3>
+    <Dropdown
+      data-automation-id="arialabelexample"
+      aria-label="Choose a fruit"
+      className={styles.exampleDropdown}
+      onChange={action('onChange')}
+    >
+      <MenuItem value="1">Banana</MenuItem>
+      <MenuItem value="2">Apple</MenuItem>
+      <MenuItem value="3">Guava</MenuItem>
+      <MenuItem value="4">Mango</MenuItem>
+      <MenuItem value="5">Orange</MenuItem>
+      <MenuItem value="6">Pear</MenuItem>
+      <MenuItem value="7">Strawberry</MenuItem>
+      <MenuItem value="8">Watermelon</MenuItem>
+      <MenuItem value="9">Blueberry</MenuItem>
+      <MenuItem value="10">Pineapple</MenuItem>
+    </Dropdown>
+    <p>
+      The element is used to associate a text label with a form field. The label
+      is used to tell users the value that should be entered in the associated
+      input field. If your design does not include a visible label, then you
+      must include an aria-label to provide information to the screen reader.
+    </p>
+  </div>
+)
+```
+
+### Long Option
+
+```tsx
+() => (
+  <Dropdown
+    multiselect
+    alignment="bottom"
+    label="Document type(s)"
+    name="documentTypeDropdown"
+    data-automation-id="basic"
+    aria-label="Choose a form"
+    className={styles.exampleDropdown}
+    onChange={action('onChange')}
+  >
+    <MenuItem value="1">1099-INT (4)</MenuItem>
+    <MenuItem value="2">1099-G (0)</MenuItem>
+    <MenuItem value="3">1099-DIV (0)</MenuItem>
+    <MenuItem value="4">1099-B (0)</MenuItem>
+    <MenuItem value="5">1098-T (0)</MenuItem>
+    <MenuItem value="6">1098 (0)</MenuItem>
+    <MenuItem value="7">Tax Return Review Doc (1)</MenuItem>
+    <MenuItem value="8">Other (1)</MenuItem>
+  </Dropdown>
+)
+```
+
+### Multiselect Dropdown
+
+```tsx
+() => {
+  const [value, setValue] = useState([]);
+  action('Selected Value:')(value.toString());
+  const onChange = (e: any) => {
+    const val = e.target.value as never;
+    if (value.includes(val)) {
+      value.splice(value.indexOf(val), 1);
+      setValue(value);
+    } else {
+      value.push(val);
+      setValue(value);
+    }
+  };
+
+  return (
+    <Dropdown
+      multiselect
+      label="Hobbies - Choose all that apply"
+      value={value}
+      className={styles.exampleDropdown}
+      onChange={onChange}
+    >
+      <MenuItem value="1">Photography</MenuItem>
+      <MenuItem value="2">Reading</MenuItem>
+      <MenuItem value="3">Painting</MenuItem>
+      <MenuItem value="4">Travel</MenuItem>
+    </Dropdown>
+  );
+}
+```
+
+### Multiselect Dropdown With Aria Label
+
+```tsx
+() => {
+  const [value, setValue] = useState(['']);
+  action('Selected Value:')(value.toString());
+  const onChange = (e: any) => {
+    if (value.includes(e.target.value)) {
+      value.splice(value.indexOf(e.target.value), 1);
+      setValue(value);
+    } else {
+      value.push(e.target.value);
+      setValue(value);
+    }
+  };
+
+  return (
+    <Dropdown
+      multiselect
+      aria-label="Hobbies - Choose all that apply"
+      value={value}
+      className={styles.exampleDropdown}
+      onChange={onChange}
+    >
+      <MenuItem value="1">Photography</MenuItem>
+      <MenuItem value="2">Reading</MenuItem>
+      <MenuItem value="3">Painting</MenuItem>
+      <MenuItem value="4">Travel</MenuItem>
+    </Dropdown>
+  );
+}
+```
+
+### Placeholder
+
+```tsx
+() => (
+  <Dropdown
+    aria-label="Fruit"
+    placeholder="Select"
+    className={styles.exampleDropdown}
+  >
+    <MenuItem value="1">Pineapple</MenuItem>
+    <MenuItem value="2">Apple</MenuItem>
+    <MenuItem value="3">Avocado</MenuItem>
+  </Dropdown>
+)
+```
+
+### Disabled
+
+```tsx
+() => (
+  <Dropdown
+    disabled
+    label="Disabled Example"
+    className={styles.exampleDropdown}
+  >
+    <MenuItem value="1">Select</MenuItem>
+  </Dropdown>
+)
+```
+
+### Disabled Option
+
+```tsx
+() => {
+  const [value, setValue] = useState('0');
+  const onChange = (e: any) => setValue(e.target.value);
+
+  return (
+    <Dropdown
+      label="Disabled Option Example"
+      value={value}
+      className={styles.exampleDropdown}
+      onChange={onChange}
+    >
+      <MenuItem value="0">Select Value</MenuItem>
+      <MenuItem disabled value="1">
+        Option 1
+      </MenuItem>
+      <MenuItem disabled value="2">
+        Option 2
+      </MenuItem>
+      <MenuItem value="3">Option 3</MenuItem>
+      <MenuItem value="4">Option 4</MenuItem>
+      <MenuItem value="5">Option 5</MenuItem>
+    </Dropdown>
+  );
+}
+```
+
+### With Error
+
+```tsx
+() => (
+  <Dropdown
+    aria-label="With Error Example"
+    errorText="Error!! Invalid selection."
+    className={styles.exampleDropdown}
+  >
+    <MenuItem value="1">Select</MenuItem>
+  </Dropdown>
+)
+```
+
+### With Validation Error
+
+```tsx
+() => (
+  <Dropdown
+    validationError
+    aria-label="With Validation Error Example"
+    className={styles.exampleDropdown}
+  >
+    <MenuItem value="1">Select</MenuItem>
+  </Dropdown>
+)
+```
+
+### With Warning
+
+```tsx
+() => (
+  <Dropdown
+    aria-label="With Warning Example"
+    warningText="Warning!! Invalid selection."
+    className={styles.exampleDropdown}
+  >
+    <MenuItem value="1">Select</MenuItem>
+  </Dropdown>
+)
+```
+
+### With Info
+
+```tsx
+() => (
+  <Dropdown
+    aria-label="With Info Example"
+    infoText="Additional information about this selection."
+    className={styles.exampleDropdown}
+  >
+    <MenuItem value="1">Select</MenuItem>
+  </Dropdown>
+)
+```
+
+### Helper Text
+
+```tsx
+() => (
+  <Dropdown
+    aria-label="With HelperText Example"
+    helperText="Optional helper text."
+    className={styles.exampleDropdown}
+  >
+    <MenuItem value="0">Select</MenuItem>
+  </Dropdown>
+)
+```
+
+### On Blur
+
+```tsx
+() => {
+  const [value, setValue] = useState('0');
+  const [errorText, setErrorText] = useState('');
+  const onChange = (e: any) => {
+    setValue(e.target.value);
+    setErrorText('');
+  };
+
+  const onBlur = () => setErrorText('Error!! Invalid selection.');
+
+  return (
+    <Dropdown
+      aria-label="on blur example"
+      value={value}
+      errorText={errorText}
+      className={styles.exampleDropdown}
+      onChange={onChange}
+      onBlur={onBlur}
+    >
+      <MenuItem value="0">Select Value</MenuItem>
+      <MenuItem value="1">Option 1</MenuItem>
+      <MenuItem value="2">Option 2</MenuItem>
+      <MenuItem value="3">Option 3</MenuItem>
+      <MenuItem value="4">Option 4</MenuItem>
+      <MenuItem value="5">Option 5</MenuItem>
+    </Dropdown>
+  );
+}
+```
+
+### Changed Display When Selected
+
+```tsx
+() => (
+  <Dropdown label="Name" className={styles.exampleDropdown}>
+    <MenuItem value="1" menuItemLabel="You picked a Banana">
+      Banana
+    </MenuItem>
+    <MenuItem value="2" menuItemLabel="You picked an Apple">
+      Apple
+    </MenuItem>
+    <MenuItem value="3" menuItemLabel="You picked a Guava">
+      Guava
+    </MenuItem>
+    <MenuItem value="4" menuItemLabel="You picked a Mango">
+      Mango
+    </MenuItem>
+  </Dropdown>
+)
+```
+
+### Connected Selection
+
+```tsx
+() => {
+  const [value, setValue] = useState('0');
+  const onChange = (e: any) => setValue(e.target.value);
+
+  return (
+    <div>
+      <Dropdown
+        label="Name"
+        value={value}
+        className={styles.exampleDropdown}
+        onChange={onChange}
+      >
+        <MenuItem value="1">Banana</MenuItem>
+        <MenuItem value="2">Apple</MenuItem>
+        <MenuItem value="3">Guava</MenuItem>
+        <MenuItem value="4">Mango</MenuItem>
+      </Dropdown>
+      <Dropdown label="Fruit" value={value} onChange={onChange}>
+        <MenuItem value="1">Banana</MenuItem>
+        <MenuItem value="2">Apple</MenuItem>
+        <MenuItem value="3">Guava</MenuItem>
+        <MenuItem value="4">Mango</MenuItem>
+      </Dropdown>
+    </div>
+  );
+}
+```
+
+### Render From Props
+
+```tsx
+() => {
+  const [value, setValue] = useState('0');
+  const onChange = (e: any) => {
+    if (e.target.name === 'Fruit') {
+      setValue(e.target.value);
+    }
+  };
+
+  return (
+    <div>
+      <span>
+        Dropdown`s With Declined Selection Change and render from props
+      </span>
+      <Dropdown
+        name="Name"
+        label="Name without renderFromProps"
+        value={value}
+        className={styles.exampleDropdown}
+        onChange={onChange}
+      >
+        <MenuItem value="1">Banana</MenuItem>
+        <MenuItem value="2">Apple</MenuItem>
+        <MenuItem value="3">Guava</MenuItem>
+        <MenuItem value="4">Mango</MenuItem>
+      </Dropdown>
+      <Dropdown
+        renderFromProps
+        name="Fruit"
+        label="Fruit with renderFromProps"
+        value={value}
+        onChange={onChange}
+      >
+        <MenuItem value="1">Banana</MenuItem>
+        <MenuItem value="2">Apple</MenuItem>
+        <MenuItem value="3">Guava</MenuItem>
+        <MenuItem value="4">Mango</MenuItem>
+      </Dropdown>
+    </div>
+  );
+}
+```
+
+### Update Position
+
+```tsx
+() => {
+  const [y, setY] = useState(0);
+
+  useEffect(() => {
+    const timerId = setInterval(() => {
+      setY((oldY) => (oldY + 100) % 600);
+    }, 1500);
+
+    return () => {
+      clearInterval(timerId);
+    };
+  }, []);
+
+  return (
+    <div
+      style={{
+        marginTop: y
+      }}
+    >
+      <Dropdown
+        label="Fruit"
+        data-automation-id="basic"
+        aria-label="Choose a fruit"
+        positionDependencies={[y]}
+        onChange={action('onChange')}
+      >
+        <MenuItem value="1">Banana</MenuItem>
+        <MenuItem value="2">Apple</MenuItem>
+        <MenuItem value="3">Guava</MenuItem>
+        <MenuItem value="4">Durian</MenuItem>
+      </Dropdown>
+    </div>
+  );
+}
+```
+
+### Size Comparison
+
+```tsx
+() => {
+  return (
+    <div className={styles.sizeComparison}>
+      <Dropdown
+        label="Medium Dropdown - Fruit"
+        data-automation-id="basicMedium"
+        aria-label="Choose a fruit - medium"
+        size="medium"
+        onChange={action('onChange')}
+      >
+        <MenuItem value="1">Banana</MenuItem>
+        <MenuItem value="2">Apple</MenuItem>
+        <MenuItem value="3">Guava</MenuItem>
+        <MenuItem value="4">Durian</MenuItem>
+      </Dropdown>
+      <Dropdown
+        label="Small Dropdown - Fruit"
+        data-automation-id="basicSmall"
+        aria-label="Choose a fruit - small"
+        size="small"
+        onChange={action('onChange')}
+      >
+        <MenuItem value="1">Banana</MenuItem>
+        <MenuItem value="2">Apple</MenuItem>
+        <MenuItem value="3">Guava</MenuItem>
+        <MenuItem value="4">Durian</MenuItem>
+      </Dropdown>
+    </div>
+  );
+}
+```
+
+### With Addon Before Label
+
+```tsx
+() => {
+  const [value, setValue] = useState('0');
+  const onChange = (e: any) => setValue(e.target.value);
+
+  const getAddonBeforeContent = () => {
+    if (Number(value) > 0) {
+      return (
+        <Badge status="success" style={{ margin: '8px' }}>
+          {value}
+        </Badge>
+      );
+    }
+
+    return undefined;
+  };
+
+  return (
+    <Dropdown
+      label="Fruit"
+      addonBeforeContent={getAddonBeforeContent()}
+      data-automation-id="addonBeforeLabel"
+      aria-label="Choose a fruit"
+      value={value}
+      onChange={onChange}
+    >
+      <MenuItem value="1">Banana</MenuItem>
+      <MenuItem value="2">Apple</MenuItem>
+      <MenuItem value="3">Guava</MenuItem>
+      <MenuItem value="4">Durian</MenuItem>
+    </Dropdown>
+  );
+}
+```
+
+### Rich Menu Items
+
+```tsx
+() => {
+  const [value1, setValue1] = useState('');
+  const [value2, setValue2] = useState('');
+
+  const credentials = [
+    {
+      value: 'cred-1',
+      name: 'Production AWS',
+      account: 'AWS Account: 123456789012',
+      code: '7216'
+    },
+    {
+      value: 'cred-2',
+      name: 'Development AWS',
+      account: 'AWS Account: 234567890123',
+      code: '8432'
+    },
+    {
+      value: 'cred-3',
+      name: 'Staging Environment',
+      account: 'AWS Account: 345678901234',
+      code: '5109'
+    }
+  ];
+
+  return (
+    <div>
+      <p style={{ marginBottom: '16px' }}>
+        This example demonstrates how to render rich, multi-line dropdown items
+        with custom styling. When using React elements as children, provide
+        either <code>menuItemLabel</code> (recommended) or <code>value</code> to
+        control what appears in the closed dropdown field.
+      </p>
+
+      <h4 style={{ marginBottom: '8px' }}>With menuItemLabel (Recommended)</h4>
+      <p style={{ marginBottom: '8px', fontSize: '14px', color: '#666' }}>
+        Use <code>menuItemLabel</code> to specify a custom display string:
+      </p>
+      <Dropdown
+        label="Select Credential"
+        placeholder="Choose a credential..."
+        data-automation-id="rich-items-with-label"
+        aria-label="Select a credential with label"
+        className={styles.exampleDropdown}
+        value={value1}
+        onChange={(e: any) => setValue1(e.target.value)}
+      >
+        {credentials.map((cred) => (
+          <MenuItem
+            key={cred.value}
+            value={cred.value}
+            menuItemLabel={cred.name}
+          >
+            <div className={styles.richItemContainer}>
+              <span className={styles.richItemPrimary}>{cred.name}</span>
+              <span className={styles.richItemSecondary}>
+                {cred.account}
+                <Badge status="info" className={styles.richItemBadge}>
+                  {cred.code}
+                </Badge>
+              </span>
+            </div>
+          </MenuItem>
+        ))}
+      </Dropdown>
+      <p style={{ marginTop: '8px', marginBottom: '24px', fontSize: '14px' }}>
+        Selected shows:{' '}
+        <strong>
+          {value1 ? credentials.find((c) => c.value === value1)?.name : 'None'}
+        </strong>
+      </p>
+
+      <h4 style={{ marginBottom: '8px' }}>
+        Without menuItemLabel (Falls back to value)
+      </h4>
+      <p style={{ marginBottom: '8px', fontSize: '14px', color: '#666' }}>
+        Without <code>menuItemLabel</code>, the <code>value</code> prop is
+        displayed:
+      </p>
+      <Dropdown
+// ...
+```
+
+## Accessibility
+
+## Composes With
+
+- Badge
+
+---
+
+## References
+
+- [GitHub Source - Dropdown](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/Dropdown)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/dropdown.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-dropdown&theme=quickbooks&colorScheme=light)

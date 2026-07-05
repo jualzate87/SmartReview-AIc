@@ -1,0 +1,943 @@
+---
+description: Complete guide for using the StepFlow component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# StepFlow
+
+This component is not yet externalized under Web Shell and therefore should not be used outside of local development. Until further notice, please use the [QBDS version](https://uxfabric.intuitcdn.net/internal/design-systems/qbds/main/latest/index.html?path=/story/components-stepflowhorizontal--playground&theme=quickbooks&colorScheme=light) of this component.
+
+The StepFlow has two primary patterns:
+
+- To help users complete a complicated task or a series of tasks or decisions that affect other choices they’ll need to make later. Connecting a bank account and other setup flows are good examples.
+- To help users fill out a long form by breaking it into several small sections. Good examples are creating a new employee and signing up for payments.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/step-flow
+```
+
+```tsx
+import { StepFlow } from '@ids-ts/step-flow';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `activeStep` | `number` | No | [internal] The current step index |
+| `activeStepIndex` | `number` | Yes | The step the flow begins on |
+| `activeNestedStep` | `number` | No | [internal] The index of the active nested step, used in progress calculations |
+| `children` | `React.ReactNode` | Yes | The steps to be displayed within the container |
+| `className` | `string` | No | Custom classes to be added to the StepFlow div |
+| `goToNext` | `() => void` | No | [internal] Advances stepIndex to the next step in the flow |
+| `goToPrevious` | `() => void` | No | [internal] Advances stepIndex to the previous step in the flow |
+| `goToStep` | `(stepIndex: number) => void` | No | [internal] Goes directly to the provided step in the flow |
+| `navigationDirection` | `'forward' | 'backward'` | No | [internal] The direction to navigate to |
+| `progressType` | `'indicator' | 'bar' | 'none'` | Yes | The type of progress bar. One of: “indicator”, “bar”, “none” |
+| `setActiveNestedStep` | `Dispatcher<number>` | No | [internal] Setter for activeNestedStep |
+| `width` | `Width` | Yes | The width of the containers in the flow steps. One of: “small”, “medium”, “large” |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface StepFlowProps extends ThemeableElement<'div'> {
+  /** [internal] The current step index */
+  activeStep?: number;
+  /**  The step the flow begins on */
+  activeStepIndex: number;
+  /** [internal] The index of the active nested step, used in progress calculations */
+  activeNestedStep?: number;
+  /** The steps to be displayed within the container */
+  children: React.ReactNode;
+  /** Custom classes to be added to the StepFlow div */
+  className?: string;
+  /** [internal] Advances stepIndex to the next step in the flow */
+  goToNext?: () => void;
+  /** [internal] Advances stepIndex to the previous step in the flow */
+  goToPrevious?: () => void;
+  /** [internal] Goes directly to the provided step in the flow */
+  goToStep?: (stepIndex: number) => void;
+  /** [internal] The direction to navigate to */
+  navigationDirection?: 'forward' | 'backward';
+  /** The type of progress bar. One of: “indicator”, “bar”, “none” */
+  progressType: 'indicator' | 'bar' | 'none';
+  /** [internal] Setter for activeNestedStep */
+  setActiveNestedStep?: Dispatcher<number>;
+  /** The width of the containers in the flow steps. One of: “small”, “medium”, “large” */
+  width: Width;
+}
+
+export type Width = 'small' | 'medium' | 'large';
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Basic Usage
+
+```tsx
+() => {
+  return (
+    <Trowser
+      open
+      stepFlow
+      hideOverflow
+      dismissible
+      title="Payroll Setup"
+      headerClassName={trowserHeaderWithStepFlow}
+    >
+      <StepFlow className={styles.flow}>
+        <Step title="Welcome" hasPreviousButton={false} />
+        <Step title="Enter your business name" />
+        <Step title="Enter your business address" />
+        <Step
+          title="Congratulations"
+          subtitle={confirmationPageSubTitle}
+          nextButtonText="Done"
+          type="confirmation"
+          hasPreviousButton={false}
+        />
+      </StepFlow>
+    </Trowser>
+  );
+}
+```
+
+### With Confirmation Page
+
+```tsx
+() => {
+  return (
+    <Trowser
+      open
+      stepFlow
+      hideOverflow
+      dismissible
+      title="Payroll Setup"
+      headerClassName={trowserHeaderWithStepFlow}
+    >
+      <StepFlow className={styles.flow} width="small">
+        <Step
+          nextButtonText="Done"
+          subtitle={confirmationPageSubTitle}
+          title="Congratulations"
+          type="confirmation"
+          hasPreviousButton={false}
+        />
+      </StepFlow>
+    </Trowser>
+  );
+}
+```
+
+### With Small Content
+
+```tsx
+() => {
+  return (
+    <Trowser
+      open
+      stepFlow
+      hideOverflow
+      dismissible
+      title="Payroll Setup"
+      headerClassName={trowserHeaderWithStepFlow}
+    >
+      <StepFlow className={styles.flow} width="small">
+        <Step title="Welcome" hasPreviousButton={false} />
+        <Step title="Enter your Business Name" />
+        <Step title="Enter your Business Address" />
+        <Step
+          title="Congratulations"
+          subtitle={confirmationPageSubTitle}
+          type="confirmation"
+          nextButtonText="Done"
+          hasPreviousButton={false}
+        />
+      </StepFlow>
+    </Trowser>
+  );
+}
+```
+
+### With Medium Content
+
+```tsx
+() => {
+  return (
+    <Trowser
+      open
+      stepFlow
+      hideOverflow
+      dismissible
+      title="Payroll Setup"
+      headerClassName={trowserHeaderWithStepFlow}
+    >
+      <StepFlow className={styles.flow} width="medium">
+        <Step title="Welcome" hasPreviousButton={false} />
+        <Step title="Enter your Business Name" />
+        <Step title="Enter your Business Address" />
+        <Step
+          title="Congratulations"
+          subtitle={confirmationPageSubTitle}
+          type="confirmation"
+          nextButtonText="Done"
+          hasPreviousButton={false}
+        />
+      </StepFlow>
+    </Trowser>
+  );
+}
+```
+
+### With Large Content
+
+```tsx
+() => {
+  return (
+    <Trowser
+      open
+      stepFlow
+      hideOverflow
+      dismissible
+      title="Payroll Setup"
+      headerClassName={trowserHeaderWithStepFlow}
+    >
+      <StepFlow className={styles.flow} width="large">
+        <Step title="Welcome" hasPreviousButton={false} />
+        <Step title="Enter your Business Name" />
+        <Step title="Enter your Business Address" />
+        <Step
+          title="Congratulations"
+          subtitle={confirmationPageSubTitle}
+          type="confirmation"
+          nextButtonText="Done"
+          hasPreviousButton={false}
+        />
+      </StepFlow>
+    </Trowser>
+  );
+}
+```
+
+### With Progress Type Bar
+
+```tsx
+() => {
+  return (
+    <Trowser
+      open
+      stepFlow
+      hideOverflow
+      dismissible
+      title="Payroll Setup"
+      headerClassName={trowserHeaderWithStepFlow}
+    >
+      <StepFlow className={styles.flow} progressType="bar">
+        <Step
+          title="Welcome"
+          subtitle={lorem.lines(1)}
+          hasPreviousButton={false}
+        />
+        <Step title="Enter your business name" subtitle={lorem.lines(1)} />
+        <Step title="Enter your business address" subtitle={lorem.lines(1)} />
+        <Step
+          title="Congratulations"
+          subtitle={confirmationPageSubTitle}
+          nextButtonText="Done"
+          type="confirmation"
+          hasPreviousButton={false}
+        />
+      </StepFlow>
+    </Trowser>
+  );
+}
+```
+
+### With Progress Type None
+
+```tsx
+() => {
+  return (
+    <Trowser
+      open
+      stepFlow
+      hideOverflow
+      dismissible
+      title="Payroll Setup"
+      headerClassName={trowserHeaderWithStepFlow}
+    >
+      <StepFlow className={styles.flow} progressType="none">
+        <Step title="Welcome" hasPreviousButton={false} />
+        <Step title="Enter your business name" />
+        <Step title="Enter your business address" />
+        <Step
+          title="Congratulations"
+          subtitle={confirmationPageSubTitle}
+          type="confirmation"
+          nextButtonText="Done"
+          hasPreviousButton={false}
+        />
+      </StepFlow>
+    </Trowser>
+  );
+}
+```
+
+### With Controlled Loading
+
+```tsx
+() => {
+  const stepFlowState = useStepFlow();
+
+  return (
+    <Trowser
+      open
+      stepFlow
+      hideOverflow
+      dismissible
+      title="Payroll Setup"
+      headerClassName={trowserHeaderWithStepFlow}
+    >
+      <StepFlow {...stepFlowState} className={styles.flow} progressType="bar">
+        <LoadingWrapper
+          isStep
+          title="Welcome"
+          subtitle="This step has a 2 second delay, and shows an error 50% of the time"
+          onNext={stepFlowState.goToNext}
+        />
+        <Step title="Enter your business name" />
+        <Step title="Enter your business address" />
+        <Step
+          title="Congratulations"
+          subtitle={confirmationPageSubTitle}
+          nextButtonText="Done"
+          type="confirmation"
+          hasPreviousButton={false}
+        />
+      </StepFlow>
+    </Trowser>
+  );
+}
+```
+
+### With Page Message
+
+```tsx
+() => {
+  return (
+    <Trowser
+      open
+      stepFlow
+      hideOverflow
+      dismissible
+      title="Payroll Setup"
+      headerClassName={trowserHeaderWithStepFlow}
+    >
+      <StepFlow className={styles.flow}>
+        <Step
+          title="Welcome"
+          subtitle={lorem.lines(1)}
+          pageMessages={
+            <PageMessageComponent
+              dismissible
+              title={lorem.lines(1)}
+              type="error"
+            >
+              {lorem.lines(1)}
+            </PageMessageComponent>
+          }
+          hasPreviousButton={false}
+        />
+        <Step
+          title="Enter your Business Name"
+          subtitle={lorem.lines(1)}
+          pageMessages={
+            <PageMessageComponent
+              dismissible
+              title={lorem.lines(1)}
+              type="info"
+            >
+              {lorem.lines(1)}
+            </PageMessageComponent>
+          }
+        />
+        <Step
+          title="Enter your business address"
+          subtitle={lorem.lines(1)}
+          pageMessages={
+            <PageMessageComponent
+              dismissible
+              title={lorem.lines(1)}
+              type="warn"
+            >
+              {lorem.lines(1)}
+            </PageMessageComponent>
+          }
+        />
+        <Step
+          title="Congratulations"
+          subtitle={confirmationPageSubTitle}
+          type="confirmation"
+          nextButtonText="Done"
+          hasPreviousButton={false}
+        />
+      </StepFlow>
+    </Trowser>
+  );
+}
+```
+
+### With Custom Page Messages
+
+```tsx
+() => {
+  return (
+    <Trowser
+      open
+      stepFlow
+      hideOverflow
+      dismissible
+      title="Payroll Setup"
+      headerClassName={trowserHeaderWithStepFlow}
+    >
+      <StepFlow className={styles.flow}>
+        <Step
+          title="Welcome"
+          subtitle={lorem.lines(1)}
+          pageMessages={
+            <StackedPageMessages>
+              <PageMessageComponent
+                dismissible
+                title={lorem.lines(1)}
+                type="info"
+              >
+                {lorem.lines(1)}
+              </PageMessageComponent>
+              <PageMessageComponent
+                dismissible={false}
+                title={lorem.lines(1)}
+                type="warn"
+              >
+                {lorem.lines(1)}
+              </PageMessageComponent>
+              <PageMessageComponent
+                dismissible
+                title={lorem.lines(1)}
+                type="error"
+              >
+                {lorem.lines(1)}
+              </PageMessageComponent>
+            </StackedPageMessages>
+          }
+          hasPreviousButton={false}
+        />
+        <Step title="Enter your Business Name" subtitle={lorem.lines(1)} />
+        <Step title="Enter your business address" subtitle={lorem.lines(1)} />
+        <Step
+          title="Congratulations"
+          subtitle={confirmationPageSubTitle}
+          type="confirmation"
+          nextButtonText="Done"
+          hasPreviousButton={false}
+        />
+      </StepFlow>
+    </Trowser>
+  );
+}
+```
+
+### With Nested Steps
+
+```tsx
+() => {
+  return (
+    <Trowser
+      open
+      stepFlow
+      hideOverflow
+      dismissible
+      title="Payroll Setup"
+      headerClassName={trowserHeaderWithStepFlow}
+    >
+      <StepFlow className={styles.flow} progressType="indicator">
+        <StepGroup label="Business details">
+          <Step title="Enter your California info" hasPreviousButton={false} />
+          <Step title="Enter your New York info" />
+          <Step title="Enter your Florida info" />
+        </StepGroup>
+        <Step title="Enter your business name" label="Business name" />
+        <Step title="Enter your business address" label="Business address" />
+        <Step
+          title="Congratulations"
+          subtitle={confirmationPageSubTitle}
+          type="confirmation"
+          nextButtonText="Done"
+          hasPreviousButton={false}
+        />
+      </StepFlow>
+    </Trowser>
+  );
+}
+```
+
+### With Progress Type Indicator
+
+```tsx
+() => {
+  return (
+    <Trowser
+      open
+      stepFlow
+      hideOverflow
+      dismissible
+      title="Payroll Setup"
+      headerClassName={trowserHeaderWithStepFlow}
+    >
+      <StepFlow className={styles.flow} progressType="indicator">
+        <Step
+          title="Welcome"
+          subtitle={lorem.lines(1)}
+          label="Welcome"
+          hasPreviousButton={false}
+        />
+        <Step
+          title="Enter your business name"
+          subtitle={lorem.lines(1)}
+          label="Business name"
+        />
+        <Step
+          title="Enter your business address"
+          subtitle={lorem.lines(1)}
+          label="Business address"
+        />
+        <Step
+          title="Congratulations"
+          subtitle={confirmationPageSubTitle}
+          nextButtonText="Done"
+          type="confirmation"
+          hasPreviousButton={false}
+        />
+      </StepFlow>
+    </Trowser>
+  );
+}
+```
+
+### With Controlled Completeness
+
+```tsx
+() => {
+  return (
+    <Trowser
+      open
+      stepFlow
+      hideOverflow
+      dismissible
+      disableAutoFocus
+      title="Payroll Setup"
+      headerClassName={trowserHeaderWithStepFlow}
+    >
+      <StepFlow
+        className={styles.flow}
+        progressType="indicator"
+        activeStepIndex={1}
+      >
+        <Step
+          isCompleted
+          title="Welcome"
+          subtitle={lorem.lines(1)}
+          label="Welcome"
+          hasPreviousButton={false}
+        />
+        <Step
+          title="Enter your business name"
+          subtitle={lorem.lines(1)}
+          label="Business name"
+        />
+        <Step
+          isCompleted
+          title="Enter your business address"
+          subtitle={lorem.lines(1)}
+          label="Business address"
+        />
+        <Step
+          isCompleted
+          title="Enter your tax rate"
+          subtitle={lorem.lines(1)}
+          label="Tax Rate"
+        />
+        <Step
+          title="Enter your company type"
+          subtitle={lorem.lines(1)}
+          label="Company type"
+        />
+        <Step
+          title="Congratulations"
+          subtitle={confirmationPageSubTitle}
+          type="confirmation"
+          nextButtonText="Done"
+          hasPreviousButton={false}
+        />
+      </StepFlow>
+    </Trowser>
+  );
+}
+```
+
+### With Five Steps
+
+```tsx
+() => {
+  return (
+    <Trowser
+      open
+      stepFlow
+      hideOverflow
+      dismissible
+      title="Payroll Setup"
+      headerClassName={trowserHeaderWithStepFlow}
+    >
+      <StepFlow className={styles.flow} progressType="indicator">
+        <Step
+          title="Welcome"
+          subtitle={lorem.lines(1)}
+          label="Welcome"
+          hasPreviousButton={false}
+        />
+        <Step
+          title="Enter your business name"
+          subtitle={lorem.lines(1)}
+          label="Business name"
+        />
+        <Step
+          title="Enter your business address"
+          subtitle={lorem.lines(1)}
+          label="Business address"
+        />
+        <Step
+          title="Enter your company type"
+          subtitle={lorem.lines(1)}
+          label="Company type"
+        />
+        <Step
+          title="Enter your title"
+          subtitle={lorem.lines(1)}
+          label="Company title"
+        />
+        <Step
+          title="Congratulations"
+          subtitle={confirmationPageSubTitle}
+          nextButtonText="Done"
+          type="confirmation"
+          hasPreviousButton={false}
+        />
+      </StepFlow>
+    </Trowser>
+  );
+}
+```
+
+### With Starting Step2
+
+```tsx
+() => {
+  return (
+    <Trowser
+      open
+      stepFlow
+      hideOverflow
+      dismissible
+      title="Payroll Setup"
+      headerClassName={trowserHeaderWithStepFlow}
+    >
+      <StepFlow
+        className={styles.flow}
+        progressType="indicator"
+        activeStepIndex={1}
+      >
+        <Step title="Welcome" label="Welcome" hasPreviousButton={false} />
+        <Step title="Enter your business name" label="Business name" />
+        <Step title="Enter your business address" label="Business address" />
+        <Step
+          title="Congratulations"
+          subtitle={confirmationPageSubTitle}
+          type="confirmation"
+          nextButtonText="Done"
+          hasPreviousButton={false}
+        />
+      </StepFlow>
+    </Trowser>
+  );
+}
+```
+
+### With Skipped Step
+
+```tsx
+() => {
+  const [isSkipped, setIsSkipped] = useState(false);
+  const stepFlowState = useStepFlow();
+
+  function skipHandler() {
+    setIsSkipped(true);
+    stepFlowState.goToNext();
+  }
+
+  function nextHandler() {
+    setIsSkipped(false);
+    stepFlowState.goToNext();
+  }
+
+  return (
+    <Trowser
+      open
+      stepFlow
+      hideOverflow
+      dismissible
+      title="Payroll Setup"
+      headerClassName={trowserHeaderWithStepFlow}
+    >
+      <StepFlow
+        {...stepFlowState}
+        className={styles.flow}
+        progressType="indicator"
+      >
+        <Step
+          hasSkipButton
+          isSkipped={isSkipped}
+          hasPreviousButton={false}
+          label="Welcome"
+          title="Welcome"
+          subtitle="This step is skippable, try hitting Skip."
+          onNext={() => nextHandler()}
+          onSkip={() => skipHandler()}
+        />
+        <Step title="Enter your business name" label="Business name" />
+        <Step title="Enter your business address" label="Business address" />
+        <Step
+          title="Congratulations"
+          subtitle={confirmationPageSubTitle}
+          type="confirmation"
+          nextButtonText="Done"
+          hasPreviousButton={false}
+        />
+      </StepFlow>
+    </Trowser>
+  );
+}
+```
+
+### With Three Footer Buttons
+
+```tsx
+() => {
+  const [isSkipped, setIsSkipped] = useState(false);
+  const stepFlowState = useStepFlow();
+
+  function skipHandler() {
+    setIsSkipped(true);
+    stepFlowState.goToNext();
+  }
+
+  function nextHandler() {
+    setIsSkipped(false);
+    stepFlowState.goToNext();
+  }
+
+  function previousHandler() {
+    stepFlowState.goToPrevious();
+  }
+
+  return (
+    <Trowser
+      open
+      stepFlow
+      hideOverflow
+      dismissible
+      title="Payroll Setup"
+      headerClassName={trowserHeaderWithStepFlow}
+    >
+      <StepFlow
+        {...stepFlowState}
+        className={styles.flow}
+        progressType="indicator"
+      >
+        <Step
+          hasSkipButton
+          hasPreviousButton
+          isSkipped={isSkipped}
+          label="Welcome"
+          title="Welcome"
+          subtitle="This step is skippable, try hitting Skip."
+          onNext={() => nextHandler()}
+          onSkip={() => skipHandler()}
+          onPrevious={() => previousHandler()}
+        />
+        <Step title="Enter your business name" label="Business name" />
+        <Step title="Enter your business address" label="Business address" />
+        <Step
+          title="Congratulations"
+          subtitle={confirmationPageSubTitle}
+          type="confirmation"
+          nextButtonText="Done"
+          hasPreviousButton={false}
+        />
+      </StepFlow>
+    </Trowser>
+  );
+}
+```
+
+### With Programmatic Navigation
+
+```tsx
+() => {
+  const stepFlowState = useStepFlow();
+
+  function nextHandler() {
+    stepFlowState.goToNext();
+  }
+
+  function previousHandler() {
+    stepFlowState.goToPrevious();
+  }
+
+  return (
+    <Trowser
+      open
+      stepFlow
+      hideOverflow
+      dismissible
+      title="Payroll Setup"
+      headerClassName={trowserHeaderWithStepFlow}
+    >
+      <StepFlow
+        {...stepFlowState}
+        className={styles.flow}
+        progressType="indicator"
+      >
+        <StepGroup {...stepFlowState} label="Business details">
+          <Step
+            title="Enter your California info"
+            hasPreviousButton={false}
+            onNext={() => nextHandler()}
+            onPrevious={() => previousHandler()}
+          />
+          <Step
+            title="Enter your New York info"
+            onNext={() => nextHandler()}
+            onPrevious={() => previousHandler()}
+          />
+          <Step
+            title="Enter your Florida info"
+            onNext={() => nextHandler()}
+            onPrevious={() => previousHandler()}
+          />
+        </StepGroup>
+        <Step title="Enter your business address" label="Business address" />
+        <Step
+          title="Congratulations"
+          subtitle={confirmationPageSubTitle}
+          type="confirmation"
+          nextButtonText="Done"
+          hasPreviousButton={false}
+        />
+      </StepFlow>
+    </Trowser>
+  );
+}
+```
+
+### Playground
+
+```tsx
+() => {
+  return (
+    <Trowser
+      open
+      stepFlow
+      hideOverflow
+      dismissible
+      title="Payroll Setup"
+      headerClassName={trowserHeaderWithStepFlow}
+    >
+      <StepFlow className={styles.flow}>
+        <Step title="Welcome" hasPreviousButton={false} />
+        <Step title="Enter your business name" />
+        <Step title="Enter your business address" />
+        <Step
+          title="Congratulations"
+          subtitle="All content including the confirmation badge is contained in an invisible box that follows the same size of the container used in previous steps."
+          nextButtonText="Done"
+          type="confirmation"
+          hasPreviousButton={false}
+        />
+      </StepFlow>
+    </Trowser>
+  );
+}
+```
+
+## Code Example
+
+```tsx
+import StepFlow, { Step, StepGroup } from '@ids-ts/step-flow';
+// if you need it, don't forget to import the styles too.
+import '@ids-ts/step-flow/dist/main.css';
+```
+
+## Composes With
+
+- Trowser
+- PageMessage
+- StackedPageMessages
+- Indeterminate
+
+---
+
+## References
+
+- [GitHub Source - StepFlow](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/StepFlow)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/step-flow.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-step-flow-horizontal&theme=quickbooks&colorScheme=light)

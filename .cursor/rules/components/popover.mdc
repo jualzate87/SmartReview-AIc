@@ -1,0 +1,1234 @@
+---
+description: Complete guide for using the Popover component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# Popover
+
+Popovers are used to provide quick actions without taking the user away from the page.
+
+A temporary menu that is revealed upon a user’s interaction with a button, action or other control.
+This allows users to access a list of choices and/or actions.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/popover
+```
+
+```tsx
+import {
+  Popover,
+  PopoverHeader,
+  PopoverContent,
+  PopoverActions,
+} from '@ids-ts/popover';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `alignment` | `Alignments` | Yes | Alignment of popover to target (e.g., `'top'`, `'middle'`, `'left'`, `'right'`). |
+| `animationOn` | `boolean` | Yes | - |
+| `children` | `React.ReactElement | React.ReactElement[]` | Yes | Inner content of popover |
+| `enableClickAway` | `boolean` | No | Disable onClose trigger on click away when dismissible is true. |
+| `disableAutoFocus` | `boolean` | No | - |
+| `disableRestoreFocus` | `boolean` | No | If true, does not focus back on the element that initiated |
+| `dismissible` | `boolean` | No | - |
+| `onClose` | `React.ReactEventHandler` | Yes | On close callback. |
+| `onPosition` | `(popoverRef: React.Ref<HTMLDivElement>) => void` | No | Callback with the popover ref after positioning. |
+| `open` | `boolean` | Yes | - |
+| `popoverOffsetX` | `number` | No | - |
+| `popoverOffsetY` | `number` | No | - |
+| `popoverOffsetSkidding` | `number` | No | Cross-axis pixel offset of the popover. |
+| `popoverOffsetDistance` | `number` | No | Main-axis pixel offset of the popover. |
+| `position` | `Positions` | Yes | Position of the popover: `'top'`, `'bottom'`, `'left'`, `'right'`. |
+| `preventOverflow` | `PreventOverflow` | No | - |
+| `stylePosition` | `React.CSSProperties` | No | * The optional styles applied to the position node wrapped around the root node. |
+| `targetElement` | `React.ReactNode | HTMLElement` | Yes | - |
+| `variant` | `'popover' | 'flyout'` | Yes | - |
+| `suppressPointer` | `boolean` | Yes | - |
+| `unmountDelay` | `number` | Yes | - |
+| `animationProperties` | `{ enterClassName?: string; exitClassName?: string }` | No | CSS class names for enter and exit animations. |
+| `transitionExit` | `string` | No | * The className to apply when the popover is exiting. |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface PopoverProps extends ThemeableElement<'div'> {
+  /**
+   * Alignment of popover to target.
+   * alignment: string of alignments
+   * vertical alignments: top, bottom, middle
+   * horizontal alignments: left, right, center
+   * NOTE: horizontal alignments cannot be paired with horizontal positions
+   * If multiple given, the first or the one with enough space will be chosen.
+   *
+   * @default 'middle'
+   */
+  alignment: Alignments;
+  /**
+   * Whether animation is turned on.
+   *
+   * @default true
+   */
+  animationOn: boolean;
+  /** non-visual text description that describes the popover's purpose. It is surfaced to assistive technology. */
+  'aria-label'?: string;
+  /** Inner content of popover */
+  children: React.ReactElement | React.ReactElement[];
+  /** Disable onClose trigger on click away when dismissible is true. */
+  enableClickAway?: boolean;
+  /**
+   * If true, does not put focus on first tabbable element.
+   * You will need to tab or add your own keyboard handler to make the
+   * first element tabbable.
+   */
+  disableAutoFocus?: boolean;
+  /** If true, does not focus back on the element that initiated */
+  disableRestoreFocus?: boolean;
+  /** Flag to set Popover as dismissible.
+   * When using the keyboard Popover traps focus, when setting dismissible to false
+   * make sure you have a button or action to close the Popover otherwise
+   * people will be trap without a way to close the Popover.
+   */
+  dismissible?: boolean; // keep for flexibility
+  /** On close callback. */
+  onClose: React.ReactEventHandler;
+  /**
+   * Callback invoked after initial open positioning and window resize.
+   *
+   * @param popoverRef
+   * @param popoverWrapper
+   * @returns
+   */
+  onPosition: (
+    popoverRef: React.Ref<HTMLDivElement>,
+    popoverWrapper: React.Ref<HTMLDivElement | null>
+  ) => void;
+  /**
+   * Whether component open.
+   *
+   * @default false
+   */
+  open: boolean;
+  /** Offset popover on X axis; gives user more flexibility on where the caret is (see Position)
+   *
+   * @deprecated Please use popoverOffsetSkidding instead
+   */
+  popoverOffsetX?: number;
+  /** Offset popover on Y axis
+   *
+   * @deprecated Please use popoverOffsetDistance instead
+   */
+  popoverOffsetY?: number;
+  /**
+   * popoverOffsetSkidding: the cross-axis pixel distance that the popup should be offset from targetElement
+   *
+   * @default 0
+   */
+  popoverOffsetSkidding: number;
+  /**
+   * popoverOffsetDistance: the main-axis pixel distance that the popup should be offset from targetElement
+   *
+   * @default 0
+   */
+  popoverOffsetDistance: number;
+  /**
+   * Position for popover to be placed.
+   * position: string of positions to try
+   * vertical positions: top, bottom
+   * horizontal positions: left, right
+   * NOTE: horizontal alignments cannot be paired with horizontal positions
+   * If multiple given, the first or the one with enough space will be chosen.
+   *
+   * @default 'top'
+   */
+  position: Positions;
+  /**
+   * an object variable; used to prevent Popover from being positioned outside the boundary.
+   * More detail in @ids/position preventOverflow API document.
+   * Also see react popper library and IDS Dropdown Typeahead.
+   */
+  preventOverflow?: PreventOverflow;
+  /**
+   * The optional styles applied to the position node wrapped around the root node.
+   */
+  stylePosition?: React.CSSProperties;
+  /**
+   * an HTML DOM element
+   * The HTML DOM element to be used as the target reference.
+   */
+  targetElement: React.ReactNode | HTMLElement;
+  /**
+   * Prop to set variant for the popover component
+   *
+   * @default 'popover'
+   */
+  variant: 'popover' | 'flyout';
+  /**
+   * Whether or not to display styled pointer
+   *
+   * @default false
+   */
+  suppressPointer: boolean;
+  /**
+   * Delay component unmount by this amount of ms. Supports running exit
+   * animations smoothly
+   */
+  unmountDelay: number;
+  /**
+   * Specifies custom class names for transition enter and/or exit animations.
+   * The consumer is responsible for defining the animation rules associated with these classes.
+   */
+  animationProperties?: {
+    /**
+     * The className to apply when the popover is entering.
+     */
+    transitionEnter?: string;
+    /**
+     * The className to apply when the popover is exiting.
+     */
+    transitionExit?: string;
+  };
+}
+```
+
+</details>
+
+## Sub-Components
+
+### PopoverHeader
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `alignment` | `'center' | 'left'` | Yes | - |
+| `className` | `string` | No | Prop to allow for customized css to pass through |
+| `id` | `string` | No | Unique id for aria-labelledby |
+| `title` | `string` | No | Title of popover |
+
+<details>
+<summary>Full PopoverHeader TypeScript Interface</summary>
+
+```typescript
+export interface PopoverHeaderProps extends ThemeableElement<'div'> {
+  /**
+   * Alignment of the header
+   *
+   * @default 'left'
+   */
+  alignment: 'center' | 'left';
+  /** Prop to allow for customized css to pass through */
+  className?: string;
+  /** Unique id for aria-labelledby */
+  id?: string;
+  /** Title of popover */
+  title?: string;
+}
+```
+
+</details>
+
+### PopoverContent
+
+<details>
+<summary>Full PopoverContent TypeScript Interface</summary>
+
+```typescript
+export interface PopoverContentProps
+  extends Element<'div'>,
+    InnerContainerProps {}
+```
+
+</details>
+
+### PopoverActions
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `children` | `React.ReactElement | React.ReactElement[]` | No | Call to action content |
+| `isStacked` | `boolean` | Yes | - |
+
+<details>
+<summary>Full PopoverActions TypeScript Interface</summary>
+
+```typescript
+export interface PopoverActionsProps extends Element<'div'> {
+  /** Call to action content */
+  children?: React.ReactElement | React.ReactElement[];
+  /**
+   * Flag to indicate if the CTA buttons are to be stacked
+   *
+   * @default false
+   */
+  isStacked: boolean;
+}
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container-complementary** — Elevated surface colors (modals, popovers, dropdowns)
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for elevated surfaces
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Shadow
+
+**shadow** — Elevation shadow
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Basic
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const [position, setPosition] = useState<Positions | undefined>(undefined);
+  const [alignment, setAlignment] = useState<Alignments | undefined>(undefined);
+  const [target, setTarget] = useState<Element | Text | null>(null);
+  const buttonRef = React.createRef<HTMLButtonElement>();
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  return (
+    <div>
+      <Button
+        innerRef={buttonRef}
+        aria-haspopup="dialog"
+        purpose="standard"
+        priority="primary"
+        onClick={() =>
+          handleClick(
+            'left',
+            'top',
+            buttonRef as React.MutableRefObject<HTMLButtonElement>,
+            open,
+            target,
+            setOpen,
+            setTarget,
+            setPosition,
+            setAlignment
+          )
+        }
+      >
+        Basic
+      </Button>
+      <Popover
+        dismissible
+        open={open}
+        targetElement={target as HTMLElement}
+        position={position}
+        alignment={alignment}
+        onClose={handleClose}
+      >
+        <PopoverHeader title="Popover title" />
+        <PopoverContent>
+          <TextField label="Field label" width="100%" />
+        </PopoverContent>
+        <PopoverActions>
+          <Button purpose="standard" priority="primary" onClick={handleClose}>
+            Primary
+          </Button>
+          <Button purpose="standard" priority="secondary">
+            Secondary
+          </Button>
+        </PopoverActions>
+      </Popover>
+    </div>
+  );
+}
+```
+
+### Stacked Buttons
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const [position, setPosition] = useState<Positions | undefined>(undefined);
+  const [alignment, setAlignment] = useState<Alignments | undefined>(undefined);
+  const [target, setTarget] = useState<Element | Text | null>(null);
+  const buttonRef = React.createRef<HTMLButtonElement>();
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  return (
+    <div>
+      <Button
+        innerRef={buttonRef}
+        aria-haspopup="dialog"
+        onClick={() =>
+          handleClick(
+            'right',
+            'top',
+            buttonRef as React.MutableRefObject<HTMLButtonElement>,
+            open,
+            target,
+            setOpen,
+            setTarget,
+            setPosition,
+            setAlignment
+          )
+        }
+      >
+        Stacked
+      </Button>
+      <Popover
+        dismissible
+        open={open}
+        targetElement={target as HTMLElement}
+        position={position}
+        alignment={alignment}
+        onClose={handleClose}
+      >
+        <PopoverHeader title="Popover title" />
+        <PopoverContent>
+          <TextField label="Field label" width="100%" />
+        </PopoverContent>
+        <PopoverActions isStacked>
+          <Button purpose="standard" priority="primary" onClick={handleClose}>
+            Primary
+          </Button>
+          <Button purpose="standard" priority="secondary">
+            Secondary
+          </Button>
+        </PopoverActions>
+      </Popover>
+    </div>
+  );
+}
+```
+
+### Position Example
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const [position, setPosition] = useState<Positions | undefined>(undefined);
+  const [alignment, setAlignment] = useState<Alignments | undefined>(undefined);
+  const [target, setTarget] = useState<Element | Text | null>(null);
+
+  // Create refs for all button combinations
+  const topLeftRef = React.createRef<HTMLButtonElement>();
+  const topMiddleRef = React.createRef<HTMLButtonElement>();
+  const topRightRef = React.createRef<HTMLButtonElement>();
+  const rightTopRef = React.createRef<HTMLButtonElement>();
+  const rightMiddleRef = React.createRef<HTMLButtonElement>();
+  const rightBottomRef = React.createRef<HTMLButtonElement>();
+  const bottomLeftRef = React.createRef<HTMLButtonElement>();
+  const bottomMiddleRef = React.createRef<HTMLButtonElement>();
+  const bottomRightRef = React.createRef<HTMLButtonElement>();
+  const leftTopRef = React.createRef<HTMLButtonElement>();
+  const leftMiddleRef = React.createRef<HTMLButtonElement>();
+  const leftBottomRef = React.createRef<HTMLButtonElement>();
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  return (
+    <div className={styles.positionExampleOuterDiv}>
+      {/* Top Position Combinations */}
+      <div
+        style={{
+          display: 'flex',
+          gap: 'var(--space-column-gap-small)',
+          marginBottom: 'var(--space-component-gap-large)'
+        }}
+      >
+        <Button
+          innerRef={topLeftRef}
+          aria-haspopup="dialog"
+          purpose="standard"
+          priority="primary"
+          onClick={() =>
+            handleClick(
+              'top',
+              'left',
+              topLeftRef as React.MutableRefObject<HTMLButtonElement>,
+              open,
+              target,
+              setOpen,
+              setTarget,
+              setPosition,
+              setAlignment
+            )
+          }
+        >
+          Top Left
+        </Button>
+        <Button
+          innerRef={topMiddleRef}
+          aria-haspopup="dialog"
+          purpose="standard"
+          priority="primary"
+          onClick={() =>
+            handleClick(
+              'top',
+              'middle',
+              topMiddleRef as React.MutableRefObject<HTMLButtonElement>,
+              open,
+              target,
+              setOpen,
+              setTarget,
+              setPosition,
+              setAlignment
+            )
+          }
+        >
+          Top Middle
+        </Button>
+        <Button
+          innerRef={topRightRef}
+          aria-haspopup="dialog"
+          purpose="standard"
+// ...
+```
+
+### No Header
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const [position, setPosition] = useState<Positions | undefined>(undefined);
+  const [alignment, setAlignment] = useState<Alignments | undefined>(undefined);
+  const [target, setTarget] = useState<Element | Text | null>(null);
+  const buttonRef = React.createRef<HTMLButtonElement>();
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  return (
+    <div>
+      <Button
+        innerRef={buttonRef}
+        aria-haspopup="dialog"
+        onClick={() =>
+          handleClick(
+            'bottom',
+            'left',
+            buttonRef as React.MutableRefObject<HTMLButtonElement>,
+            open,
+            target,
+            setOpen,
+            setTarget,
+            setPosition,
+            setAlignment
+          )
+        }
+      >
+        Popover with no header
+      </Button>
+      <Popover
+        open={open}
+        targetElement={target as HTMLElement}
+        position={position}
+        alignment={alignment}
+        onClose={handleClose}
+      >
+        <PopoverContent>
+          <TextField label="Field label" width="100%" />
+        </PopoverContent>
+        <PopoverActions>
+          <Button purpose="standard" priority="primary" onClick={handleClose}>
+            Save
+          </Button>
+        </PopoverActions>
+      </Popover>
+    </div>
+  );
+}
+```
+
+### No Actions
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const [position, setPosition] = useState<Positions | undefined>(undefined);
+  const [alignment, setAlignment] = useState<Alignments | undefined>(undefined);
+  const [target, setTarget] = useState<Element | Text | null>(null);
+  const buttonRef = React.createRef<HTMLButtonElement>();
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  return (
+    <div>
+      <Button
+        innerRef={buttonRef}
+        aria-haspopup="dialog"
+        onClick={() =>
+          handleClick(
+            'bottom',
+            'middle',
+            buttonRef as React.MutableRefObject<HTMLButtonElement>,
+            open,
+            target,
+            setOpen,
+            setTarget,
+            setPosition,
+            setAlignment
+          )
+        }
+      >
+        Popover with no actions
+      </Button>
+      <Popover
+        dismissible
+        open={open}
+        targetElement={target as HTMLElement}
+        position={position}
+        alignment={alignment}
+        onClose={handleClose}
+      >
+        <PopoverHeader title="No actions" />
+        <PopoverContent>
+          <TextField label="Field label" width="100%" />
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+}
+```
+
+### Popover Closes On Click Away
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const [position, setPosition] = useState<Positions | undefined>(undefined);
+  const [alignment, setAlignment] = useState<Alignments | undefined>(undefined);
+  const [target, setTarget] = useState<Element | Text | null>(null);
+  const buttonRef = React.createRef<HTMLButtonElement>();
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  return (
+    <div>
+      <Button
+        innerRef={buttonRef}
+        aria-haspopup="dialog"
+        purpose="standard"
+        priority="primary"
+        onClick={() =>
+          handleClick(
+            'right',
+            'top',
+            buttonRef as React.MutableRefObject<HTMLButtonElement>,
+            open,
+            target,
+            setOpen,
+            setTarget,
+            setPosition,
+            setAlignment
+          )
+        }
+      >
+        Basic
+      </Button>
+      <Popover
+        dismissible
+        enableClickAway
+        open={open}
+        targetElement={target as HTMLElement}
+        position={position}
+        alignment={alignment}
+        onClose={handleClose}
+      >
+        <PopoverHeader title="Popover title" />
+        <PopoverContent>
+          <TextField label="Field label" width="100%" />
+        </PopoverContent>
+        <PopoverActions>
+          <Button purpose="standard" priority="primary" onClick={handleClose}>
+            Primary
+          </Button>
+          <Button purpose="standard" priority="secondary">
+            Secondary
+          </Button>
+        </PopoverActions>
+      </Popover>
+    </div>
+  );
+}
+```
+
+### Custom Fade Only Animations
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
+
+  const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setTargetElement(event.currentTarget);
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  return (
+    <div style={{ padding: 'var(--space-container-padding-medium)' }}>
+      <PageMessage
+        open
+        title="✨ Custom animations"
+        type="discovery"
+        dismissible={false}
+        style={{ marginBottom: 'var(--space-container-padding-medium)' }}
+      >
+        <B3>
+          This popover uses custom fade-only animations instead of the default
+          scale+fade. Notice the smooth fade in/out without any scaling effect.
+        </B3>
+        <pre
+          style={{
+            display: 'block',
+            fontSize: 'var(--font-size-body-4)',
+            padding: 'var(--space-component-gap-medium)',
+            fontFamily: 'monospace',
+            marginTop: 'var(--space-component-gap-large)'
+          }}
+        >
+          {`animationProperties={{
+  transitionEnter: 'example-popover-fadein',
+  transitionExit: 'example-popover-fadeout'
+}}
+
+unmountDelay={1000} // duration of the animation`}
+        </pre>
+      </PageMessage>
+
+      <Button purpose="standard" priority="primary" onClick={handleOpen}>
+        Open custom fade animation
+      </Button>
+
+      <Popover
+        dismissible
+        open={open}
+        targetElement={targetElement}
+        position="bottom"
+        alignment="center"
+        animationProperties={{
+          transitionEnter: styles['example-popover-fadein'],
+          transitionExit: styles['example-popover-fadeout']
+        }}
+        unmountDelay={1000}
+        onClose={handleClose}
+      >
+        <PopoverHeader title="Fade-only animation" />
+        <PopoverContent>
+          <B3 as="p">This popover uses custom fade-only animations!</B3>
+          <B3 as="p">
+            No scaling effect - just smooth opacity transitions that respect
+            prefers-reduced-motion settings.
+          </B3>
+          <TextField label="Try interacting" width="100%" />
+        </PopoverContent>
+        <PopoverActions>
+          <Button purpose="standard" priority="primary" onClick={handleClose}>
+            Close (watch the fade)
+          </Button>
+        </PopoverActions>
+      </Popover>
+
+      <PageMessage
+        open
+        title="CSS implementation:"
+// ...
+```
+
+### Correct Vs Conditional Rendering
+
+```tsx
+() => {
+  const [correctOpen, setCorrectOpen] = useState(false);
+  const [brokenOpen, setBrokenOpen] = useState(false);
+  const [correctTarget, setCorrectTarget] = useState<HTMLElement | null>(null);
+  const [brokenTarget, setBrokenTarget] = useState<HTMLElement | null>(null);
+
+  return (
+    <div style={{ padding: 'var(--space-container-padding-medium)' }}>
+      <PageMessage
+        open
+        title="Correct vs broken Popover implementation"
+        type="info"
+        dismissible={false}
+        style={{ marginBottom: 'var(--space-container-padding-x-large)' }}
+      >
+        <B3 as="p">
+          Comparing proper Popover usage with the common conditional rendering
+          anti-pattern. Click both buttons below to see the difference:
+        </B3>
+        <ul style={{ paddingLeft: 'var(--space-container-padding-medium)' }}>
+          <B3 as="li">
+            <strong>Left (correct):</strong> smooth animations + proper
+            accessibility
+          </B3>
+          <B3 as="li">
+            <strong>Right (broken):</strong> conditional rendering breaks
+            everything
+          </B3>
+        </ul>
+        <B3 as="p">
+          💡 See the &ldquo;Custom fade only animations&rdquo; example above for
+          how to use <code>animationProperties</code> to customize the animation
+          effects.
+        </B3>
+        <B3 as="p">
+          🎯 <strong>Manual test:</strong> try opening both popovers and
+          clicking their close buttons to see the difference in focus
+          restoration behavior.
+        </B3>
+      </PageMessage>
+
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: 'var(--space-row-gap-large)'
+        }}
+      >
+        {/* Correct implementation */}
+        <div>
+          <PageMessage
+            open
+            title="✅ Correct"
+            type="info"
+            dismissible={false}
+            style={{ marginBottom: 'var(--space-container-padding-small)' }}
+          >
+            <code
+              style={{
+                fontSize: 'var(--font-size-body-4)',
+                backgroundColor: 'var(--color-container-background-primary)',
+                padding:
+                  'var(--space-component-inline-padding-x-small) var(--space-component-inline-padding-small)',
+                borderRadius: 'var(--radius-x-small)'
+              }}
+            >
+              {'<Popover open={open} />'}
+            </code>
+          </PageMessage>
+
+          <Button
+            purpose="standard"
+            priority="primary"
+            onClick={(e) => {
+              setCorrectTarget(e.currentTarget);
+              setCorrectOpen(true);
+            }}
+          >
+            Open (correct pattern)
+          </Button>
+// ...
+```
+
+### Responsive Bottom Trigger
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const [position, setPosition] = useState<Positions | undefined>(undefined);
+  const [alignment, setAlignment] = useState<Alignments | undefined>(undefined);
+  const [target, setTarget] = useState<Element | Text | null>(null);
+  const buttonRef = React.createRef<HTMLButtonElement>();
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  return (
+    <div
+      style={{
+        height: 'calc(100vh - 80px)',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        gap: 'var(--space-container-padding-medium)',
+        padding: 'var(--space-container-padding-medium)'
+      }}
+    >
+      <PageMessage
+        open
+        title="🧪 Responsive pointer test - Bottom trigger"
+        type="info"
+        dismissible={false}
+      >
+        <B3 as="p">
+          This story tests pointer positioning when the trigger button is at the
+          bottom of the viewport. The popover should appear{' '}
+          <strong>above</strong> the button with the pointer at the
+          <strong>bottom</strong> of the popover pointing <strong>down</strong>{' '}
+          toward the button.
+        </B3>
+        <B3 as="p">
+          📱 <strong>Test instructions:</strong>
+        </B3>
+        <ul style={{ paddingLeft: 'var(--space-container-padding-medium)' }}>
+          <B3 as="li">
+            1. Resize browser to small width (&lt; 480px) for responsive mode
+          </B3>
+          <B3 as="li">2. Click the button at the bottom</B3>
+          <B3 as="li">
+            3. Verify red pointer is at bottom of popover pointing down
+          </B3>
+          <B3 as="li">4. Try desktop width (&gt; 480px) to compare behavior</B3>
+        </ul>
+      </PageMessage>
+
+      <div style={{ alignSelf: 'center' }}>
+        <Button
+          innerRef={buttonRef}
+          aria-haspopup="dialog"
+          purpose="standard"
+          priority="primary"
+          onClick={() =>
+            handleClick(
+              'left',
+              'top',
+              buttonRef as React.MutableRefObject<HTMLButtonElement>,
+              open,
+              target,
+              setOpen,
+              setTarget,
+              setPosition,
+              setAlignment
+            )
+          }
+        >
+          Bottom trigger (responsive test)
+        </Button>
+        <Popover
+          dismissible
+          open={open}
+          targetElement={target as HTMLElement}
+          position={position}
+          alignment={alignment}
+          onClose={handleClose}
+        >
+// ...
+```
+
+### With Generic Children Wrapper
+
+```tsx
+() => {
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+  const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+  };
+
+  const handleCancel = () => {
+    setPopoverOpen(false);
+    setInputValue('');
+  };
+
+  const handleSave = () => {
+    setPopoverOpen(false);
+  };
+
+  const handleButtonClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    setTargetElement(e.currentTarget);
+    setPopoverOpen(!popoverOpen);
+  };
+
+  return (
+    <div style={{ padding: '50px' }}>
+      <PageMessage
+        open
+        title="✨ Generic Children Wrapper Support"
+        type="discovery"
+        dismissible={false}
+        style={{ marginBottom: 'var(--space-container-padding-medium)' }}
+      >
+        <B3 as="p">
+          The Popover component now supports wrapping its children in generic
+          elements (like divs). This allows you to apply custom layouts and
+          styling to the popover&apos;s internal structure.
+        </B3>
+        <B3 as="p">
+          In this example, all Popover sub-components are wrapped in a div with
+          custom flex styling:
+        </B3>
+        <pre
+          style={{
+            display: 'block',
+            fontSize: 'var(--font-size-body-4)',
+            padding: 'var(--space-component-gap-medium)',
+            fontFamily: 'monospace',
+            marginTop: 'var(--space-component-gap-medium)',
+            backgroundColor: 'var(--color-container-background-primary)',
+            borderRadius: 'var(--radius-action)'
+          }}
+        >
+          {`<Popover>
+  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+    <PopoverHeader title="..." />
+    <PopoverContent>...</PopoverContent>
+    <PopoverActions>...</PopoverActions>
+  </div>
+</Popover>`}
+        </pre>
+      </PageMessage>
+
+      <Button
+        aria-haspopup="dialog"
+        purpose="standard"
+        priority="primary"
+        onClick={handleButtonClick}
+      >
+        Open Popover with Wrapped Children
+      </Button>
+
+      <Popover
+        open={popoverOpen}
+        variant="popover"
+        position="bottom"
+        alignment="left"
+        targetElement={targetElement}
+        onClose={() => setPopoverOpen(false)}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+// ...
+```
+
+### With Deeply Nested Children
+
+```tsx
+() => {
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
+
+  const handleClose = () => {
+    setPopoverOpen(false);
+  };
+
+  const handleButtonClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    setTargetElement(e.currentTarget);
+    setPopoverOpen(!popoverOpen);
+  };
+
+  return (
+    <div style={{ padding: '50px' }}>
+      <PageMessage
+        open
+        title="🧪 Deeply Nested Children Test"
+        type="info"
+        dismissible={false}
+        style={{ marginBottom: 'var(--space-container-padding-medium)' }}
+      >
+        <B3 as="p">
+          This example tests that the component can find slotted children even
+          when they&apos;re nested multiple levels deep in generic wrapper
+          elements.
+        </B3>
+        <pre
+          style={{
+            display: 'block',
+            fontSize: 'var(--font-size-body-4)',
+            padding: 'var(--space-component-gap-medium)',
+            fontFamily: 'monospace',
+            marginTop: 'var(--space-component-gap-medium)',
+            backgroundColor: 'var(--color-container-background-primary)',
+            borderRadius: 'var(--radius-action)'
+          }}
+        >
+          {`<Popover>
+  <div className="outer">
+    <div className="inner">
+      <PopoverHeader title="..." />
+      <div className="content-wrapper">
+        <PopoverContent>...</PopoverContent>
+      </div>
+    </div>
+    <PopoverActions>...</PopoverActions>
+  </div>
+</Popover>`}
+        </pre>
+      </PageMessage>
+
+      <Button
+        aria-haspopup="dialog"
+        purpose="standard"
+        priority="primary"
+        onClick={handleButtonClick}
+      >
+        Open Deeply Nested Popover
+      </Button>
+
+      <Popover
+        open={popoverOpen}
+        variant="popover"
+        position="bottom"
+        alignment="center"
+        targetElement={targetElement}
+        onClose={handleClose}
+      >
+        <div className="outer-wrapper">
+          <div className="inner-wrapper">
+            <PopoverHeader title="Deeply Nested Popover" />
+            <div className="content-wrapper">
+              <PopoverContent>
+                <B3 as="p">
+                  This content is nested 3 levels deep in generic div elements,
+                  and it still works correctly!
+                </B3>
+                <TextField label="Test Field" width="100%" />
+              </PopoverContent>
+// ...
+```
+
+## Accessibility
+
+## Code Example
+
+```tsx
+import React from 'react';
+import Popover from '@ids-ts/popover';
+// if you need it, don't forget to import the styles too.
+import '@ids-ts/popover/dist/main.css';
+
+const PopoverExample = () => {
+  const handleClick = (
+    p: Positions,
+    a: Alignments,
+    ref: React.MutableRefObject<HTMLButtonElement>,
+    open: boolean,
+    curTarget: Element | Text | null,
+    setOpen: React.Dispatch<React.SetStateAction<boolean>>,
+    setTarget: React.Dispatch<React.SetStateAction<Element | Text | null>>,
+    setPosition: React.Dispatch<React.SetStateAction<Positions | undefined>>,
+    setAlignment: React.Dispatch<React.SetStateAction<Alignments | undefined>>
+  ) => {
+    const newTarget = ReactDOM.findDOMNode(ref.current);
+    newTarget === curTarget ? setOpen(!open) : setOpen(true);
+    setTarget(newTarget);
+    setPosition(p);
+    setAlignment(a);
+  };
+
+  const [open, setOpen] = useState(false);
+  const [position, setPosition] = useState<Positions | undefined>(undefined);
+  const [alignment, setAlignment] = useState<Alignments | undefined>(undefined);
+  const [target, setTarget] = useState<Element | Text | null>(null);
+  const buttonRef = React.createRef<HTMLButtonElement>();
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  return (
+    <div>
+      <Button
+        innerRef={buttonRef}
+        aria-haspopup="dialog"
+        purpose="standard"
+        priority="solid"
+        onClick={() =>
+          handleClick(
+            'left',
+            'top',
+            buttonRef as React.MutableRefObject<HTMLButtonElement>,
+            open,
+            target,
+            setOpen,
+            setTarget,
+            setPosition,
+            setAlignment
+          )
+        }
+      >
+        Basic
+      </Button>
+      <Popover
+        dismissible
+        open={open}
+        targetElement={target}
+        position={position}
+        alignment={alignment}
+        variant="popover"
+        onClose={handleClose}
+      >
+        <PopoverHeader title="Popover title" />
+        <PopoverContent>
+          <TextField label="Field Label" width="100%" theme="quickbooks" />
+        </PopoverContent>
+        <PopoverActions>
+          <Button
+            purpose="passive"
+            priority="solid"
+            theme="quickbooks"
+            onClick={handleClose}
+          >
+            Primary
+          </Button>
+          <Button purpose="passive" priority="ghost" theme="quickbooks">
+            Secondary
+          </Button>
+        </PopoverActions>
+      </Popover>
+    </div>
+  );
+}
+
+export default PopoverExample;
+```
+
+## Composes With
+
+- Button
+- Position
+- TextField
+- Typography
+- PageMessage
+
+---
+
+## References
+
+- [GitHub Source - Popover](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/Popover)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/popover.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-popover&theme=quickbooks&colorScheme=light)

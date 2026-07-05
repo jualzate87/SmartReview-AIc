@@ -1,0 +1,40 @@
+.root {
+  --width-complete: 32px;
+  --width-mounted: 212px;
+  border: 2px solid var(--color-action-special-use);
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 8px;
+  border-radius: 8px;
+  background-color: var(--color-container-background-primary);
+  padding: 4px;
+  width: var(--width-complete);
+  opacity: 0;
+  transition:
+    opacity 0.2s ease-in-out,
+    width 0.5s ease-in-out,
+    box-shadow 0.5s ease-in-out;
+
+  cursor: pointer;
+  width: 0;
+  box-shadow: 0 2px 8px 0 var(--color-container-background-special-use-1, #7cbcff);
+}
+
+.root.mounted {
+  box-shadow: none;
+  width: var(--width-mounted);
+}
+
+.root.complete {
+  box-shadow: none;
+  width: var(--width-complete);
+}
+
+.root.animating {
+  opacity: 1;
+}
+
+.root:hover {
+  box-shadow: 0 2px 8px 0 var(--color-container-background-special-use-1, #7cbcff);
+}

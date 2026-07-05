@@ -1,0 +1,877 @@
+---
+description: Complete guide for using the DateRangePicker component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# DateRangePicker
+
+The date range picker lets users select date range like a week with an interface that looks like a calendar and is just as straightforward to use.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/date-range-picker
+```
+
+```tsx
+import { DateRangePicker } from '@ids-ts/date-range-picker';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `placeholder` | `string` | No | * Placeholder for the date range picker. |
+| `USAGE` | `User would just need to provide the automationI...` | Yes | - |
+| `dateFormat` | `string` | Yes | - |
+| `id` | `string` | No | Id of the datePicker container |
+| `maxDate` | `string | DateWrapper` | No | - |
+| `minDate` | `string | DateWrapper` | No | - |
+| `onStartingDateInputChange` | `(event: ChangeEventType) => void` | No | * Fires when the input changes for the starting date component. Fires on keystrokes and on selection. |
+| `onEndingDateInputChange` | `(event: ChangeEventType) => void` | No | * Fires when the input changes for the ending date component. Fires on keystrokes and on selection. |
+| `onStartingDateChange` | `(event: ChangeEventType) => void` | No | - |
+| `onEndingDateChange` | `(event: ChangeEventType) => void` | No | - |
+| `onChange` | `React.ChangeEventHandler` | No | Fires when either DatePicker changes. See DatePicker.props.onChange. |
+| `https` | `//momentjs.com/). However, the user can overrid...` | Yes | - |
+| `startingDate` | `string | DateWrapper` | No | - |
+| `endingDate` | `string | DateWrapper` | No | - |
+| `startDateLabel` | `string` | No | Label for the Start Date field. |
+| `isMonthYearPicker` | `boolean` | No | flag to enable month selector. |
+| `endDateLabel` | `string` | No | Label for the End Date field. |
+| `startDateAriaLabel` | `string` | No | aria-label for the Start Date field in case label is not defined |
+| `endDateAriaLabel` | `string` | No | aria-label for the End Date field in case label is not defined. |
+| `errorTextStartDate` | `string` | No | Error text for starting datePicker |
+| `errorTextEndDate` | `string` | No | Error text for ending datePicker |
+| `disabled` | `boolean` | No | - |
+| `maxDuration` | `number` | No | - |
+| `size` | `DatePickerProps['size']` | No | Size of the form fields to support |
+| `startDateRef` | `(c?: any) => void` | No | Pass this in to get a ref to the starting date DatePicker. |
+| `endDateRef` | `(c?: any) => void` | No | Pass this in to get a ref to the ending date DatePicker. |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface DateRangePickerProps
+  extends Omit<ThemeableElement<'div'>, 'onChange'> {
+  /**
+   * Placeholder for the date range picker.
+   */
+  placeholder?: string;
+  /**
+   * Automation ID prop for allowing easier access to elements while running functional tests.
+   * USAGE: User would just need to provide the automationId prop during instantiation, and
+   * behind the scene we would add it to dateRangePicker
+   */
+  automationId?: string;
+  /**
+   * Sets the date format used by moment to display dates and parse entered dates. Please note
+   * that this string is automatically upperCased before being passed to moment to preserve
+   * backwards compatibility with the previous React-shimmed DatePicker.
+   * Moment doesn't seem to have a built-in way to check if this is valid, so if the user passes
+   * in a bad dateFormat, things will break.
+   *
+   * @default 'MM/DD/YYYY'
+   */
+  dateFormat: string;
+  /** Id of the datePicker container */
+  id?: string;
+  /**
+   * A date in short ISO format indicating the latest date, inclusive, for which this component is valid.
+   * On a desktop, setting this value will prevent the date-picker's calendar from navigating to any dates after it.
+   * This is used as a prop by both datePropParser and the component that gets generated from it.
+   * DatePropParser should only take a string, and its child component should only take a DateWrapper object.
+   * The string "maxDate" is hard-coded in datePropUtils.
+   */
+  maxDate?: string | DateWrapper;
+  /**
+   *  A date in short ISO format indicating the earliest date, inclusive, for which this component
+   *  is valid. On a desktop, setting this value will prevent the DatePicker's calendar from
+   *  navigating to any dates prior to it.
+   * This is used as a prop by both datePropParser and the component that gets generated from it.
+   * DatePropParser should only take a string, and its child component should only take a DateWrapper object.
+   * The string "minDate" is hard-coded in datePropUtils.
+   */
+  minDate?: string | DateWrapper;
+  /**
+   * Fires when the input changes for the starting date component. Fires on keystrokes and on selection.
+   */
+  onStartingDateInputChange?: (event: ChangeEventType) => void;
+  /**
+   * Fires when the input changes for the ending date component. Fires on keystrokes and on selection.
+   */
+  onEndingDateInputChange?: (event: ChangeEventType) => void;
+  /**
+   * Fires when a change event comes from the starting date HADatePicker.
+   * See HADatePicker documentation for information about this change event.
+   */
+  onStartingDateChange?: (event: ChangeEventType) => void;
+  /**
+   * Fires when a change event comes from the ending date HADatePicker.
+   * See HADatePicker documentation for information about this change event.
+   */
+  onEndingDateChange?: (event: ChangeEventType) => void;
+  /** Fires when either DatePicker changes. See DatePicker.props.onChange. */
+  onChange?: React.ChangeEventHandler;
+  /**
+   *  The current locale in the user's browser. If not supplied, DatePropParser defaults this to
+   *  navigator.userLanguage || navigator.language || 'en' . Since that is not an optimal way to
+   *  get the locale, it's recommended that plugins override this setting. This setting controls
+   *  the date format, the day of the week headings and the names of each month, which are all
+   *  supplied by [moment](https://momentjs.com/). However, the user can override all of these
+   *  options individually if desired. Please note that in addition to locale, you must still
+   *  supply all proper error messages and a placeholder (if desired) in the right language in
+   *  order for this widget to be used in non-English speaking regions. (See HUI-5049)
+   *
+   * @default 'en'
+   */
+  locale: string;
+  /**
+   * The selected date in the starting date HADatePicker. DateRangePicker consumers should
+   * supply a valid date in short ISO format.
+   */
+  startingDate?: string | DateWrapper;
+  /**
+   * The selected date in the ending date HADatePicker. DateRangePicker consumers should
+   * supply a valid date in short ISO format.
+   */
+  endingDate?: string | DateWrapper;
+  /** Label for the Start Date field. */
+  startDateLabel?: string;
+  /** flag to enable month selector. */
+  isMonthYearPicker?: boolean;
+  /** Label for the End Date field. */
+  endDateLabel?: string;
+  /** aria-label for the Start Date field in case label is not defined */
+  startDateAriaLabel?: string;
+  /**  aria-label for the End Date field in case label is not defined. */
+  endDateAriaLabel?: string;
+  /** Error text for starting datePicker */
+  errorTextStartDate?: string;
+  /** Error text for ending datePicker */
+  errorTextEndDate?: string;
+  /**
+   * Disables both date pickers
+   *
+   * @default false
+   */
+  disabled?: boolean;
+  /**
+   * The maximum number of days between the start date and the end date.
+   * For example, if set to "2", the end date must be either one or two days after the start date.
+   *
+   * @default Infinity
+   */
+  maxDuration?: number;
+  /** Size of the form fields to support */
+  size?: DatePickerProps['size'];
+  /** Pass this in to get a ref to the starting date DatePicker. */
+  startDateRef?: (c?: any) => void;
+  /** Pass this in to get a ref to the ending date DatePicker. */
+  endDateRef?: (c?: any) => void;
+}
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Showcase
+
+```tsx
+() => {
+  const [startingDate, setStartingDate] = React.useState('02/25/2025');
+  const [endingDate, setEndingDate] = React.useState('03/25/2025');
+
+  const handleStartingDateChange = (event: ChangeEventType) => {
+    const { value: newValue } = event.target as HTMLInputElement;
+    setStartingDate(newValue);
+  };
+
+  const handleEndingDateChange = (event: ChangeEventType) => {
+    const { value: newValue } = event.target as HTMLInputElement;
+    setEndingDate(newValue);
+  };
+
+  return (
+    <div>
+      <DateRangePicker
+        locale="ar_aa"
+        startDateLabel="Start Date"
+        startingDate={startingDate}
+        endDateLabel="End Date"
+        endingDate={endingDate}
+        dateFormat="MMM dd YYYY"
+        placeholder="MMM YYYY (placeholder)"
+        minDate="02/25/2025"
+        maxDate="06/25/2025"
+        maxDuration={5}
+        blackoutDates={['2025-03-21', '2025-03-22', '2025-04-21']}
+        automationId="DateRangePicker__playground"
+        size="medium"
+        onStartingDateChange={handleStartingDateChange}
+        onEndingDateChange={handleEndingDateChange}
+        onStartingDateInputChange={action(
+          'DateRangePicker onStartingDateInputChange fired, with data:'
+        )}
+        onEndingDateInputChange={action(
+          'DateRangePicker onEndingDateInputChange fired, with data:'
+        )}
+      />
+    </div>
+  );
+}
+```
+
+### Max Duration And Validations
+
+```tsx
+() => {
+  const [errorText, setErrorText] = React.useState('');
+  const [startDateValue, setStartDateValue] = React.useState('');
+  const [endDateValue, setEndDateValue] = React.useState('');
+  const mounted = React.useRef(false);
+  const startingDateRef = React.useRef<any>(null);
+  const endingDateRef = React.useRef<any>(null);
+  const isMobile: boolean = deviceUtils.isHandheld();
+  const blackoutDatesShortISOFormat = React.useMemo(
+    () => [
+      '2020-06-07',
+      '2020-07-07',
+      '2020-08-07',
+      '2020-09-07',
+      '2020-10-07',
+      '2020-11-07'
+    ],
+    []
+  );
+  const blackoutDates = React.useMemo(
+    () => [
+      '06-07-2020',
+      '07-07-2020',
+      '08-07-2020',
+      '09-07-2020',
+      '10-07-2020',
+      '11-07-2020'
+    ],
+    []
+  );
+
+  React.useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
+
+    let errorTextUpdate = '';
+    const locale = 'en';
+    let dateFormat = 'MM/DD/YYYY';
+    const startingDateEmpty = isEmpty(
+      startingDateRef.current.textFieldInputRef.value
+    );
+    const endingDateEmpty = isEmpty(
+      endingDateRef.current.textFieldInputRef.value
+    );
+    if (isMobile) {
+      dateFormat = 'YYYY-MM-DD';
+    }
+
+    const dateFormats = [dateFormat, 'YYYY.MM.DD', 'YY.MM.DDDD', 'YYMMDD'];
+    const sanitizedStartingDateWrapper = moment(
+      startingDateRef.current.textFieldInputRef.value,
+      dateFormats,
+      true
+    );
+    const sanitizedEndingDateWrapper = moment(
+      endingDateRef.current.textFieldInputRef.value,
+      dateFormats,
+      locale
+    );
+
+    if (
+      !startingDateEmpty &&
+      (!sanitizedStartingDateWrapper || !sanitizedStartingDateWrapper.isValid())
+    ) {
+      errorTextUpdate = startingDateErrorText;
+    }
+
+    if (
+      !endingDateEmpty &&
+      (!sanitizedEndingDateWrapper || !sanitizedEndingDateWrapper.isValid())
+    ) {
+      errorTextUpdate = endingDateErrorText;
+    }
+
+    const selectedBlackoutStartingDate = (
+      isMobile ? blackoutDatesShortISOFormat : blackoutDates
+    ).some((blackoutDate) => sanitizedStartingDateWrapper.isSame(blackoutDate));
+
+// ...
+```
+
+### Max Duration With Blackout Date Error Validation
+
+```tsx
+() => {
+  const [errorText, setErrorText] = React.useState('');
+  const [startDateValue, setStartDateValue] = React.useState('');
+  const [endDateValue, setEndDateValue] = React.useState('');
+  const mounted = React.useRef(false);
+  const startingDateRef = React.useRef<any>(null);
+  const endingDateRef = React.useRef<any>(null);
+  const isMobile: boolean = deviceUtils.isHandheld();
+  const blackoutDatesShortISOFormat = React.useMemo(
+    () => ['2020-07-07', '2020-07-16'],
+    []
+  );
+  const blackoutDates = React.useMemo(() => ['07-07-2020', '07-16-2020'], []);
+
+  React.useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
+
+    let errorTextUpdate = '';
+    const locale = 'en';
+    let dateFormat = 'MM/DD/YYYY';
+    const startingDateEmpty = isEmpty(
+      startingDateRef.current.textFieldInputRef.value
+    );
+    const endingDateEmpty = isEmpty(
+      endingDateRef.current.textFieldInputRef.value
+    );
+    if (isMobile) {
+      dateFormat = 'YYYY-MM-DD';
+    }
+
+    const dateFormats = [dateFormat, 'YYYY.MM.DD', 'YY.MM.DDDD', 'YYMMDD'];
+    const sanitizedStartingDateWrapper = moment(
+      startingDateRef.current.textFieldInputRef.value,
+      dateFormats,
+      true
+    );
+    const sanitizedEndingDateWrapper = moment(
+      endingDateRef.current.textFieldInputRef.value,
+      dateFormats,
+      locale
+    );
+
+    if (
+      !startingDateEmpty &&
+      (!sanitizedStartingDateWrapper || !sanitizedStartingDateWrapper.isValid())
+    ) {
+      errorTextUpdate = startingDateErrorText;
+    }
+
+    if (
+      !endingDateEmpty &&
+      (!sanitizedEndingDateWrapper || !sanitizedEndingDateWrapper.isValid())
+    ) {
+      errorTextUpdate = endingDateErrorText;
+    }
+
+    const selectedBlackoutStartingDate = (
+      isMobile ? blackoutDatesShortISOFormat : blackoutDates
+    ).some((blackoutDate) => sanitizedStartingDateWrapper.isSame(blackoutDate));
+
+    const selectedBlackoutEndingDate = (
+      isMobile ? blackoutDatesShortISOFormat : blackoutDates
+    ).some((blackoutDate) => sanitizedEndingDateWrapper.isSame(blackoutDate));
+
+    if (selectedBlackoutStartingDate || selectedBlackoutEndingDate) {
+      errorTextUpdate = `Invalid date selected: Do not select blackout dates`;
+    }
+
+    const blackoutDateInBetween = (
+      isMobile ? blackoutDatesShortISOFormat : blackoutDates
+    ).some((blackoutDate) =>
+      moment(blackoutDate, dateFormats, locale).isBetween(
+        sanitizedStartingDateWrapper,
+        sanitizedEndingDateWrapper,
+        'days',
+        '[]'
+      )
+// ...
+```
+
+### Selected Dates And Validations
+
+```tsx
+() => {
+  const [errorTextStartDate, setErrorTextStartDate] = React.useState('');
+  const [errorTextEndDate, setErrorTextEndDate] = React.useState('');
+  const [startDateValue, setStartDateValue] = React.useState('06/10/2020');
+  const [endDateValue, setEndDateValue] = React.useState('08/20/2020');
+  const mounted = React.useRef(false);
+  const startingDateRef = React.useRef<any>(null);
+  const endingDateRef = React.useRef<any>(null);
+  const dateFormat = deviceUtils.isHandheld() ? 'YYYY-MM-DD' : 'MM/DD/YYYY';
+  const startingDateWrapper = moment(startDateValue, dateFormat, true);
+  const endingDateWrapper = moment(endDateValue, dateFormat, true);
+  const isMobile: boolean = deviceUtils.isHandheld();
+
+  React.useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
+
+    let errorTextStartDateUpdate = '';
+    let errorTextEndDateUpdate = '';
+    const locale = 'en';
+    const dateFormats = [dateFormat, 'DD.MM.YY', 'DD.MM.YYYY', 'DDMMYY'];
+    const sanitizedStartingDateWrapper = moment(
+      startingDateRef.current.textFieldInputRef.value,
+      dateFormats,
+      true
+    );
+    const sanitizedEndingDateWrapper = moment(
+      endingDateRef.current.textFieldInputRef.value,
+      dateFormats,
+      locale
+    );
+
+    if (
+      !sanitizedStartingDateWrapper ||
+      !sanitizedStartingDateWrapper.isValid()
+    ) {
+      errorTextStartDateUpdate = startingDateErrorText;
+    }
+
+    if (!sanitizedEndingDateWrapper || !sanitizedEndingDateWrapper.isValid()) {
+      errorTextEndDateUpdate = endingDateErrorText;
+    }
+
+    const startDateWrapper = moment(
+      sanitizedStartingDateWrapper,
+      dateFormat,
+      true
+    );
+    const endDateWrapper = moment(sanitizedEndingDateWrapper, dateFormat, true);
+    if (endDateWrapper.isBefore(startDateWrapper)) {
+      errorTextStartDateUpdate = startEndDateErrorText;
+    }
+
+    setErrorTextStartDate(errorTextStartDateUpdate);
+    setErrorTextEndDate(errorTextEndDateUpdate);
+  }, [startDateValue, endDateValue, dateFormat, isMobile]);
+
+  const startRef = (c?: any) => {
+    startingDateRef.current = c;
+  };
+
+  const endRef = (c?: any) => {
+    endingDateRef.current = c;
+  };
+
+  const handleStartingDateChange = (event: ChangeEventType) => {
+    const targetElement = event.target as HTMLInputElement;
+    setStartDateValue(targetElement.value);
+    setErrorTextStartDate('');
+  };
+
+  const handleEndingDateChange = (event: ChangeEventType) => {
+    const targetElement = event.target as HTMLInputElement;
+    setEndDateValue(targetElement.value);
+    setErrorTextEndDate('');
+  };
+
+  return (
+// ...
+```
+
+### Three Digit Validation For Year
+
+```tsx
+() => {
+  const [errorTextStartDate, setErrorTextStartDate] = React.useState('');
+  const [errorTextEndDate, setErrorTextEndDate] = React.useState('');
+  const [startDateValue, setStartDateValue] = React.useState('06/10/2023');
+  const [endDateValue, setEndDateValue] = React.useState('08/20/2023');
+  const mounted = React.useRef(false);
+  const startingDateRef = React.useRef<any>(null);
+  const endingDateRef = React.useRef<any>(null);
+  const dateFormat = deviceUtils.isHandheld() ? 'YYYY-MM-DD' : 'MM/DD/YYYY';
+
+  React.useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
+
+    let errorTextStartDateUpdate = '';
+    let errorTextEndDateUpdate = '';
+    const dateFormats = [dateFormat];
+
+    const sanitizedStartingDateWrapper = moment(
+      startingDateRef.current.textFieldInputRef.value,
+      dateFormats,
+      true
+    );
+    const sanitizedEndingDateWrapper = moment(
+      endingDateRef.current.textFieldInputRef.value,
+      dateFormats,
+      true
+    );
+
+    const startDateWrapper = moment(
+      sanitizedStartingDateWrapper,
+      dateFormat,
+      true
+    );
+    const endDateWrapper = moment(sanitizedEndingDateWrapper, dateFormat, true);
+    if (endDateWrapper.isBefore(startDateWrapper)) {
+      errorTextStartDateUpdate = startEndDateErrorText;
+    }
+
+    if (
+      !sanitizedStartingDateWrapper ||
+      !sanitizedStartingDateWrapper.isValid()
+    ) {
+      errorTextStartDateUpdate = startingDateErrorText;
+    }
+
+    if (!sanitizedEndingDateWrapper || !sanitizedEndingDateWrapper.isValid()) {
+      errorTextEndDateUpdate = endingDateErrorText;
+    }
+
+    setErrorTextStartDate(errorTextStartDateUpdate);
+    setErrorTextEndDate(errorTextEndDateUpdate);
+  }, [startDateValue, endDateValue, dateFormat]);
+
+  const startRef = (c?: any) => {
+    startingDateRef.current = c;
+  };
+
+  const endRef = (c?: any) => {
+    endingDateRef.current = c;
+  };
+
+  const handleStartingDateChange = (event: ChangeEventType) => {
+    const targetElement = event.target as HTMLInputElement;
+    setStartDateValue(targetElement.value);
+  };
+
+  const handleEndingDateChange = (event: ChangeEventType) => {
+    const targetElement = event.target as HTMLInputElement;
+    setEndDateValue(targetElement.value);
+  };
+
+  return (
+    <DateRangePicker
+      startDateRef={startRef}
+      endDateRef={endRef}
+      startingDate={startDateValue}
+      endingDate={endDateValue}
+// ...
+```
+
+### Functions
+
+```tsx
+() => (
+  <div>
+    <h3>DateRangePicker functions</h3>
+    <p>
+      See the addons action tab for logs when onStartingDateChange and
+      onEndingDateChange fire
+    </p>
+    <DateRangePicker
+      startDateLabel="Starting Date"
+      endDateLabel="Ending Date"
+      locale="en"
+      currentDate="2020-07-10"
+      onStartingDateChange={action(
+        'DateRangePicker onStartingDateChange fired, with data:'
+      )}
+      onEndingDateChange={action(
+        'DateRangePicker onEndingDateChange fired, with data:'
+      )}
+      onChange={action('DateRangePicker onChange fired, with data:')} // This fires on both input fields.
+      onStartingDateInputChange={action(
+        'DateRangePicker onStartingDateInputChange fired, with data:'
+      )}
+      onEndingDateInputChange={action(
+        'DateRangePicker onEndingDateInputChange fired, with data:'
+      )}
+    />
+  </div>
+)
+```
+
+### Reset Dates
+
+```tsx
+() => {
+  const [errorText, setErrorText] = React.useState('');
+  const [startDateValue, setStartDateValue] = React.useState('06/25/2020');
+  const [endDateValue, setEndDateValue] = React.useState('08/02/2020');
+
+  const resetStartDate = '06/27/2020';
+  const resetEndDate = '07/04/2020';
+
+  const mounted = React.useRef(false);
+  const startingDateRef = React.useRef<any>(null);
+  const endingDateRef = React.useRef<any>(null);
+
+  React.useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
+
+    let errorTextUpdate = '';
+    const locale = 'en';
+    // On mobile view, dateFormat should be SHORT_ISO_FORMAT, i.e. 'YYYY-MM-DD';
+    const dateFormat = 'MM/DD/YYYY';
+    const startingDateEmpty = isEmpty(
+      startingDateRef.current.textFieldInputRef.value
+    );
+    const endingDateEmpty = isEmpty(
+      endingDateRef.current.textFieldInputRef.value
+    );
+
+    const dateFormats = [dateFormat, 'YYYY.MM.DD', 'YY.MM.DDDD', 'YYMMDD'];
+    const sanitizedStartingDateWrapper = moment(
+      startingDateRef.current.textFieldInputRef.value,
+      dateFormats,
+      true
+    );
+    const sanitizedEndingDateWrapper = moment(
+      endingDateRef.current.textFieldInputRef.value,
+      dateFormats,
+      locale
+    );
+
+    if (
+      !startingDateEmpty &&
+      (!sanitizedStartingDateWrapper || !sanitizedStartingDateWrapper.isValid())
+    ) {
+      errorTextUpdate = startingDateErrorText;
+    }
+
+    if (
+      !endingDateEmpty &&
+      (!sanitizedEndingDateWrapper || !sanitizedEndingDateWrapper.isValid())
+    ) {
+      errorTextUpdate = endingDateErrorText;
+    }
+
+    const startingDateWrapper = moment(startDateValue, dateFormat, true);
+    const endingDateWrapper = moment(endDateValue, dateFormat, true);
+    if (
+      !startingDateEmpty &&
+      !endingDateEmpty &&
+      endingDateWrapper.isBefore(startingDateWrapper)
+    ) {
+      errorTextUpdate = startEndDateErrorText;
+    }
+
+    setErrorText(errorTextUpdate);
+  }, [startDateValue, endDateValue]);
+
+  const startRef = (c?: any) => {
+    startingDateRef.current = c;
+  };
+
+  const endRef = (c?: any) => {
+    endingDateRef.current = c;
+  };
+
+  const resetDates = () => {
+    setStartDateValue(resetStartDate);
+    setEndDateValue(resetEndDate);
+  };
+// ...
+```
+
+### Theme Example
+
+```tsx
+() => {
+  const [errorText, setErrorText] = React.useState('');
+  const [startDateValue, setStartDateValue] = React.useState('');
+  const [endDateValue, setEndDateValue] = React.useState('');
+  const mounted = React.useRef(false);
+  const startingDateRef = React.useRef<any>(null);
+  const endingDateRef = React.useRef<any>(null);
+
+  React.useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
+
+    let errorTextUpdate = '';
+    const locale = 'en';
+    // On mobile view, dateFormat should be SHORT_ISO_FORMAT, i.e. 'YYYY-MM-DD';
+    const dateFormat = 'MM/DD/YYYY';
+    const startingDateEmpty = isEmpty(
+      startingDateRef.current.textFieldInputRef.value
+    );
+    const endingDateEmpty = isEmpty(
+      endingDateRef.current.textFieldInputRef.value
+    );
+
+    const dateFormats = [dateFormat, 'YYYY.MM.DD', 'YY.MM.DDDD', 'YYMMDD'];
+    const sanitizedStartingDateWrapper = moment(
+      startingDateRef.current.textFieldInputRef.value,
+      dateFormats,
+      true
+    );
+    const sanitizedEndingDateWrapper = moment(
+      endingDateRef.current.textFieldInputRef.value,
+      dateFormats,
+      locale
+    );
+
+    if (
+      !startingDateEmpty &&
+      (!sanitizedStartingDateWrapper || !sanitizedStartingDateWrapper.isValid())
+    ) {
+      errorTextUpdate = startingDateErrorText;
+    }
+
+    if (
+      !endingDateEmpty &&
+      (!sanitizedEndingDateWrapper || !sanitizedEndingDateWrapper.isValid())
+    ) {
+      errorTextUpdate = endingDateErrorText;
+    }
+
+    const startingDateWrapper = moment(startDateValue, dateFormat, true);
+    const endingDateWrapper = moment(endDateValue, dateFormat, true);
+    if (!startingDateEmpty && !endingDateEmpty) {
+      if (endingDateWrapper.isBefore(startingDateWrapper)) {
+        errorTextUpdate = startEndDateErrorText;
+      }
+
+      const maxDuration = 7;
+      const maxEndDate = startingDateWrapper.add(maxDuration, 'days');
+      if (endingDateWrapper.isAfter(maxEndDate)) {
+        errorTextUpdate = 'The ending date cannot be beyond max duration';
+      }
+    }
+
+    setErrorText(errorTextUpdate);
+  }, [startDateValue, endDateValue]);
+
+  const startRef = (c?: any) => {
+    startingDateRef.current = c;
+  };
+
+  const endRef = (c?: any) => {
+    endingDateRef.current = c;
+  };
+
+  const handleStartingDateChange = (event: ChangeEventType) => {
+    const targetElement = event.target as HTMLInputElement;
+    setStartDateValue(targetElement.value);
+  };
+// ...
+```
+
+### Alignment Showcase
+
+```tsx
+() => {
+  return (
+    <Drawer backdrop open size="large" aria-label="Alignment Showcase">
+      {/* @ts-ignore */}
+      <DrawerContent style={{ paddingLeft: '200px' }}>
+        <div>
+          <p>
+            This top date range picker will render its calendar box below the
+            input fields.
+          </p>
+          <DateRangePicker
+            startDateLabel="Starting Date"
+            endDateLabel="Ending Date"
+            locale="en"
+            currentDate="2020-07-10"
+          />
+        </div>
+        <div style={{ position: 'absolute', bottom: '75px' }}>
+          <p>
+            This bottom date picker will have calendars render above the input
+            fields.
+          </p>
+          <DateRangePicker
+            startDateLabel="Starting Date"
+            endDateLabel="Ending Date"
+            locale="en"
+            currentDate="2020-07-10"
+          />
+        </div>
+      </DrawerContent>
+    </Drawer>
+  );
+}
+```
+
+### With Ending Date Only
+
+```tsx
+() => {
+  return (
+    <DateRangePicker
+      placeholder="MM/DD/YYYY"
+      startDateLabel="From"
+      endDateLabel="To"
+      endingDate="2023-09-16"
+    />
+  );
+}
+```
+
+## Composes With
+
+- DatePicker
+- Button
+- Core
+- Drawer
+
+---
+
+## References
+
+- [GitHub Source - DateRangePicker](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/DateRangePicker)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/date-range-picker.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-date-range-picker&theme=quickbooks&colorScheme=light)

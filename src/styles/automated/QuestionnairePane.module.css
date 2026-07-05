@@ -1,0 +1,148 @@
+/* Questionnaire pane */
+.container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: var(--space-container-padding-large, 24px) var(--space-container-padding-large, 24px) var(--space-container-padding-small, 16px);
+  gap: var(--space-medium, 16px);
+  width: 100%;
+  align-items: stretch;
+}
+
+/* Action button top-right */
+.actionButtonRow {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.actionButton {
+  font-family: var(--font-family-component) !important;
+  font-size: var(--font-size-component-medium, 16px);
+  font-weight: var(--font-weight-component-semibold, 600);
+  line-height: 1.3;
+  color: #ffffff;
+  background: #205EA3;
+  border: none;
+  border-radius: var(--radius-action, 4px);
+  padding: var(--space-component-stack-padding-medium, 6px) var(--space-component-inline-padding-xx-large, 16px);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.actionButton:hover {
+  background: #1a4f8e;
+}
+
+/* Chat content container */
+.chatContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-medium, 16px);
+  width: 100%;
+}
+
+/* User speech bubble — right aligned */
+.userMessageRow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-end;
+  width: 100%;
+  max-width: 768px;
+  gap: var(--space-component-gap-small, 4px);
+}
+
+.userBubble {
+  background: #205EA3;
+  color: #ffffff;
+  border-radius: 24px;
+  padding: var(--space-component-inline-padding-x-large, 12px) var(--space-component-inline-padding-xx-large, 16px);
+  max-width: 448px;
+  width: 285px;
+  font-family: var(--font-family-component) !important;
+  font-size: var(--font-size-component-small, 16px);
+  font-weight: var(--font-weight-component, 400);
+  line-height: 1.3;
+}
+
+/* Agent response */
+.agentResponse {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-small, 12px);
+  width: 100%;
+}
+
+/* Agent markdown text */
+.agentText {
+  font-family: var(--font-family-component) !important;
+  font-size: var(--font-size-body-2, 16px);
+  font-weight: var(--font-weight-body, 400);
+  line-height: 1.5;
+  color: var(--color-message-text-received, #393a3d);
+  width: 100%;
+}
+
+/* Accordion container */
+.accordionStack {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Card control bar — copy, download, thumbs */
+.cardControlBar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-column-gap-x-small, 8px);
+  width: 100%;
+}
+
+.iconBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #393a3d;
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-small, 4px);
+}
+
+.iconBtn:hover {
+  background: #f4f5f8;
+}
+
+/* Suggestion chips row — right aligned */
+.suggestionChipsRow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-x-small, 8px);
+  padding-left: 48px;
+  width: 100%;
+}
+
+.suggestionChip {
+  display: flex;
+  gap: var(--space-component-gap-medium, 8px);
+  align-items: flex-start;
+  min-height: 44px;
+  max-width: 448px;
+  padding: var(--space-small, 12px) var(--space-component-inline-padding-xx-large, 16px);
+  border-radius: 24px;
+  border: 2px solid #205EA3;
+  background: transparent;
+  font-family: var(--font-family-component) !important;
+  font-size: var(--font-size-component-medium, 16px);
+  font-weight: var(--font-weight-component, 400);
+  line-height: 1.3;
+  color: #205EA3;
+  cursor: pointer;
+  text-align: left;
+}
+
+.suggestionChip:hover {
+  background: rgba(32, 94, 163, 0.05);
+}

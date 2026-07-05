@@ -1,0 +1,78 @@
+---
+description: Complete guide for using the core component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# core
+
+Welcome to my `Core` component.
+Its basically a utils component thats helps with deviceUtils, a11y, and debouncing.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/core
+```
+
+```tsx
+import { core } from '@ids-ts/core';
+```
+
+## Props
+
+`@ids-ts/core` is a utility package with no visual props. It exports helper utilities:
+
+- `deviceUtils` — Device detection helpers
+- `a11y` — Accessibility utilities
+- Debounce helpers
+
+No React component props to configure directly.
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Code Example
+
+```tsx
+import { a11y, debounce, deviceUtils } from '@ids-ts/core';
+```
+
+---
+
+## References
+
+- [GitHub Source - core](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/core)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-{component})

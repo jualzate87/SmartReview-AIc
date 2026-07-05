@@ -1,0 +1,179 @@
+/* Left panel — 692px wide */
+.leftPanel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Top file header — height 45px, bg #e2e9ed */
+.fileHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 45px;
+  padding: 4px 10px;
+  background: #e2e9ed;
+  flex-shrink: 0;
+}
+
+.fileHeaderInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.fileName {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  color: #21262a;
+  white-space: nowrap;
+}
+
+.fileDetails {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: #21262a;
+  white-space: nowrap;
+}
+
+.fileHeaderMenu {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #21262a;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  width: 24px;
+  height: 24px;
+}
+
+/* Document viewer — fills remaining height, bg white, p-[10px] */
+.documentViewer {
+  flex: 1;
+  background: #ffffff;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+}
+
+.documentImage {
+  width: 610px;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid #000000;
+}
+
+/* Bottom toolbar — height 45px, bg #e2e9ed */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 45px;
+  padding: 4px 10px;
+  background: #e2e9ed;
+  flex-shrink: 0;
+}
+
+.toolbarControls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* "100%" zoom indicator — bordered box */
+.zoomLevel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #21262a;
+  border-radius: 4px;
+  padding: 0 8px;
+  height: 24px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 16px;
+  color: #21262a;
+  white-space: nowrap;
+  min-width: 16px;
+}
+
+.toolbarBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #21262a;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  width: 24px;
+  height: 24px;
+}
+
+.toolbarBtn:hover {
+  opacity: 0.7;
+}
+
+/* Divider between zoom controls and page controls */
+.toolbarDivider {
+  width: 1px;
+  height: 24px;
+  background: #21262a;
+  flex-shrink: 0;
+}
+
+/* Page controls */
+.pageControls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pageLabel {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 16px;
+  color: #21262a;
+}
+
+.pageNumber {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #21262a;
+  border-radius: 4px;
+  padding: 0 8px;
+  height: 24px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 16px;
+  color: #21262a;
+  min-width: 16px;
+}
+
+.pageTotal {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 16px;
+  color: #21262a;
+  width: 26px;
+  text-align: center;
+}
+
+.pageNavBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #21262a;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  width: 20px;
+  height: 20px;
+}

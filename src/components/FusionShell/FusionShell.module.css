@@ -1,0 +1,191 @@
+:root {
+  --color-border: var(--color-container-border-primary);
+  --header-height: 56px; /* used for the header height in the fusion shell */
+  --nav-width: 74px; /* used for the nav width in the fusion shell */
+  --subNav-width: 240px; /* used for the subnav width in the fusion shell */
+  --side-panel-width: 380px;
+}
+
+.root {
+  background-color: var(--color-page-background-secondary);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3);
+  box-sizing: border-box;
+  color: var(--color-text-primary);
+  display: flex;
+  flex-direction: row;
+  font-weight: 400;
+  height: 100vh;
+  line-height: normal;
+  margin: 0;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  padding: 0;
+  position: absolute;
+  -webkit-font-smoothing: antialiased;
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.root * {
+  -webkit-font-smoothing: antialiased;
+}
+
+.header {
+  padding: 0px var(--space-container-padding-large);
+  height: var(--header-height);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 12px;
+}
+
+.header .businessName {
+  border-left: 1px solid var(--color-container-border-primary);
+  padding: 4px 16px;
+}
+
+.navContainer {
+  display: flex;
+  gap: 0;
+  flex-wrap: nowrap;
+  height: 100%;
+}
+
+.nav {
+  background-color: var(--color-page-background-primary);
+  border-radius: 12px 0px 0px 0px;
+  border-right: 1px solid var(--color-container-border-primary);
+  border-left: 1px solid var(--color-container-border-primary);
+  border-top: 1px solid var(--color-container-border-primary);
+  flex-shrink: 0;
+  color: var(--color-text-passive-subtle);
+  padding-top: var(--space-container-padding-x-small);
+  height: 100%;
+  width: var(--nav-width);
+  z-index: 2;
+}
+
+.nav .button {
+  background-color: transparent;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+  height: 64px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+.nav .button .buttonIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: var(--radius-large);
+}
+
+.nav .button:hover .buttonIcon,
+.nav .button:focus .buttonIcon {
+  background-color: var(--color-action-standard-hover);
+  color: var(--color-icon-inverse);
+}
+
+.nav .buttonActive .buttonIcon {
+  background-color: var(--color-action-standard-active);
+  color: var(--color-icon-inverse);
+}
+
+.nav .button:focus {
+  outline: 0;
+}
+
+.popover {
+  z-index: 1000;
+  background: var(--color-container-background-primary);
+  border: 1px solid var(--color-container-border-primary);
+  border-radius: var(--radius-medium);
+  padding: var(--spacing-4);
+  box-shadow: var(--shadow-medium, 0 4px 12px rgba(0, 0, 0, 0.15));
+}
+
+.nav h3 {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  text-align: center;
+  border-top: 1px solid var(--color-container-border-tertiary);
+  margin: 12px 12px 0px;
+  padding-top: 20px;
+}
+
+.mainContent {
+  overflow: hidden;
+  border-radius: 12px 12px 0px 0px;
+  margin: 0 0px;
+  flex: 1;
+  gap: 0;
+  height: calc(100vh - var(--header-height));
+}
+
+.mainContentInner {
+  background-color: var(--color-page-background-primary);
+  border-right: 1px solid var(--color-container-border-primary);
+  border-top: 1px solid var(--color-container-border-primary);
+  border-radius: 0px 12px 0px 0px;
+  flex: 1;
+  overflow-y: auto;
+  padding: 0px 0px;
+  height: 100%;
+  position: relative;
+  z-index: 1;
+  margin-left: 0;
+  z-index: 3;
+  transition-property: margin-left;
+  transition-duration: var(--duration-fade-moderate);
+  transition-timing-function: var(--ease-transform);
+}
+
+.subNavClosed .mainContentInner,
+[data-subnav-closed='true'] .mainContentInner {
+  border-right: 0;
+  margin-left: calc(-1 * var(--subNav-width));
+}
+
+.sidePanel {
+  height: calc(100vh - var(--header-height));
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  display: none;
+}
+
+.sidePanel.sidePanelOpen {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  width: var(--side-panel-width);
+  display: block;
+}
+
+.sidePanelOpen .mainContentInner {
+  border-radius: 0px;
+  border-right: 0;
+  margin-right: 0;
+}
+
+.nav .settingsButton {
+  margin-top: auto;
+  margin-bottom: 12px;
+}

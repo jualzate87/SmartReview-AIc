@@ -1,0 +1,721 @@
+---
+description: Complete guide for using the GuidedTourTooltip component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# GuidedTourTooltip
+
+Welcome to `GuidedTourTooltip` component.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/guided-tour-tooltip
+```
+
+```tsx
+import { GuidedTourTooltip } from '@ids-ts/guided-tour-tooltip';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `autoFocus` | `boolean` | Yes | Whether focus moves inside the tooltip once opened. Defaults to `true`. |
+| `open` | `boolean` | No | Controls whether the guided tour is active. |
+| `steps` | `GTTStep[]` | Yes | Array of step configurations for the guided tour. |
+| `ofLabel` | `string` | Yes | Label for the step counter (e.g., `'of'` in "1 of 5"). |
+| `doneLabel` | `string` | Yes | Label for the done/finish button on the last step. |
+| `backLabel` | `string` | No | Label for the back button. Defaults to `'back'`. |
+| `nextLabel` | `string` | No | Label for the next button. Defaults to `'next'`. |
+| `automationId` | `string` | No | Automation test identifier. |
+| `targetElement` | `HTMLElement` | Yes | The DOM element the tooltip is anchored to. |
+| `activeElement` | `HTMLUnknownElement \| HTMLUnknownElement[] \| null` | No | Element to focus when the tooltip closes. |
+| `title` | `string` | No | Header text for the tooltip. |
+| `message` | `ReactNode` | No | Content displayed under the title. |
+| `position` | `Positions` | No | Position for the tooltip: `'top'`, `'bottom'`, `'left'`, `'right'`. |
+| `alignment` | `Alignments` | No | Alignment of the tooltip relative to the target. |
+| `preventOverflow` | `PreventOverflow` | No | Prevents tooltip from overflowing outside the boundary. |
+| `onClose` | `(index?: number) => void` | No | Called when the tour is closed. |
+| `onBackClick` | `(index: number) => void` | No | Called when the back button is clicked. |
+| `onNextClick` | `(index: number) => void` | No | Called when the next button is clicked. |
+| `onPreload` | `CallBackPayload` | No | Called before a tooltip step is rendered. |
+| `onPreUnload` | `CallBackPayload` | No | Called before a tooltip step is unmounted. |
+| `renderGuidanceTooltip` | `(tooltips: ReactNodeArray, onClose: () => void) => ReactNode` | No | Custom renderer for tooltip steps (used for coachmarks). |
+| `renderCoachMarks` | `(props: any) => JSX.Element \| null` | No | Renders coachmarks for each step. |
+| `renderOptions` | `any` | No | Props passed to the CoachMarks component. |
+| `coachMarksOptions` | `any` | No | Additional Coachmarks configuration. |
+| `enableClickAway` | `boolean` | No | Enables closing the tooltip on outside click. |
+| `tooltipOffsetSkidding` | `number` | No | Cross-axis pixel offset of the tooltip. |
+| `tooltipOffsetDistance` | `number` | No | Main-axis pixel offset of the tooltip. |
+| `offsetX` | `number` | No | X-axis offset. |
+| `offsetY` | `number` | No | Y-axis offset. |
+| `stylePosition` | `React.CSSProperties` | No | Styles for the position wrapper node. |
+| `className` | `string` | No | Additional class name for the tooltip wrapper. |
+| `callback` | `CallBackPayload` | No | General callback payload. |
+| `index` | `number` | No | Current step index. |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface GuidedTourTooltipProps extends ThemeableElement<'div'> {
+  /**
+   * Whether focus should move inside the tooltip once it is opened.
+   *
+   * @default true
+   */
+  autoFocus: boolean;
+  /** To begin the guided tour */
+  open?: boolean;
+  /** Callback for extra functionality when tour is closed */
+  onClose?: () => void;
+  /**
+   * Array of API's for guided tooltip.
+   * If array is passed combined with renderGuidanceTooltip, the first element
+   * will receive tooltip focus but all elements will receive coachMarks focus
+   *
+   * @default [{}]
+   */
+  steps: GTTStep[];
+  /**
+   * Input translation of the word 'of' for multi-country use
+   *
+   * @default 'of'
+   */
+  ofLabel: string;
+  /**
+   * Input translation of the word 'done' for multi-country use
+   *
+   * @default 'Done'
+   */
+  doneLabel: string;
+  /** Function hook that can render a guidance tooltip step and any additional component you need. Usually for coachmarks */
+  renderGuidanceTooltip?: (
+    tooltips: React.ReactNodeArray,
+    onClose: () => void,
+    props: GuidedTourTooltipProps
+  ) => React.ReactNode;
+  /** automation id */
+  automationId?: string;
+}
+
+export interface GTTStep {
+  /** The HTML DOM element to be used to focus on when tooltip closed. */
+  activeElement?: HTMLUnknownElement | HTMLUnknownElement[] | null;
+  /**
+   * targetElement: a HTML DOM element
+   * The HTML DOM element to be used as the target reference.
+   */
+  targetElement?:
+    | React.ReactNode
+    | React.ReactNodeArray
+    | HTMLElement
+    | string
+    | null;
+  /** Text to display as a header for the message. */
+  title?: string;
+  /** content to be displayed under title text */
+  message?: any;
+  /** Position for GuidanceTooltip to be placed. */
+  position?: Positions;
+  /** preventOverflow: an object variable; used to prevent GuidanceTooltip from being positioned outside the boundary. */
+  preventOverflow?: PreventOverflow;
+  /** Alignment of GuidanceTooltip to target. */
+  alignment?: Alignments;
+  /** Callback function on back button click */
+  onBackClick?: (index: number) => void;
+  /** Callback function on next button click */
+  onNextClick?: (index: number) => void;
+  /** Callback for extra functionality when tour is closed */
+  onClose?: (index?: number) => void;
+  /** function that returns a promise and is called before tooltip is rendered. */
+  onPreload?: CallBackPayload;
+  /** function that returns a promise and is called when tooltip is about to be unmounted. */
+  onPreUnload?: CallBackPayload;
+  /** A collection props passed down to the CoachMarks component */
+  renderOptions?: any;
+  /** Enable onClose trigger on click away based on dismissible prop value. */
+  enableClickAway?: boolean;
+  /** Offset tooltip on X axis
+   *
+   * @deprecated Please use tooltipOffsetSkidding instead
+   */
+  offsetX?: number;
+  /** Offset tooltip on Y axis
+   *
+   * @deprecated Please use tooltipOffsetDistance instead
+   */
+  offsetY?: number;
+  /**
+   * tooltipOffsetSkidding: the cross-axis pixel distance that the popup should be offset from targetElement
+   *
+   * @default 0
+   */
+  tooltipOffsetSkidding?: number;
+  /**
+   * tooltipOffsetDistance: the main-axis pixel distance that the popup should be offset from targetElement
+   *
+   * @default 0
+   */
+  tooltipOffsetDistance?: number;
+  /** Text label for back button. Default text is 'back'. */
+  backLabel?: string;
+  /** Text label for next button. Default text is 'next'. */
+  nextLabel?: string;
+  /** Class name to be added on the GuidanceTooltip wrapper. */
+  className?: string;
+  /**  The optional styles applied to the position node wrapped around the root node. */
+  stylePosition?: any;
+  /** Used for passing Coachmarks Props */
+  coachMarksOptions?: any;
+  /** render coachmark individual for each step */
+  renderCoachMarks?: (props: any) => JSX.Element | null;
+}
+
+type CallBackPayload = (index?: number) => any;
+
+export interface GTTStep {
+  /** The HTML DOM element to be used to focus on when tooltip closed. */
+  activeElement?: HTMLUnknownElement | HTMLUnknownElement[] | null;
+  /**
+   * targetElement: a HTML DOM element
+   * The HTML DOM element to be used as the target reference.
+   */
+  targetElement?:
+    | React.ReactNode
+    | React.ReactNodeArray
+    | HTMLElement
+    | string
+    | null;
+  /** Text to display as a header for the message. */
+  title?: string;
+  /** content to be displayed under title text */
+  message?: any;
+  /** Position for GuidanceTooltip to be placed. */
+  position?: Positions;
+  /** preventOverflow: an object variable; used to prevent GuidanceTooltip from being positioned outside the boundary. */
+  preventOverflow?: PreventOverflow;
+  /** Alignment of GuidanceTooltip to target. */
+  alignment?: Alignments;
+  /** Callback function on back button click */
+  onBackClick?: (index: number) => void;
+  /** Callback function on next button click */
+  onNextClick?: (index: number) => void;
+  /** Callback for extra functionality when tour is closed */
+  onClose?: (index?: number) => void;
+  /** function that returns a promise and is called before tooltip is rendered. */
+  onPreload?: CallBackPayload;
+  /** function that returns a promise and is called when tooltip is about to be unmounted. */
+  onPreUnload?: CallBackPayload;
+  /** A collection props passed down to the CoachMarks component */
+  renderOptions?: any;
+  /** Enable onClose trigger on click away based on dismissible prop value. */
+  enableClickAway?: boolean;
+  /** Offset tooltip on X axis
+   *
+   * @deprecated Please use tooltipOffsetSkidding instead
+   */
+  offsetX?: number;
+  /** Offset tooltip on Y axis
+   *
+   * @deprecated Please use tooltipOffsetDistance instead
+   */
+  offsetY?: number;
+  /**
+   * tooltipOffsetSkidding: the cross-axis pixel distance that the popup should be offset from targetElement
+   *
+   * @default 0
+   */
+  tooltipOffsetSkidding?: number;
+  /**
+   * tooltipOffsetDistance: the main-axis pixel distance that the popup should be offset from targetElement
+   *
+   * @default 0
+   */
+  tooltipOffsetDistance?: number;
+  /** Text label for back button. Default text is 'back'. */
+  backLabel?: string;
+  /** Text label for next button. Default text is 'next'. */
+  nextLabel?: string;
+  /** Class name to be added on the GuidanceTooltip wrapper. */
+  className?: string;
+  /**  The optional styles applied to the position node wrapped around the root node. */
+  stylePosition?: any;
+  /** Used for passing Coachmarks Props */
+  coachMarksOptions?: any;
+  /** render coachmark individual for each step */
+  renderCoachMarks?: (props: any) => JSX.Element | null;
+}
+
+interface CallbackType {
+  /** */
+  callback?: CallBackPayload;
+  /** */
+  index?: number;
+}
+
+export interface GuidedTourTooltipProps extends ThemeableElement<'div'> {
+  /**
+   * Whether focus should move inside the tooltip once it is opened.
+   *
+   * @default true
+   */
+  autoFocus: boolean;
+  /** To begin the guided tour */
+  open?: boolean;
+  /** Callback for extra functionality when tour is closed */
+  onClose?: () => void;
+  /**
+   * Array of API's for guided tooltip.
+   * If array is passed combined with renderGuidanceTooltip, the first element
+   * will receive tooltip focus but all elements will receive coachMarks focus
+   *
+   * @default [{}]
+   */
+  steps: GTTStep[];
+  /**
+   * Input translation of the word 'of' for multi-country use
+   *
+   * @default 'of'
+   */
+  ofLabel: string;
+  /**
+   * Input translation of the word 'done' for multi-country use
+   *
+   * @default 'Done'
+   */
+  doneLabel: string;
+  /** Function hook that can render a guidance tooltip step and any additional component you need. Usually for coachmarks */
+  renderGuidanceTooltip?: (
+    tooltips: React.ReactNodeArray,
+    onClose: () => void,
+    props: GuidedTourTooltipProps
+  ) => React.ReactNode;
+  /** automation id */
+  automationId?: string;
+}
+
+/** GuidedTourTooltip component */
+const GuidedTourTooltip = (props: GuidedTourTooltipProps) => {
+  const [index, setIndex] = React.useState(0);
+  const activeElement = React.useRef<HTMLUnknownElement | null | undefined>(
+    null
+  );
+
+  /** check if function is a promise */
+  const isPromise = (method: any) =>
+    !!method && typeof method.then === 'function';
+
+  /** close the tour */
+  const closeTour = () => {
+    const { onClose } = props.steps[index];
+    const closeIndex = 0;
+    setIndex(closeIndex);
+
+    const { onClose: onCloseTour } = props;
+    onCloseTour && onCloseTour();
+    // Set focus on active element
+    if (activeElement && activeElement.current && activeElement.current.focus) {
+      activeElement.current.focus();
+    }
+
+    onClose && onClose(closeIndex);
+  };
+
+  /** resolve any promises */
+  const resolveCallbackList = (
+    callbackList: CallbackType[],
+    callbackIndex = 0
+  ) => {
+    const currCallback = callbackList[callbackIndex];
+    if (callbackIndex >= callbackList.length) {
+      return;
+    }
+
+    const callbackResult =
+      currCallback.callback && currCallback.callback(currCallback.index);
+    if (isPromise(callbackResult)) {
+      callbackResult
+        .then(() => {
+          resolveCallbackList(callbackList, callbackIndex + 1);
+        })
+        .catch((error: React.ErrorInfo) => {
+          console.warn(error);
+          closeTour();
+        });
+    } else {
+      resolveCallbackList(callbackList, callbackIndex + 1);
+    }
+  };
+
+  /** function to transition the tooltip */
+  const transitionTooltip = (
+    currIndex: number,
+    newIndex: number,
+    callback: CallBackPayload
+  ) => {
+    const callbackList: CallbackType[] = [];
+    const { onPreUnload } = props.steps[currIndex];
+    const { onPreload } = props.steps[newIndex];
+    if (onPreUnload) {
+      callbackList.push({
+        callback: onPreUnload,
+        index: currIndex
+      });
+    }
+
+    if (onPreload) {
+      callbackList.push({
+        callback: onPreload,
+        index: newIndex
+      });
+    }
+
+    callbackList.push({ callback });
+    resolveCallbackList(callbackList);
+  };
+
+  /** handle back button click */
+  const handleBackButtonClick = () => {
+    const prevIndex = index - 1;
+    const { onBackClick } = props.steps[index];
+    transitionTooltip(index, prevIndex, () => {
+      setIndex(prevIndex);
+      if (typeof onBackClick === 'function') {
+        onBackClick(prevIndex);
+      }
+    });
+  };
+
+  /** handle next button click */
+  const handleNextButtonClick = () => {
+    const nextIndex = index + 1;
+    const { onNextClick } = props.steps[index];
+    transitionTooltip(index, nextIndex, () => {
+      setIndex(nextIndex);
+      if (typeof onNextClick === 'function') {
+        onNextClick(nextIndex);
+      }
+    });
+  };
+
+  /**  setup the callbacks to close the tour */
+  const handleClose = () => {
+    const callbackList: CallbackType[] = [];
+    if (props.steps[index].onPreUnload) {
+      callbackList.push({
+        callback: props.steps[index].onPreUnload,
+        index
+      });
+    }
+
+    callbackList.push({
+      callback: () => {
+        closeTour();
+      }
+    });
+    resolveCallbackList(callbackList);
+  };
+
+  /** function to render the tooltips */
+  const getTooltips = (stepCount: number): React.ReactNodeArray => {
+    const { autoFocus, open, steps, ofLabel, doneLabel, automationId } = props;
+
+    return steps.map((step, stepIndex) => {
+      const targetElement = Array.isArray(step.targetElement)
+        ? step.targetElement[0]
+        : step.targetElement;
+      activeElement.current = Array.isArray(step.activeElement)
+        ? step.activeElement[0]
+        : step.activeElement;
+
+      // Warnt the users if they are using deprecated props under steps
+      if (step.offsetX) {
+        console.warn(
+          'offsetX prop is deprecated. Please use tooltipOffsetSkidding prop instead'
+        );
+      }
+
+      if (step.offsetY) {
+        console.warn(
+          'offsetY prop is deprecated. Please use tooltipOffsetDistance prop instead'
+        );
+      }
+
+      const guidanceTooltip = (
+        <GuidanceTooltip
+          // eslint-disable-next-line react/no-array-index-key
+          key={stepIndex}
+          dismissible
+          usedForGuidedTour
+          autoFocus={autoFocus}
+          theme={props.theme}
+          index={stepIndex}
+          alignment={step.alignment}
+          targetElement={targetElement}
+          activeElement={activeElement.current}
+          open={open && index === stepIndex}
+          preventOverflow={step.preventOverflow}
+          offsetX={step.offsetX || 0}
+          tooltipOffsetSkidding={step.tooltipOffsetSkidding || 0}
+          enableClickAway={step.enableClickAway}
+          offsetY={step.offsetY || 0}
+          tooltipOffsetDistance={step.tooltipOffsetDistance || 0}
+          animationOn={stepIndex === 0}
+          message={
+            <>
+              {step.message}
+              {stepCount > 1 && (
+                <Footer
+                  index={index}
+                  count={stepCount}
+                  ofLabel={ofLabel}
+                  theme={props.theme}
+                  backLabel={step.backLabel || 'Back'}
+                  doneLabel={doneLabel}
+                  nextLabel={step.nextLabel || 'Next'}
+                  onBackButtonClick={handleBackButtonClick}
+                  onNextButtonClick={handleNextButtonClick}
+                  onDoneButtonClick={handleClose}
+                />
+              )}
+            </>
+          }
+          automationId={automationId && `${automationId}_${stepIndex + 1}`}
+          title={step.title || 'Title'}
+          stylePosition={step.stylePosition ? step.stylePosition(step) : null}
+          position={step.position}
+          className={clsx(step.className, styles.guidanceTourTooltipWrapper)}
+          colorScheme={props.colorScheme}
+          onClose={handleClose}
+        >
+          {step.targetElement ? null : <div />}
+        </GuidanceTooltip>
+      );
+
+      if (step.renderCoachMarks) {
+        return open && index === stepIndex
+          ? step.renderCoachMarks({
+              children: guidanceTooltip,
+              key: stepIndex,
+              open: guidanceTooltip.props.open,
+              targetElement,
+              alignment: step.alignment,
+              position: step.position,
+              onClose: handleClose
+            })
+          : null;
+      }
+
+      return guidanceTooltip;
+    });
+  };
+
+  /** render guidance tooltip */
+  const renderGuidanceTooltip = (stepCount: number) => {
+    const tooltips = getTooltips(stepCount);
+
+    if (props.renderGuidanceTooltip) {
+      return props.renderGuidanceTooltip(tooltips, handleClose, props);
+    }
+
+    return tooltips;
+  };
+
+  const { steps, open } = props;
+
+  const stepCount = steps.length;
+  if (stepCount > 6 || stepCount < 3) {
+    console.warn('Ideally 3-4 and no more than 6 steps are recommended');
+  }
+
+  return open ? <>{renderGuidanceTooltip(stepCount)} </> : null;
+};
+
+GuidedTourTooltip.defaultProps = {
+  autoFocus: true,
+  steps: [{}],
+  ofLabel: 'of',
+  doneLabel: 'Done'
+};
+
+export default GuidedTourTooltip;
+
+interface CallbackType {
+  /** */
+  callback?: CallBackPayload;
+  /** */
+  index?: number;
+}
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Basic Usage
+
+```tsx
+() => (
+  <div>
+    <GTTMixin>
+      {(props: GTTMixinProps) =>
+```
+
+### Basic Pre Post Load Example
+
+```tsx
+() => (
+  <div>
+    <GTTMixin>
+      {(props: GTTMixinProps) =>
+```
+
+### Coach Marks Example
+
+```tsx
+() => (
+  <div>
+    <GTTMixin>
+      {(props: GTTMixinProps) =>
+```
+
+### Translation Example
+
+```tsx
+() => (
+  <div>
+    <GTTMixin>
+      {(props: GTTMixinProps) =>
+```
+
+### Responsive Example
+
+```tsx
+() => {
+  return (
+    <div>
+      <GTTMixin>
+        {(props: GTTMixinProps) => {
+          const style = {
+            display: 'inline-block',
+            width: '400px',
+            height: '400px',
+            border: '1px solid black'
+          };
+          const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
+          const refs = [
+            props.inputARef,
+            props.inputBRef,
+            props.inputCRef,
+            props.inputDRef,
+            props.inputERef,
+            props.inputFRef
+          ];
+          return (
+            <>
+              <Button onClick={props.onButtonClick}>Click Me</Button>
+              <div style={{ width: '100vw' }}>
+                <div ref={props.assignARef} style={style}>
+                  This is Block 1
+                </div>
+                <div ref={props.assignBRef} style={style}>
+                  This is Block 2
+                </div>
+                <div ref={props.assignCRef} style={style}>
+                  This is Block 3
+                </div>
+                <div ref={props.assignDRef} style={style}>
+                  This is Block 4
+                </div>
+                <div ref={props.assignERef} style={style}>
+                  This is Block 5
+                </div>
+                <div ref={props.assignFRef} style={style}>
+                  This is Block 6
+                </div>
+              </div>
+              <GuidedTourTooltip
+                open={props.showToolTip}
+                steps={letters.map((letter, index) => ({
+                  title: `Title ${letter}`,
+                  targetElement: refs[index],
+                  activeElement: props.buttonRef.current,
+                  message:
+                    'Passing renderCoachMarks prop adds an overlay and focus area support',
+                  position: 'top',
+                  alignment: 'right',
+                  onClose: props.onClose,
+                  enableClickAway: false,
+                  renderCoachMarks: (GTTprops: GuidedTourTooltipProps) => (
+                    <CoachMarks {...GTTprops} targetDomNode={refs[index]}>
+                      {GTTprops.children}
+                    </CoachMarks>
+                  )
+                }))}
+                onClose={props.onClose}
+              />
+            </>
+          );
+        }}
+      </GTTMixin>
+    </div>
+  );
+}
+```
+
+## Code Example
+
+```tsx
+import GuidedTourTooltip from '@ids-ts/guided-tour-tooltip';
+```
+
+## Composes With
+
+- Button
+- TextField
+
+---
+
+## References
+
+- [GitHub Source - GuidedTourTooltip](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/GuidedTourTooltip)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/guided-tour-tooltip.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-guided-tour-tooltip&theme=quickbooks&colorScheme=light)

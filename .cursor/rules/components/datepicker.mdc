@@ -1,0 +1,2160 @@
+---
+description: Complete guide for using the DatePicker component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# DatePicker
+
+The date picker lets users select a single date (a day) or a date range (a week) with an interface that looks like a calendar and is just as straightforward to use.
+Please note that for handheld devices, a native `<input type="date">` tag is used, so props related to hiding and showing the
+calendar or text field do not work, and the "value" property of the input tag is always in short ISO format.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/date-picker
+```
+
+```tsx
+import { DatePicker, DatePickerComponent } from '@ids-ts/date-picker';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `automationId` | `string` | No | Automation test identifier. |
+| `data-drpIndex` | `'start' \| 'end'` | No | Index for date range picker styling. |
+| `announcementMinDate` | `string` | No | Used to announce min date via screen reader. |
+| `announcementMaxDate` | `string` | No | Used to announce max date via screen reader. |
+| `announcementCurrentDate` | `string` | No | Used to announce current date via screen reader. |
+| `currentDate` | `string` | No | The date DatePicker will assume is today. Defaults to today. |
+| `currentDateTitle` | `string` | No | Accessible title for the current date. |
+| `dateFormat` | `string` | Yes | Date format string (e.g., `'MM/DD/YYYY'`). |
+| `dayOfWeekLabels` | `string[]` | Yes | Array of abbreviated weekday labels. |
+| `fullDayOfWeekLabels` | `string[]` | No | Array of full weekday names for accessibility. |
+| `disabled` | `boolean` | No | Disables the date input when true. |
+| `footerTextClass` | `string` | No | Class applied to footer text (validation and helper). |
+| `hasWeightedLabel` | `boolean` | No | Makes the label bold when true. |
+| `helperText` | `string` | No | Helper text displayed below the input. |
+| `readOnly` | `boolean` | No | Makes the input read-only when true. |
+| `enableAutoFormatting` | `boolean` | No | Enables auto-formatting of the text field input. |
+| `endingDate` | `string \| DateWrapper` | No | End date for range pickers. |
+| `id` | `string` | No | ID of the root container. |
+| `errorText` | `string` | No | Error message displayed below the input. |
+| `isMobile` | `boolean` | No | Override for mobile detection (used for testing). |
+| `isRangePicker` | `boolean` | No | Used by DateRangePicker for styling. |
+| `isMonthYearPicker` | `boolean` | No | Used by month/year picker variant. |
+| `label` | `string` | No | Label for the date input field. |
+| `maxDate` | `string \| DateWrapper` | No | Maximum selectable date. |
+| `minDate` | `string \| DateWrapper` | No | Minimum selectable date. |
+| `monthLabels` | `string[]` | Yes | Array of month name labels. |
+| `name` | `string` | No | Name attribute for the input. |
+| `nextMonthAriaLabel` | `string` | Yes | Accessible label for the next month button. |
+| `previousMonthAriaLabel` | `string` | Yes | Accessible label for the previous month button. |
+| `onFocus` | `React.FocusEventHandler` | No | Called when the input receives focus. |
+| `onBlur` | `React.FocusEventHandler` | No | Called when the input loses focus. |
+| `onChange` | `(event: ChangeEventType) => void` | No | Called when the selected date changes. |
+| `onCalendarOpen` | `() => void` | No | Called when the calendar opens. |
+| `onCalendarClose` | `() => void` | No | Called when the calendar closes. |
+| `placeholder` | `string` | No | Placeholder text for the input. |
+| `preventCalendarOverflow` | `PreventOverflow` | No | Controls calendar overflow behavior. |
+| `renderTooltip` | `RenderTooltipType` | No | Custom tooltip renderer. |
+| `showCalendar` | `boolean` | No | Controls calendar open/closed state. |
+| `size` | `TextFieldProps['size']` | No | Size of the date picker text field. |
+| `startingDate` | `string \| DateWrapper` | No | Start date for range pickers. |
+| `calendarPositionStyle` | `React.CSSProperties` | No | Additional styles for the calendar position node. |
+| `validationError` | `boolean` | No | Shows error state styling when true. |
+| `warningText` | `string` | No | Warning message displayed below the input. |
+| `useDoubleCalendar` | `boolean` | No | Shows two calendar months side by side. |
+| `value` | `string \| DateWrapper` | Yes | Selected date value. |
+| `displayStrikeOutsideOfMinMaxRange` | `boolean` | No | Strikes through dates outside min/max range. |
+| `enableMonthYearQuickSelect` | `boolean` | No | Enables month and year quick select dropdowns. |
+| `quickSelectMinYear` | `number` | No | Minimum year for the quick select dropdown. |
+| `quickSelectMaxYear` | `number` | No | Maximum year for the quick select dropdown. |
+| `abbreviatedDateFormat` | `string` | No | Date format abbreviation for different locales. |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface DatePickerProps
+  extends Omit<ThemeableElement<'div'>, 'onChange'> {
+  /**
+   * Automation ID prop for allowing easier access to elements while running functional tests.
+   * USAGE: User would just need to provide the automationId prop during instantiation, and
+   * behind the scene we would add it to datePicker
+   */
+  automationId?: string;
+  /** Same as TextField.aria-label */
+  'aria-label'?: string;
+  /** Same as TextField.aria-required */
+  'aria-required'?: boolean | 'false' | 'true';
+  /** Index string to be used in terms of date range picker calendar for styling: 'start' or 'end'.  */
+  'data-drpIndex'?: DrpIndexType;
+  /** Used to announce min date via screen reader for accessibility purpose */
+  announcementMinDate?: string;
+  /** Used to announce max date via screen reader for accessibility purpose */
+  announcementMaxDate?: string;
+  /**
+   * Used to announce current date via screen reader for accessibility purpose
+   *
+   * @default 'This is the current date'
+   */
+  announcementCurrentDate: string;
+  /**
+   * An array of un-select-able dates in short ISO format that cannot be selected by the user.
+   * Example: ['2018-06-07', '2018-07-07', '2018-08-07', '2018-09-07', '2018-10-07', ].
+   * On a mobile device, the user will still be able to select these dates, but the input box
+   * will be marked as invalid and an error message will display, similar to what happens on a
+   * desktop when a user types in a blackout date.
+   *
+   * @default []
+   */
+  blackoutDates: (string | DateWrapper)[];
+  /**
+   * This is used as a prop by both datePropParser and the component that gets generated from it.
+   * datePropParser only takes a string, and its child component only takes a DateWrapper object.
+   * The same is true for maxDate, minDate, startingDate, and value.
+   * currentDate: The date DatePicker will assume is today. Defaults to today if undefined.
+   * This is primarily useful in writing tests and gallery examples.
+   * The string "currentDate" is hardcoded in datePropUtils
+   *
+   * @default DateWrapper.getCurrentDate('en')
+   */
+  currentDate: string | DateWrapper;
+  /**
+   * This prop would trigger the browser tool tip, used for accessibility purpose. Defaulted to 'Current Date'
+   *
+   * @default 'Current Date'
+   */
+  currentDateTitle: string;
+  /**
+   * Sets the date format used by moment to display dates and parse entered dates. Please note
+   * that this string is automatically upper-cased before being passed to moment to preserve
+   * backwards compatibility with the previous React-shimmed DatePicker.
+   * Moment doesn't seem to have a built-in way to check if this is valid, so if the user passes
+   * in a bad dateFormat, things will break.
+   *
+   * @default 'MM/DD/YYYY'
+   */
+  dateFormat: string;
+  /**
+   * An array of headings to list on top of the calendar corresponding to days of the week. Until
+   * this is properly internationalized, these days should always start with Sunday, regardless of
+   * the first day of the week in the current locale.
+   * If not supplied externally, we rely on moment to give us the correct localized labels.
+   *
+   * @default ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+   */
+  dayOfWeekLabels: string[];
+  /** Array of full weekday names for accessibility (abbr attribute). Generated from locale. */
+  fullDayOfWeekLabels?: string[];
+  /** rue = disable input, false = normal operation */
+  disabled?: boolean;
+  /** Class to be applied to all the footer text (validation & helper). It is passed on to TextField */
+  footerTextClass?: string;
+  /** Boolean flag to allow label to be bold. It is passed on to TextField */
+  hasWeightedLabel?: boolean;
+  /** Text to be display for extra information. It is passed on to TextField */
+  helperText?: string;
+  /** True = readOnly input, false = normal operation */
+  readOnly?: boolean;
+  /** flag to enable autoformatting to the textfield */
+  enableAutoFormatting?: boolean;
+  /**
+   * This prop is used by DateRangePicker to show date ranges and decide which dates are selectable.
+   * This is used as a prop by both datePropParser and the component that gets generated from it.
+   * datePropParser only takes a string, and its child component only takes a DateWrapper object.
+   * The string "endingDate" is hardcoded in datePropUtils
+   */
+  endingDate?: string | DateWrapper;
+  /** Id of the root container */
+  id?: string;
+  /** See TextField.errorText */
+  errorText?: string;
+  /** This is set automatically by datePropUtils, but it can be overridden for testing purposes if desired. */
+  isMobile?: boolean;
+  /** Used by DateRangePicker for styling reasons. */
+  isRangePicker?: boolean;
+  /** Used by isMonthYearPicker for styling reasons. */
+  isMonthYearPicker?: boolean;
+  /** See TextField.label */
+  label?: string;
+  /**
+   *  The current locale in the user's browser. If not supplied, DatePropParser defaults this to
+   *  navigator.userLanguage || navigator.language || 'en' . Since that is not an optimal way to
+   *  get the locale, it's recommended that plugins override this setting. This setting controls
+   *  the date format, the day of the week headings and the names of each month, which are all
+   *  supplied by [moment](https://momentjs.com/). However, the user can override all of these
+   *  options individually if desired. Please note that in addition to locale, you must still
+   *  supply all proper error messages and a placeholder (if desired) in the right language in
+   *  order for this widget to be used in non-English speaking regions. (See HUI-5049)
+   *
+   * @default 'en'
+   */
+  locale: string;
+  /**
+   * A date in short ISO format indicating the latest date, inclusive, for which this component is valid.
+   * On a desktop, setting this value will prevent the date-picker's calendar from navigating to any dates after it.
+   * This is used as a prop by both datePropParser and the component that gets generated from it.
+   * DatePropParser should only take a string, and its child component should only take a DateWrapper object.
+   * The string "maxDate" is hardcoded in datePropUtils.
+   */
+  maxDate?: string | DateWrapper;
+  /**
+   *  A date in short ISO format indicating the earliest date, inclusive, for which this component
+   *  is valid. On a desktop, setting this value will prevent the DatePicker's calendar from
+   *  navigating to any dates prior to it.
+   * This is used as a prop by both datePropParser and the component that gets generated from it.
+   * DatePropParser should only take a string, and its child component should only take a DateWrapper object.
+   * The string "minDate" is hardcoded in datePropUtils.
+   */
+  minDate?: string | DateWrapper;
+  /**
+   * The names of the months to display in the calendar. DatePropParser
+   * sets this based on the locale. Not supported on mobile.
+   *
+   * @default ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+   */
+  monthLabels: string[];
+  /** See TextField.props.name */
+  name?: string;
+  /**
+   * Custom aria-label for next month navigation.
+   * Used for accessibility purpose when one navigates over next month button
+   *
+   * @default 'Go to next month'
+   */
+  nextMonthAriaLabel: string;
+  /** See TextField.props.onFocus */
+  onFocus?: React.FocusEventHandler;
+  /** See TextField.props.onBlur */
+  onBlur?: React.FocusEventHandler;
+  /** See TextField.props.onChange */
+  onChange?: (event: ChangeEventType) => void;
+  /**
+   * Fires when the calendar is display to the user.
+   * Not supported on mobile devices -- try listening to the focus event on TextField instead
+   * On the desktop, the calendar is shown when the TextField is focused, unless the user has
+   * just submitted a valid input.
+   */
+  onCalendarOpen?: () => void;
+  /**
+   * Fires when the calendar stops being displayed.
+   * Not supported on mobile devices -- try listening to the blur event on the TextField instead.
+   * For the desktop, the calendar is always closed when TextField is not being focused.
+   */
+  onCalendarClose?: () => void;
+  /**
+   * Custom aria-label for previous month.
+   * Used for accessibility purpose when one hovers over previous month button
+   *
+   * @default 'Go to previous month'
+   */
+  previousMonthAriaLabel: string;
+  /**  See TextField.props.placeholder */
+  placeholder?: string;
+  /**
+   * preventCalendarOverflow: an object variable; used to prevent calendar from being positioned outside the boundary.
+   * More detail in @ids-ts/position preventOverflow API document.
+   */
+  preventCalendarOverflow?: PreventOverflow;
+  /**
+   * Function to render tooltips for special dates.
+   * Make sure to pass 'tooltips' prop.
+   * Params (abbreviatedDateFormat, tooltipText, renderDay, restProps) gets resolved internally.
+   * where 'abbreviatedDateFormat' is of type String and gets resolved from date provided in 'tooltips' prop.
+   *       'tooltipText' refers to message passed against date in 'tooltips' prop.
+   *       'renderDay' is internal function that renders day with tooltip.
+   *       'restProps' helps in styling tooltip.
+   */
+  renderTooltip?: RenderTooltipType;
+  /**
+   * This prop is not implemented by DatePicker code, it is for work-around purpose.
+   * False does nothing. Set to true to focus the TextField input box, thus showing the calendar.
+   * Please note that this prop does not work on the initial render.
+   * However, if always set to true, this will automatically focus the TextField box every time
+   * the DatePicker is re-rendered, which is probably not desirable. One way to avoid this
+   * problem is to not keep the "showCalendar" value in your React state (of whatever component
+   * is using the DatePicker); rather, after setting it to true once, manually set it to false
+   * after the next render. Another work-around is to call showCalendar on the
+   * DatePickerComponent (Use the internalRef prop to get a reference to DatePickerComponent).
+   * Not supported on mobile since the calendar is not rendered on mobile devices.
+   */
+  showCalendar?: boolean;
+  /** Size of the datepicker to render. Affects only the text field */
+  size?: TextFieldProps['size'];
+  /**
+   * This prop is used by DateRangePicker to show date ranges and decide which dates are selectable.
+   * This is used as a prop by both DatePropParser and the component that gets generated from it.
+   * DatePropParser only takes a string, and its child component only takes a DateWrapper object.
+   * The string "startingDate" is hardcoded in datePropUtils.
+   */
+  startingDate?: string | DateWrapper;
+  /**
+   * The optional styles applied to the calendar position node to additionally style the calendar popover.
+   */
+  calendarPositionStyle?: React.CSSProperties;
+  /** className from styles based of theme and colorScheme */
+  themeClass?: string;
+  /**
+   * An object that maps dates to tooltips to display on those date cells.
+   * Keys should be in short ISO format. For example:
+   * {'2017-06-06': 'Salute', '2017-10-06': 'It is a fun day today.'}
+   * Not supported on mobile.
+   * Always use this prop with renderTooltip prop
+   *
+   * @default {}
+   */
+  tooltips: Record<string, string>;
+  /**
+   * Will render a TextField with the style of a warning without the need for error text or warning text
+   * It is a boolean property passed onto TextField,
+   *
+   * @default false
+   */
+  validationError?: boolean;
+  /** Used to set the textFieldWidth
+   * you can pass a number or string with digits and (percentage or other unit like px)
+   * if no width is passed then 185px will be the default width
+   * ex: width={300}
+   * ex: width="200px"
+   * ex: width="350"
+   * ex: width="100%"
+   * ex: width="75%"
+   */
+  width?: number | string;
+  /** Warning message to be rendered. It is passed on to TextField */
+  warningText?: string;
+  /**
+   * Setting this value to true results in two months being displayed at the same time. This is
+   * primarily for use by the HADateRangePicker but can be used for a single HADatePicker as well.
+   * Not supported on mobile.
+   */
+  useDoubleCalendar?: boolean;
+  /**
+   * Date used to set the value in the TextField input box.
+   *
+   * @default ''
+   */
+  value: string | DateWrapper;
+
+  /** Flag to display strikes on any dates that fall outside of the min/max range. */
+  displayStrikeOutsideOfMinMaxRange?: boolean;
+  /** Setting this value to true enables month and year quickselect */
+  enableMonthYearQuickSelect?: boolean;
+  /** The minimum year to start with for the quickselect dropdown menu in MonthHeader  */
+  quickSelectMinYear?: number;
+  /** The maximum year to start with for the quickselect dropdown menu in MonthHeader  */
+  quickSelectMaxYear?: number;
+}
+
+export type ChangeEventType =
+  | React.ChangeEvent
+  | {
+
+export type RenderTooltipType = (
+  /** Date format abbreviation in case of different format that locale. */
+  abbreviatedDateFormat: string,
+  /** String for tooltip text that would be used. */
+  tooltipText: string,
+  /** Sub render method to be used to render day. */
+  renderDay: () => React.ReactElement,
+  /** restProp object to be used for tooltip positioning. */
+  restProps: TooltipPropsType
+) => React.ReactElement;
+
+export interface DatePickerProps
+  extends Omit<ThemeableElement<'div'>, 'onChange'> {
+  /**
+   * Automation ID prop for allowing easier access to elements while running functional tests.
+   * USAGE: User would just need to provide the automationId prop during instantiation, and
+   * behind the scene we would add it to datePicker
+   */
+  automationId?: string;
+  /** Same as TextField.aria-label */
+  'aria-label'?: string;
+  /** Same as TextField.aria-required */
+  'aria-required'?: boolean | 'false' | 'true';
+  /** Index string to be used in terms of date range picker calendar for styling: 'start' or 'end'.  */
+  'data-drpIndex'?: DrpIndexType;
+  /** Used to announce min date via screen reader for accessibility purpose */
+  announcementMinDate?: string;
+  /** Used to announce max date via screen reader for accessibility purpose */
+  announcementMaxDate?: string;
+  /**
+   * Used to announce current date via screen reader for accessibility purpose
+   *
+   * @default 'This is the current date'
+   */
+  announcementCurrentDate: string;
+  /**
+   * An array of un-select-able dates in short ISO format that cannot be selected by the user.
+   * Example: ['2018-06-07', '2018-07-07', '2018-08-07', '2018-09-07', '2018-10-07', ].
+   * On a mobile device, the user will still be able to select these dates, but the input box
+   * will be marked as invalid and an error message will display, similar to what happens on a
+   * desktop when a user types in a blackout date.
+   *
+   * @default []
+   */
+  blackoutDates: (string | DateWrapper)[];
+  /**
+   * This is used as a prop by both datePropParser and the component that gets generated from it.
+   * datePropParser only takes a string, and its child component only takes a DateWrapper object.
+   * The same is true for maxDate, minDate, startingDate, and value.
+   * currentDate: The date DatePicker will assume is today. Defaults to today if undefined.
+   * This is primarily useful in writing tests and gallery examples.
+   * The string "currentDate" is hardcoded in datePropUtils
+   *
+   * @default DateWrapper.getCurrentDate('en')
+   */
+  currentDate: string | DateWrapper;
+  /**
+   * This prop would trigger the browser tool tip, used for accessibility purpose. Defaulted to 'Current Date'
+   *
+   * @default 'Current Date'
+   */
+  currentDateTitle: string;
+  /**
+   * Sets the date format used by moment to display dates and parse entered dates. Please note
+   * that this string is automatically upper-cased before being passed to moment to preserve
+   * backwards compatibility with the previous React-shimmed DatePicker.
+   * Moment doesn't seem to have a built-in way to check if this is valid, so if the user passes
+   * in a bad dateFormat, things will break.
+   *
+   * @default 'MM/DD/YYYY'
+   */
+  dateFormat: string;
+  /**
+   * An array of headings to list on top of the calendar corresponding to days of the week. Until
+   * this is properly internationalized, these days should always start with Sunday, regardless of
+   * the first day of the week in the current locale.
+   * If not supplied externally, we rely on moment to give us the correct localized labels.
+   *
+   * @default ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+   */
+  dayOfWeekLabels: string[];
+  /** Array of full weekday names for accessibility (abbr attribute). Generated from locale. */
+  fullDayOfWeekLabels?: string[];
+  /** rue = disable input, false = normal operation */
+  disabled?: boolean;
+  /** Class to be applied to all the footer text (validation & helper). It is passed on to TextField */
+  footerTextClass?: string;
+  /** Boolean flag to allow label to be bold. It is passed on to TextField */
+  hasWeightedLabel?: boolean;
+  /** Text to be display for extra information. It is passed on to TextField */
+  helperText?: string;
+  /** True = readOnly input, false = normal operation */
+  readOnly?: boolean;
+  /** flag to enable autoformatting to the textfield */
+  enableAutoFormatting?: boolean;
+  /**
+   * This prop is used by DateRangePicker to show date ranges and decide which dates are selectable.
+   * This is used as a prop by both datePropParser and the component that gets generated from it.
+   * datePropParser only takes a string, and its child component only takes a DateWrapper object.
+   * The string "endingDate" is hardcoded in datePropUtils
+   */
+  endingDate?: string | DateWrapper;
+  /** Id of the root container */
+  id?: string;
+  /** See TextField.errorText */
+  errorText?: string;
+  /** This is set automatically by datePropUtils, but it can be overridden for testing purposes if desired. */
+  isMobile?: boolean;
+  /** Used by DateRangePicker for styling reasons. */
+  isRangePicker?: boolean;
+  /** Used by isMonthYearPicker for styling reasons. */
+  isMonthYearPicker?: boolean;
+  /** See TextField.label */
+  label?: string;
+  /**
+   *  The current locale in the user's browser. If not supplied, DatePropParser defaults this to
+   *  navigator.userLanguage || navigator.language || 'en' . Since that is not an optimal way to
+   *  get the locale, it's recommended that plugins override this setting. This setting controls
+   *  the date format, the day of the week headings and the names of each month, which are all
+   *  supplied by [moment](https://momentjs.com/). However, the user can override all of these
+   *  options individually if desired. Please note that in addition to locale, you must still
+   *  supply all proper error messages and a placeholder (if desired) in the right language in
+   *  order for this widget to be used in non-English speaking regions. (See HUI-5049)
+   *
+   * @default 'en'
+   */
+  locale: string;
+  /**
+   * A date in short ISO format indicating the latest date, inclusive, for which this component is valid.
+   * On a desktop, setting this value will prevent the date-picker's calendar from navigating to any dates after it.
+   * This is used as a prop by both datePropParser and the component that gets generated from it.
+   * DatePropParser should only take a string, and its child component should only take a DateWrapper object.
+   * The string "maxDate" is hardcoded in datePropUtils.
+   */
+  maxDate?: string | DateWrapper;
+  /**
+   *  A date in short ISO format indicating the earliest date, inclusive, for which this component
+   *  is valid. On a desktop, setting this value will prevent the DatePicker's calendar from
+   *  navigating to any dates prior to it.
+   * This is used as a prop by both datePropParser and the component that gets generated from it.
+   * DatePropParser should only take a string, and its child component should only take a DateWrapper object.
+   * The string "minDate" is hardcoded in datePropUtils.
+   */
+  minDate?: string | DateWrapper;
+  /**
+   * The names of the months to display in the calendar. DatePropParser
+   * sets this based on the locale. Not supported on mobile.
+   *
+   * @default ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+   */
+  monthLabels: string[];
+  /** See TextField.props.name */
+  name?: string;
+  /**
+   * Custom aria-label for next month navigation.
+   * Used for accessibility purpose when one navigates over next month button
+   *
+   * @default 'Go to next month'
+   */
+  nextMonthAriaLabel: string;
+  /** See TextField.props.onFocus */
+  onFocus?: React.FocusEventHandler;
+  /** See TextField.props.onBlur */
+  onBlur?: React.FocusEventHandler;
+  /** See TextField.props.onChange */
+  onChange?: (event: ChangeEventType) => void;
+  /**
+   * Fires when the calendar is display to the user.
+   * Not supported on mobile devices -- try listening to the focus event on TextField instead
+   * On the desktop, the calendar is shown when the TextField is focused, unless the user has
+   * just submitted a valid input.
+   */
+  onCalendarOpen?: () => void;
+  /**
+   * Fires when the calendar stops being displayed.
+   * Not supported on mobile devices -- try listening to the blur event on the TextField instead.
+   * For the desktop, the calendar is always closed when TextField is not being focused.
+   */
+  onCalendarClose?: () => void;
+  /**
+   * Custom aria-label for previous month.
+   * Used for accessibility purpose when one hovers over previous month button
+   *
+   * @default 'Go to previous month'
+   */
+  previousMonthAriaLabel: string;
+  /**  See TextField.props.placeholder */
+  placeholder?: string;
+  /**
+   * preventCalendarOverflow: an object variable; used to prevent calendar from being positioned outside the boundary.
+   * More detail in @ids-ts/position preventOverflow API document.
+   */
+  preventCalendarOverflow?: PreventOverflow;
+  /**
+   * Function to render tooltips for special dates.
+   * Make sure to pass 'tooltips' prop.
+   * Params (abbreviatedDateFormat, tooltipText, renderDay, restProps) gets resolved internally.
+   * where 'abbreviatedDateFormat' is of type String and gets resolved from date provided in 'tooltips' prop.
+   *       'tooltipText' refers to message passed against date in 'tooltips' prop.
+   *       'renderDay' is internal function that renders day with tooltip.
+   *       'restProps' helps in styling tooltip.
+   */
+  renderTooltip?: RenderTooltipType;
+  /**
+   * This prop is not implemented by DatePicker code, it is for work-around purpose.
+   * False does nothing. Set to true to focus the TextField input box, thus showing the calendar.
+   * Please note that this prop does not work on the initial render.
+   * However, if always set to true, this will automatically focus the TextField box every time
+   * the DatePicker is re-rendered, which is probably not desirable. One way to avoid this
+   * problem is to not keep the "showCalendar" value in your React state (of whatever component
+   * is using the DatePicker); rather, after setting it to true once, manually set it to false
+   * after the next render. Another work-around is to call showCalendar on the
+   * DatePickerComponent (Use the internalRef prop to get a reference to DatePickerComponent).
+   * Not supported on mobile since the calendar is not rendered on mobile devices.
+   */
+  showCalendar?: boolean;
+  /** Size of the datepicker to render. Affects only the text field */
+  size?: TextFieldProps['size'];
+  /**
+   * This prop is used by DateRangePicker to show date ranges and decide which dates are selectable.
+   * This is used as a prop by both DatePropParser and the component that gets generated from it.
+   * DatePropParser only takes a string, and its child component only takes a DateWrapper object.
+   * The string "startingDate" is hardcoded in datePropUtils.
+   */
+  startingDate?: string | DateWrapper;
+  /**
+   * The optional styles applied to the calendar position node to additionally style the calendar popover.
+   */
+  calendarPositionStyle?: React.CSSProperties;
+  /** className from styles based of theme and colorScheme */
+  themeClass?: string;
+  /**
+   * An object that maps dates to tooltips to display on those date cells.
+   * Keys should be in short ISO format. For example:
+   * {'2017-06-06': 'Salute', '2017-10-06': 'It is a fun day today.'}
+   * Not supported on mobile.
+   * Always use this prop with renderTooltip prop
+   *
+   * @default {}
+   */
+  tooltips: Record<string, string>;
+  /**
+   * Will render a TextField with the style of a warning without the need for error text or warning text
+   * It is a boolean property passed onto TextField,
+   *
+   * @default false
+   */
+  validationError?: boolean;
+  /** Used to set the textFieldWidth
+   * you can pass a number or string with digits and (percentage or other unit like px)
+   * if no width is passed then 185px will be the default width
+   * ex: width={300}
+   * ex: width="200px"
+   * ex: width="350"
+   * ex: width="100%"
+   * ex: width="75%"
+   */
+  width?: number | string;
+  /** Warning message to be rendered. It is passed on to TextField */
+  warningText?: string;
+  /**
+   * Setting this value to true results in two months being displayed at the same time. This is
+   * primarily for use by the HADateRangePicker but can be used for a single HADatePicker as well.
+   * Not supported on mobile.
+   */
+  useDoubleCalendar?: boolean;
+  /**
+   * Date used to set the value in the TextField input box.
+   *
+   * @default ''
+   */
+  value: string | DateWrapper;
+
+  /** Flag to display strikes on any dates that fall outside of the min/max range. */
+  displayStrikeOutsideOfMinMaxRange?: boolean;
+  /** Setting this value to true enables month and year quickselect */
+  enableMonthYearQuickSelect?: boolean;
+  /** The minimum year to start with for the quickselect dropdown menu in MonthHeader  */
+  quickSelectMinYear?: number;
+  /** The maximum year to start with for the quickselect dropdown menu in MonthHeader  */
+  quickSelectMaxYear?: number;
+}
+
+export type TooltipPropsType = {
+  /** Tooltip position */
+  position: Positions;
+  /** Tooltip dismissible option */
+  dismissible: boolean;
+  /** Tooltip offsetX value */
+  offsetX: number;
+  /** Tooltip offsetY value */
+  offsetY: number;
+}
+```
+
+</details>
+
+## Sub-Components
+
+### DatePickerComponent
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+**action** — Interactive element colors and hover/active/focus states
+- `--color-action-complementary`
+- `--color-action-complementary-active`
+- `--color-action-complementary-border`
+
+**input** — Input background, border, placeholder, and focus colors
+- `--color-input-background-disabled`
+- `--color-input-background-error`
+- `--color-input-background-error-focus`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+**component** — Component-level spacing (padding, gap)
+- `--space-component-gap-large`
+- `--space-component-gap-medium`
+- `--space-component-gap-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+**radius** — Input border radius
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Basic
+
+```tsx
+() => {
+  const [value, setValue] = useState('04/15/2020');
+  const [errorText, setErrorText] = useState('');
+
+  const validateInput = (
+    rawInput: string,
+    locale: string,
+    dateFormat: string
+  ) => {
+    // Pass single/ multiple date formats based on the use case
+    const dateFormats = [dateFormat, 'MM.DD.YY', 'MM.DD.YYYY', 'MMDDYY'];
+    const sanitizeInput = moment(rawInput, dateFormats, true);
+    if (!sanitizeInput.isValid()) {
+      return false;
+    }
+
+    const instance = moment(sanitizeInput, dateFormat, true);
+    const selectedDate = instance.locale(locale);
+    if (!selectedDate) {
+      action('Invalid argument passed to DatePickerComponent.validateInput:')(
+        selectedDate
+      );
+      return false;
+    }
+
+    setErrorText('');
+    return true;
+  };
+
+  // Add some utility methods to validate the date
+  const validateField = (rawInput: string) => {
+    const locale = 'en';
+    const dateFormat = 'MM/DD/YYYY';
+    return validateInput(rawInput, locale, dateFormat);
+  };
+
+  const validateFieldOnMobile = (rawInput: string) => {
+    const SHORT_ISO_FORMAT = 'YYYY-MM-DD';
+    const locale = 'en';
+    return validateInput(rawInput, locale, SHORT_ISO_FORMAT);
+  };
+
+  const handleInputChange = (event: ChangeEventType) => {
+    const targetElement = event.target as HTMLInputElement;
+    const newValue = targetElement.value.trim();
+    let isValidDate;
+    if (isMobile) {
+      isValidDate = validateFieldOnMobile(newValue);
+    } else {
+      isValidDate = validateField(newValue);
+    }
+
+    const newErrorText = isValidDate ? '' : 'Invalid date provided';
+    setValue(newValue);
+    setErrorText(newErrorText);
+  };
+
+  // Required so that valid date selected from calendar after invalid input gets resolved
+  const handleBlur = (event: FocusEvent) => {
+    const targetElement = event.target as HTMLInputElement;
+    const newValue = targetElement.value.trim();
+    if (errorText) {
+      const isValidDate = validateField(newValue);
+      const newErrorText = isValidDate ? '' : 'Invalid date provided';
+      setErrorText(newErrorText);
+    }
+
+    setValue(newValue);
+  };
+
+  // Required so that valid date selected from calendar after invalid input gets resolved
+  const handleFocus = () => {
+    if (errorText) {
+      setErrorText('');
+    }
+  };
+
+  return (
+    <DatePicker
+      label="Vacation Start Date"
+// ...
+```
+
+### Keyboard Shortcuts
+
+```tsx
+() => {
+  const [value, setValue] = useState('04/15/2020');
+
+  const handleInputChange = (event: ChangeEventType) => {
+    const { value: newValue } = event.target as HTMLInputElement;
+    setValue(newValue);
+  };
+
+  const handleBlur = (event: FocusEvent) => {
+    const targetElement = event.target as HTMLInputElement;
+    const newValue = targetElement.value.trim();
+    setValue(newValue);
+  };
+
+  return (
+    <div>
+      <DatePicker
+        label="Transaction Date"
+        value={value}
+        automationId="dpBasic"
+        onChange={handleInputChange}
+        onBlur={handleBlur}
+      />
+      {/* Left align text in table */}
+      <table className={styles.keyboardShortcuts}>
+        <thead>
+          <tr>
+            <th>Key</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Arrow Down</td>
+            <td>Open calendar</td>
+          </tr>
+          <tr>
+            <td>Enter</td>
+            <td>Select highlighted date</td>
+          </tr>
+          <tr>
+            <td>;</td>
+            <td>Subtract one month from selected day</td>
+          </tr>
+          <tr>
+            <td>&apos;</td>
+            <td>Add one month to selected day</td>
+          </tr>
+          <tr>
+            <td>-</td>
+            <td>Subtract one day from selected day</td>
+          </tr>
+          <tr>
+            <td>_</td>
+            <td>Subtract one day from selected day</td>
+          </tr>
+          <tr>
+            <td>[</td>
+            <td>Subtract one week from selected day</td>
+          </tr>
+          <tr>
+            <td>+ or =</td>
+            <td>Add one day to selected day</td>
+          </tr>
+          <tr>
+            <td>]</td>
+            <td>Add one week to selected day</td>
+          </tr>
+          <tr>
+            <td>h or H</td>
+            <td>Set date to the end of the month</td>
+          </tr>
+          <tr>
+            <td>k or K</td>
+            <td>Set date to the end of the week</td>
+          </tr>
+          <tr>
+            <td>m or M</td>
+            <td>Set date to start of the month</td>
+          </tr>
+// ...
+```
+
+### Date Validation
+
+```tsx
+() => {
+  const [value, setValue] = useState('');
+  const [errorText, setErrorText] = useState('');
+
+  const validateInput = (
+    rawInput: string,
+    locale: string,
+    dateFormat: string
+  ) => {
+    // Pass single/ multiple date formats based on the use case
+    const dateFormats = [dateFormat, 'MM.DD.YY', 'MM.DD.YYYY', 'MMDDYY'];
+    const sanitizeInput = moment(rawInput, dateFormats, true);
+    if (!sanitizeInput.isValid()) {
+      return false;
+    }
+
+    const instance = moment(sanitizeInput, dateFormat, true);
+    const selectedDate = instance.locale(locale);
+    if (!selectedDate) {
+      action('Invalid argument passed to DatePickerComponent.validateInput:')(
+        selectedDate
+      );
+      return false;
+    }
+
+    setErrorText('');
+    return true;
+  };
+
+  // Add some utility methods to validate the date
+  const validateField = (rawInput: string) => {
+    const locale = 'en';
+    const dateFormat = 'MM/DD/YYYY';
+    return validateInput(rawInput, locale, dateFormat);
+  };
+
+  const validateFieldOnMobile = (rawInput: string) => {
+    const SHORT_ISO_FORMAT = 'YYYY-MM-DD';
+    const locale = 'en';
+    return validateInput(rawInput, locale, SHORT_ISO_FORMAT);
+  };
+
+  const handleInputChange = (event: ChangeEventType) => {
+    const targetElement = event.target as HTMLInputElement;
+    const newValue = targetElement.value.trim();
+    setValue(newValue);
+
+    // Only clear error if value is valid
+    if (errorText && newValue) {
+      let isValidDate;
+      if (isMobile) {
+        isValidDate = validateFieldOnMobile(newValue);
+      } else {
+        isValidDate = validateField(newValue);
+      }
+
+      if (isValidDate) {
+        setErrorText('');
+      }
+    }
+  };
+
+  // Required so that valid date selected from calendar after invalid input gets resolved
+  const handleBlur = (event: React.FocusEvent) => {
+    const targetElement = event.target as HTMLInputElement;
+    const newValue = targetElement.value.trim();
+
+    // Validate on blur
+    let isValidDate;
+    if (isMobile) {
+      isValidDate = validateFieldOnMobile(newValue);
+    } else {
+      isValidDate = validateField(newValue);
+    }
+
+    const newErrorText = isValidDate ? '' : 'Invalid date provided';
+    setValue(newValue);
+    setErrorText(newErrorText);
+  };
+
+// ...
+```
+
+### Date Business Validations
+
+```tsx
+() => {
+//   const [value, setValue] = useState('07/15/2020');
+//   const [errorText, setErrorText] = useState('');
+
+//   const validateInput = (
+//     rawInput: string,
+//     locale: string,
+//     dateFormat: string
+//   ) => {
+//     const blackoutDates = [
+//       '2020-06-07',
+//       '2020-06-25',
+//       '2020-06-26',
+//       '2020-06-27',
+//       '2020-07-17',
+//       '2020-08-07',
+//       '2020-09-07'
+//     ];
+//     const SHORT_ISO_FORMAT = 'YYYY-MM-DD';
+//     const blackoutMomentDates = blackoutDates.map(date => {
+//       const instance = moment(date, SHORT_ISO_FORMAT, true);
+//       return instance.locale(locale);
+//     });
+
+//     const minDateInstance = moment('2020-04-02', SHORT_ISO_FORMAT, true);
+//     const minDate = minDateInstance.locale(locale);
+//     const maxDateInstance = moment('2020-10-19', SHORT_ISO_FORMAT, true);
+//     const maxDate = maxDateInstance.locale(locale);
+
+//     // Pass single/ multiple date formats based on the use case
+//     const dateFormats = [dateFormat, 'MM.DD.YY', 'MM.DD.YYYY', 'MMDDYY'];
+//     const selectedDateInstance = moment(rawInput, dateFormats, true);
+//     if (!selectedDateInstance.isValid()) {
+//       return false;
+//     }
+
+//     const selectedDate = selectedDateInstance.locale(selectedDateInstance);
+//     if (!selectedDate) {
+//       action('Invalid argument passed to DatePickerComponent.validateInput: ')(
+//         selectedDate
+//       );
+//       return false;
+//     }
+
+//     // Assert that input date is not a blackout date. isSame is moment utility
+//     const isBlackoutDate = blackoutMomentDates.filter(blackoutDate =>
+//       blackoutDate.isSame(selectedDate)
+//     );
+//     if (isBlackoutDate.length !== 0) {
+//       return false;
+//     }
+
+//     // Assert that input date is between min date and max date. isAfter, isBefore is moment utility
+//     if (
+//       !selectedDate.isAfter(minDate.subtract(1, 'day')) ||
+//       !selectedDate.isBefore(maxDate.add(1, 'day'))
+//     ) {
+//       return false;
+//     }
+
+//     setErrorText('');
+//     return true;
+//   };
+
+//   // Add some utility methods to validate the date
+//   const validateField = (rawInput: string) => {
+//     const locale = 'en';
+//     const dateFormat = 'MM/DD/YYYY';
+//     return validateInput(rawInput, locale, dateFormat);
+//   };
+
+//   const validateFieldOnMobile = (rawInput: string) => {
+//     const locale = 'en';
+//     const SHORT_ISO_FORMAT = 'YYYY-MM-DD';
+//     return validateInput(rawInput, locale, SHORT_ISO_FORMAT);
+//   };
+
+//   const handleInputChange = (event: ChangeEventType) => {
+//     const targetElement = event.target as HTMLInputElement;
+//     const newValue = targetElement.value.trim();
+// ...
+```
+
+### Date Format
+
+```tsx
+() => {
+  const [value, setValue] = useState('2020-08-13');
+  const [errorText, setErrorText] = useState('');
+
+  const minDate = '2020-06-02';
+  const maxDate = '2020-09-19';
+
+  const validateInput = (
+    rawInput: string,
+    locale: string,
+    dateFormat: string
+  ) => {
+    // Pass single/ multiple date formats based on the use case
+    const dateFormats = [dateFormat, 'YYYY-MM-DD'];
+    const sanitizeInput = moment(rawInput, dateFormats, true);
+    if (!sanitizeInput.isValid()) {
+      return false;
+    }
+
+    const instance = moment(sanitizeInput, dateFormat, true);
+    const selectedDate = instance.locale(locale);
+    if (!selectedDate) {
+      action('Invalid argument passed to DatePickerComponent.validateInput:')(
+        selectedDate
+      );
+      return false;
+    }
+
+    setErrorText('');
+    return true;
+  };
+
+  const validateRange = (rawInput: string) => {
+    // Pass single/ multiple date formats based on the use case
+    const dateFormat = 'YYYY-MM-DD';
+    const sanitizeInput = moment(rawInput, dateFormat, true);
+    if (!sanitizeInput.isValid()) {
+      return false;
+    }
+
+    if (
+      !sanitizeInput.isBetween(
+        moment(minDate, dateFormat),
+        moment(maxDate, dateFormat),
+        'days',
+        '[]'
+      )
+    ) {
+      return false;
+    }
+
+    setErrorText('');
+    return true;
+  };
+
+  // Add some utility methods to validate the date
+  const validateField = (rawInput: string) => {
+    const locale = 'en';
+    const dateFormat = 'YYYY-MM-DD';
+    return validateInput(rawInput, locale, dateFormat);
+  };
+
+  const validateFieldOnMobile = (rawInput: string) => {
+    const SHORT_ISO_FORMAT = 'YYYY-MM-DD';
+    const locale = 'en';
+    return validateInput(rawInput, locale, SHORT_ISO_FORMAT);
+  };
+
+  const handleInputChange = (event: ChangeEventType) => {
+    const targetElement = event.target as HTMLInputElement;
+    const newValue = targetElement.value.trim();
+
+    let isValidDate;
+
+    if (isMobile) {
+      isValidDate = validateFieldOnMobile(newValue);
+    } else {
+      isValidDate = validateField(newValue);
+    }
+
+// ...
+```
+
+### Global
+
+```tsx
+({ locale }: Record<string, string>) => {
+  const [value, setValue] = useState('');
+  const [errorText, setErrorText] = useState('');
+
+  const blackoutDatesShortISOFormat = [
+    '2020-06-07',
+    '2020-07-07',
+    '2020-08-07',
+    '2020-09-07',
+    '2020-10-07',
+    '2020-11-07'
+  ];
+
+  const blackoutDates = [
+    '06-07-2020',
+    '07-07-2020',
+    '08-07-2020',
+    '09-07-2020',
+    '10-07-2020',
+    '11-07-2020'
+  ];
+
+  const validateInput = (rawInput: string, dateFormat: string) => {
+    // Pass single/ multiple date formats based on the use case
+    const dateFormats = [dateFormat, 'DD.MM.YY', 'DD.MM.YYYY', 'DDMMYY'];
+    const sanitizeInput = moment(rawInput, dateFormats, true);
+    if (!sanitizeInput.isValid()) {
+      return false;
+    }
+
+    const instance = moment(sanitizeInput, dateFormat, true);
+    const selectedDate = instance.locale(locale);
+    if (!selectedDate) {
+      action('Invalid argument passed to DatePickerComponent.validateInput:')(
+        selectedDate
+      );
+      return false;
+    }
+
+    setErrorText('');
+    return true;
+  };
+
+  const validateBlackoutDates = (rawInput: string) => {
+    // Pass single/ multiple date formats based on the use case
+    const dateFormat = isMobile ? 'YYYY-MM-DD' : 'MM/DD/YYYY';
+
+    const sanitizeInput = moment(rawInput, dateFormat, true);
+    if (!sanitizeInput.isValid()) {
+      return false;
+    }
+
+    const selectedBlackoutDate = (
+      isMobile ? blackoutDatesShortISOFormat : blackoutDates
+    ).some((blackoutDate) => sanitizeInput.isSame(blackoutDate));
+
+    if (selectedBlackoutDate) {
+      return false;
+    }
+
+    setErrorText('');
+    return true;
+  };
+
+  // Add some utility methods to validate the date
+  const validateField = (rawInput: string) => {
+    const dateFormat = 'MM/DD/YYYY';
+    return validateInput(rawInput, dateFormat);
+  };
+
+  const validateFieldOnMobile = (rawInput: string) => {
+    const SHORT_ISO_FORMAT = 'YYYY-MM-DD';
+    return validateInput(rawInput, SHORT_ISO_FORMAT);
+  };
+
+  const handleInputChange = (event: ChangeEventType) => {
+    const targetElement = event.target as HTMLInputElement;
+    const newValue = targetElement.value.trim();
+
+    let isValidDate;
+// ...
+```
+
+### Disabled
+
+```tsx
+() => (
+  <DatePicker
+    disabled
+    dateFormat="DD/MM/YYYY"
+    label="Disabled DatePicker"
+    placeholder="DD/MM/YYYY"
+  />
+)
+```
+
+### Read Only
+
+```tsx
+() => (
+  <DatePicker
+    readOnly
+    dateFormat="DD/MM/YYYY"
+    label="ReadOnly DatePicker"
+    placeholder="DD/MM/YYYY"
+    value="05/03/2023"
+  />
+)
+```
+
+### Min And Max Calendar Date
+
+```tsx
+() => {
+  const [value, setValue] = useState('');
+  const [errorText, setErrorText] = useState('');
+
+  const minDate = '06/02/2020';
+  const maxDate = '10/19/2020';
+
+  const validateInput = (
+    rawInput: string,
+    locale: string,
+    dateFormat: string
+  ) => {
+    // Pass single/ multiple date formats based on the use case
+    const dateFormats = [dateFormat, 'DD.MM.YY', 'DD.MM.YYYY', 'DDMMYY'];
+    const sanitizeInput = moment(rawInput, dateFormats, true);
+    if (!sanitizeInput.isValid()) {
+      return false;
+    }
+
+    const instance = moment(sanitizeInput, dateFormat, true);
+    const selectedDate = instance.locale(locale);
+    if (!selectedDate) {
+      action('Invalid argument passed to DatePickerComponent.validateInput:')(
+        selectedDate
+      );
+      return false;
+    }
+
+    setErrorText('');
+    return true;
+  };
+
+  const validateRange = (rawInput: string) => {
+    // Pass single/ multiple date formats based on the use case
+    const dateFormat = isMobile ? 'YYYY-MM-DD' : 'MM/DD/YYYY';
+    const sanitizeInput = moment(rawInput, dateFormat, true);
+    if (!sanitizeInput.isValid()) {
+      return false;
+    }
+
+    const updatedMinDate = moment(minDate).format(dateFormat);
+    const updatedMaxDate = moment(maxDate).format(dateFormat);
+
+    if (
+      !sanitizeInput.isBetween(updatedMinDate, updatedMaxDate, 'days', '[]')
+    ) {
+      return false;
+    }
+
+    setErrorText('');
+    return true;
+  };
+
+  // Add some utility methods to validate the date
+  const validateField = (rawInput: string) => {
+    const locale = 'en';
+    const dateFormat = 'MM/DD/YYYY';
+    return validateInput(rawInput, locale, dateFormat);
+  };
+
+  const validateFieldOnMobile = (rawInput: string) => {
+    const SHORT_ISO_FORMAT = 'YYYY-MM-DD';
+    const locale = 'en';
+    return validateInput(rawInput, locale, SHORT_ISO_FORMAT);
+  };
+
+  const handleInputChange = (event: ChangeEventType) => {
+    const targetElement = event.target as HTMLInputElement;
+    const newValue = targetElement.value.trim();
+
+    let isValidDate;
+    if (isMobile) {
+      isValidDate = validateFieldOnMobile(newValue);
+    } else {
+      isValidDate = validateField(newValue);
+    }
+
+    let newErrorText = isValidDate ? '' : 'Invalid date provided';
+    setErrorText(newErrorText);
+
+// ...
+```
+
+### Min And Max Calendar Date Striked Outside Of Range
+
+```tsx
+() => {
+  const [value, setValue] = useState('');
+
+  const handleInputChange = (event: ChangeEventType) => {
+    const targetElement = event.target as HTMLInputElement;
+    const newValue = targetElement.value.trim();
+    setValue(newValue);
+  };
+
+  const handleBlur = (event: FocusEvent) => {
+    const targetElement = event.target as HTMLInputElement;
+    const newValue = targetElement.value.trim();
+    setValue(newValue);
+  };
+
+  return (
+    <div>
+      <B2>
+        <p>
+          To include keyboard customers, ensure validation is done and shown for
+          blackout dates.
+        </p>
+        <p>
+          <Bold>minDate:</Bold> 03/02/2023 <br />
+          <Bold>maxDate:</Bold> 03/31/2023
+        </p>
+      </B2>
+      <DatePicker
+        displayStrikeOutsideOfMinMaxRange
+        label="Payroll Date"
+        name="This is a name attribute that should be applied to the input tag."
+        minDate="2023-03-02"
+        maxDate="2023-03-31"
+        placeholder="MM/DD/YYYY"
+        announcementMaxDate="This is max date that can't be selected"
+        announcementMinDate="This is min date that can't be selected"
+        automationId="dpMinMaxStrikedOut"
+        value={value}
+        onChange={handleInputChange}
+        onBlur={handleBlur}
+      />
+      <div style={{ maxWidth: 450 }}>
+        <p>
+          Min Date and Max Date can be used to narrow down the list of
+          selectable dates for your customers.
+        </p>
+        <p>
+          Be sure to also include date validation and error messages for users
+          who prefer typing in dates.
+        </p>
+        <p>
+          Adding displayStrikeOutsideOfMinMaxRange will strike out the dates
+          that are outside the range of Min Date and Max Date.
+        </p>
+      </div>
+    </div>
+  );
+}
+```
+
+### Accessibility
+
+```tsx
+() => {
+  const [value, setValue] = useState('06-05-2020');
+  const [errorText, setErrorText] = useState('');
+
+  const blackoutDatesShortISOFormat = [
+    '2020-06-07',
+    '2020-07-07',
+    '2020-08-07',
+    '2020-09-07',
+    '2020-10-07',
+    '2020-11-07'
+  ];
+
+  const blackoutDates = [
+    '06-07-2020',
+    '07-07-2020',
+    '08-07-2020',
+    '09-07-2020',
+    '10-07-2020',
+    '11-07-2020'
+  ];
+
+  const validateInput = (
+    rawInput: string,
+    locale: string,
+    dateFormat: string
+  ) => {
+    // Pass single/ multiple date formats based on the use case
+    const dateFormats = [dateFormat, 'DD.MM.YY', 'DD.MM.YYYY', 'DDMMYY'];
+    const sanitizeInput = moment(rawInput, dateFormats, true);
+    if (!sanitizeInput.isValid()) {
+      return false;
+    }
+
+    const instance = moment(sanitizeInput, dateFormat, true);
+    const selectedDate = instance.locale(locale);
+    if (!selectedDate) {
+      action('Invalid argument passed to DatePickerComponent.validateInput:')(
+        selectedDate
+      );
+      return false;
+    }
+
+    setErrorText('');
+    return true;
+  };
+
+  const validateBlackoutDates = (rawInput: string) => {
+    // Pass single/ multiple date formats based on the use case
+    const dateFormat = isMobile ? 'YYYY-MM-DD' : 'MM/DD/YYYY';
+    const sanitizeInput = moment(rawInput, dateFormat, true);
+    if (!sanitizeInput.isValid()) {
+      return false;
+    }
+
+    const selectedBlackoutDate = (
+      isMobile ? blackoutDatesShortISOFormat : blackoutDates
+    ).some((blackoutDate) => sanitizeInput.isSame(blackoutDate));
+
+    if (selectedBlackoutDate) {
+      return false;
+    }
+
+    setErrorText('');
+    return true;
+  };
+
+  // Add some utility methods to validate the date
+  const validateField = (rawInput: string) => {
+    const locale = 'en';
+    const dateFormat = 'MM/DD/YYYY';
+    return validateInput(rawInput, locale, dateFormat);
+  };
+
+  const validateFieldOnMobile = (rawInput: string) => {
+    const SHORT_ISO_FORMAT = 'YYYY-MM-DD';
+    const locale = 'en';
+    return validateInput(rawInput, locale, SHORT_ISO_FORMAT);
+  };
+
+// ...
+```
+
+### Blackout And Tooltip Dates
+
+```tsx
+() => {
+  const [value, setValue] = useState('07/15/2020');
+  const [errorText, setErrorText] = useState('');
+
+  const blackoutDatesShortISOFormat = [
+    '2020-06-07',
+    '2020-06-25',
+    '2020-06-26',
+    '2020-06-27',
+    '2020-07-17',
+    '2020-08-09',
+    '2020-09-07',
+    '2020-10-07',
+    '2020-11-07'
+  ];
+
+  const blackoutDates = [
+    '06-07-2020',
+    '06-25-2020',
+    '06-26-2020',
+    '06-27-2020',
+    '07-17-2020',
+    '08-09-2020',
+    '09-07-2020',
+    '10-07-2020',
+    '11-07-2020'
+  ];
+
+  const validateInput = (
+    rawInput: string,
+    locale: string,
+    dateFormat: string
+  ) => {
+    // Pass single/ multiple date formats based on the use case
+    const dateFormats = [dateFormat, 'DD.MM.YY', 'DD.MM.YYYY', 'DDMMYY'];
+    const sanitizeInput = moment(rawInput, dateFormats, true);
+    if (!sanitizeInput.isValid()) {
+      return false;
+    }
+
+    const instance = moment(sanitizeInput, dateFormat, true);
+    const selectedDate = instance.locale(locale);
+    if (!selectedDate) {
+      action('Invalid argument passed to DatePickerComponent.validateInput:')(
+        selectedDate
+      );
+      return false;
+    }
+
+    setErrorText('');
+    return true;
+  };
+
+  const validateBlackoutDates = (rawInput: string) => {
+    // Pass single/ multiple date formats based on the use case
+    const dateFormat = isMobile ? 'YYYY-MM-DD' : 'MM/DD/YYYY';
+
+    const sanitizeInput = moment(rawInput, dateFormat, true);
+    if (!sanitizeInput.isValid()) {
+      return false;
+    }
+
+    const selectedBlackoutDate = (
+      isMobile ? blackoutDatesShortISOFormat : blackoutDates
+    ).some((blackoutDate) => sanitizeInput.isSame(blackoutDate));
+
+    if (selectedBlackoutDate) {
+      return false;
+    }
+
+    setErrorText('');
+    return true;
+  };
+
+  // Add some utility methods to validate the date
+  const validateField = (rawInput: string) => {
+    const locale = 'en';
+    const dateFormat = 'MM/DD/YYYY';
+    return validateInput(rawInput, locale, dateFormat);
+  };
+// ...
+```
+
+### Reset
+
+```tsx
+() => {
+  const [value, setValue] = useState('07/15/2020');
+  const [shouldFocus, setShouldFocus] = useState(false);
+  const resetDate = '01/01/2020';
+  const datePickerRef = useRef<any>(null);
+
+  const handleInputChange = (event: ChangeEventType) => {
+    const { value: newValue } = event.target as HTMLInputElement;
+    setValue(newValue);
+  };
+
+  const reset = () => {
+    setValue('01/01/2020');
+    setShouldFocus(true);
+  };
+
+  const handleBlur = (event: FocusEvent) => {
+    const targetElement = event.target as HTMLInputElement;
+    const newValue = targetElement.value.trim();
+    setValue(newValue);
+  };
+
+  const handleInternalRef = (ref: any) => {
+    datePickerRef.current = ref;
+  };
+
+  // Focus the DatePicker input after reset so screen reader can announce the new date
+  useEffect(() => {
+    if (!shouldFocus) {
+      return;
+    }
+
+    datePickerRef.current?.textFieldInputRef?.focus();
+    setShouldFocus(false);
+  }, [shouldFocus]);
+
+  return (
+    <div>
+      <B2>
+        <p>Reset date: {resetDate}</p>
+      </B2>
+      <div style={{ display: 'flex' }}>
+        <DatePicker
+          internalRef={handleInternalRef}
+          aria-label="Shipping Date"
+          value={value}
+          data-automation="reset"
+          onChange={handleInputChange}
+          onBlur={handleBlur}
+        />
+        <div style={{ marginLeft: '10px' }}>
+          <Button onClick={reset}>Reset Date</Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+### Theme Prop Usage Examples
+
+```tsx
+() => {
+  const [value, setValue] = useState('07/15/2020');
+
+  const handleInputChange = (event: ChangeEventType) => {
+    const { value: newValue } = event.target as HTMLInputElement;
+    setValue(newValue);
+  };
+
+  const handleBlur = (event: FocusEvent) => {
+    const targetElement = event.target as HTMLInputElement;
+    const newValue = targetElement.value.trim();
+    setValue(newValue);
+  };
+
+  const renderTooltip: RenderTooltipType = (
+    abbreviatedDateFormat,
+    tooltipText,
+    renderDay,
+    restProps
+  ) => (
+    <Tooltip
+      title={abbreviatedDateFormat}
+      message={<div>{tooltipText}</div>}
+      {...restProps}
+    >
+      {renderDay()}
+    </Tooltip>
+  );
+  const tooltips = {
+    '2020-06-06': 'Salute',
+    '2020-07-09': "It is a fun day, isn't it?",
+    '2020-08-18': 'I am a super useful tooltip! Happy Tuesday the 18th!',
+    '2020-09-20': 'I am a slightly useful tooltip!',
+    '2020-10-27': 'Halloween parties!!',
+    '2019-09-18': 'Some old date!!'
+  };
+  const blackoutDates = [
+    '2020-06-07',
+    '2020-06-25',
+    '2020-06-26',
+    '2020-06-27',
+    '2020-07-17',
+    '2020-08-09',
+    '2020-09-07',
+    '2020-10-07',
+    '2020-11-07'
+  ];
+  const defaultProps = {
+    label: 'Date picker',
+    value,
+    onChange: handleInputChange,
+    onBlur: handleBlur,
+    automationId: 'themeEx',
+    renderTooltip,
+    tooltips,
+    blackoutDates
+  };
+  return (
+    <div>
+      <B2 as="p">Quickbooks - ThemeProvider</B2>
+      <ThemeProvider theme="quickbooks">
+        <DatePicker {...defaultProps} />
+      </ThemeProvider>
+      <br />
+      <br />
+      <B2 as="p">Quickbooks - prop</B2>
+      <DatePicker theme="quickbooks" {...defaultProps} />
+      <br />
+      <br />
+      <B2 as="p">Intuit - undefined prop</B2>
+      <DatePicker {...defaultProps} />
+    </div>
+  );
+}
+```
+
+### Event Handlers
+
+```tsx
+() => {
+  const [value, setValue] = useState('');
+
+  const handleInputChange = (event: ChangeEventType) => {
+    const { value: newValue } = event.target as HTMLInputElement;
+    action('onChange fired. Textfield value is:')(newValue);
+    setValue(newValue);
+  };
+
+  const handleBlur = (event: FocusEvent) => {
+    const targetElement = event.target as HTMLInputElement;
+    const newValue = targetElement.value.trim();
+    setValue(newValue);
+
+    action('onBlur event fired with event');
+  };
+
+  return (
+    <div>
+      <B2 as="h4">
+        <Bold>
+          Check the addons action tab to see events fire: onBlur,
+          onCalendarOpen, onCalendarClose, and onChange
+        </Bold>
+      </B2>
+      <DatePicker
+        locale="en"
+        currentDate="2020-07-10"
+        minDate="2020-06-02"
+        maxDate="2020-8-19"
+        name="Event Handlers Example"
+        label="Invoice date"
+        value={value}
+        onBlur={handleBlur}
+        onCalendarOpen={action('onCalendarOpen event fired')}
+        onCalendarClose={action('onCalendarClose event fired')}
+        onChange={handleInputChange}
+      />
+    </div>
+  );
+}
+```
+
+### With Month And Year Quick Select
+
+```tsx
+({
+  locale
+}: Record<string, string>) => {
+  const [value, setValue] = useState('');
+  const [errorText, setErrorText] = useState('');
+
+  const validateInput = (rawInput: string, dateFormat: string) => {
+    // Pass single/ multiple date formats based on the use case
+    const dateFormats = [dateFormat, 'MM.DD.YY', 'MM.DD.YYYY', 'MMDDYY'];
+    const sanitizeInput = moment(rawInput, dateFormats, true);
+    if (!sanitizeInput.isValid()) {
+      return false;
+    }
+
+    const instance = moment(sanitizeInput, dateFormat, true);
+    const selectedDate = instance.locale(locale);
+    if (!selectedDate) {
+      action('Invalid argument passed to DatePickerComponent.validateInput:')(
+        selectedDate
+      );
+      return false;
+    }
+
+    setErrorText('');
+    return true;
+  };
+
+  // Add some utility methods to validate the date
+  const validateField = (rawInput: string) => {
+    const dateFormat = 'MM/DD/YYYY';
+    return validateInput(rawInput, dateFormat);
+  };
+
+  const validateFieldOnMobile = (rawInput: string) => {
+    const SHORT_ISO_FORMAT = 'YYYY-MM-DD';
+    return validateInput(rawInput, SHORT_ISO_FORMAT);
+  };
+
+  const handleInputChange = (event: ChangeEventType) => {
+    const targetElement = event.target as HTMLInputElement;
+    const newValue = targetElement.value.trim();
+    let isValidDate;
+    if (isMobile) {
+      isValidDate = validateFieldOnMobile(newValue);
+    } else {
+      isValidDate = validateField(newValue);
+    }
+
+    const newErrorText = isValidDate ? '' : 'Invalid date provided';
+    setValue(newValue);
+    setErrorText(newErrorText);
+  };
+
+  // Required so that valid date selected from calendar after invalid input gets resolved
+  const handleBlur = (event: FocusEvent) => {
+    const targetElement = event.target as HTMLInputElement;
+    const newValue = targetElement.value.trim();
+    if (errorText) {
+      const isValidDate = validateField(newValue);
+      const newErrorText = isValidDate ? '' : 'Invalid date provided';
+      setErrorText(newErrorText);
+    }
+
+    setValue(newValue);
+  };
+
+  // Required so that valid date selected from calendar after invalid input gets resolved
+  const handleFocus = () => {
+    if (errorText) {
+      setErrorText('');
+    }
+  };
+
+  return (
+    <DatePicker
+      enableMonthYearQuickSelect
+      label="Vacation Start Date"
+      name="This is a name attribute that should be applied to the input tag."
+      value={value}
+      locale={locale}
+// ...
+```
+
+### With Auto Formatting
+
+```tsx
+({
+  locale,
+  dateFormat
+}: Record<string, string>) => {
+  // changing locale does nothing for auto format
+  // but I will provide it for those who are curious
+  const [value, setValue] = useState('');
+  const [errorText, setErrorText] = useState('');
+
+  const validateInput = (rawInput: string) => {
+    const sanitizeInput = moment(rawInput, dateFormat, true);
+    if (!sanitizeInput.isValid()) {
+      return false;
+    }
+
+    const instance = moment(sanitizeInput, dateFormat, true);
+    const selectedDate = instance.locale(locale);
+    if (!selectedDate) {
+      action('Invalid argument passed to DatePickerComponent.validateInput:')(
+        selectedDate
+      );
+      return false;
+    }
+
+    setErrorText('');
+    return true;
+  };
+
+  const handleInputChange = (event: ChangeEventType) => {
+    let newErrorText = '';
+    const targetElement = event.target as HTMLInputElement;
+    const newValue = targetElement.value.trim();
+    if (newValue.length > dateFormat.length) return;
+    const isValidDate = validateInput(newValue);
+    if (newValue.length === dateFormat.length) {
+      newErrorText = isValidDate ? '' : 'Invalid date provided';
+    }
+
+    setErrorText(newErrorText);
+    setValue(newValue);
+  };
+
+  const handleBlur = (event: FocusEvent) => {
+    if (errorText) {
+      const targetElement = event.target as HTMLInputElement;
+      const newValue = targetElement.value.trim();
+      const isValidDate = validateInput(newValue);
+      const newErrorText = isValidDate ? '' : 'Invalid date provided';
+
+      setValue(newValue);
+      setErrorText(newErrorText);
+    }
+  };
+
+  const handleFocus = () => {
+    if (errorText) {
+      setErrorText('');
+    }
+  };
+
+  return (
+    <div>
+      <DatePicker
+        enableAutoFormatting
+        label="Reconciliation date"
+        locale={locale}
+        dateFormat={dateFormat}
+        announcementCurrentDate="date actuelle"
+        value={value}
+        automationId="dpFrench"
+        errorText={errorText}
+        onChange={handleInputChange}
+        onBlur={handleBlur}
+        onFocus={handleFocus}
+      />
+    </div>
+  );
+}
+```
+
+### Month Picker
+
+```tsx
+() => {
+  // Set initial value to current month for better testing
+  const startTempDate = moment().format('MMMM YYYY');
+  const monthYearFormat = 'MMMM YYYY';
+
+  // Set a wide date range that includes current month and future months
+  const minDate = moment().subtract(2, 'year').format('YYYY-MM');
+  const maxDate = moment().add(2, 'year').format('YYYY-MM');
+
+  const [value, setValue] = useState(startTempDate);
+  const [errorText, setErrorText] = useState('');
+
+  const handleInputChange = (event: ChangeEventType) => {
+    const targetElement = event.target as HTMLInputElement;
+    const newValue = targetElement.value.trim();
+
+    setValue(newValue);
+  };
+
+  // Required so that valid date selected from calendar after invalid input gets resolved
+  const handleBlur = (event: FocusEvent) => {
+    const targetElement = event.target as HTMLInputElement;
+    const newValue = targetElement.value.trim();
+
+    setValue(newValue);
+  };
+
+  // Required so that valid date selected from calendar after invalid input gets resolved
+  const handleFocus = () => {
+    if (errorText) {
+      setErrorText('');
+    }
+  };
+
+  return (
+    <div style={{ padding: '20px' }}>
+      <div style={{ marginBottom: '20px' }}>
+        <B2>
+          <Bold>Testing Arrow Key Navigation:</Bold>
+          <br />
+          Click on the input field to open the calendar, then use arrow keys:
+          <ul>
+            <li>
+              <kbd>→</kbd> Right Arrow: Navigate forward by 1 month
+            </li>
+            <li>
+              <kbd>←</kbd> Left Arrow: Navigate backward by 1 month
+            </li>
+            <li>
+              <kbd>↓</kbd> Down Arrow: Navigate forward by 3 months (one row
+              down)
+            </li>
+            <li>
+              <kbd>↑</kbd> Up Arrow: Navigate backward by 3 months (one row up)
+            </li>
+            <li>
+              <kbd>Enter</kbd> Select the highlighted month
+            </li>
+          </ul>
+        </B2>
+      </div>
+      <DatePicker
+        isMonthYearPicker
+        label="Month Picker"
+        value={value}
+        minDate={minDate}
+        maxDate={maxDate}
+        dateFormat={monthYearFormat}
+        errorText={errorText}
+        onChange={handleInputChange}
+        onBlur={handleBlur}
+        onFocus={handleFocus}
+      />
+      <div
+        style={{
+          marginTop: '20px',
+          padding: '10px',
+          backgroundColor: '#f0f0f0',
+          borderRadius: '4px'
+        }}
+// ...
+```
+
+### With Percentage Width
+
+```tsx
+() => (
+  <DatePicker
+    width="100%"
+    dateFormat="DD/MM/YYYY"
+    label="DatePicker with 100% width"
+    placeholder="DD/MM/YYYY"
+  />
+)
+```
+
+### Playground
+
+```tsx
+(controls: DatePickerProps) => {
+  const {
+    label,
+    dateFormat,
+    placeholder,
+    minDate,
+    maxDate,
+    blackoutDates,
+    errorText,
+    locale,
+    disabled,
+    readOnly,
+    hasWeightedLabel,
+    helperText,
+    warningText,
+    width,
+    size
+  } = controls;
+
+  const [value, setValue] = React.useState('');
+  const [errorTextProp, setErrorTextProp] = React.useState('');
+
+  const validateInput = (
+    rawInput: string,
+    _locale: string,
+    _dateformat: string
+  ) => {
+    // Pass single/ multiple date formats based on the use case
+    const dateFormats = [_dateformat, 'DD.MM.YY', 'DD.MM.YYYY', 'DDMMYY'];
+    const sanitizeInput = moment(rawInput, dateFormats, true);
+    if (!sanitizeInput.isValid()) {
+      return false;
+    }
+
+    const instance = moment(sanitizeInput, dateFormat, true);
+    const selectedDate = instance.locale(_locale);
+    if (!selectedDate) {
+      action('Invalid argument passed to DatePickerComponent.validateInput:')(
+        selectedDate
+      );
+      return false;
+    }
+
+    setErrorTextProp('');
+    return true;
+  };
+
+  // Add some utility methods to validate the date
+  const validateField = (rawInput: string) => {
+    return validateInput(rawInput, locale, dateFormat);
+  };
+
+  const validateFieldOnMobile = (rawInput: string) => {
+    const SHORT_ISO_FORMAT = 'YYYY-MM-DD';
+    return validateInput(rawInput, locale, SHORT_ISO_FORMAT);
+  };
+
+  const handleInputChange = (event: ChangeEventType) => {
+    const targetElement = event.target as HTMLInputElement;
+    const newValue = targetElement.value.trim();
+
+    let isValidDate;
+    if (isMobile) {
+      isValidDate = validateFieldOnMobile(newValue);
+    } else {
+      isValidDate = validateField(newValue);
+    }
+
+    const newErrorText = isValidDate ? '' : errorText;
+    setValue(newValue);
+    setErrorTextProp(newErrorText || '');
+  };
+
+  // Required so that valid date selected from calendar after invalid input gets resolved
+  const handleBlur = (event: React.FocusEvent) => {
+    if (errorText) {
+      const targetElement = event.target as HTMLInputElement;
+      const newValue = targetElement.value.trim();
+      const isValidDate = validateField(newValue);
+      const newErrorText = isValidDate ? '' : errorText;
+// ...
+```
+
+## Code Example
+
+```tsx
+import React from 'react';
+import DatePicker from '@ids-ts/date-picker';
+
+const DatePickerExample = () => {
+  const [value, setValue] = React.useState('04/15/2020');
+
+  const handleInputChange = (event) => {
+    const { value: newValue } = event.target;
+    setValue(newValue);
+  };
+
+  return (
+    <DatePicker
+      label="Date picker"
+      value={value}
+      onChange={handleInputChange}
+    />
+  );
+};
+
+export default DatePickerExample;
+```
+
+## Composes With
+
+- Button
+- Tooltip
+- Core
+- Typography
+
+---
+
+## References
+
+- [GitHub Source - DatePicker](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/DatePicker)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/date-picker.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-date-picker&theme=quickbooks&colorScheme=light)

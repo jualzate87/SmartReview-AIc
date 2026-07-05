@@ -1,0 +1,1532 @@
+---
+description: Complete guide for using the Trowser component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# Trowser
+
+This full-screen modal is the right fit when customers need to create, view, or edit a transaction.
+Use a trowser when the user needs to fill out a complex form.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/trowser
+```
+
+```tsx
+import { Trowser } from '@ids-ts/trowser';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `disableAutoFocus` | `boolean` | No | * disableAutoFocus: If true, would not put focus on first tabbable element. |
+| `disableRestoreFocus` | `boolean` | No | if true, does not focus back on the element that initiated |
+| `refocus` | `boolean` | No | when true, will refocus the trowser |
+| `automationId` | `string` | No | used for functional tests. |
+| `children` | `React.ReactElement | React.ReactElement[]` | Yes | inner content of trowser, e.g. form elements or menu items |
+| `className` | `string` | No | class name for the trowser |
+| `disableTrowserHeaderOnMobileStepflow` | `boolean` | No | disable the trowser header in its entirety when the trowser is rendered on a tablet or phone and stepFlow={true} is set |
+| `dismissible` | `boolean` | No | shows X button, on screen size < 768px the dismissible prop will always be true |
+| `feedback` | `boolean` | No | shows give feedback button |
+| `feedbackLabel` | `string` | No | label to change feedback label text |
+| `footerButton` | `React.ReactElement[]` | No | array of different type of buttons that can be rendered |
+| `panelContent` | `React.ReactElement` | No | render panel component either on the left or right |
+| `footerCenterLinkActions` | `((event: React.MouseEvent<HTMLButtonElement>) => void)[]` | No | Array of callback functions for center footer links. |
+| `footerCenterLinkLabels` | `string[]` | No | an array of labels for center footer links |
+| `moreButton` | `React.ReactElement` | No | - |
+| `hideOverflow` | `boolean` | No | - |
+| `help` | `boolean` | No | shows help button |
+| `helpLabel` | `string` | No | label to change help label in overflow menu and aria text |
+| `history` | `boolean` | No | shows history button |
+| `historyLabel` | `string` | No | label to change history label in overflow menu and aria text |
+| `headerClassName` | `string` | No | Custom className for header |
+| `headerRightContent` | `React.ReactNode` | No | Custom React content to render in the header right section before icons |
+| `isFeedbackMenuOpen` | `boolean` | No | boolean flag to indicate whether feedback menu is open or not |
+| `isHistoryMenuOpen` | `boolean` | No | boolean flag to indicate whether history menu is open or not |
+| `isHelpMenuOpen` | `boolean` | No | boolean flag to indicate whether help menu is open or not |
+| `isSearchMenuOpen` | `boolean` | No | boolean flag to indicate whether search menu is open or not |
+| `isSettingsMenuOpen` | `boolean` | No | boolean flag to indicate whether settings menu is open or not |
+| `light` | `boolean` | No | Whether the light mode theme is being used or not |
+| `onClose` | `() => void` | No | callback for when trowser is closed |
+| `onFeedbackIconClick` | `MouseOrKeyboardEventFunction` | No | callback for when feedback icon clicked |
+| `onHelpIconClick` | `MouseOrKeyboardEventFunction` | No | callback for when icon clicked |
+| `onHistoryIconClick` | `MouseOrKeyboardEventFunction` | No | callback for when icon clicked |
+| `onKeyDown` | `KeyboardDIVEventFunction` | No | callback for when a key is pressed |
+| `onSearchIconClick` | `MouseOrKeyboardEventFunction` | No | callback for when search icon clicked |
+| `onSettingsIconClick` | `MouseOrKeyboardEventFunction` | No | callback for when icon clicked |
+| `onShow` | `EnterHandler<undefined>` | No | callback for when trowser is shown |
+| `sectionClassName` | `string` | No | class name for body content of trowser |
+| `search` | `boolean` | No | shows search button |
+| `searchLabel` | `string` | No | label to change search label in overflow menu and aria text |
+| `settings` | `boolean` | No | shows settings button |
+| `settingsLabel` | `string` | No | label to change settings label in overflow menu and aria text |
+| `showCancelFooterButton` | `boolean` | No | whether to show the cancel link in the footer |
+| `open` | `boolean` | No | whether to show the popover |
+| `overflowIconLabel` | `string` | No | aria label for the overflow icon on mobile |
+| `overflowDoneLabel` | `string` | No | label for the done button in the mobile overflow menu |
+| `renderFlyout` | `RenderFlyoutType` | No | Render menu function |
+| `title` | `string` | No | trowser title |
+| `stepFlow` | `boolean` | No | Use as stepFlow={true} when the section contains a Step Flow component, removes footer. |
+| `stageContent` | `string | React.ReactElement` | No | The inner content of stage area |
+| `stageClassName` | `string` | No | CSS ClassName for allowing custom CSS for staging |
+| `trowserZIndex` | `number` | No | - |
+| `cancelFooterButtonLabel` | `string` | No | Prop to set the label for Cancel button as per user's choice |
+| `theme` | `string` | No | Product Theme type to render the footer |
+| `backgroundColor` | `BackgroundColorType` | No | background color for body content of trowser |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface TrowserProps extends ThemeableElement<'div'> {
+  /**
+   * disableAutoFocus: If true, would not put focus on first tabbable element.
+   */
+  disableAutoFocus?: boolean;
+  /** if true, does not focus back on the element that initiated */
+  disableRestoreFocus?: boolean;
+  /** when true, will refocus the trowser */
+  refocus?: boolean;
+  /** used for functional tests. */
+  automationId?: string;
+  /** inner content of trowser, e.g. form elements or menu items */
+  children: React.ReactElement | React.ReactElement[];
+  /** class name for the trowser */
+  className?: string;
+  /** disable the trowser header in its entirety when the trowser is rendered on a tablet or phone and stepFlow={true} is set */
+  disableTrowserHeaderOnMobileStepflow?: boolean;
+  /** shows X button, on screen size < 768px the dismissible prop will always be true */
+  dismissible?: boolean;
+  /** shows give feedback button */
+  feedback?: boolean;
+  /** label to change feedback label text */
+  feedbackLabel?: string;
+  /** array of different type of buttons that can be rendered */
+  footerButton?: React.ReactElement[];
+  /** render panel component either on the left or right */
+  panelContent?: React.ReactElement;
+  /** an array of callback functions for center footer links */
+  footerCenterLinkActions?: ((
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => void)[];
+  /** an array of labels for center footer links */
+  footerCenterLinkLabels?: string[];
+  /**
+   * Trowser limits the number of footer buttons on the web.
+   * Show the more button if the number of footer center link actions is more than three.
+   */
+  moreButton?: React.ReactElement;
+  /** hides overflow button
+   * Note that customers on screens < 768px can only see up to two buttons plus a cancel button in the footer.
+   * customers on screens < 480px can only see two buttons and no cancel button
+   */
+  hideOverflow?: boolean;
+  /** shows help button */
+  help?: boolean;
+  /** label to change help label in overflow menu and aria text */
+  helpLabel?: string;
+  /** shows history button */
+  history?: boolean;
+  /** label to change history label in overflow menu and aria text */
+  historyLabel?: string;
+  /** Custom className for header */
+  headerClassName?: string;
+  /** Custom React content to render in the header right section before icons */
+  headerRightContent?: React.ReactNode;
+  /** boolean flag to indicate whether feedback menu is open or not */
+  isFeedbackMenuOpen?: boolean;
+  /** boolean flag to indicate whether history menu is open or not */
+  isHistoryMenuOpen?: boolean;
+  /** boolean flag to indicate whether help menu is open or not */
+  isHelpMenuOpen?: boolean;
+  /** boolean flag to indicate whether search menu is open or not */
+  isSearchMenuOpen?: boolean;
+  /** boolean flag to indicate whether settings menu is open or not */
+  isSettingsMenuOpen?: boolean;
+  /** Whether the light mode theme is being used or not */
+  light?: boolean;
+  /** callback for when trowser is closed */
+  onClose?: () => void;
+  /** callback for when feedback icon clicked */
+  onFeedbackIconClick?: MouseOrKeyboardEventFunction;
+  /** callback for when icon clicked */
+  onHelpIconClick?: MouseOrKeyboardEventFunction;
+  /** callback for when icon clicked */
+  onHistoryIconClick?: MouseOrKeyboardEventFunction;
+  /** callback for when a key is pressed */
+  onKeyDown?: KeyboardDIVEventFunction;
+  /** callback for when search icon clicked */
+  onSearchIconClick?: MouseOrKeyboardEventFunction;
+  /** callback for when icon clicked */
+  onSettingsIconClick?: MouseOrKeyboardEventFunction;
+  /** callback for when trowser is shown */
+  onShow?: EnterHandler<undefined>;
+  /** class name for body content of trowser */
+  sectionClassName?: string;
+  /** shows search button */
+  search?: boolean;
+  /** label to change search label in overflow menu and aria text */
+  searchLabel?: string;
+  /** shows settings button */
+  settings?: boolean;
+  /** label to change settings label in overflow menu and aria text */
+  settingsLabel?: string;
+  /** whether to show the cancel link in the footer */
+  showCancelFooterButton?: boolean;
+  /** whether to show the popover */
+  open?: boolean;
+  /** aria label for the overflow icon on mobile */
+  overflowIconLabel?: string;
+  /** label for the done button in the mobile overflow menu */
+  overflowDoneLabel?: string;
+  /** Render menu function */
+  renderFlyout?: RenderFlyoutType;
+  /** trowser title */
+  title?: string;
+  /** Use as stepFlow={true} when the section contains a Step Flow component, removes footer. */
+  stepFlow?: boolean;
+  /** The inner content of stage area */
+  stageContent?: string | React.ReactElement;
+  /** CSS ClassName for allowing custom CSS for staging */
+  stageClassName?: string;
+  /**
+   * Prop to set zIndex manually, when used trowser would not rely on shell for its zIndex
+   *
+   * @deprecated This prop is no longer needed for adjusting the zIndex stack. If being used then simply removing it is enough.
+   */
+  trowserZIndex?: number;
+  /** Prop to set the label for Cancel button as per user's choice */
+  cancelFooterButtonLabel?: string;
+  /** Product Theme type to render the footer */
+  theme?: string;
+  /** background color for body content of trowser */
+  backgroundColor?: BackgroundColorType;
+}
+
+export type MouseOrKeyboardEventFunction = (
+  event?: React.MouseEvent<HTMLButtonElement>
+) => void;
+
+export type RenderFlyoutType = (el: React.ReactElement) => React.ReactElement;
+
+export type BackgroundColorType = 'white' | 'gray';
+
+export type KeyboardDIVEventFunction = (
+  event?: React.KeyboardEvent<HTMLDivElement>
+) => void;
+
+export type KeyboardDIVEventFunction = (
+  event?: React.KeyboardEvent<HTMLDivElement>
+) => void;
+
+export type RenderFlyoutType = (el: React.ReactElement) => React.ReactElement;
+
+export type BackgroundColorType = 'white' | 'gray';
+
+export type KeyboardDIVEventFunction = (
+  event?: React.KeyboardEvent<HTMLDivElement>
+) => void;
+
+export type BackgroundColorType = 'white' | 'gray';
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Basic Usage Default Theme
+
+```tsx
+() => {
+  const footerCenterLinkLabels = [
+    'Action 1',
+    'Action 2',
+    'Action 3',
+    'Action 4'
+  ];
+
+  const buttonRef = useRef(null);
+
+  return (
+    <div>
+      <TrowserMixin>
+        {(props: TrowserMixinProps) => {
+          return (
+            <div>
+              <Button purpose="standard" onClick={props.onShowTrowser}>
+                Basic Trowser
+              </Button>
+              <Trowser
+                feedback
+                help
+                history
+                search
+                settings
+                dismissible
+                showCancelFooterButton
+                automationId="Default_Theme"
+                open={props.open}
+                title="Basic Trowser"
+                renderFlyout={(buttonEl: React.ReactElement) => {
+                  return (
+                    <>
+                      {buttonEl}
+                      <Popover
+                        disableAutoFocus
+                        className={styles.trowserPopoverWithMenuItem}
+                        popoverOffsetDistance={16}
+                        open={props.isMoreMenuOpen}
+                        targetElement={buttonRef.current}
+                        position="top"
+                        onClose={props.onMenuClose}
+                      >
+                        <PopoverContent alignment="center">
+                          {footerCenterLinkLabels.slice(2).map((label) => (
+                            <MenuItem
+                              key={label}
+                              onClick={props.onMenuSelect}
+                              onKeyDown={props.onMenuKeyDown}
+                            >
+                              {label}
+                            </MenuItem>
+                          ))}
+                        </PopoverContent>
+                      </Popover>
+                    </>
+                  );
+                }}
+                moreButton={
+                  <Button
+                    innerRef={buttonRef}
+                    priority="tertiary"
+                    onClick={() => {
+                      props.toggleMoreMenu();
+                    }}
+                  >
+                    More
+                  </Button>
+                }
+                footerButton={[
+                  <Button key="btn-primary" onClick={props.onFooterButtonClick}>
+                    Primary
+                  </Button>,
+                  <Button
+                    key="btn-secondary"
+                    priority="secondary"
+                    purpose="passive"
+                    onClick={props.onFooterButtonClick}
+                  >
+                    Secondary
+// ...
+```
+
+### No Overflow Button Theme
+
+```tsx
+() => {
+  return (
+    <div>
+      <TrowserMixin>
+        {(props: TrowserMixinProps) => {
+          return (
+            <div>
+              <Button purpose="standard" onClick={props.onShowTrowser}>
+                Basic Trowser with no Overflow Button on Mobile
+              </Button>
+              <Trowser
+                hideOverflow
+                dismissible
+                automationId="Default_Theme"
+                open={props.open}
+                title="Basic Trowser with no Overflow Button on Mobile"
+                footerButton={[
+                  <Button
+                    key="btn-primary"
+                    purpose="standard"
+                    onClick={props.onFooterButtonClick}
+                  >
+                    Primary
+                  </Button>
+                ]}
+                onShow={action('Trowser is showing')}
+                onClose={props.onCloseTrowser}
+              >
+                <section>
+                  <div>
+                    <img
+                      style={{ width: '100%' }}
+                      alt=""
+                      src="https://plugin.intuitcdn.net/qbo-qblive-ui/happy_family_without_logo.e244f900.png"
+                    />
+                    <p style={{ textAlign: 'center' }}>
+                      This full-screen modal is the right fit when customers
+                      need to create, view, or edit a transaction.
+                    </p>
+                    <p style={{ textAlign: 'center' }}>
+                      Use a trowser when the user needs to fill out a complex
+                      form. The trowser includes a header and a sticky footer.
+                      The trowser&apos;s sticky title or header remains
+                      secondary to the global header, even though it might lead
+                      to some of the same places (such as help and settings).
+                    </p>
+                    <p style={{ textAlign: 'center' }}>
+                      The X in the corner enables users to close the trowser and
+                      return to where they started. Users can also close the
+                      trowser via the escape key. By default the trowser would
+                      focus on input element in the content.
+                    </p>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      <Dropdown
+                        label="Does the example help"
+                        onChange={action('onChange')}
+                      >
+                        <MenuItem value="1">YES</MenuItem>
+                        <MenuItem value="2">NO</MenuItem>
+                        <MenuItem value="3">IMPROVISE</MenuItem>
+                      </Dropdown>
+                    </div>
+                  </div>
+                </section>
+              </Trowser>
+            </div>
+          );
+        }}
+      </TrowserMixin>
+    </div>
+  );
+}
+```
+
+### No Top Navigation Controls
+
+```tsx
+() => {
+  const footerCenterLinkLabels = [
+    'Action 1',
+    'Action 2',
+    'Action 3',
+    'Action 4'
+  ];
+
+  const buttonRef = useRef(null);
+
+  return (
+    <div>
+      <TrowserMixin>
+        {(props: TrowserMixinProps) => {
+          return (
+            <div>
+              <Button purpose="standard" onClick={props.onShowTrowser}>
+                Trowser with no top navigation controls
+              </Button>
+              <Trowser
+                dismissible
+                showCancelFooterButton
+                help={false}
+                history={false}
+                settings={false}
+                feedback={false}
+                search={false}
+                automationId="Default_Theme"
+                open={props.open}
+                title="Trowser with No Top Navigation Controls"
+                renderFlyout={(buttonEl: React.ReactElement) => {
+                  return (
+                    <>
+                      {buttonEl}
+                      <Popover
+                        disableAutoFocus
+                        className={styles.trowserPopoverWithMenuItem}
+                        popoverOffsetDistance={16}
+                        open={props.isMoreMenuOpen}
+                        targetElement={buttonRef.current}
+                        position="top"
+                        onClose={props.onMenuClose}
+                      >
+                        <PopoverContent alignment="center">
+                          {footerCenterLinkLabels.slice(2).map((label) => (
+                            <MenuItem
+                              key={label}
+                              onClick={props.onMenuSelect}
+                              onKeyDown={props.onMenuKeyDown}
+                            >
+                              {label}
+                            </MenuItem>
+                          ))}
+                        </PopoverContent>
+                      </Popover>
+                    </>
+                  );
+                }}
+                moreButton={
+                  <Button
+                    innerRef={buttonRef}
+                    priority="tertiary"
+                    onClick={() => {
+                      props.toggleMoreMenu();
+                    }}
+                  >
+                    More
+                  </Button>
+                }
+                footerButton={[
+                  <Button key="btn-primary" onClick={props.onFooterButtonClick}>
+                    Primary
+                  </Button>,
+                  <Button
+                    key="btn-secondary"
+                    priority="secondary"
+                    purpose="passive"
+                    onClick={props.onFooterButtonClick}
+                  >
+                    Secondary
+// ...
+```
+
+### Quickbooks Type Step Flow
+
+```tsx
+() => (
+  <div>
+    <TrowserMixin>
+      {(props: TrowserMixinProps) =>
+```
+
+### Non Dismissible Trowser
+
+```tsx
+() => (
+  <div>
+    <TrowserMixin>
+      {(props: TrowserMixinProps) =>
+```
+
+### Trowser With Stage
+
+```tsx
+() => (
+  <div>
+    <TrowserMixin>
+      {(props: TrowserMixinProps) =>
+```
+
+### Disable Auto Focus Example
+
+```tsx
+() => (
+  <div>
+    <TrowserMixin>
+      {(props: TrowserMixinProps) =>
+```
+
+### Disable Restore Focus Example
+
+```tsx
+() => (
+  <div>
+    <TrowserMixin>
+      {(props: TrowserMixinProps) =>
+```
+
+### Trowser With Footer Button Variations
+
+```tsx
+() => (
+  <div>
+    <TrowserMixin>
+      {(props: TrowserMixinProps) =>
+```
+
+### Trowser With Primary And Cancel Buttons
+
+```tsx
+() => {
+  const footerCenterLinkLabels = [
+    'Action 1',
+    'Action 2',
+    'Action 3',
+    'Action 4'
+  ];
+
+  const buttonRef = useRef(null);
+
+  return (
+    <div>
+      <TrowserMixin>
+        {(props: TrowserMixinProps) => {
+          return (
+            <div>
+              <Button purpose="standard" onClick={props.onShowTrowser}>
+                Basic Trowser
+              </Button>
+              <Trowser
+                help
+                history
+                feedback
+                search
+                settings
+                dismissible
+                showCancelFooterButton
+                automationId="Default_Theme"
+                open={props.open}
+                title="Basic Trowser"
+                renderFlyout={(buttonEl: React.ReactElement) => {
+                  return (
+                    <>
+                      {buttonEl}
+                      <Popover
+                        disableAutoFocus
+                        className={styles.trowserPopoverWithMenuItem}
+                        popoverOffsetDistance={16}
+                        open={props.isMoreMenuOpen}
+                        targetElement={buttonRef.current}
+                        position="top"
+                        onClose={props.onMenuClose}
+                      >
+                        <PopoverContent alignment="center">
+                          {footerCenterLinkLabels.slice(2).map((label) => (
+                            <MenuItem
+                              key={label}
+                              onClick={props.onMenuSelect}
+                              onKeyDown={props.onMenuKeyDown}
+                            >
+                              {label}
+                            </MenuItem>
+                          ))}
+                        </PopoverContent>
+                      </Popover>
+                    </>
+                  );
+                }}
+                moreButton={
+                  <Button
+                    innerRef={buttonRef}
+                    priority="tertiary"
+                    onClick={() => {
+                      props.toggleMoreMenu();
+                    }}
+                  >
+                    More
+                  </Button>
+                }
+                footerButton={[
+                  <Button key="btn-primary" onClick={props.onFooterButtonClick}>
+                    Primary
+                  </Button>
+                ]}
+                footerCenterLinkActions={[
+                  () => 'Action Link 1 Clicked',
+                  () => 'Action Link 2 Clicked',
+                  () => 'Action Link 3 Clicked'
+                ]}
+                footerCenterLinkLabels={footerCenterLinkLabels}
+// ...
+```
+
+### Trowser With No Cancel Button
+
+```tsx
+() => (
+  <div>
+    <TrowserMixin>
+      {(props: TrowserMixinProps) =>
+```
+
+### Trowser With Three Center Actions
+
+```tsx
+() => {
+  const footerCenterLinkLabels = ['Action 1', 'Action 2', 'Action 3'];
+
+  const buttonRef = useRef(null);
+
+  return (
+    <div>
+      <TrowserMixin>
+        {(props: TrowserMixinProps) => {
+          return (
+            <div>
+              <Button purpose="standard" onClick={props.onShowTrowser}>
+                Basic Trowser
+              </Button>
+              <Trowser
+                help
+                history
+                feedback
+                search
+                settings
+                dismissible
+                showCancelFooterButton
+                automationId="Default_Theme"
+                open={props.open}
+                title="Basic Trowser"
+                renderFlyout={(buttonEl: React.ReactElement) => {
+                  return (
+                    <>
+                      {buttonEl}
+                      <Popover
+                        disableAutoFocus
+                        className={styles.trowserPopoverWithMenuItem}
+                        popoverOffsetDistance={16}
+                        open={props.isMoreMenuOpen}
+                        targetElement={buttonRef.current}
+                        position="top"
+                        onClose={props.onMenuClose}
+                      >
+                        <PopoverContent alignment="center">
+                          {footerCenterLinkLabels.slice(2).map((label) => (
+                            <MenuItem
+                              key={label}
+                              onClick={props.onMenuSelect}
+                              onKeyDown={props.onMenuKeyDown}
+                            >
+                              {label}
+                            </MenuItem>
+                          ))}
+                        </PopoverContent>
+                      </Popover>
+                    </>
+                  );
+                }}
+                moreButton={
+                  <Button
+                    innerRef={buttonRef}
+                    priority="tertiary"
+                    onClick={() => {
+                      props.toggleMoreMenu();
+                    }}
+                  >
+                    More
+                  </Button>
+                }
+                footerButton={[
+                  <Button key="btn-primary" onClick={props.onFooterButtonClick}>
+                    Primary
+                  </Button>,
+                  <Button
+                    key="btn-secondary"
+                    priority="secondary"
+                    purpose="passive"
+                    onClick={props.onFooterButtonClick}
+                  >
+                    Secondary
+                  </Button>
+                ]}
+                footerCenterLinkActions={[
+                  action('Action 1 Clicked'),
+                  action('Action 2 Clicked'),
+// ...
+```
+
+### Trowser With Only One Center Action
+
+```tsx
+() => {
+  const footerCenterLinkLabels = ['Action 1'];
+  return (
+    <div>
+      <TrowserMixin>
+        {(props: TrowserMixinProps) => {
+          return (
+            <div>
+              <Button purpose="standard" onClick={props.onShowTrowser}>
+                Basic Trowser
+              </Button>
+              <Trowser
+                help
+                feedback
+                search
+                history
+                settings
+                dismissible
+                automationId="Default_Theme"
+                open={props.open}
+                title="Basic Trowser"
+                footerCenterLinkActions={[action('Action 1 Clicked')]}
+                footerCenterLinkLabels={footerCenterLinkLabels}
+                onHelpIconClick={action('Help Clicked')}
+                onHistoryIconClick={action('History Clicked')}
+                onSettingsIconClick={action('Settings Clicked')}
+                onShow={action('Trowser is showing')}
+                onClose={props.onCloseTrowser}
+              >
+                <section>
+                  <div>
+                    <img
+                      style={{ width: '100%' }}
+                      alt=""
+                      src="https://plugin.intuitcdn.net/qbo-qblive-ui/happy_family_without_logo.e244f900.png"
+                    />
+                    <p style={{ textAlign: 'center' }}>
+                      This full-screen modal is the right fit when customers
+                      need to create, view, or edit a transaction.
+                    </p>
+                    <p style={{ textAlign: 'center' }}>
+                      Use a trowser when the user needs to fill out a complex
+                      form. The trowser includes a header and a sticky footer.
+                      The trowser&apos;s sticky title or header remains
+                      secondary to the global header, even though it might lead
+                      to some of the same places (such as help and settings).
+                    </p>
+                    <p style={{ textAlign: 'center' }}>
+                      The X in the corner enables users to close the trowser and
+                      return to where they started. Users can also close the
+                      trowser via the escape key. By default the trowser would
+                      focus on input element in the content.
+                    </p>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      <Dropdown
+                        label="Does the example help"
+                        onChange={action('onChange')}
+                      >
+                        <MenuItem value="1">YES</MenuItem>
+                        <MenuItem value="2">NO</MenuItem>
+                        <MenuItem value="3">IMPROVISE</MenuItem>
+                      </Dropdown>
+                    </div>
+                  </div>
+                </section>
+              </Trowser>
+            </div>
+          );
+        }}
+      </TrowserMixin>
+    </div>
+  );
+}
+```
+
+### Trowser With Refocus
+
+```tsx
+() => {
+  const [loading, setLoading] = React.useState(true);
+
+  const completeLoading = () => {
+    setTimeout(() => {
+      setLoading(false);
+    }, 2000);
+  };
+
+  return (
+    <div>
+      <TrowserMixin>
+        {(props: TrowserMixinProps) => (
+          <div>
+            <Button
+              purpose="standard"
+              onClick={() => {
+                props.onShowTrowser();
+                completeLoading();
+              }}
+            >
+              Basic Trowser
+            </Button>
+            <Trowser
+              dismissible
+              open={props.open}
+              title="Basic Trowser with Refocus"
+              refocus={!loading}
+              footerButton={[
+                <Button key="btn-primary-1" onClick={props.onFooterButtonClick}>
+                  Primary
+                </Button>,
+                <Button
+                  key="btn-primary-2"
+                  priority="secondary"
+                  onClick={props.onFooterButtonClick}
+                >
+                  Secondary
+                </Button>
+              ]}
+              onShow={action('Trowser is showing')}
+              onClose={props.onCloseTrowser}
+            >
+              <section>
+                <div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    {loading ? (
+                      <IndeterminateShort
+                        data-testid="loading-spinner"
+                        size={16}
+                      />
+                    ) : (
+                      <Dropdown
+                        label="Coffee"
+                        onChange={props.handlePageLevelDropdownChange}
+                      >
+                        <MenuItem value="LATTE">Latte</MenuItem>
+                        <MenuItem value="ESPRESSO">Espresso</MenuItem>
+                        <MenuItem value="Decafe">Decafe</MenuItem>
+                      </Dropdown>
+                    )}
+                  </div>
+                </div>
+              </section>
+            </Trowser>
+          </div>
+        )}
+      </TrowserMixin>
+    </div>
+  );
+}
+```
+
+### Trowser With Page Level Message
+
+```tsx
+() => (
+  <div>
+    <TrowserMixin>
+      {(props: TrowserMixinProps) =>
+```
+
+### Trowser With Popover
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const [position, setPosition] = useState<Positions | undefined>(undefined);
+  const [alignment, setAlignment] = useState<Alignments | undefined>(undefined);
+  const [target, setTarget] = useState<Element | Text | null>(null);
+  const buttonRef = React.createRef<HTMLButtonElement>();
+  const buttonRef2 = React.createRef<HTMLButtonElement>();
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleClick = (
+    p: Positions,
+    a: Alignments,
+    ref: React.MutableRefObject<HTMLButtonElement>, // new target reference
+    openPopover: boolean, // whether or not the popover is open
+    curTarget: Element | Text | null, // current target
+    seOpenPopover: React.Dispatch<React.SetStateAction<boolean>>,
+    setPopoverTarget: React.Dispatch<
+      React.SetStateAction<Element | Text | null>
+    >,
+    setPopoverPosition: React.Dispatch<
+      React.SetStateAction<Positions | undefined>
+    >,
+    setPopoverAlignment: React.Dispatch<
+      React.SetStateAction<Alignments | undefined>
+    >,
+    selected?: boolean, // whether or not the target is selected and we use it for icons.
+    setSelected?: React.Dispatch<React.SetStateAction<boolean>>
+  ) => {
+    // eslint-disable-next-line react/no-find-dom-node
+    const newTarget = ReactDOM.findDOMNode(ref.current);
+    newTarget === curTarget ? seOpenPopover(!openPopover) : seOpenPopover(true);
+    setPopoverTarget(newTarget);
+    setPopoverPosition(p);
+    setPopoverAlignment(a);
+    setSelected && setSelected(!selected);
+  };
+
+  const footerCenterLinkLabels = [
+    'Action 1',
+    'Action 2',
+    'Action 3',
+    'Action 4'
+  ];
+
+  return (
+    <div>
+      <TrowserMixin>
+        {(props: TrowserMixinProps) => {
+          return (
+            <div>
+              <Button purpose="standard" onClick={props.onShowTrowser}>
+                Basic Trowser
+              </Button>
+              <Trowser
+                help
+                history
+                feedback
+                search
+                settings
+                dismissible
+                showCancelFooterButton
+                automationId="Default_Theme"
+                open={props.open}
+                title="Basic Trowser"
+                renderFlyout={(buttonEl: React.ReactElement) => {
+                  return (
+                    <>
+                      {buttonEl}
+                      <Popover
+                        disableAutoFocus
+                        className={styles.trowserPopoverWithMenuItem}
+                        popoverOffsetDistance={16}
+                        open={props.isMoreMenuOpen}
+                        targetElement={buttonRef.current as HTMLElement}
+                        position="top"
+                        onClose={props.onMenuClose}
+                      >
+// ...
+```
+
+### Trowser With Gray Background
+
+```tsx
+() => (
+  <div>
+    <TrowserMixin>
+      {(props: TrowserMixinProps) =>
+```
+
+### Trowser With Drawer And Modal
+
+```tsx
+() => {
+  const footerCenterLinkLabels = [
+    'Action 1',
+    'Action 2',
+    'Action 3',
+    'Action 4'
+  ];
+  const [openDrawer, setOpenDrawer] = React.useState(false);
+  const [openModal, setOpenModal] = React.useState(false);
+  const [openModal2, setOpenModal2] = React.useState(false);
+
+  const buttonRef = useRef(null);
+
+  const openDrawerContainer = () => {
+    setOpenDrawer(true);
+  };
+
+  const closeDrawerContainer = () => {
+    setOpenDrawer(false);
+  };
+
+  return (
+    <div>
+      <TrowserMixin>
+        {(props: TrowserMixinProps) => {
+          return (
+            <div>
+              <Button purpose="standard" onClick={props.onShowTrowser}>
+                Open Trowser
+              </Button>
+              <Trowser
+                help
+                history
+                feedback
+                search
+                settings
+                dismissible
+                showCancelFooterButton
+                automationId="Default_Theme"
+                open={props.open}
+                title="Trowser"
+                renderFlyout={(buttonEl: React.ReactElement) => {
+                  return (
+                    <>
+                      {buttonEl}
+                      <Popover
+                        disableAutoFocus
+                        className={styles.trowserPopoverWithMenuItem}
+                        popoverOffsetDistance={16}
+                        open={props.isMoreMenuOpen}
+                        targetElement={buttonRef.current}
+                        position="top"
+                        onClose={props.onMenuClose}
+                      >
+                        <PopoverContent alignment="center">
+                          {footerCenterLinkLabels.slice(2).map((label) => (
+                            <MenuItem
+                              key={label}
+                              onClick={props.onMenuSelect}
+                              onKeyDown={props.onMenuKeyDown}
+                            >
+                              {label}
+                            </MenuItem>
+                          ))}
+                        </PopoverContent>
+                      </Popover>
+                    </>
+                  );
+                }}
+                moreButton={
+                  <Button
+                    innerRef={buttonRef}
+                    priority="tertiary"
+                    onClick={() => {
+                      props.toggleMoreMenu();
+                    }}
+                  >
+                    More
+                  </Button>
+                }
+// ...
+```
+
+### Trowser With Left Collapsible Panel Contextual With Title
+
+```tsx
+() => {
+  const footerCenterLinkLabels = [
+    'Action 1',
+    'Action 2',
+    'Action 3',
+    'Action 4'
+  ];
+
+  const buttonRef = useRef(null);
+
+  return (
+    <div>
+      <TrowserMixin>
+        {(props: TrowserMixinProps) => {
+          return (
+            <div>
+              <Button purpose="standard" onClick={props.onShowTrowser}>
+                Browse Trowser
+              </Button>
+              <Trowser
+                help
+                history
+                feedback
+                search
+                settings
+                dismissible
+                showCancelFooterButton
+                automationId="Default_Theme"
+                open={props.open}
+                panelContent={
+                  <PanelContextual
+                    hasCollapseControl
+                    open
+                    placement={Placement.Left}
+                  >
+                    <PanelHeader title="Sample Panel title" />
+                    <PanelContent>{panelData}</PanelContent>
+                  </PanelContextual>
+                }
+                title="Basic Trowser"
+                renderFlyout={(buttonEl: React.ReactElement) => {
+                  return (
+                    <>
+                      {buttonEl}
+                      <Popover
+                        disableAutoFocus
+                        className={styles.trowserPopoverWithMenuItem}
+                        popoverOffsetDistance={16}
+                        open={props.isMoreMenuOpen}
+                        targetElement={buttonRef.current}
+                        position="top"
+                        onClose={props.onMenuClose}
+                      >
+                        <PopoverContent alignment="center">
+                          {footerCenterLinkLabels.slice(2).map((label) => (
+                            <MenuItem
+                              key={label}
+                              onClick={props.onMenuSelect}
+                              onKeyDown={props.onMenuKeyDown}
+                            >
+                              {label}
+                            </MenuItem>
+                          ))}
+                        </PopoverContent>
+                      </Popover>
+                    </>
+                  );
+                }}
+                moreButton={
+                  <Button
+                    innerRef={buttonRef}
+                    priority="tertiary"
+                    onClick={() => {
+                      props.toggleMoreMenu();
+                    }}
+                  >
+                    More
+                  </Button>
+                }
+                footerButton={[
+// ...
+```
+
+### Trowser With Left Non Collapsible Panel Contextual Without Title
+
+```tsx
+() => {
+  const footerCenterLinkLabels = [
+    'Action 1',
+    'Action 2',
+    'Action 3',
+    'Action 4'
+  ];
+
+  const buttonRef = useRef(null);
+
+  return (
+    <div>
+      <TrowserMixin>
+        {(props: TrowserMixinProps) => {
+          return (
+            <div>
+              <Button purpose="standard" onClick={props.onShowTrowser}>
+                Browse Trowser
+              </Button>
+              <Trowser
+                help
+                history
+                settings
+                feedback
+                search
+                dismissible
+                showCancelFooterButton
+                automationId="Default_Theme"
+                open={props.open}
+                panelContent={
+                  <PanelContextual
+                    open
+                    hasCollapseControl={false}
+                    placement={Placement.Left}
+                  >
+                    <PanelHeader />
+                    <PanelContent>{panelData}</PanelContent>
+                  </PanelContextual>
+                }
+                title="Basic Trowser"
+                renderFlyout={(buttonEl: React.ReactElement) => {
+                  return (
+                    <>
+                      {buttonEl}
+                      <Popover
+                        disableAutoFocus
+                        className={styles.trowserPopoverWithMenuItem}
+                        popoverOffsetDistance={16}
+                        open={props.isMoreMenuOpen}
+                        targetElement={buttonRef.current}
+                        position="top"
+                        onClose={props.onMenuClose}
+                      >
+                        <PopoverContent alignment="center">
+                          {footerCenterLinkLabels.slice(2).map((label) => (
+                            <MenuItem
+                              key={label}
+                              onClick={props.onMenuSelect}
+                              onKeyDown={props.onMenuKeyDown}
+                            >
+                              {label}
+                            </MenuItem>
+                          ))}
+                        </PopoverContent>
+                      </Popover>
+                    </>
+                  );
+                }}
+                moreButton={
+                  <Button
+                    innerRef={buttonRef}
+                    priority="tertiary"
+                    onClick={() => {
+                      props.toggleMoreMenu();
+                    }}
+                  >
+                    More
+                  </Button>
+                }
+                footerButton={[
+// ...
+```
+
+### Trowser With Right Collapsible Panel Contextual
+
+```tsx
+() => {
+  const footerCenterLinkLabels = [
+    'Action 1',
+    'Action 2',
+    'Action 3',
+    'Action 4'
+  ];
+
+  const buttonRef = useRef(null);
+
+  return (
+    <div>
+      <TrowserMixin>
+        {(props: TrowserMixinProps) => {
+          return (
+            <div>
+              <Button purpose="standard" onClick={props.onShowTrowser}>
+                Browse Trowser
+              </Button>
+              <Trowser
+                help
+                history
+                feedback
+                search
+                settings
+                dismissible
+                showCancelFooterButton
+                automationId="Default_Theme"
+                open={props.open}
+                panelContent={
+                  <PanelContextual
+                    hasCollapseControl
+                    open
+                    placement={Placement.Right}
+                  >
+                    <PanelHeader title="Panel title" />
+                    <PanelContent>{panelData}</PanelContent>
+                  </PanelContextual>
+                }
+                title="Basic Trowser"
+                renderFlyout={(buttonEl: React.ReactElement) => {
+                  return (
+                    <>
+                      {buttonEl}
+                      <Popover
+                        disableAutoFocus
+                        className={styles.trowserPopoverWithMenuItem}
+                        popoverOffsetDistance={16}
+                        open={props.isMoreMenuOpen}
+                        targetElement={buttonRef.current}
+                        position="top"
+                        onClose={props.onMenuClose}
+                      >
+                        <PopoverContent alignment="center">
+                          {footerCenterLinkLabels.slice(2).map((label) => (
+                            <MenuItem
+                              key={label}
+                              onClick={props.onMenuSelect}
+                              onKeyDown={props.onMenuKeyDown}
+                            >
+                              {label}
+                            </MenuItem>
+                          ))}
+                        </PopoverContent>
+                      </Popover>
+                    </>
+                  );
+                }}
+                moreButton={
+                  <Button
+                    innerRef={buttonRef}
+                    priority="tertiary"
+                    onClick={() => {
+                      props.toggleMoreMenu();
+                    }}
+                  >
+                    More
+                  </Button>
+                }
+                footerButton={[
+// ...
+```
+
+### Trowser With Right Collapsible Panel Contextual Default Closed
+
+```tsx
+() => {
+  const footerCenterLinkLabels = [
+    'Action 1',
+    'Action 2',
+    'Action 3',
+    'Action 4'
+  ];
+
+  const buttonRef = useRef(null);
+
+  return (
+    <div>
+      <TrowserMixin>
+        {(props: TrowserMixinProps) => {
+          return (
+            <div>
+              <Button onClick={props.onShowTrowser}>Browse Trowser</Button>
+              <Trowser
+                help
+                history
+                feedback
+                search
+                settings
+                dismissible
+                showCancelFooterButton
+                automationId="Default_Theme"
+                open={props.open}
+                panelContent={
+                  <PanelContextual
+                    hasCollapseControl
+                    placement={Placement.Right}
+                  >
+                    <PanelHeader title="Panel title" />
+                    <PanelContent>{panelData}</PanelContent>
+                  </PanelContextual>
+                }
+                title="Basic Trowser"
+                renderFlyout={(buttonEl: React.ReactElement) => {
+                  return (
+                    <>
+                      {buttonEl}
+                      <Popover
+                        disableAutoFocus
+                        className={styles.trowserPopoverWithMenuItem}
+                        popoverOffsetDistance={16}
+                        open={props.isMoreMenuOpen}
+                        targetElement={buttonRef.current}
+                        position="top"
+                        onClose={props.onMenuClose}
+                      >
+                        <PopoverContent alignment="center">
+                          {footerCenterLinkLabels.slice(2).map((label) => (
+                            <MenuItem
+                              key={label}
+                              onClick={props.onMenuSelect}
+                              onKeyDown={props.onMenuKeyDown}
+                            >
+                              {label}
+                            </MenuItem>
+                          ))}
+                        </PopoverContent>
+                      </Popover>
+                    </>
+                  );
+                }}
+                moreButton={
+                  <Button
+                    innerRef={buttonRef}
+                    priority="tertiary"
+                    onClick={() => {
+                      props.toggleMoreMenu();
+                    }}
+                  >
+                    More
+                  </Button>
+                }
+                footerButton={[
+                  <Button key="btn-primary" onClick={props.onFooterButtonClick}>
+                    Primary
+                  </Button>,
+// ...
+```
+
+### With Header Right Content
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div>
+      <Button purpose="standard" onClick={() => setOpen(true)}>
+        Open Trowser with Header Content
+      </Button>
+      <Trowser
+        dismissible
+        feedback
+        help
+        automationId="trowser-header-content"
+        headerRightContent={
+          <Button
+            priority="primary"
+            purpose="ai"
+            size="small"
+            onClick={action('Custom button clicked')}
+          >
+            <AiSparkles size="xsmall" />
+            Show me how
+          </Button>
+        }
+        open={open}
+        title="Trowser with Custom Header Content"
+        onClose={() => setOpen(false)}
+        onFeedbackIconClick={action('Feedback clicked')}
+        onHelpIconClick={action('Help clicked')}
+      >
+        <div style={{ padding: '24px' }}>
+          <h3>Custom Header Content Example</h3>
+          <p>
+            This Trowser demonstrates the <code>headerRightContent</code> prop,
+            which allows you to inject custom React content into the header
+            right section before the standard icons.
+          </p>
+        </div>
+      </Trowser>
+    </div>
+  );
+}
+```
+
+## Composes With
+
+- Button
+- Position
+- SplitButton
+- Menu
+- Typography
+- Indeterminate
+- Dropdown
+- PageMessage
+- TextField
+- Popover
+
+---
+
+## References
+
+- [GitHub Source - Trowser](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/Trowser)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/trowser.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-trowser&theme=quickbooks&colorScheme=light)

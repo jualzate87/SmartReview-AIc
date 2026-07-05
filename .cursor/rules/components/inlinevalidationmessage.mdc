@@ -1,0 +1,142 @@
+---
+description: Complete guide for using the InlineValidationMessage component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# InlineValidationMessage
+
+Error validation and messaging displays when a user enters incorrect information or the system does something unexpected.
+This visual and interactive element can be activated with components or in implementation and API errors.
+
+**Validations** work in conjunction with inputs such as text fields, checkboxes, and radio buttons. When a user enters data into a form, inline validations provide feedback to the user and helps guide them to provide valid inputs. By default, inputs are required unless indicated with an “(optional)” label.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/inline-validation-message
+```
+
+```tsx
+import { InlineValidationMessage } from '@ids-ts/inline-validation-message';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `automationId` | `string` | No | - |
+| `id` | `string` | No | ID property |
+| `message` | `string` | No | message property |
+| `description` | `string` | No | description property |
+| `type` | `InlineValidationType` | No | - |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface InlineValidationMessageProps
+  extends Omit<ThemeableElement<'span'>, 'onChange' | 'onBlur'> {
+  /**
+   * AutomationID property
+   *
+   * @default idsInlineValidationMessage
+   */
+  automationId?: string;
+  /** ID property */
+  id?: string;
+  /** message property */
+  message?: string;
+  /** description property */
+  description?: string;
+  /**
+   * Determines the type of Validation Message : ['error', 'warning', 'success', 'invalid', 'info']
+   *
+   * @default ''
+   */
+  type?: InlineValidationType;
+}
+
+export type InlineValidationType =
+  | 'error'
+  | 'warning'
+  | 'success'
+  | 'invalid'
+  | 'info'
+  | '';
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Showcase
+
+```tsx
+() => (
+  <>
+    <InlineValidationMessage
+      message="Not a valid zip code"
+      type="warning"
+      description="We were expecting 5 or 9 digits."
+    />
+    <InlineValidationMessage message="Incorrect password" type="error" />
+    <InlineValidationMessage
+      message="Your password meets all requirements"
+      type="success"
+    />
+    <InlineValidationMessage
+      message="Your password is missing some criteria"
+      type="invalid"
+    />
+    <InlineValidationMessage
+      message="This is an informational message"
+      type="info"
+      description="Additional details about this information."
+    />
+  </>
+)
+```
+
+---
+
+## References
+
+- [GitHub Source - InlineValidationMessage](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/InlineValidationMessage)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/inline-validation-message.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-inline-validation-message&theme=quickbooks&colorScheme=light)

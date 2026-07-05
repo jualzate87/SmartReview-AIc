@@ -1,0 +1,370 @@
+---
+description: Complete guide for using the Cards component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# Cards
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/cards
+```
+
+```tsx
+import { Cards } from '@ids-ts/cards';
+```
+
+## Props
+
+### Card
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `size` | `'standard' \| 'small' \| 'xsmall'` | No | Card size variant. Defaults to `'standard'`. |
+| `onClick` | `MouseEventHandler` | No | Click handler for the card. |
+| `disableCardClick` | `boolean` | No | When true, disables the card click interaction. |
+| `automationId` | `string` | No | Test automation identifier. |
+| `style` | `CSSProperties` | No | Inline style overrides. |
+
+### Sub-components
+
+- `CardContent` — Wraps the main card content
+- `CardActions` — Footer area for buttons and links
+- `CardUpperControl` — Top-right control area (CloseIconControl, EditIconControl, etc.)
+- `CardProgressBarIndicator` — Progress bar at the bottom of a card
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+**icon** — Icon fill and stroke colors
+- `--color-icon-accent`
+- `--color-icon-complementary`
+- `--color-icon-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+### Size
+
+**icon** — Standard icon dimensions
+
+## Usage Patterns
+
+### Basic Usage
+
+```tsx
+() => {
+  const cardStyle = { margin: '10px' };
+
+  return (
+    <div style={{ display: 'flex', boxSizing: 'border-box' }}>
+      <Card
+        automationId="Cards_basic_example_standard"
+        size="standard"
+        style={cardStyle}
+        onClick={action('standard card clicked')}
+      >
+        <CardContent>
+          Basic example: <code className={styles.code}>standard</code>
+        </CardContent>
+      </Card>
+      <Card
+        automationId="Cards_basic_example_small"
+        size="small"
+        style={cardStyle}
+        onClick={action('small card clicked')}
+      >
+        <CardContent>
+          Basic example: <code className={styles.code}>small</code>
+        </CardContent>
+      </Card>
+      <Card
+        automationId="Cards_basic_example_xsmall"
+        size="xsmall"
+        style={cardStyle}
+        onClick={action('xsmall card clicked')}
+      >
+        <CardContent>
+          Basic example: <code className={styles.code}>xsmall</code>
+        </CardContent>
+      </Card>
+      <br />
+      <Card
+        automationId="Cards_basic_example_fit_content"
+        style={{ height: 'auto', width: '200px', ...cardStyle }}
+        onClick={action('xsmall card clicked')}
+      >
+        <CardContent>
+          This example is to fit content.
+          <br />
+          <br />
+          Please see the API for details on how to replicate this.
+          <br />
+          <br />
+          Just as a note, this is not yet a supported option for the
+          &quot;size&quot; prop.
+          <br />
+          <br />
+          We will be working on supporting this for the future grid system.
+          <br />
+          <br />
+          You can pass in `height: &apos;auto&apos;` to accomplish this.
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+```
+
+### Disable Click Card Example
+
+```tsx
+() => {
+  const cardStyle = { margin: '0 15px' };
+
+  return (
+    <div style={{ display: 'flex', boxSizing: 'border-box' }}>
+      <Card
+        disableCardClick
+        automationId="Cards_disable_click"
+        size="standard"
+        style={cardStyle}
+      >
+        <CardContent>Some content here</CardContent>
+        <CardActions>
+          <Link href="https://google.com">google.com</Link>
+        </CardActions>
+      </Card>
+      <Card disableCardClick size="standard" style={cardStyle}>
+        <CardContent>Some content here</CardContent>
+        <CardActions>
+          <Button purpose="standard">Check it out</Button>
+        </CardActions>
+      </Card>
+      <Card disableCardClick size="standard" style={cardStyle}>
+        <CardContent>
+          <CardUpperControl action={<CloseIconControl />} />
+          Some content here
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+```
+
+### Lower Controls
+
+```tsx
+() => {
+  const cardStyle = { margin: '0 15px' };
+
+  return (
+    <div style={{ display: 'flex', boxSizing: 'border-box' }}>
+      <Card
+        size="standard"
+        style={cardStyle}
+        onClick={action('button example clicked')}
+      >
+        <CardContent>Button Example</CardContent>
+        <CardActions>
+          <Button purpose="standard">Check it out</Button>
+        </CardActions>
+      </Card>
+      <Card
+        size="standard"
+        style={cardStyle}
+        onClick={action('link example clicked')}
+      >
+        <CardContent>Link Example</CardContent>
+        <CardActions>
+          <Link href="http://google.com">google.com</Link>
+        </CardActions>
+      </Card>
+    </div>
+  );
+}
+```
+
+### Upper Controls
+
+```tsx
+() => {
+  const cardStyle = { margin: '0 15px' };
+
+  return (
+    <div style={{ display: 'flex', boxSizing: 'border-box' }}>
+      <Card
+        size="standard"
+        style={cardStyle}
+        onClick={action('CloseIconControl example clicked')}
+      >
+        <CardContent>
+          <CardUpperControl action={<CloseIconControl />} />
+          Close Icon Control
+        </CardContent>
+      </Card>
+
+      <Card
+        size="standard"
+        style={cardStyle}
+        onClick={action('EditIconControl example clicked')}
+      >
+        <CardContent>
+          <CardUpperControl action={<EditIconControl />} />
+          Edit Icon Control
+        </CardContent>
+      </Card>
+
+      <Card
+        size="standard"
+        style={cardStyle}
+        onClick={action('Hide Button example clicked')}
+      >
+        <CardContent>
+          <CardUpperControl
+            action={
+              <A11yFocus onFocusClassName="idsCardUpperControlExample__hide--focused">
+                <Button
+                  className="idsCardUpperControlExample__hide"
+                  priority="tertiary"
+                >
+                  Hide
+                </Button>
+              </A11yFocus>
+            }
+          />
+          Hide Button
+        </CardContent>
+      </Card>
+
+      <Card
+        size="standard"
+        style={cardStyle}
+        onClick={action('MinimizeIconControl example clicked')}
+      >
+        <CardContent>
+          <CardUpperControl action={<MinimizeIconControl />} />
+          Minimize Icon Control
+        </CardContent>
+      </Card>
+
+      <Card
+        size="standard"
+        style={cardStyle}
+        onClick={action('OverflowIconControl example clicked')}
+      >
+        <CardContent>
+          <CardUpperControl action={<OverflowIconControl />} />
+          Overflow Icon Control
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+```
+
+### Progress Indicator
+
+```tsx
+() => {
+  const cardStyle = { margin: 25 };
+
+  return (
+    <div style={{ display: 'flex', boxSizing: 'border-box' }}>
+      <Card
+        size="small"
+        style={cardStyle}
+        onClick={action('Progress bar indicator (card 1) clicked')}
+      >
+        <CardContent>
+          This is the first card with uncompleted tasks.
+        </CardContent>
+        <CardProgressBarIndicator
+          ofLabel="sur"
+          position={1}
+          total={2}
+          aria-label="First Card Progress Bar"
+        />
+      </Card>
+      <br />
+      <Card
+        size="small"
+        style={cardStyle}
+        onClick={action('Progress bar indicator (card 2) clicked')}
+      >
+        <CardContent>
+          This is the second card with all completed tasks.
+          <br />
+          This card is using the QuickBooks theme.
+        </CardContent>
+        <CardProgressBarIndicator
+          theme="quickbooks"
+          position={2}
+          total={2}
+          aria-label="Second Card Progress Bar"
+        />
+      </Card>
+    </div>
+  );
+}
+```
+
+## Code Example
+
+```tsx
+import React from 'react';
+import { Card, CardContent } from '@ids-ts/cards';
+
+const CardsExample = () => (
+  <Card size="standard" onClick={() => console.log('standard card clicked')}>
+    <CardContent>Basic example</CardContent>
+  </Card>
+);
+
+export default CardsExample;
+```
+
+## Composes With
+
+- Button
+- Link
+- A11yfocus
+
+---
+
+## References
+
+- [GitHub Source - Cards](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/Cards)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/cards.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-cards&theme=quickbooks&colorScheme=light)

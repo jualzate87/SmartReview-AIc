@@ -1,0 +1,318 @@
+---
+description: Complete guide for using the PageMessage component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# PageMessage
+
+The Page Message component is a suggested action/service/data that users might find helpful, but isn\'t a business logic blocker or critical to their experience.
+They can be vertically stacked and combined with other message types.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/page-message
+```
+
+```tsx
+import { PageMessage } from '@ids-ts/page-message';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `actionLabel` | `string` | No | Value to be displayed on the action button, inline with the message |
+| `automationId` | `string` | No | Test automation ID. |
+| `title` | `string` | Yes | - |
+| `type` | `PageMessageType` | Yes | - |
+| `dismissible` | `boolean` | Yes | - |
+| `onActionClick` | `React.MouseEventHandler` | No | Callback when action button is clicked |
+| `onClose` | `React.MouseEventHandler` | No | Callback when component is closed. |
+| `open` | `boolean` | Yes | - |
+| `innerRef` | `((instance: HTMLDivElement \| null) => void) \| React.Ref<HTMLDivElement>` | No | Ref to forward to the container div. |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface PageMessageProps extends ThemeableElement<'div'> {
+  /** Value to be displayed on the action button, inline with the message */
+  actionLabel?: string;
+  /** Test automation ID. */
+  automationId?: string;
+  /**
+   * Text to display as a heading for the message.
+   *
+   * @default ''
+   */
+  title: string;
+  /**
+   * Type of page message to display, shows an icon before the title
+   * e.g. 'info', 'error', 'warning', 'discovery'
+   *
+   * @default 'info'
+   */
+  type: PageMessageType;
+  /**
+   * Shows close icon which allows the component to be closed.
+   *
+   * @default true
+   */
+  dismissible: boolean;
+  /** Callback when action button is clicked */
+  onActionClick?: React.MouseEventHandler;
+  /** Callback when component is closed. */
+  onClose?: React.MouseEventHandler;
+  /**
+   * Whether component is open.
+   *
+   * @default true
+   */
+  open: boolean;
+  /** Ref to forward to the container div. */
+  innerRef?:
+    | ((instance: HTMLDivElement | null) => void)
+    | React.RefObject<HTMLDivElement>
+    | null
+    | undefined;
+}
+
+export type PageMessageType =
+  | 'success'
+  | 'info'
+  | 'error'
+  | 'warn'
+  | 'discovery';
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Basic Usage
+
+```tsx
+() => {
+  const [open, setOpen] = useState(true);
+
+  const handleClose = () => setOpen(false);
+
+  return (
+    <PageMessage
+      title="Title"
+      automationId="basic"
+      open={open}
+      onClose={handleClose}
+    >
+      <B3>{faker.lorem.lines(4)}</B3>
+    </PageMessage>
+  );
+}
+```
+
+### Types
+
+```tsx
+() => {
+  const [openStates, setOpenStates] = useState<any>(types);
+
+  const handleClose = (type: string) => {
+    const newOpenStates: any = { ...openStates };
+    newOpenStates[type] = false;
+    setOpenStates(newOpenStates);
+  };
+
+  return Object.keys(types).map((type) => (
+    <div key={type}>
+      {openStates[type] && <p>{capitalizeString(type)}:</p>}
+      <PageMessage
+        key={type}
+        open={openStates[type]}
+        title={capitalizeString(type)}
+        dismissible={type !== 'error'}
+        type={type as PageMessageType}
+        onClose={() => handleClose(type)}
+      >
+        {faker.lorem.sentence(20)}
+      </PageMessage>
+    </div>
+  ));
+}
+```
+
+### Wrapped Text Example
+
+```tsx
+() => {
+  const [open, setOpen] = useState(true);
+
+  const handleClose = () => setOpen(false);
+
+  return (
+    <PageMessage
+      type="info"
+      title={faker.lorem.sentence(70)}
+      open={open}
+      style={{ width: '80%', margin: 'auto' }}
+      onClose={handleClose}
+    >
+      {faker.lorem.lines(6)}
+    </PageMessage>
+  );
+}
+```
+
+### Accessibility Example
+
+```tsx
+() => {
+  const [open, setOpen] = React.useState(true);
+  const buttonRef = React.createRef<HTMLButtonElement>();
+
+  React.useEffect(() => {
+    if (open === false) {
+      buttonRef.current && buttonRef.current.focus && buttonRef.current.focus();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  return (
+    <div>
+      <B2>
+        Focus should move to the next focus-able element once a page message is
+        closed.
+      </B2>
+      <PageMessage
+        title="Title"
+        automationId="accessibility"
+        open={open}
+        className={`${styles.pageMessage}`}
+        onClose={handleClose}
+      >
+        <B3>{faker.lorem.sentence(20)}</B3>
+      </PageMessage>
+      <Button innerRef={buttonRef}>Focus will move to me</Button>
+    </div>
+  );
+}
+```
+
+### Playground
+
+```tsx
+({
+  actionLabel,
+  titleText,
+  type,
+  dismissable
+}) => {
+  const loremIpsum = faker.lorem.sentence(20);
+
+  return (
+    <PageMessage
+      automationId="pagemessage_playground"
+      title={titleText}
+      actionLabel={actionLabel}
+      dismissible={dismissable}
+      type={type}
+    >
+      {loremIpsum}
+    </PageMessage>
+  );
+}
+```
+
+### Showcase
+
+```tsx
+() => {
+  const [openStates, setOpenStates] = useState<any>(pageMessageTypes);
+  const handleClose = (type: string) => {
+    const newOpenStates: any = { ...openStates };
+    newOpenStates[type] = false;
+    setOpenStates(newOpenStates);
+  };
+
+  return pageMessageTypes.map((type) => (
+    <div key={type} className={styles.showcase}>
+      {openStates[type] && <p>{capitalizeString(type)}:</p>}
+      <PageMessage
+        key={type}
+        open={openStates[type]}
+        title={`${capitalizeString(type)} Title`}
+        dismissible={type !== 'error'}
+        type={type}
+        onClose={() => handleClose(type)}
+      >
+        {faker.lorem.sentence(20)}
+      </PageMessage>
+    </div>
+  ));
+}
+```
+
+## Accessibility
+
+## Code Example
+
+```tsx
+<div role="region" aria-label="Important messages">
+  <PageMessage title="Info" type="info" role="alert">
+    Lorem ipsum
+  </PageMessage>
+</div>
+```
+
+## Composes With
+
+- Button
+- Typography
+
+---
+
+## References
+
+- [GitHub Source - PageMessage](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/PageMessage)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/page-message.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-page-message&theme=quickbooks&colorScheme=light)

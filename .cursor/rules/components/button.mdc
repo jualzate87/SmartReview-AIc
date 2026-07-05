@@ -1,0 +1,229 @@
+---
+description: Complete guide for using the Button component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# Button
+
+A IDS Button is an element that enables a user to take an action;
+initiating a process, committing a change or completing a step in a task.
+
+They are commonly found inside forms, dialogs, panels and screens. Some examples of actions triggered by buttons are, submitting a form, opening a dialog, cancelling an action, or performing a command such as inserting a new record or displaying information hidden on the screen.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/button
+```
+
+```tsx
+import { Button } from '@ids-ts/button';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `automationId` | `string` | No | This prop is used for testing purposes |
+| `size` | `Size` | No | - |
+| `purpose` | `Purpose` | No | - |
+| `priority` | `Priority` | No | - |
+| `fullWidth` | `boolean \| 'responsive'` | No | Controls button width. `true` = always full width. `false` = content width (default). `'responsive'` = full width on mobile, content width on desktop. |
+| `disabled` | `boolean` | No | * Specifies whether the button in a "disabled" state |
+| `isLoading` | `boolean` | No | * Specifies if the button is isLoading state. Loads a spinner |
+| `loadingComponent` | `JSX.Element` | No | - |
+| `invertedBackgroundColor` | `boolean` | No | - |
+| `secondaryLabel` | `string` | No | Second line of text for the button. |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface ButtonProps
+  extends Omit<ThemeableElement<'button'>, 'children'> {
+  /** Used to define the label read out by screen-reader when there is no visual label or label is not descriptive enough  */
+  'aria-label'?: string;
+  /** This prop is used for testing purposes */
+  automationId?: string;
+  /**
+   * Button size - one of small, medium, large
+   *
+   * @default medium
+   */
+  size?: Size;
+  /**
+   * The semantic flavor of the button.
+   * Button purpose - one of standard, passive, special, destructive, or complementary
+   *
+   * @default standard
+   */
+  purpose?: Purpose;
+  /**
+   * How the background prioritizes the button.
+   * Button priority - one of primary, secondary or tertiary
+   * Not related to SVG priority.
+   *
+   * @default primary
+   */
+  priority?: Priority;
+  /**
+   * true: Always take the width of your container
+   * false: Width is based on content size
+   * responsive: Full Width on mobile - fit-to-content on stationary
+   */
+  fullWidth?: boolean | 'responsive';
+
+  /**
+   * Specifies whether the button in a "disabled" state
+   */
+  disabled?: boolean;
+
+  /**
+   * Specifies if the button is isLoading state. Loads a spinner
+   */
+  isLoading?: boolean;
+
+  /**
+   * Specify the component to render when isLoading === true
+   * When not specified, will render children no matter the value of isLoading
+   */
+  loadingComponent?: JSX.Element;
+
+  /**
+   * Specify what the background color is of the container component the button is rendered in to
+   * make sure the button is still rendered appropriately. This is used to enable theming such as
+   * "light mode buttons on dark backgrounds", which have a different spec than just a "dark mode" button
+   */
+  invertedBackgroundColor?: boolean;
+
+  /** Second line of text for the button. */
+  secondaryLabel?: string;
+}
+
+export type Size = 'small' | 'medium' | 'large';
+
+export type Purpose = 'standard' | 'passive' | 'special' | 'destructive' | 'complementary' | 'ai';
+
+export type Priority = 'primary' | 'secondary' | 'tertiary';
+```
+
+</details>
+
+## Design Variants
+
+The following variant axes control the component's visual appearance:
+
+### Purpose → use prop `purpose`
+
+- `Standard` **(default)**
+- `Passive`
+- `Destructive`
+- `Special Use`
+- `Complementary (Dark Backgrounds)`
+- `AI`
+
+### Priority → use prop `priority`
+
+- `Primary` **(default)**
+- `Secondary`
+- `Tertiary`
+
+### State
+
+- `Default` **(default)**
+- `Hover`
+- `Active`
+- `Focus`
+- `Disabled`
+- `Processing`
+
+### Size → use prop `size`
+
+- `Small`
+- `Medium` **(default)**
+- `Large`
+
+### Additional Design Controls
+
+| Control | Type | Default | Description |
+| --- | --- | --- | --- |
+| Left Icon | boolean | false | - |
+| Right Icon | boolean | false | - |
+| Label | text | Label | Second line of text for the button. |
+| ↳ Secondary Label | text | Secondary label | Second line of text for the button. |
+| Secondary Label | boolean | false | Second line of text for the button. |
+| ↳ Right Icon | instance_swap | 131828:5971 | - |
+| ↳ Left Icon | instance_swap | 131828:5971 | - |
+
+> **324 design variants** are defined in Figma. [View in Figma](https://www.figma.com/design/VO8rsMYDqsDY44J9yEVyES9Y?node-id=71820%3A214492&m=dev)
+
+## Token Usage
+
+### Color
+
+**action** — Interactive element colors and hover/active/focus states
+- `--color-action-complementary`
+- `--color-action-complementary-active`
+- `--color-action-complementary-border`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+**icon** — Icon fill and stroke colors
+- `--color-icon-accent`
+- `--color-icon-complementary`
+- `--color-icon-disabled`
+
+### Space
+
+**component** — Component-level spacing (padding, gap)
+- `--space-component-gap-large`
+- `--space-component-gap-medium`
+- `--space-component-gap-small`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+### Size
+
+**icon** — Standard icon dimensions
+
+## Usage Patterns
+
+The following usage patterns are documented in Storybook:
+
+- **Playground**
+- **Showcase**
+
+### Features
+
+- **Basic**
+- **Secondary Label**
+- **Purposes**
+- **Priorities**
+- **Sizes**
+- **Icon**
+- **Loading**
+- **Full Width**
+- **With Aria Label**
+- **Inverted Background Colors**
+
+## Composes With
+
+- Loader
+
+---
+
+## References
+
+- [GitHub Source - Button](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/Button)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/button.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-button&theme=quickbooks&colorScheme=light)
+- [Figma Design](https://www.figma.com/design/VO8rsMYDqsDY44J9yEVyES9Y?node-id=71820%3A214492&m=dev)

@@ -1,0 +1,315 @@
+---
+description: Complete guide for using the SurveyTool component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# SurveyTool
+
+If you intend to display a stacked page message after page load, for screen readers to announce the change, make sure the page message is rendered in a page region with `aria-live=“assertive”` or `role="alert"`.
+Once a page message in stacked page message is closed, the focus should move to the next page message or next focusable element on the page.
+
+Page messages within the Stacked Page Message will be sitting inside a landmark:
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/survey-tool
+```
+
+```tsx
+import { SurveyTool } from '@ids-ts/survey-tool';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `question` | `string` | Yes | * Question posed to user, use appropriate heading level for document hierarchy |
+| `analyticsKey` | `string` | Yes | * Unique key of implementation, used to differentiate one location in product from another |
+| `analyticsVersion` | `string` | No | - |
+| `sandbox` | `Sandbox` | Yes | * QBO sandbox, used for analytics tracking |
+| `onSubmit` | `(response: ResponseKey) => void` | No | * Callback function executed when survey is completed by user |
+| `automationId` | `string` | No | * Test automation ID |
+| `scopeArea` | `string` | No | * enumScopeArea from analytics-lib package |
+| `className` | `string` | No | * additional css classes to add to the component |
+| `submittedMessage` | `string` | No | * Message shown after submitting |
+| `onVerbatimSubmit` | `() => void` | No | * Callback function that gets executed when user submits their verbatim feedback |
+| `onSurveyComplete` | `() => void` | No | * Callback function that gets executed when all inputs completed |
+| `verbatimButton` | `string` | No | - |
+| `collectVerbatimFor` | `{ [key in ResponseKey]?: string }` | No | - |
+| `positiveAriaLabel` | `string` | No | * The aria label to apply to the positive happy smiley face |
+| `neutralAriaLabel` | `string` | No | * The aria label to apply to the neutral face |
+| `negativeAriaLabel` | `string` | No | * The aria label to apply to the negative frowny face |
+| `analytics` | `Analytics` | Yes | * Interface for QBO sandbox object |
+| `trackLogicalEvent` | `(event: Record<string, unknown>) => void` | Yes | * Analytics field on QBO sandbox. Use field trackLogicalEvent which is a function to dispatch tracking object to vertica |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface SurveyToolProps
+  extends Omit<ThemeableElement<'div'>, 'onSubmit'> {
+  /**
+   * Question posed to user, use appropriate heading level for document hierarchy
+   */
+  question: string;
+  /**
+   * Unique key of implementation, used to differentiate one location in product from another
+   */
+  analyticsKey: string;
+  /**
+   * Optional, use to subdivide campaigns. E.g. analyticsKey="UKTaxFiling", analyticsVersion might be "refile1"
+   * if users can re-file and you want to subdivide up the tracking for first time and repeat.
+   * Appended to ObjectDetail in tracking with a | to separate e.g. "UKTaxFiling|refile1".
+   */
+  analyticsVersion?: string;
+  /**
+   * QBO sandbox, used for analytics tracking
+   */
+  sandbox: Sandbox;
+  /**
+   * Callback function executed when survey is completed by user
+   */
+  onSubmit?: (response: ResponseKey) => void;
+  /**
+   * Test automation ID
+   */
+  automationId?: string;
+  /**
+   * enumScopeArea from analytics-lib package
+   */
+  scopeArea?: string;
+  /**
+   * additional css classes to add to the component
+   */
+  className?: string;
+  /**
+   * Message shown after submitting
+   */
+  submittedMessage?: string;
+  /**
+   * Callback function that gets executed when user submits their verbatim feedback
+   */
+  onVerbatimSubmit?: () => void;
+  /**
+   * Callback function that gets executed when all inputs completed
+   */
+  onSurveyComplete?: () => void;
+  /**
+   * Text user uses to submit their verbatim feedback, typically "Send" or an appropriate translation
+   * Required for the verbatim survey step to show
+   */
+  verbatimButton?: string;
+  /**
+   * Map of response key to verbatim questions
+   * If a verbatim question is provided for a response type along with a value for the button,
+   * the user is asked an additional question
+   */
+  collectVerbatimFor?: { [key in ResponseKey]?: string };
+
+  /**
+   * The aria label to apply to the positive happy smiley face
+   */
+  positiveAriaLabel?: string;
+  /**
+   * The aria label to apply to the neutral face
+   */
+  neutralAriaLabel?: string;
+  /**
+   * The aria label to apply to the negative frowny face
+   */
+  negativeAriaLabel?: string;
+}
+
+export interface Sandbox {
+  /**
+   * Interface for QBO sandbox object
+   */
+  analytics: Analytics;
+}
+
+interface Analytics {
+  /**
+   * Analytics field on QBO sandbox. Use field trackLogicalEvent which is a function to dispatch tracking object to vertica
+   */
+  trackLogicalEvent: (event: Record<string, unknown>) => void;
+}
+
+export enum ResponseKey {
+  'positive' = 1,
+  'neutral' = 0,
+  'negative' = -1
+}
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Basic Sentiment Question Usage
+
+```tsx
+() => {
+  return (
+    <div>
+      <H5>Basic usage - see actions tab below for tracking information</H5>
+      <SurveyTool
+        question={question}
+        analyticsKey="CIS_EFILING"
+        sandbox={mockSandbox}
+        scopeArea="taxes"
+        onSubmit={action('onSubmit')}
+        onSurveyComplete={action('onSurveyComplete')}
+      />
+    </div>
+  );
+}
+```
+
+### Analytics Version
+
+```tsx
+() => {
+  return (
+    <div>
+      <H5>
+        Analytics Version - see actions tab below for tracking information
+      </H5>
+      <SurveyTool
+        question={question}
+        analyticsKey="CIS_EFILING"
+        analyticsVersion="VER1"
+        sandbox={mockSandbox}
+        scopeArea="taxes"
+        onSubmit={action('onSubmit')}
+        onSurveyComplete={action('onSurveyComplete')}
+      />
+    </div>
+  );
+}
+```
+
+### Success Message
+
+```tsx
+() => {
+  return (
+    <div>
+      <H5>
+        Successful submitted Message - see actions tab below for tracking
+        information
+      </H5>
+      <SurveyTool
+        question={question}
+        analyticsKey="CIS_EFILING"
+        sandbox={mockSandbox}
+        scopeArea="taxes"
+        submittedMessage={submittedMessage}
+        onSubmit={action('onSubmit')}
+        onSurveyComplete={action('onSurveyComplete')}
+      />
+    </div>
+  );
+}
+```
+
+### Follow Up Verbatim Question With Success Message
+
+```tsx
+() => {
+  return (
+    <div>
+      <H5>
+        Verbatim Question - see actions tab below for tracking information
+      </H5>
+      <SurveyTool
+        question={question}
+        analyticsKey="CIS_EFILING"
+        sandbox={mockSandbox}
+        scopeArea="taxes"
+        submittedMessage={submittedMessage}
+        verbatimButton={verbatimButton}
+        collectVerbatimFor={{
+          [ResponseKey.negative]: verbatimQuestion,
+          [ResponseKey.neutral]: verbatimQuestion,
+          [ResponseKey.positive]: verbatimQuestionPositive
+        }}
+        onSubmit={action('onSubmit')}
+        onSurveyComplete={action('onSurveyComplete')}
+        onVerbatimSubmit={action('onVerbatimSubmit')}
+      />
+    </div>
+  );
+}
+```
+
+## Accessibility
+
+## Code Example
+
+```tsx
+<div role="region" aria-label="Important messages">
+  <StackedPageMessage>
+    <PageMessage title="Info" type="info" role="alert">
+      Lorem ipsum
+    </PageMessage>
+    <PageMessage title="Warn" type="warn" role="alert">
+      Lorem ipsum
+    </PageMessage>
+    <PageMessage title="Error" type="error" role="alert">
+      Lorem ipsum
+    </PageMessage>
+    <PageMessage title="Discovery" type="discovery" role="alert">
+      Lorem ipsum
+    </PageMessage>
+  </StackedPageMessage>
+</div>
+```
+
+## Composes With
+
+- Typography
+
+---
+
+## References
+
+- [GitHub Source - SurveyTool](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/SurveyTool)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/survey-tool.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-survey-tool&theme=quickbooks&colorScheme=light)

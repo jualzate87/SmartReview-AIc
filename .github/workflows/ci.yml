@@ -1,0 +1,72 @@
+# CI workflow for IDS Prototyping Environment
+#
+# Registry auth for @ids-ts/* and @genux-ds/* packages is handled via
+# .yarnrc.yml scopes pointing to registry.npmjs.intuit.com.
+# Configure IDPS credentials as needed for your environment.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validation:
+    uses: actions-intuit/ibp-wf/.github/workflows/validation.yml@v1
+
+  build-and-test:
+    needs: validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Enable Corepack (Yarn 4 Berry support)
+        run: corepack enable
+
+      - name: Cache Yarn install state
+        uses: actions/cache@v4
+        with:
+          path: .yarn/install-state.gz
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Build
+        run: yarn build
+        env:
+          GITHUB_ACTIONS: true
+
+      - name: Test
+        run: yarn test
+
+      - name: Check tokens
+        run: yarn check-tokens
+
+      - name: Deploy to gh-pages
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git fetch origin
+          git checkout --orphan gh-pages-deploy
+          git reset --hard
+          cp -r dist/* .
+          rm -rf dist node_modules .yarn src public .github
+          git add .
+          git commit -m "Deploy to GitHub Pages [skip ci]"
+          git push origin HEAD:gh-pages --force

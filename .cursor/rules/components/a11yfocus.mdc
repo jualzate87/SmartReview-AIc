@@ -1,0 +1,114 @@
+---
+description: Complete guide for using the A11yFocus component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# A11yFocus
+
+IDS A11yFocus component, captures the focus of the children in A11yFocus's child and can overwrite props on the child.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/a11yfocus
+```
+
+```tsx
+import { A11yFocus } from '@ids-ts/a11yfocus';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `children` | `React.ReactElement | null` | No | - |
+| `className` | `string` | No | ClassNames for the component |
+| `onFocusClassName` | `string` | No | Merge classNames from classNames prop, onFocusClassName classNames, and child classNames |
+| `passA11yFocusProp` | `boolean` | No | - |
+| `style` | `React.CSSProperties` | No | Accepts an style object and passes it inline |
+| `onA11yFocus` | `(isA11yFocus: boolean) => void` | No | onFocus fires on any focus event, while onA11yFocus only fires on tab key focus events |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface A11yFocusProps {
+  /**
+   * Children prop this only accepts 1 child
+   *
+   * @default null
+   */
+  children?: React.ReactElement | null;
+  /** ClassNames for the component */
+  className?: string;
+  /** Merge classNames from classNames prop, onFocusClassName classNames, and child classNames */
+  onFocusClassName?: string;
+  /**
+   * Pass a11yFocus prop only if passA11yFocusProp is set to true
+   *
+   * @default false
+   */
+  passA11yFocusProp?: boolean;
+  /** Accepts an style object and passes it inline */
+  style?: React.CSSProperties;
+  /** onFocus fires on any focus event, while onA11yFocus only fires on tab key focus events */
+  onA11yFocus?: (isA11yFocus: boolean) => void;
+}
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Showcase
+
+```tsx
+() => (
+  <A11yFocus>
+    <button type="button">I trap focus</button>
+  </A11yFocus>
+)
+```
+
+---
+
+## References
+
+- [GitHub Source - A11yFocus](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/A11yFocus)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-a11yfocus&theme=quickbooks&colorScheme=light)

@@ -1,0 +1,574 @@
+---
+description: Complete guide for using the ModalDialog component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# ModalDialog
+
+A IDS modal dialog draws attention to important information by preventing the user from interacting with the main application workflow using a mouse, keyboard, touch, or screen reader, until an action is taken or the dialog is dismissed. An example includes asking the user to save a document before exiting a screen, or asking them for confirmation before deleting something.
+
+IDS Modal dialogs come in three widths: small (384px), medium (576px) and large (752px). The height is flexible and is determined by content. The max-height is 680px.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/modal-dialog
+```
+
+```tsx
+import { ModalDialog } from '@ids-ts/modal-dialog';
+```
+
+## Props
+
+### Modal
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | Yes | Modal content (ModalHeader, ModalContent, ModalActions). |
+| `automationId` | `string` | No | Test automation identifier. |
+
+### ModalTitle
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `title` | `string` | Yes | The modal dialog title text. |
+
+### ModalContent
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | Yes | Content rendered inside the modal body. |
+| `overflow` | `boolean` | No | Enables scrolling when content overflows. |
+| `maxHeight` | `string` | No | CSS max-height value (e.g., `'50vh'`). |
+
+### Sub-components
+
+- `ModalHeader` — Header area containing ModalTitle
+- `ModalActions` — Footer area for action buttons
+
+## Token Usage
+
+### Color
+
+**container-complementary** — Elevated surface colors (modals, popovers, dropdowns)
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+**action** — Interactive element colors and hover/active/focus states
+- `--color-action-complementary`
+- `--color-action-complementary-active`
+- `--color-action-complementary-border`
+
+**overlay** — Backdrop/overlay colors
+- `--color-overlay`
+- `--color-overlay`
+- `--color-overlay`
+
+### Space
+
+**container** — Container padding
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+**component** — Component-level spacing (padding, gap)
+- `--space-component-gap-large`
+- `--space-component-gap-medium`
+- `--space-component-gap-small`
+
+### Radius
+
+**radius** — Border radius for elevated surfaces
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Shadow
+
+**shadow** — Elevation shadow
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Basic
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  return (
+    <>
+      <Button onClick={handleOpen}>Open Basic Example</Button>
+      <Modal open={open} onClose={handleClose}>
+        <ModalHeader>
+          <ModalTitle title="aria-activedescendant" />
+        </ModalHeader>
+        <ModalContent>
+          The aria-activedescendant attribute identifies the currently active
+          element when focus is on a composite widget, combobox, textbox, group,
+          or application.
+        </ModalContent>
+        <ModalActions>
+          <Button priority="tertiary" onClick={handleClose}>
+            Dismiss
+          </Button>
+        </ModalActions>
+      </Modal>
+    </>
+  );
+}
+```
+
+### Modal With Multi Select Dropdown
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const [values, setValues] = useState([]);
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  const onChangeMultiSelect = (e: KeyboardEvent | MouseEvent) => {
+    const target = e.target as HTMLSelectElement;
+    action('Selected Value:')(values.toString());
+    if (values.includes(target.value as never)) {
+      values.splice(values.indexOf(target.value as never), 1);
+      setValues(values);
+    } else {
+      values.push(target.value as never);
+      setValues(values);
+    }
+  };
+
+  return (
+    <>
+      <Button onClick={handleOpen}>
+        Open Modal With Multiselect Dropdown Example
+      </Button>
+      <Modal open={open} onClose={handleClose}>
+        <ModalHeader>
+          <ModalTitle title="Pick your favorite continent" />
+        </ModalHeader>
+        <ModalContent>
+          <Dropdown
+            multiselect
+            width="305px"
+            label="Select your favorite continents (all that apply)"
+            placeholder="ex: Antarctica, North America, etc."
+            id="multiselect"
+            value={values}
+            onChange={onChangeMultiSelect as any}
+          >
+            <MenuItem value="1">Africa</MenuItem>
+            <MenuItem value="2">Antarctica</MenuItem>
+            <MenuItem value="3">Asia</MenuItem>
+            <MenuItem value="4">Europe</MenuItem>
+            <MenuItem value="5">Oceania</MenuItem>
+            <MenuItem value="6">North America</MenuItem>
+            <MenuItem value="7">South America</MenuItem>
+          </Dropdown>
+        </ModalContent>
+        <ModalActions>
+          <Button priority="tertiary" onClick={handleClose}>
+            Dismiss
+          </Button>
+        </ModalActions>
+      </Modal>
+    </>
+  );
+}
+```
+
+### Modal With All Buttons
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  return (
+    <>
+      <Button onClick={handleOpen}>Open Modal With All Buttons Example</Button>
+      <Modal open={open} onClose={handleClose}>
+        <ModalHeader>
+          <ModalTitle title="aria-atomic" />
+        </ModalHeader>
+        <ModalContent>
+          In ARIA live regions, the global aria-atomic attribute indicates
+          whether assistive technologies such as a screen reader will present
+          all, or only parts of, the changed region based on the change
+          notifications defined by the aria-relevant attribute.
+        </ModalContent>
+        <ModalActions>
+          <Button priority="tertiary" purpose="standard" onClick={handleClose}>
+            Standard Dismiss
+          </Button>
+          <Button priority="tertiary" purpose="passive" onClick={handleClose}>
+            Passive Dismiss
+          </Button>
+          <Button priority="tertiary" purpose="special" onClick={handleClose}>
+            Special Dismiss
+          </Button>
+          <Button
+            priority="primary"
+            purpose="destructive"
+            onClick={handleClose}
+          >
+            Destructive Dismiss
+          </Button>
+        </ModalActions>
+      </Modal>
+    </>
+  );
+}
+```
+
+### Modal With Text Field
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  return (
+    <>
+      <Button onClick={handleOpen}>Open Modal With Textfield Example</Button>
+      <Modal open={open} onClose={handleClose}>
+        <ModalHeader>
+          <ModalTitle title="Let us know your name" />
+        </ModalHeader>
+        <ModalContent>
+          <TextField label="First Name" placeholder="Ken" />
+          <TextField label="Last Name" placeholder="Bigler" />
+        </ModalContent>
+        <ModalActions>
+          <Button priority="tertiary" onClick={handleClose}>
+            Dismiss
+          </Button>
+        </ModalActions>
+      </Modal>
+    </>
+  );
+}
+```
+
+### Modal With Long Text And Two Buttons
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  return (
+    <>
+      <Button onClick={handleOpen}>
+        Open Modal With Long Text And Two Buttons Example
+      </Button>
+      <Modal open={open} onClose={handleClose}>
+        <ModalHeader alignment="left">
+          <ModalTitle title="aria-activedescendant" />
+        </ModalHeader>
+        <ModalContent overflow alignment="left">
+          <AriaActiveDescendantContent />
+        </ModalContent>
+        <ModalActions>
+          <Button onClick={handleClose}>Primary Dismiss</Button>
+          <Button priority="secondary" onClick={handleClose}>
+            Secondary Dismiss
+          </Button>
+        </ModalActions>
+      </Modal>
+    </>
+  );
+}
+```
+
+### Back Button Example
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const [firstPage, setFirstPage] = useState(true);
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  const handleNext = () => setFirstPage(false);
+  const handleBack = () => setFirstPage(true);
+
+  return (
+    <>
+      <Button onClick={handleOpen}>Open Back Button Example</Button>
+      <Modal dismissible open={open} onClose={handleClose}>
+        <ModalHeader
+          backActionLabel={firstPage ? undefined : 'Go back'}
+          onBackActionClick={firstPage ? undefined : handleBack}
+        >
+          <ModalTitle
+            title={
+              firstPage ? 'aria-autocomplete' : 'aria-autocomplete description'
+            }
+          />
+        </ModalHeader>
+        <ModalContent>
+          {firstPage && (
+            <>
+              <B2>
+                The aria-autocomplete attribute indicates whether inputting text
+                could trigger display of one or more predictions of the
+                user&apos;s intended value for a combobox, searchbox, or textbox
+                and specifies how predictions will be presented if they are
+                made.
+              </B2>
+              <Button onClick={handleNext}>
+                Learn More about aria-autocomplete
+              </Button>
+            </>
+          )}
+          {!firstPage && (
+            <B2>
+              Autocompletion is user interface feature wherein inline
+              suggestions are made as a user types in an input. Suggested text
+              for completing the value of the field dynamically appears in the
+              field after the input cursor, and the suggested value becomes the
+              value if the user performs an action, such as tabbing, that causes
+              focus to leave the field.
+            </B2>
+          )}
+        </ModalContent>
+        <ModalActions>
+          <Button priority="tertiary" onClick={handleClose}>
+            Dismiss
+          </Button>
+        </ModalActions>
+      </Modal>
+    </>
+  );
+}
+```
+
+### Modal With Drawer On Top
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const [openDrawer, setOpenDrawer] = useState(false);
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const handleOpenDrawer = () => setOpenDrawer(true);
+  const handleCloseDrawer = () => setOpenDrawer(false);
+
+  return (
+    <>
+      <Button onClick={handleOpen}>
+        Open Modal with Drawer on Top Example
+      </Button>
+      <Modal open={open} onClose={handleClose}>
+        <ModalHeader>
+          <ModalTitle title="aria-checked" />
+        </ModalHeader>
+        <ModalContent>
+          <B2>
+            The aria-checked attribute indicates the current &quot;checked&quot;
+            state of checkboxes, radio buttons, and other widgets. Note: Where
+            possible use an HTML &lt;input&gt; element with
+            type=&quot;checkbox&quot; and type=&quot;radio&quot; as these have
+            built in semantics and do not require ARIA attributes.
+          </B2>
+          <br />
+          <Button id="open_drawer_sizes_example" onClick={handleOpenDrawer}>
+            Learn more about aria-checked
+          </Button>
+          <Drawer
+            backdrop
+            open={openDrawer}
+            size="small"
+            onClose={handleCloseDrawer}
+            onShow={handleOpenDrawer}
+          >
+            <DrawerHeader title="aria-checked" onClose={handleCloseDrawer} />
+            <DrawerContent>
+              <B2>
+                The aria-checked attribute indicates whether the element is
+                checked (true), unchecked (false), or if the checked status is
+                indeterminate (mixed), meaning it is neither checked nor
+                unchecked. The mixed value is supported by the tri-state input
+                roles of checkbox and menuitemcheckbox.
+                <br />
+                The mixed value is not supported on radio, menuitemradio, or
+                switch and elements that inherits from these. The value will be
+                false if mixed is set when not supported.
+                <br />
+                The tabindex attribute is required to enable focus. JavaScript
+                is required to toggle the aria-checked state. And, if this
+                checkbox is part of a submittable form, more JavaScript is
+                required to set a name and a value.
+              </B2>
+            </DrawerContent>
+            <DrawerFooter
+              footerPrimaryAction={
+                <Button purpose="standard" onClick={handleCloseDrawer}>
+                  Primary Dismiss
+                </Button>
+              }
+              footerSecondaryAction={
+                <Button
+                  purpose="passive"
+                  priority="secondary"
+                  onClick={handleCloseDrawer}
+                >
+                  Secondary Dismiss
+                </Button>
+              }
+            />
+          </Drawer>
+        </ModalContent>
+        <ModalActions>
+          <Button priority="tertiary" onClick={handleClose}>
+            Dismiss
+          </Button>
+        </ModalActions>
+      </Modal>
+// ...
+```
+
+### Showcase
+
+```tsx
+({
+  size,
+  backdrop,
+  alignment,
+  title,
+  subTitle,
+  bodyContentText,
+  ctaAlignment
+}) => {
+  const [open1, setOpen1] = useState(false);
+  const [open2, setOpen2] = useState(false);
+  const [open3, setOpen3] = useState(false);
+  const [open4, setOpen4] = useState(false);
+  const [open5, setOpen5] = useState(false);
+  const [open6, setOpen6] = useState(false);
+  const [open7, setOpen7] = useState(false);
+  const [open8, setOpen8] = useState(false);
+  const [open10, setOpen10] = useState(false);
+  const [open11, setOpen11] = useState(false);
+  const [open12, setOpen12] = useState(false);
+  const [open13, setOpen13] = useState(false);
+
+  return (
+    <>
+      <Button onClick={() => setOpen1(true)}>Open Modal</Button>
+      <br />
+      <br />
+      <Modal
+        open={open1}
+        lightBackdrop={backdrop === 'light'}
+        size={size}
+        onClose={() => setOpen1(false)}
+      >
+        <ModalHeader alignment={alignment}>
+          <ModalTitle title={title} subTitle={subTitle} />
+        </ModalHeader>
+        <ModalContent alignment={alignment}>{bodyContentText}</ModalContent>
+        <ModalActions alignment={ctaAlignment}>
+          <Button onClick={() => setOpen1(false)}>Primary</Button>
+        </ModalActions>
+      </Modal>
+
+      <Button onClick={() => setOpen2(true)}>Open Modal: 2CTA</Button>
+      <br />
+      <br />
+      <Modal
+        open={open2}
+        lightBackdrop={backdrop === 'light'}
+        size={size}
+        onClose={() => setOpen2(false)}
+      >
+        <ModalHeader alignment={alignment}>
+          <ModalTitle title={title} subTitle={subTitle} />
+        </ModalHeader>
+        <ModalContent alignment={alignment}>{bodyContentText}</ModalContent>
+        <ModalActions alignment={ctaAlignment}>
+          <Button onClick={() => setOpen2(false)}>Primary</Button>
+          <Button priority="secondary" onClick={() => setOpen2(false)}>
+            Secondary
+          </Button>
+        </ModalActions>
+      </Modal>
+
+      <Button onClick={() => setOpen3(true)}>Open Modal: Medium, 3CTA</Button>
+      <br />
+      <br />
+      <Modal
+        open={open3}
+        lightBackdrop={backdrop === 'light'}
+        size="medium"
+        onClose={() => setOpen3(false)}
+      >
+        <ModalHeader alignment={alignment}>
+          <ModalTitle title={title} subTitle={subTitle} />
+        </ModalHeader>
+        <ModalContent alignment={alignment}>{bodyContentText}</ModalContent>
+        <ModalActions alignment={ctaAlignment}>
+          <Button onClick={() => setOpen3(false)}>Primary</Button>
+          <Button priority="secondary" onClick={() => setOpen3(false)}>
+            Secondary
+// ...
+```
+
+## Code Example
+
+```tsx
+it('should render a modal', async () => {
+  const app = await render(
+    <Modal>
+      <ModalHeader>
+        <ModalTitle title="Modal Title" />
+      </ModalHeader>
+      <ModalContent overflow maxHeight="50vh">
+        {'Modal Content'}
+      </ModalContent>
+      <ModalActions>{'Actions Here'}</ModalActions>
+    </Modal>
+  );
+  expect(app.baseElement).toMatchSnapshot();
+});
+```
+
+## Composes With
+
+- Button
+- TextField
+- Dropdown
+- Typography
+
+---
+
+## References
+
+- [GitHub Source - ModalDialog](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/ModalDialog)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/modal-dialog.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-modal-dialog&theme=quickbooks&colorScheme=light)

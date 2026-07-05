@@ -1,0 +1,807 @@
+/* Detail fields — editable input section */
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #ffffff;
+  flex: 1;
+  overflow: hidden;
+  width: 100%;
+  min-height: 0;
+}
+
+/* Page header — title + actions row */
+.pageHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px 12px;
+  border-bottom: 1px solid #e8edf0;
+}
+
+.markVerifiedBtn {
+  background: none;
+  border: 1px solid #859299;
+  border-radius: 4px;
+  padding: 5px 12px;
+  font-family: var(--font-family-component) !important;
+  font-size: 13px;
+  font-weight: 500;
+  color: #21262a;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.markVerifiedBtn:hover { background: #f0f4f7; }
+
+.verifiedBadge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-family-component) !important;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1a6b35;
+}
+
+.addNoteBtn {
+  background: none;
+  border: none;
+  padding: 5px 6px;
+  font-family: var(--font-family-component) !important;
+  font-size: 13px;
+  font-weight: 500;
+  color: #0365ac;
+  cursor: pointer;
+  white-space: nowrap;
+  margin-left: auto;
+}
+.addNoteBtn:hover { text-decoration: underline; }
+
+/* Input container — scrollable */
+.inputContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 0;
+  gap: 12px;
+}
+
+.title {
+  font-family: var(--font-family-component) !important;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 26px;
+  color: #21262a;
+  padding: 16px 20px 0;
+  margin: 0;
+}
+
+.verifyBtn {
+  flex-shrink: 0;
+  font-family: var(--font-family-component);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  color: #21262a;
+  background: none;
+  border: 1px solid #c3ced5;
+  border-radius: 4px;
+  padding: 6px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.verifyBtn:hover {
+  background: #f0f4f6;
+  border-color: #859299;
+}
+
+.verifiedBtn {
+  flex-shrink: 0;
+  font-family: var(--font-family-component);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--color-action-text-positive-default, #108000);
+  background: var(--color-container-background-positive, #E5F4D9);
+  border: 1.5px solid var(--color-container-border-positive, #53B700);
+  border-radius: 20px;
+  padding: 6px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+.verifiedBtn:hover {
+  background: var(--color-container-background-positive, #E5F4D9);
+}
+
+/* Sub-tab bar */
+.subTabBar {
+  display: flex;
+  align-items: flex-start;
+  padding: 0 20px;
+  width: 100%;
+}
+
+.subTabMenu {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  color: #5D686F;
+  display: flex;
+  align-items: center;
+}
+
+.subTab {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+  border-bottom: 2px solid #c3ced5;
+}
+
+.subTabActive {
+  border-bottom-color: #205ea3;
+}
+
+.subTabContent {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 0;
+}
+
+.subTabLabel {
+  font-family: var(--font-family-component) !important;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.subTabLabelActive {
+  color: #21262a;
+}
+
+.subTabLabelInactive {
+  color: #5d686f;
+}
+
+.subTabClose {
+  width: 18px;
+  height: 18px;
+  color: inherit;
+  cursor: pointer;
+}
+
+.subTabBorderFill {
+  border-bottom: 2px solid #c3ced5;
+  flex-shrink: 0;
+  width: 32px;
+  align-self: stretch;
+}
+
+.subTabActions {
+  display: flex;
+  gap: 4px;
+  align-items: flex-end;
+  padding-bottom: 4px;
+}
+
+.subTabAddBtn {
+  border: 2px solid #c3ced5;
+  background: none;
+  padding: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #21262a;
+  border-radius: 0;
+  width: 36px;
+  height: 36px;
+  box-sizing: border-box;
+}
+
+.subTabAddBtn:hover {
+  background: #f4f5f8;
+}
+
+.subTabViewAll {
+  border: 2px solid #c3ced5;
+  background: none;
+  border-radius: 4px;
+  padding: 6px 4px 6px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  font-family: var(--font-family-component) !important;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  color: #21262a;
+  height: 36px;
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+
+.subTabViewAll:hover {
+  background: #f4f5f8;
+}
+
+/* (removed duplicate inputContainer — defined above) */
+
+/* Section header — grey bg, full width */
+.sectionHeader {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 20px;
+  margin: 4px 0 0;
+  background: #f0f4f6;
+  font-family: var(--font-family-component) !important;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 18px;
+  color: #5d686f;
+}
+
+/* Spacer */
+.spacer {
+  height: 20px;
+  width: 100%;
+  background: #ffffff;
+}
+
+/* Field row */
+.fieldRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 6px 0;
+  margin: 0 20px;
+  border-bottom: 1px solid #e8edf0;
+}
+
+/* Field label — 300px, left side */
+.fieldLabel {
+  font-family: var(--font-family-component) !important;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #393a3d;
+  width: 300px;
+  flex-shrink: 0;
+  max-width: 268px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Flagged label — shown when the AI has an issue for this field */
+.fieldLabelFlagged {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: default;
+}
+
+/* Orange dot indicator on flagged field labels */
+.issueIndicator {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #c9500f;
+  flex-shrink: 0;
+}
+
+/* Field row that has a validation note beneath it — suppress its own divider */
+.fieldRowHasNote {
+  border-bottom: none;
+}
+
+/* Validation note — inline under flagged field, matches Figma */
+.validationNote {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0 20px;
+  padding: 4px 0 6px;
+  border-bottom: 1px solid #e8edf0;
+  font-family: var(--font-family-component);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: #c9500f;
+}
+
+.validationNoteIcon {
+  flex-shrink: 0;
+  color: #c9500f;
+}
+
+/* Input field — 300px, 32px height, border #859299 */
+.fieldInput {
+  font-family: var(--font-family-component) !important;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: #21262a;
+  background: #ffffff;
+  border: 1px solid #859299;
+  border-radius: 4px;
+  padding: 5px 8px;
+  height: 32px;
+  width: 300px;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.fieldInput:focus {
+  border-color: #205ea3;
+}
+
+/* Highlighted input — blue (generic popover / source navigation) */
+.fieldInputHighlighted {
+  background: rgba(32, 94, 163, 0.05);
+  border-color: #205ea3;
+  border-width: 2px;
+}
+
+/* Highlighted input — warning state (flagged fields) */
+.fieldInputHighlightedOrange {
+  background: rgba(255, 187, 0, 0.25);
+  border-color: #ff6a00;
+  border-width: 1px;
+}
+
+/* Comment popover open — blue tint, keep actions visible */
+.fieldRowCommentOpen {
+  background: rgba(32, 94, 163, 0.04);
+  border-radius: 4px;
+}
+
+.fieldRowCommentOpen .fieldActions {
+  display: flex;
+}
+
+.fieldRowCommentOpen .fieldInput {
+  border-color: #205ea3;
+  border-width: 2px;
+}
+
+/* Highlighted row — blue tint */
+.fieldRowHighlighted {
+  background: rgba(32, 94, 163, 0.04);
+  border-radius: 4px;
+}
+
+/* Highlighted row — warning state (flagged fields) */
+.fieldRowHighlightedOrange {
+  background: rgba(255, 187, 0, 0.08);
+  border-radius: 4px;
+}
+
+/* Edit hint — subtle pencil icon shown on highlighted (non-editing) rows */
+.editHint {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-family-component) !important;
+  font-size: 12px;
+  font-weight: 400;
+  color: #859299;
+  flex-shrink: 0;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+.editHintIcon {
+  width: 13px;
+  height: 13px;
+  opacity: 0.6;
+}
+
+/* Edit button — appears next to highlighted input */
+.editBtn {
+  font-family: var(--font-family-component) !important;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 16px;
+  color: #5d686f;
+  background: none;
+  border: 1px solid #c3ced5;
+  border-radius: 4px;
+  padding: 4px 10px;
+  height: 28px;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+  transition: background 120ms, border-color 120ms, color 120ms;
+}
+.editBtn:hover {
+  background: #f0f4f6;
+  border-color: #859299;
+  color: #21262a;
+}
+
+/* Editing state: input becomes fully editable */
+.fieldInputEditing {
+  border-color: #205ea3 !important;
+  border-width: 2px !important;
+  background: #fff !important;
+}
+
+/* Edit action row — Save + Undo shown while editing */
+.editActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* Save button */
+.saveBtn {
+  font-family: var(--font-family-component) !important;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 16px;
+  color: #ffffff;
+  background: #205ea3;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 12px;
+  height: 28px;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+  transition: background 120ms;
+}
+.saveBtn:hover { background: #174a82; }
+
+/* Undo button */
+.undoBtn {
+  font-family: var(--font-family-component) !important;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 16px;
+  color: #5d686f;
+  background: none;
+  border: 1px solid #c3ced5;
+  border-radius: 4px;
+  padding: 4px 10px;
+  height: 28px;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+  transition: background 120ms, border-color 120ms;
+}
+.undoBtn:hover {
+  background: #f0f4f6;
+  border-color: #859299;
+}
+
+/* Recalculated badge — flashes briefly after saving */
+.recalcBadge {
+  font-family: var(--font-family-component) !important;
+  font-size: 12px;
+  font-weight: 500;
+  color: #00856d;
+  background: #e6f7f4;
+  border: 1px solid #00856d;
+  border-radius: 4px;
+  padding: 2px 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  animation: fadeOut 2s ease 1.5s forwards;
+}
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* Mark as correct button — icon-only CircleCheck, matches 1040 checkBtn style */
+.markCorrectBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: none;
+  border: 1px solid #c3ced5;
+  border-radius: 5px;
+  cursor: pointer;
+  flex-shrink: 0;
+  color: #5d686f;
+  padding: 0;
+  transition: color 120ms, background 120ms, border-color 120ms;
+}
+.markCorrectBtn svg {
+  width: 18px;
+  height: 18px;
+}
+.markCorrectBtn:hover {
+  color: #0f766e;
+  background: rgba(15, 118, 110, 0.08);
+  border-color: #0f766e;
+}
+
+/* Reviewed icon — circular green CircleCheck, same style as left 1040 panel */
+.reviewedBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #108000;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* Persistent "Edited" badge — stays visible after a value has been changed */
+.editedBadge {
+  font-family: var(--font-family-component) !important;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #6b4f00;
+  background: #fff3cd;
+  border: 1px solid #e6a817;
+  border-radius: 4px;
+  padding: 1px 7px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 16px;
+}
+
+/* Refresh icon button */
+.refreshBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #21262a;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+/* Multi-field row (City / State / ZIP) */
+.multiFieldRow {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  padding: 8px 0;
+  margin: 0 20px;
+  border-bottom: 1px solid #c3ced5;
+}
+
+.multiFieldInputs {
+  display: flex;
+  gap: 8px;
+}
+
+.fieldInputCity {
+  width: 140px;
+}
+
+.fieldInputState {
+  width: 74px;
+}
+
+.fieldInputZip {
+  width: 116px;
+}
+
+/* Compact width for numeric fields (EIN, dollar amounts) */
+.fieldInputSmall {
+  width: 167px;
+}
+
+/* Full-width for text fields (name, address) */
+.fieldInputWide {
+  width: 100%;
+  max-width: 400px;
+}
+
+/* Address inline row */
+.addressRow {
+  display: flex;
+  gap: 8px;
+}
+
+.addressCity  { width: 140px; }
+.addressState { width: 56px;  }
+.addressZip   { width: 88px;  }
+
+/* Field actions group — Edit + Mark as correct, shown on row hover */
+.fieldActions {
+  display: none;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.fieldRow:hover .fieldActions {
+  display: flex;
+}
+
+/* ── Field-level comment button + popover ── */
+
+.commentBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid #c3ced5;
+  border-radius: 5px;
+  background: none;
+  color: #5d686f;
+  cursor: pointer;
+  transition: background 120ms, color 120ms, border-color 120ms;
+  flex-shrink: 0;
+}
+
+.commentBtn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.commentBtn:hover,
+.commentBtnActive {
+  background: #e8f0f6;
+  color: #205ea3;
+  border-color: #205ea3;
+}
+
+.commentPopover {
+  position: fixed;
+  width: 280px;
+  background: #ffffff;
+  border: 1px solid #c3ced5;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  padding: 12px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.commentPopoverContext {
+  display: flex;
+  align-items: center;
+}
+
+.commentPopoverChip {
+  display: inline-block;
+  font-family: var(--font-family-component);
+  font-size: 12px;
+  font-weight: 500;
+  color: #205ea3;
+  background: #e8f0f6;
+  border: 1px solid #b8d0e8;
+  border-radius: 12px;
+  padding: 2px 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.commentPopoverInput {
+  font-family: var(--font-family-component);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: #21262a;
+  background: #f4f5f8;
+  border: 1px solid #c3ced5;
+  border-radius: 4px;
+  padding: 8px;
+  resize: none;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.commentPopoverInput:focus {
+  border-color: #205ea3;
+  background: #fff;
+}
+
+.commentPopoverActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.commentPopoverCancel {
+  font-family: var(--font-family-component);
+  font-size: 13px;
+  font-weight: 500;
+  color: #5d686f;
+  background: none;
+  border: 1px solid #c3ced5;
+  border-radius: 4px;
+  padding: 4px 12px;
+  height: 28px;
+  cursor: pointer;
+}
+
+.commentPopoverCancel:hover {
+  background: #f0f4f6;
+}
+
+.commentPopoverPost {
+  font-family: var(--font-family-component);
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  background: #c3ced5;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 12px;
+  height: 28px;
+  cursor: not-allowed;
+  transition: background 120ms;
+}
+
+.commentPopoverPostActive {
+  background: #205ea3;
+  cursor: pointer;
+}
+
+.commentPopoverPostActive:hover {
+  background: #174a82;
+}
+
+/* Checkbox row for Additional Information fields */
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: default;
+  flex-shrink: 0;
+  accent-color: #205ea3;
+}
+
+.checkboxLabel {
+  font-family: var(--font-family-component) !important;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: #21262a;
+  cursor: default;
+}

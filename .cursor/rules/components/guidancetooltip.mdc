@@ -1,0 +1,928 @@
+---
+description: Complete guide for using the GuidanceTooltip component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# GuidanceTooltip
+
+Welcome to `GuidanceTooltip` component.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/guidance-tooltip
+```
+
+```tsx
+import { GuidanceTooltip } from '@ids-ts/guidance-tooltip';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `alignment` | `Alignments` | Yes | Tooltip alignment (e.g., `'top'`, `'bottom'`, `'left'`, `'right'`). |
+| `animationOn` | `boolean` | Yes | - |
+| `autoFocus` | `boolean` | Yes | - |
+| `automationId` | `string` | No | Test automation ID. |
+| `dismissible` | `boolean` | Yes | - |
+| `enableClickAway` | `boolean` | Yes | - |
+| `index` | `number` | No | index of the tooltip when used in Guided Tour |
+| `message` | `string | React.ReactNode` | No | - |
+| `offsetX` | `number` | Yes | - |
+| `offsetY` | `number` | Yes | - |
+| `onClose` | `React.ReactEventHandler` | No | On close callback. |
+| `open` | `boolean` | Yes | - |
+| `position` | `Positions` | Yes | Tooltip position: `'top'`, `'bottom'`, `'left'`, `'right'`. |
+| `preventOverflow` | `an object variable` | Yes | - |
+| `preventOverflow` | `PreventOverflow` | No | - |
+| `stylePosition` | `React.CSSProperties` | No | * The optional styles applied to the position node wrapped around the root node. |
+| `targetElement` | `HTMLElement` | Yes | The DOM element the tooltip is anchored to. |
+| `title` | `string` | No | Header text displayed in the tooltip. |
+| `tooltipOffsetSkidding` | `number` | No | Cross-axis pixel offset of the tooltip popup. |
+| `tooltipOffsetDistance` | `number` | No | Main-axis pixel offset of the tooltip popup. |
+| `activeElement` | `HTMLElement` | No | Element to focus when the tooltip closes. |
+| `usedForGuidedTour` | `boolean` | No | flag used to apply guidedTourQuickbooks theme |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface GuidanceTooltipProps
+  extends Omit<ThemeableElement<'div'>, 'targetElement'> {
+  /**
+   * Alignment of tooltip to target.
+   * alignment: string of alignments
+   * vertical alignments: top, bottom, middle
+   * horizontal alignments: left, right, center
+   * NOTE: horizontal alignments cannot be paired with horizontal positions
+   * If multiple given, the first or the one with enough space will be chosen.
+   *
+   * @default 'bottom'
+   */
+  alignment: Alignments;
+  /**
+   * Whether animation is turned on.
+   *
+   * @default true
+   */
+  animationOn: boolean;
+  /**
+   * Whether focus should move inside the tooltip once it is opened.
+   *
+   * @default false
+   */
+  autoFocus: boolean;
+  /** Test automation ID. */
+  automationId?: string;
+  /**
+   * Shows close icon which allows the component to be closed.
+   *
+   * @default true
+   */
+  dismissible: boolean;
+  /**
+   * Enable close event on click away.
+   *
+   * @default false
+   */
+  enableClickAway: boolean;
+  /** index of the tooltip when used in Guided Tour */
+  index?: number;
+  /**
+   * Content that needs to be displayed under the titleText.
+   * Content should be 150 characters or less.
+   */
+  message?: string | React.ReactNode;
+  /**
+   * Offset tooltip on X axis
+   *
+   * @default 0
+   * @deprecated Please use tooltipOffsetSkidding instead
+   */
+  offsetX: number;
+  /**
+   * Offset tooltip on Y axis
+   *
+   * @default 0
+   * @deprecated Please use tooltipOffsetDistance instead
+   */
+  offsetY: number;
+  /** On close callback. */
+  onClose?: React.ReactEventHandler;
+  /**
+   * Whether component open.
+   *
+   * @default false
+   */
+  open: boolean;
+  /**
+   * Position for tooltip to be placed.
+   * position: string of positions to try
+   * vertical positions: top, bottom
+   * horizontal positions: left, right
+   * NOTE: horizontal alignments cannot be paired with horizontal positions
+   * If multiple given, the first or the one with enough space will be chosen.
+   *
+   * @default 'right'
+   */
+  position: Positions;
+  /**
+   * preventOverflow: an object variable; used to prevent GuidanceTooltip from being positioned outside the boundary.
+   *  More detail in @ids-ts/position preventOverflow API document.
+   */
+  preventOverflow?: PreventOverflow;
+  /**
+   * The optional styles applied to the position node wrapped around the root node.
+   */
+  stylePosition?: React.CSSProperties;
+  /**
+   * targetElement: a HTML DOM element
+   * The HTML DOM element to be used as the target reference.
+   */
+  targetElement?: React.ReactNode | string;
+  /**
+   * Text to display as a heading for the message.
+   * Title should be 30 characters or less.
+   */
+  title: string;
+  /**
+   * tooltipOffsetSkidding: the cross-axis pixel distance that the popup should be offset from targetElement
+   *
+   * @default 0
+   */
+  tooltipOffsetSkidding: number;
+  /**
+   * tooltipOffsetDistance: the main-axis pixel distance that the popup should be offset from targetElement
+   *
+   * @default 0
+   */
+  tooltipOffsetDistance: number;
+  /**
+   * activeElement: a HTML DOM element
+   * The HTML DOM element to be used to focus on when tooltip closed.
+   */
+  activeElement?: HTMLElement | null;
+  /** flag used to apply guidedTourQuickbooks theme */
+  usedForGuidedTour?: boolean;
+}
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Basic Usage
+
+```tsx
+(props: Themeable) => {
+  const [open, setOpen] = useState(false);
+  const { currentTheme, currentColorScheme } = useTheme(props);
+
+  const handleClick = () => {
+    setOpen(!open);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  return (
+    <div>
+      <GuidanceTooltip
+        autoFocus
+        title="Some sort of title"
+        open={open}
+        message={
+          <div>
+            <span>This is default example.</span>
+            <Link
+              colorScheme={getAppropiateColorScheme(
+                currentColorScheme,
+                currentTheme
+              )}
+              href="https://www.intuit.com"
+              aria-label="Learn more about Intuit"
+            >
+              Link text
+            </Link>
+          </div>
+        }
+        onClose={handleClose}
+      >
+        <Button className="guidanceTooltipBasicExample" onClick={handleClick}>
+          Button example
+        </Button>
+      </GuidanceTooltip>
+    </div>
+  );
+}
+```
+
+### Click Example
+
+```tsx
+(props: Themeable) => {
+  const [open, setOpen] = useState(false);
+  const { currentTheme, currentColorScheme } = useTheme(props);
+
+  const handleClick = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  return (
+    <GuidanceTooltipContainer>
+      <GuidanceTooltip
+        dismissible
+        autoFocus
+        title="Some sort of title"
+        position="top"
+        alignment="left"
+        open={open}
+        message={
+          <div>
+            <span>
+              Put multiple position/alignment and it will find the best or first
+              one.
+            </span>
+            <Link
+              colorScheme={getAppropiateColorScheme(
+                currentColorScheme,
+                currentTheme
+              )}
+              href="https://www.intuit.com"
+              aria-label="Learn more about Intuit"
+            >
+              Link text
+            </Link>
+          </div>
+        }
+        automationId="click_example"
+        onClose={handleClose}
+      >
+        <TextField id="click_textfield" label="click" onClick={handleClick} />
+      </GuidanceTooltip>
+    </GuidanceTooltipContainer>
+  );
+}
+```
+
+### Enable Click Away
+
+```tsx
+() => {
+  const [open1, setOpen1] = useState(false);
+  const [open2, setOpen2] = useState(false);
+  const [open3, setOpen3] = useState(false);
+  const [open4, setOpen4] = useState(false);
+
+  const handleClick1 = () => {
+    setOpen1(!open1);
+  };
+
+  const handleClose1 = () => {
+    setOpen1(false);
+  };
+
+  const handleClick2 = () => {
+    setOpen2(!open2);
+  };
+
+  const handleClose2 = () => {
+    setOpen2(false);
+  };
+
+  const handleClick3 = () => {
+    setOpen3(!open3);
+  };
+
+  const handleClose3 = () => {
+    setOpen3(false);
+  };
+
+  const handleClick4 = () => {
+    setOpen4(!open4);
+  };
+
+  const handleClose4 = () => {
+    setOpen4(false);
+  };
+
+  return (
+    <GuidanceTooltipContainer>
+      <GuidanceTooltip
+        title="Some sort of title"
+        open={open1}
+        dismissible={false}
+        autoFocus={false}
+        position="top"
+        alignment="center"
+        message={
+          <span>
+            Not dismissible tooltip and <b>enableClickAway</b> prop is false. So
+            the outcome will be to close when you click away. We do not want to
+            lock the GuidanceToolTip on the screen without a way to close it.
+          </span>
+        }
+        onClose={handleClose1}
+      >
+        <Button className="guidanceTooltipBasicExample" onClick={handleClick1}>
+          Dismissible False and EnableClickAway False
+        </Button>
+      </GuidanceTooltip>
+
+      <div style={{ marginTop: '50px' }} />
+
+      <GuidanceTooltip
+        dismissible
+        title="Some sort of title"
+        position="top"
+        alignment="center"
+        open={open2}
+        autoFocus={false}
+        message={
+          <span>
+            Dismissible tooltip and <b>enableClickAway</b> prop is false. So I
+            would <b>NOT</b> close when you click away. Click on close button.
+          </span>
+        }
+        onClose={handleClose2}
+      >
+        <Button className="guidanceTooltipBasicExample" onClick={handleClick2}>
+          Dismissible True EnableClickAway False
+// ...
+```
+
+### Focus
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const handleFocus = () => {
+    setOpen(true);
+  };
+
+  const handleBlur = () => {
+    setOpen(false);
+  };
+
+  return (
+    <div>
+      <GuidanceTooltip
+        title="Right position, Top alignment"
+        position="right"
+        alignment="top"
+        dismissible={false}
+        open={open}
+        message={
+          <div>
+            <span>
+              GuidanceTooltip is responsive and will reposition itself to the
+              bottom center to fit when browser is resize to smaller size.
+            </span>
+          </div>
+        }
+      >
+        <TextField
+          id="focus"
+          label="focus"
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+        />
+      </GuidanceTooltip>
+    </div>
+  );
+}
+```
+
+### Hover
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const handleMouseEnter = () => {
+    setOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    setOpen(false);
+  };
+
+  return (
+    <GuidanceTooltipContainer>
+      <GuidanceTooltip
+        title="Bottom position, Right alignment."
+        position="bottom"
+        alignment="right"
+        dismissible={false}
+        open={open}
+        message={
+          <div>
+            <span>
+              GuidanceTooltip is responsive and will reposition itself to the
+              bottom center to fit when browser is resize to smaller size.
+            </span>
+          </div>
+        }
+        onClose={handleMouseLeave}
+      >
+        <TextField
+          id="hover"
+          label="hover"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        />
+      </GuidanceTooltip>
+    </GuidanceTooltipContainer>
+  );
+}
+```
+
+### Target Element Repositioning
+
+```tsx
+() => {
+  const [activeDiv, setActiveDiv] = useState('div1');
+
+  const divs = [
+    { id: 'div1', label: 'Div 1', left: '50px', top: '50px' },
+    { id: 'div2', label: 'Div 2', left: '200px', top: '50px' },
+    { id: 'div3', label: 'Div 3', left: '350px', top: '50px' }
+  ];
+
+  const currentIndex = divs.findIndex((div) => div.id === activeDiv);
+
+  const nextTarget = () => {
+    const nextIndex = (currentIndex + 1) % divs.length;
+    setActiveDiv(divs[nextIndex].id);
+  };
+
+  const prevTarget = () => {
+    const prevIndex = currentIndex === 0 ? divs.length - 1 : currentIndex - 1;
+    setActiveDiv(divs[prevIndex].id);
+  };
+
+  return (
+    <div style={{ padding: '20px' }}>
+      <div
+        style={{
+          position: 'relative',
+          height: '300px'
+        }}
+      >
+        {divs.map((div) => (
+          <div
+            key={div.id}
+            id={div.id}
+            data-id={div.id}
+            style={{
+              position: 'absolute',
+              left: div.left,
+              top: div.top,
+              width: '120px',
+              height: '80px',
+              backgroundColor: activeDiv === div.id ? '#0070f3' : '#e0e0e0',
+              color: activeDiv === div.id ? 'white' : '#333',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 'bold',
+              transition: 'background-color 0.3s ease-in-out'
+            }}
+            tabIndex={0}
+            role="button"
+            aria-label={`Select ${div.label}`}
+            onClick={() => setActiveDiv(div.id)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                setActiveDiv(div.id);
+              }
+            }}
+          >
+            {div.label}
+          </div>
+        ))}
+      </div>
+
+      <GuidanceTooltip
+        dismissible
+        open
+        title={`${activeDiv.charAt(0).toUpperCase() + activeDiv.slice(1)}`}
+        message={
+          <div>
+            <p>Tooltip targeting {activeDiv}</p>
+            <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
+              <button
+                style={{
+                  padding: '5px 10px',
+                  backgroundColor: '#28a745',
+                  color: 'white',
+                  border: 'none',
+// ...
+```
+
+### Target Element With Position Example
+
+```tsx
+(props: Themeable) => {
+  const [open, setOpen] = useState(false);
+  const [position, setPosition] = useState<Positions | undefined>(undefined);
+  const [alignment, setAlignment] = useState<Alignments | undefined>(undefined);
+  const [target, setTarget] = useState<Element | Text | null>(null);
+  const { currentTheme, currentColorScheme } = useTheme(props);
+
+  const buttonRefTop = React.createRef<HTMLButtonElement>();
+  const buttonRefLeft = React.createRef<HTMLButtonElement>();
+
+  const handleClick = (
+    p: Positions,
+    a: Alignments,
+    buttonRef: React.MutableRefObject<HTMLElement>
+  ) => {
+    // eslint-disable-next-line react/no-find-dom-node
+    const newTarget = ReactDOM.findDOMNode(buttonRef.current);
+    setTarget(newTarget);
+    setOpen(true);
+    setPosition(p);
+    setAlignment(a);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  return (
+    <div>
+      <Button
+        innerRef={buttonRefTop}
+        className="guidanceTooltipBasicExample"
+        onClick={() =>
+          handleClick(
+            'bottom',
+            'center',
+            buttonRefTop as React.MutableRefObject<HTMLElement>
+          )
+        }
+      >
+        Bottom position/Center Alignment
+      </Button>
+      <div style={{ marginTop: '50px' }} />
+      <Button
+        innerRef={buttonRefLeft}
+        className="guidanceTooltipBasicExample"
+        onClick={() =>
+          handleClick(
+            'right',
+            'middle',
+            buttonRefLeft as React.MutableRefObject<HTMLElement>
+          )
+        }
+      >
+        Right position/Middle Alignment
+      </Button>
+      <GuidanceTooltip
+        autoFocus
+        title="Some sort of title"
+        open={open}
+        targetElement={target as ReactNode}
+        position={position}
+        alignment={alignment}
+        message={
+          <div>
+            <span>This is position example.</span>
+            <Link
+              complementary
+              colorScheme={getAppropiateColorScheme(
+                currentColorScheme,
+                currentTheme
+              )}
+              href="https://www.intuit.com"
+              aria-label="Learn more about Intuit"
+            >
+              Link text
+            </Link>
+          </div>
+        }
+        onClose={handleClose}
+// ...
+```
+
+### Target Class Example
+
+```tsx
+(props: Themeable) => {
+  const [open, setOpen] = useState(false);
+  const [position, setPosition] = useState<Positions | undefined>(undefined);
+  const [alignment, setAlignment] = useState<Alignments | undefined>(undefined);
+  const [target, setTarget] = useState<Element | Text | string | null>(null);
+  const { currentTheme, currentColorScheme } = useTheme(props);
+
+  const buttonRefTop = React.createRef<HTMLButtonElement>();
+  const buttonRefLeft = React.createRef<HTMLButtonElement>();
+
+  const handleClick = (p: Positions, a: Alignments, buttonClass: string) => {
+    setTarget(buttonClass);
+    setOpen(true);
+    setPosition(p);
+    setAlignment(a);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  return (
+    <div>
+      <Button
+        innerRef={buttonRefTop}
+        className="guidanceTooltipBasicExample"
+        onClick={() =>
+          handleClick('bottom', 'center', '.guidanceTooltipBasicExample')
+        }
+      >
+        Bottom position/Center Alignment
+      </Button>
+      <div style={{ marginTop: '50px' }} />
+      <Button
+        innerRef={buttonRefLeft}
+        className="guidanceTooltipBasicExample1"
+        onClick={() =>
+          handleClick('right', 'middle', '.guidanceTooltipBasicExample1')
+        }
+      >
+        Right position/Middle Alignment
+      </Button>
+      <GuidanceTooltip
+        autoFocus
+        title="Some sort of title"
+        open={open}
+        targetElement={target as ReactNode}
+        position={position}
+        alignment={alignment}
+        message={
+          <div>
+            <span>This is position example.</span>
+            <Link
+              complementary
+              colorScheme={getAppropiateColorScheme(
+                currentColorScheme,
+                currentTheme
+              )}
+              href="https://www.intuit.com"
+              aria-label="Learn more about Intuit"
+            >
+              Link text
+            </Link>
+          </div>
+        }
+        onClose={handleClose}
+      />
+    </div>
+  );
+}
+```
+
+### Text
+
+```tsx
+(props: Themeable) => {
+  const [open, setOpen] = useState(false);
+  const { currentTheme, currentColorScheme } = useTheme(props);
+
+  const handleClick = () => {
+    setOpen(!open);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  return (
+    <GuidanceTooltipContainer>
+      <GuidanceTooltip
+        autoFocus
+        title="Some sort of title"
+        position="top"
+        alignment="left"
+        open={open}
+        message={
+          <div>
+            <span>This is an example where tooltip is open by default.</span>
+            <Link
+              complementary
+              colorScheme={getAppropiateColorScheme(
+                currentColorScheme,
+                currentTheme
+              )}
+              href="https://www.intuit.com"
+              aria-label="Learn more about Intuit"
+            >
+              Link text
+            </Link>
+          </div>
+        }
+        automationId="basic_example"
+        onClose={handleClose}
+      >
+        <B2 onClick={handleClick} onKeyDown={handleClick}>
+          Target text.
+        </B2>
+      </GuidanceTooltip>
+    </GuidanceTooltipContainer>
+  );
+}
+```
+
+### Theme
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const handleClick = () => {
+    setOpen(!open);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  return (
+    <div>
+      <GuidanceTooltip
+        autoFocus
+        title="Some sort of title"
+        open={open}
+        theme="quickbooks"
+        message={
+          <div>
+            <span>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+              enim ad minim veniam.
+            </span>
+            <Link
+              colorScheme={ColorScheme.DARK}
+              href="https://www.intuit.com"
+              aria-label="Learn more about Intuit"
+            >
+              Link text
+            </Link>
+          </div>
+        }
+        onClose={handleClose}
+      >
+        <Button
+          className="guidanceTooltipBasicExample"
+          theme="quickbooks"
+          onClick={handleClick}
+        >
+          Button example
+        </Button>
+      </GuidanceTooltip>
+    </div>
+  );
+}
+```
+
+### With Style Position Prop
+
+```tsx
+(props: Themeable) => {
+  const [open, setOpen] = useState(false);
+  const { currentTheme, currentColorScheme } = useTheme(props);
+
+  const handleClick = () => {
+    setOpen(!open);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  return (
+    <div>
+      <GuidanceTooltip
+        autoFocus
+        title="Some sort of title"
+        open={open}
+        message={
+          <div>
+            <span>This is default example.</span>
+            <Link
+              complementary
+              colorScheme={getAppropiateColorScheme(
+                currentColorScheme,
+                currentTheme
+              )}
+              href="https://www.intuit.com"
+              aria-label="Learn more about Intuit"
+            >
+              Link text
+            </Link>
+          </div>
+        }
+        stylePosition={{ zIndex: 200 }}
+        onClose={handleClose}
+      >
+        <Button className="guidanceTooltipBasicExample" onClick={handleClick}>
+          Button example
+        </Button>
+      </GuidanceTooltip>
+    </div>
+  );
+}
+```
+
+## Code Example
+
+```tsx
+import React from 'react';
+import GuidanceTooltip from '@ids-ts/guidance-tooltip';
+
+const GuidanceTooltipExample = () => {
+  const [open, setOpen] = React.useState(false);
+  const handleClick = () => {
+    setOpen(!open);
+  };
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  return (
+    <div>
+      <GuidanceTooltip
+        autoFocus
+        title="Some sort of title"
+        open={open}
+        message={<div>This is default example.</div>}
+        onClose={handleClose}
+      >
+        <Button className="guidanceTooltipBasicExample" onClick={handleClick}>
+          Button example
+        </Button>
+      </GuidanceTooltip>
+    </div>
+  );
+};
+
+export default GuidanceTooltipExample;
+```
+
+## Composes With
+
+- Link
+- Button
+- TextField
+- Position
+- Typography
+
+---
+
+## References
+
+- [GitHub Source - GuidanceTooltip](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/GuidanceTooltip)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/guidance-tooltip.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-guidancetooltip&theme=quickbooks&colorScheme=light)

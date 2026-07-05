@@ -1,0 +1,130 @@
+/* Intuit, QuickBooks, TurboTax - Avenir Next forINTUIT */
+/* CDN-hosted fonts from Intuit assets */
+
+@font-face {
+    font-family: "Avenir Next forINTUIT";
+    src:
+      url("https://assets.intuitcdn.net/fonts/avenir-100.woff2") format("woff2"),
+      url("https://assets.intuitcdn.net/fonts/avenir-100.woff") format("woff");
+    font-weight: 100;
+    font-style: normal;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: "Avenir Next forINTUIT";
+    src:
+      url("https://assets.intuitcdn.net/fonts/avenir-100-it.woff2")
+        format("woff2"),
+      url("https://assets.intuitcdn.net/fonts/avenir-100-it.woff") format("woff");
+    font-weight: 100;
+    font-style: italic;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: "Avenir Next forINTUIT";
+    src:
+      url("https://assets.intuitcdn.net/fonts/avenir-400.woff2") format("woff2"),
+      url("https://assets.intuitcdn.net/fonts/avenir-400.woff") format("woff");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: "Avenir Next forINTUIT";
+    src:
+      url("https://assets.intuitcdn.net/fonts/avenir-400-it.woff2")
+        format("woff2"),
+      url("https://assets.intuitcdn.net/fonts/avenir-400-it.woff") format("woff");
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: "Avenir Next forINTUIT";
+    src:
+      url("https://assets.intuitcdn.net/fonts/avenir-500.woff2") format("woff2"),
+      url("https://assets.intuitcdn.net/fonts/avenir-500.woff") format("woff");
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: "Avenir Next forINTUIT";
+    src:
+      url("https://assets.intuitcdn.net/fonts/avenir-500-it.woff2")
+        format("woff2"),
+      url("https://assets.intuitcdn.net/fonts/avenir-500-it.woff") format("woff");
+    font-weight: 500;
+    font-style: italic;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: "Avenir Next forINTUIT";
+    src:
+      url("https://assets.intuitcdn.net/fonts/avenir-600.woff2") format("woff2"),
+      url("https://assets.intuitcdn.net/fonts/avenir-600.woff") format("woff");
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: "Avenir Next forINTUIT";
+    src:
+      url("https://assets.intuitcdn.net/fonts/avenir-600-it.woff2")
+        format("woff2"),
+      url("https://assets.intuitcdn.net/fonts/avenir-600-it.woff") format("woff");
+    font-weight: 600;
+    font-style: italic;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: "Avenir Next forINTUIT";
+    src:
+      url("https://assets.intuitcdn.net/fonts/avenir-700.woff2") format("woff2"),
+      url("https://assets.intuitcdn.net/fonts/avenir-700.woff") format("woff");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: "Avenir Next forINTUIT";
+    src:
+      url("https://assets.intuitcdn.net/fonts/avenir-700-it.woff2")
+        format("woff2"),
+      url("https://assets.intuitcdn.net/fonts/avenir-700-it.woff") format("woff");
+    font-weight: 700;
+    font-style: italic;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: "Avenir Next forINTUIT";
+    src:
+      url("https://assets.intuitcdn.net/fonts/avenir-900.woff2") format("woff2"),
+      url("https://assets.intuitcdn.net/fonts/avenir-900.woff") format("woff");
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: "Avenir Next forINTUIT";
+    src:
+      url("https://assets.intuitcdn.net/fonts/avenir-900-it.woff2")
+        format("woff2"),
+      url("https://assets.intuitcdn.net/fonts/avenir-900-it.woff") format("woff");
+    font-weight: 900;
+    font-style: italic;
+    font-display: swap;
+  }
+  
+  

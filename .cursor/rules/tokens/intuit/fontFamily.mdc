@@ -1,0 +1,24 @@
+---
+description: Intuit Design System - FontFamily Token Library - Complete primitive and semantic fontFamily tokens
+globs: ["src/**/*.{ts,tsx,js,jsx,scss,css}"]
+alwaysApply: true
+---
+
+# Intuit Design System - FontFamily Token Library
+
+## Primitive FontFamily Tokens (DO NOT USE DIRECTLY IN PLUGINS)
+
+- `--font-family-avenir`: Avenir Next forINTUIT, Avenir, Helvetica, Arial, sans-serif
+- `--font-family-avenir-variable`: AvenirNextForINTUITVar, Avenir, Helvetica, Arial, sans-serif
+- `--font-family-graphik`: Graphik Web, Helvetica Neue, Helvetica, Arial, Verdana, sans-serif
+- `--font-family-means`: Means Web, Georgia, Times, Times New Roman, serif
+- `--font-family-national`: National2, Avenir Next forINTUIT, Avenir, Helvetica, Arial, sans-serif
+
+## Semantic FontFamily Tokens (USE THESE IN PLUGINS)
+
+### Family
+- `--font-family-body`: --font-family-avenir /* For body text styles in CSS web implementations that require a list of fallback fonts. Do not use these in atom sized UI components instead use font-component tokens. */
+- `--font-family-component`: --font-family-avenir /* For component text styles in CSS web implementations that require a list of fallback fonts */
+- `--font-family-display`: --font-family-avenir /* For display text styles in CSS web implementations that require a list of fallback fonts */
+- `--font-family-heading`: --font-family-avenir /* For heading text styles in CSS web implementations that require a list of fallback fonts */
+- `--font-family-mega`: --font-family-avenir /* For mega text styles in CSS web implementations that require a list of fallback fonts. */

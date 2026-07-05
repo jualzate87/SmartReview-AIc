@@ -1,0 +1,238 @@
+---
+description: Complete guide for using the IconControl component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# IconControl
+
+Icon controls allow users to perform an action or mark a selection and are used for similar, task-based options within a workflow.
+They are ideal for interfaces where buttons aren’t meant to draw a lot of attention.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/icon-control
+```
+
+```tsx
+import { IconControl } from '@ids-ts/icon-control';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | No | The icon to display |
+| `className` | `string` | No | Custom className for additional css to be applied to component |
+| `disabled` | `boolean` | No | Prop to render the control as disabled |
+| `label` | `string` | No | Prop to add label to icon control |
+| `labelAlignment` | `'left' | 'right'` | No | Prop to align label |
+| `onClick` | `MouseEventHandler<HTMLButtonElement>` | No | Callback handler function that is fired when a Checkbox has been clicked. |
+| `onKeyDown` | `KeyboardEventHandler` | No | Keydown event handler prop for icon control |
+| `onMouseDown` | `MouseEventHandler` | No | Mouse event handler prop for icon control |
+| `selected` | `boolean` | No | Prop to set icon control as selected. Helpful when using icon-controls with fly-outs. |
+| `complementary` | `boolean` | No | Prop to set icon control to use complementary colors. Helpful when displaying on a dark colored background. |
+| `shape` | `Shapes` | No | Prop to change the shape of the button. Currently supports square and circle. If circle is selected, using a label is not supported. |
+| `size` | `Sizes` | No | - |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface IconControlProps extends ThemeableElement<'button'> {
+  /** Aria label */
+  'aria-label'?: string;
+  /** The icon to display */
+  children?: ReactNode;
+  /** Custom className for additional css to be applied to component */
+  className?: string;
+  /** Prop to render the control as disabled */
+  disabled?: boolean;
+  /** Prop to add label to icon control */
+  label?: string;
+  /** Prop to align label */
+  labelAlignment?: 'left' | 'right';
+  /** Callback handler function that is fired when a Checkbox has been clicked. */
+  onClick?: MouseEventHandler<HTMLButtonElement>;
+  /** Keydown event handler prop for icon control */
+  onKeyDown?: KeyboardEventHandler;
+  /** Mouse event handler prop for icon control */
+  onMouseDown?: MouseEventHandler;
+  /** Prop to set icon control as selected. Helpful when using icon-controls with fly-outs. */
+  selected?: boolean;
+  /** Prop to set icon control to use complementary colors. Helpful when displaying on a dark colored background. */
+  complementary?: boolean;
+  /** Prop to change the shape of the button. Currently supports square and circle. If circle is selected, using a label is not supported. */
+  shape?: Shapes;
+  /**
+   * IconControl button size - one of x-small, small, medium, large
+   *
+   * @default 'small'
+   */
+  size?: Sizes;
+}
+
+export type Shapes = 'square' | 'circle';
+
+export type Sizes = 'x-small' | 'small' | 'medium' | 'large';
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**icon** — Icon fill and stroke colors
+- `--color-icon-accent`
+- `--color-icon-complementary`
+- `--color-icon-disabled`
+
+### Size
+
+**icon** — Standard icon dimensions
+
+## Usage Patterns
+
+### Basic Example
+
+```tsx
+() => (
+  <CloseIconControl size="medium" onClick={action('Clicked BasicExample')} />
+)
+```
+
+### No Visible Label Use Aria Label For Accessibility
+
+```tsx
+() => {
+  return (
+    <div>
+      <h3>No Visible Label Example</h3>
+      <CloseIconControl
+        aria-label="remove row"
+        size="medium"
+        onClick={action('Clicked AriaExample')}
+      />
+      <p>
+        The element is used to associate a text label with a form field. The
+        label is used to tell users the value that should be entered in the
+        associated input field. If your design does not include a visible label,
+        then you must include an aria-label to provide information to the screen
+        reader.
+      </p>
+    </div>
+  );
+}
+```
+
+### Disabled Icon Control
+
+```tsx
+() => (
+  <EditIconControl
+    disabled
+    size="medium"
+    onClick={action('Clicked DisabledIconControl')}
+  />
+)
+```
+
+### Selected Icon Control
+
+```tsx
+() => (
+  <EditIconControl
+    selected
+    size="medium"
+    onClick={action('Clicked SelectedIconControl')}
+  />
+)
+```
+
+### Complementary Icon Control
+
+```tsx
+() => (
+  <EditIconControl
+    complementary
+    aria-label="Edit my W2 form"
+    size="medium"
+    onClick={action('Clicked ComplementaryIconControl')}
+  />
+)
+```
+
+### Icon Control With Sizes
+
+```tsx
+() => {
+  const handleClick = (size: string) =>
+    action(`Clicked ${size} IconControlWithSizes`);
+
+  return (
+    <div className={styles.iconControlWithSizesDiv}>
+      <div className={styles.iconControlWithSizesInnerDiv}>
+        <CloseIconControl size="x-small" onClick={handleClick('x-small')} />
+      </div>
+      <div className={styles.iconControlWithSizesInnerDiv}>
+        <CloseIconControl size="small" onClick={handleClick('small')} />
+      </div>
+      <div className={styles.iconControlWithSizesInnerDiv}>
+        <CloseIconControl size="medium" onClick={handleClick('medium')} />
+      </div>
+      <div className={styles.iconControlWithSizesInnerDiv}>
+        <CloseIconControl size="large" onClick={handleClick('large')} />
+      </div>
+    </div>
+  );
+}
+```
+
+### Icon Control With Shapes
+
+```tsx
+() => {
+  const handleClick = (shape: string) => action(`Clicked ${shape} IconControl`);
+
+  return (
+    <div className={styles.iconControlWithSizesDiv}>
+      <div className={styles.iconControlWithSizesInnerDiv}>
+        <CloseIconControl onClick={handleClick('square')} />
+      </div>
+      <div className={styles.iconControlWithSizesInnerDiv}>
+        <CloseIconControl shape="circle" onClick={handleClick('circle')} />
+      </div>
+    </div>
+  );
+}
+```
+
+### Assign Icon Control Ref Prop
+
+```tsx
+() => {
+  const closeButtonRef = React.createRef<HTMLButtonElement>();
+
+  return (
+    <CloseIconControl
+      ref={closeButtonRef}
+      size="medium"
+      onClick={action('Clicked AssignIconControlRefProp')}
+    />
+  );
+}
+```
+
+## Composes With
+
+- Icon
+
+---
+
+## References
+
+- [GitHub Source - IconControl](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/IconControl)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/icon-control.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-button---icon-control&theme=quickbooks&colorScheme=light)

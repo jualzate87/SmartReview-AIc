@@ -1,0 +1,164 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-row-gap-large) var(--space-page-inline);
+  box-sizing: border-box;
+  background: var(--color-page-background-secondary);
+}
+
+.stepContainer {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-row-gap-medium);
+}
+
+.welcomeLogo {
+  width: 100px;
+  height: auto;
+}
+
+.welcomeHeading {
+  text-align: center;
+}
+
+.welcomeBody {
+  text-align: center;
+  color: var(--color-text-secondary);
+  max-width: 480px;
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-column-gap-medium);
+  justify-content: center;
+  margin-top: var(--space-row-gap-small);
+}
+
+.stepContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-row-gap-medium);
+  padding: var(--space-container-padding-large) 0;
+}
+
+.sectionTitle {
+  text-align: center;
+}
+
+.sectionSubtitle {
+  text-align: center;
+  color: var(--color-text-secondary);
+  max-width: 480px;
+}
+
+.themeGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-column-gap-medium);
+  width: 100%;
+}
+
+.themeCard {
+  cursor: pointer;
+  border: 2px solid var(--color-container-border-secondary);
+  border-radius: var(--radius-small);
+  padding: var(--space-container-padding-medium);
+  background: var(--color-container-background-primary);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-medium);
+  transition: border-color 0.15s ease;
+}
+
+.themeCard:hover {
+  border-color: var(--color-container-border-accent);
+}
+
+.themeCardSelected {
+  border-color: var(--color-container-border-accent);
+  background: var(--color-container-background-accent);
+}
+
+.themeCardName {
+  color: var(--color-text-primary);
+}
+
+.themeCardDesc {
+  color: var(--color-text-secondary);
+}
+
+.libraryList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-column-gap-small);
+  width: 100%;
+}
+
+.libraryCard {
+  border: 2px solid var(--color-container-border-secondary);
+  border-radius: var(--radius-small);
+  padding: var(--space-container-padding-medium);
+  background: var(--color-container-background-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-column-gap-medium);
+}
+
+.libraryCardActive {
+  border-color: var(--color-container-border-accent);
+}
+
+.libraryCardDisabled {
+  opacity: 0.7;
+}
+
+.libraryInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-component-gap-small);
+}
+
+.libraryName {
+  display: flex;
+  align-items: center;
+  gap: var(--space-component-gap-medium);
+}
+
+.libraryDesc {
+  color: var(--color-text-secondary);
+}
+
+.scaffoldingOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-row-gap-medium);
+  background: var(--color-container-background-primary);
+  z-index: 10;
+}
+
+.scaffoldingHint {
+  color: var(--color-text-secondary);
+}
+
+.scaffoldError {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-component-gap-medium);
+  padding: var(--space-container-padding-medium);
+  background: var(--color-container-background-negative-tertiary);
+  border-radius: var(--radius-small);
+  margin: 0 var(--space-container-padding-medium);
+}

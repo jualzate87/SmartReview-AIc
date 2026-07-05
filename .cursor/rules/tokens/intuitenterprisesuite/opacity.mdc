@@ -1,0 +1,32 @@
+---
+description: Intuit Design System - Opacity Token Library - Complete primitive and semantic opacity tokens
+globs: ["src/**/*.{ts,tsx,js,jsx,scss,css}"]
+alwaysApply: false
+---
+
+# Intuit Design System - Opacity Token Library
+
+## Primitive Opacity Tokens (DO NOT USE DIRECTLY IN PLUGINS)
+
+- `--opacity-0`: 0
+- `--opacity-5`: 0.05
+- `--opacity-10`: 0.1
+- `--opacity-15`: 0.15
+- `--opacity-20`: 0.2
+- `--opacity-30`: 0.3
+- `--opacity-33`: 0.33
+- `--opacity-40`: 0.4
+- `--opacity-50`: 0.5
+- `--opacity-60`: 0.6
+- `--opacity-70`: 0.7
+- `--opacity-80`: 0.8
+- `--opacity-90`: 0.9
+- `--opacity-100`: 1
+
+## Semantic Opacity Tokens (USE THESE IN PLUGINS)
+
+### Disabled
+- `--opacity-disabled`: --opacity-50 /* For use when a component needs to be displayed disabled to set its opacity lighter */
+
+### Shadow
+- `--opacity-shadow`: --opacity-20 /* For use when a shadow needs an opacity */

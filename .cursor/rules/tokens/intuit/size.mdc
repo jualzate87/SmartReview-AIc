@@ -1,0 +1,17 @@
+---
+description: Intuit Design System - Size Token Library - Complete primitive and semantic size tokens
+globs: ["src/**/*.{ts,tsx,js,jsx,scss,css}"]
+alwaysApply: true
+---
+
+# Intuit Design System - Size Token Library
+
+## Primitive Size Tokens (DO NOT USE DIRECTLY IN PLUGINS)
+
+- `--size-1`: 1px
+- `--size-2`: 2px
+
+## Semantic Size Tokens (USE THESE IN PLUGINS)
+
+### Action
+- `--size-action-border`: --size-2 /* The pixel size for actions borders, usually secondary actions. */

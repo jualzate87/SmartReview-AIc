@@ -1,0 +1,84 @@
+/* Return Insights Page — Screen 34 */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--page\/background\/secondary, #f0f4f6);
+  font-family: var(--font-family-component) !important;
+  overflow: hidden;
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  background: var(--page\/background\/secondary, #f0f4f6);
+}
+
+.contentArea {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  padding: 20px;
+  gap: 20px;
+  background: var(--page\/background\/secondary, #f0f4f6);
+}
+
+/* Left check navigation — same as CheckReturnPage */
+.leftNav {
+  width: 283px;
+  min-width: 283px;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid #d4d7dc;
+  border-radius: 8px;
+  padding: 16px 0;
+  height: fit-content;
+  flex-shrink: 0;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 20px;
+  background: none;
+  border: none;
+  border-left: 3px solid transparent;
+  font-family: var(--font-family-component) !important;
+  font-size: 14px;
+  font-weight: 500;
+  color: #393a3d;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+.navItem:hover {
+  background: #f0f4f6;
+  color: #205ea3;
+}
+
+.navItemActive {
+  border-left-color: #205ea3;
+  color: #205ea3;
+  font-weight: 600;
+  background: #f0f4f6;
+}
+
+/* Main content — scrollable insights image */
+.mainContent {
+  flex: 1;
+  overflow-y: auto;
+  min-width: 0;
+  background: #ffffff;
+  border: 1px solid #d4d7dc;
+  border-radius: 8px;
+}
+
+.insightsImage {
+  width: 100%;
+  display: block;
+  border-radius: 8px;
+}

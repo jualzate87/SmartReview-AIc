@@ -1,0 +1,23 @@
+---
+description: Intuit Design System - LineHeight Token Library - Complete primitive and semantic lineHeight tokens
+globs: ["src/**/*.{ts,tsx,js,jsx,scss,css}"]
+alwaysApply: false
+---
+
+# Intuit Design System - LineHeight Token Library
+
+## Primitive LineHeight Tokens (DO NOT USE DIRECTLY IN PLUGINS)
+
+- `--line-height-120`: 1.2
+- `--line-height-130`: 1.3
+- `--line-height-140`: 1.4
+- `--line-height-150`: 1.5
+
+## Semantic LineHeight Tokens (USE THESE IN PLUGINS)
+
+### Height
+- `--line-height-body`: --line-height-150 /* For body text styles (paragraph text) to ensure appropriate line-heights for wrapping text */
+- `--line-height-component`: --line-height-130 /* For component text styles to ensure appropriate line-heights for wrapping text */
+- `--line-height-display`: --line-height-130 /* For display text styles to ensure appropriate line-heights for wrapping text */
+- `--line-height-heading`: --line-height-130 /* For heading text styles to ensure appropriate line-heights for wrapping text */
+- `--line-height-mega`: --line-height-120 /* For mega text styles to ensure appropriate line-heights for wrapping text */

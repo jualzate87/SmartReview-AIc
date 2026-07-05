@@ -1,0 +1,88 @@
+:root {
+  /* Font sizes/weights only — font-family tokens come from intuit.css */
+  --font-size-body-3: 14px;
+  --font-size-component-x-small: 12px;
+  --font-weight-component-bold: 700;
+
+  /* Action colors */
+  --color-action-standard: #0077C5;
+  --color-action-standard-hover: #0265AC;
+  --color-action-standard-active: #055393;
+  --color-action-standard-subtle: rgba(0, 119, 197, 0);
+  --color-action-standard-subtle-hover: rgba(0, 119, 197, 0.1);
+  --color-action-standard-subtle-active: rgba(0, 119, 197, 0.2);
+  --color-action-passive: #E3E5E8;
+  --color-action-passive-hover: #D4D7DC;
+  --color-action-passive-active: #BABEC5;
+  --color-action-passive-border: #6B6C72;
+  --color-action-passive-subtle: rgba(107, 108, 114, 0);
+  --color-action-passive-subtle-hover: rgba(107, 108, 114, 0.1);
+  --color-action-passive-subtle-active: rgba(107, 108, 114, 0.2);
+  --color-action-negative: #D52B1E;
+  --color-action-negative-hover: #C6160F;
+  --color-action-negative-active: #B80000;
+  --color-action-negative-subtle-hover: rgba(213, 43, 30, 0.1);
+  --color-action-negative-subtle-active: rgba(213, 43, 30, 0.2);
+  --color-action-complementary: #6B6C72;
+  --color-action-complementary-hover: rgba(107, 108, 114, 0.85);
+  --color-action-complementary-active: rgba(107, 108, 114, 0.75);
+  --color-action-complementary-border: #FFFFFF;
+  --color-action-complementary-subtle: rgba(255, 255, 255, 0);
+  --color-action-complementary-subtle-hover: rgba(255, 255, 255, 0.1);
+  --color-action-complementary-subtle-active: rgba(255, 255, 255, 0.2);
+  --color-action-special-use: #0077C5;
+  --color-action-special-use-hover: #0265AC;
+  --color-action-special-use-active: #055393;
+  --color-action-special-use-subtle-hover: rgba(0, 119, 197, 0.1);
+  --color-action-special-use-subtle-active: rgba(0, 119, 197, 0.2);
+
+  /* Text colors */
+  --color-text-primary: #393A3D;
+  --color-text-secondary: #6B6C72;
+  --color-text-on-fill: #FFFFFF;
+  --color-text-inverse: #FFFFFF;
+  --color-text-complementary: #FFFFFF;
+
+  /* Icon colors */
+  --color-icon-primary: #393A3D;
+  --color-icon-inverse: #FFFFFF;
+
+  /* Page background */
+  --color-page-background-primary: #FFFFFF;
+  --color-page-background-secondary: #F4F5F8;
+  --color-page-background-tertiary: #ECEEF1;
+  --color-page-background-accent: #ECEEF1;
+
+  /* Container borders */
+  --color-container-border-primary: #D4D7DC;
+  --color-container-border-secondary: #8D9096;
+  --color-container-border-tertiary: #BABEC5;
+
+  /* Misc */
+  --color-focus-indicator: #0077C5;
+  --color-shadow: rgba(0, 0, 0, 0.2);
+  --opacity-disabled: 0.5;
+  --radius-action: 4px;
+  --ease-fade: cubic-bezier(0.35, 0, 0.5, 1);
+  --duration-fade-fast: 150ms;
+  --duration-fade-moderate: 200ms;
+  --duration-fade-slow: 250ms;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  font-family: var(--font-family-body, Avenir Next forINTUIT, Avenir, Helvetica, Arial, sans-serif);
+  line-height: 1.5;
+  color: var(--color-text-primary, #393A3D);
+  background-color: var(--color-page-background-primary, #FFFFFF);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

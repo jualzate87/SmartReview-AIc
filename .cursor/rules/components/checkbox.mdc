@@ -1,0 +1,381 @@
+---
+description: Complete guide for using the Checkbox component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# Checkbox
+
+A IDS checkbox is an input option that represents a setting or value with an on, off, or mixed choice.
+A check mark within the checkbox indicates that the setting is selected or checked.
+Checkboxes in a group are non-exclusive options; more than one checkbox in a group can be checked at any given time.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/checkbox
+```
+
+```tsx
+import { Checkbox, CheckboxGroup } from '@ids-ts/checkbox';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `assignInputRef` | `(c: HTMLInputElement | null) => void` | No | A function to get reference to input element. |
+| `checked` | `boolean` | No | Specifies whether the checkbox is checked. |
+| `children` | `ReactNode | string` | No | The Checkbox label. |
+| `description` | `ReactNode | string` | No | * Description text below the label |
+| `defaultChecked` | `boolean` | No | Initial checked state (uncontrolled). |
+| `disabled` | `boolean` | No | - |
+| `indeterminate` | `boolean` | No | - |
+| `name` | `string` | No | a name assign to the checkbox input |
+| `onBlur` | `FocusEventHandler<HTMLInputElement>` | No | Callback function that is fired when a Checkbox has been blurred. |
+| `onChange` | `CheckboxOnChangeType` | No | Callback function with customize event object that is fired when a Checkbox has been checked. |
+| `onClick` | `MouseEventHandler<HTMLInputElement>` | No | Callback function that is fired when a Checkbox has been clicked. |
+| `onFocus` | `FocusEventHandler<HTMLInputElement>` | No | Callback function that is fired when a Checkbox has been focused. |
+| `size` | `'small' | 'medium'` | No | - |
+| `tabIndex` | `number` | No | tab-index assign to the checkbox input. |
+| `validationMessage` | `string` | No | Validation Message. |
+| `InlineValidationMessage` | `'error', 'warning', 'success', 'invalid', 'info...` | Yes | - |
+| `value` | `string` | No | Checkbox current value. |
+| `e` | `CheckboxOnChangeEventType): void` | Yes | - |
+| `target` | `{ checked: boolean; value: string }` | Yes | Modified event target with check value. |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface CheckboxProps
+  extends Omit<ThemeableElement<'input'>, 'size' | 'onChange' | 'type'> {
+  /** A function to get reference to input element. */
+  assignInputRef?: (c: HTMLInputElement | null) => void;
+  /** Specifies whether the checkbox is checked. */
+  checked?: boolean;
+  /** The Checkbox label. */
+  children?: ReactNode | string;
+  /**
+   * Description text below the label
+   */
+  description?: ReactNode | string;
+  /**
+   * Specifies the initial state: whether or not the checkbox is checked.
+   *
+   * @default false
+   */
+  defaultChecked?: boolean;
+  /**
+   * Disable the checkbox.
+   *
+   * @default false
+   */
+  disabled?: boolean;
+  /**
+   * Specifies when type is checkbox and in a indeterminate state [-].
+   *
+   * @default false
+   */
+  indeterminate?: boolean;
+  /** a name assign to the checkbox input */
+  name?: string;
+  /** Callback function that is fired when a Checkbox has been blurred. */
+  onBlur?: FocusEventHandler<HTMLInputElement>;
+  /** Callback function with customize event object that is fired when a Checkbox has been checked.  */
+  onChange?: CheckboxOnChangeType;
+  /** Callback function that is fired when a Checkbox has been clicked. */
+  onClick?: MouseEventHandler<HTMLInputElement>;
+  /** Callback function that is fired when a Checkbox has been focused. */
+  onFocus?: FocusEventHandler<HTMLInputElement>;
+  /** Affects size of text rendered next to checkbox
+   *
+   * @default 'medium'
+   *
+   */
+  size?: 'small' | 'medium';
+  /** tab-index assign to the checkbox input. */
+  tabIndex?: number;
+  /** Validation Message. */
+  validationMessage?: string;
+  /**
+   * Validation Type from InlineValidationMessage: 'error', 'warning', 'success', 'invalid', 'info', or ''
+   *
+   * @default ''
+   */
+  validationType?: InlineValidationType;
+  /** Checkbox current value. */
+  value?: string;
+}
+
+export interface CheckboxOnChangeType {
+  (e: CheckboxOnChangeEventType): void;
+}
+
+export interface CheckboxOnChangeEventType {
+  /** a modify event target */
+  target: {
+    /** a event target check value */
+    checked?: boolean;
+  };
+  stopPropagation?(): void;
+  preventDefault?(): void;
+}
+```
+
+</details>
+
+## Sub-Components
+
+### CheckboxGroup
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactElement | ReactElement[]` | No | A list of <Checkbox> |
+| `defaultValue` | `string | string[]` | No | Specifies the initial state: whether or not Checkbox or Checkboxes checked. |
+| `disabled` | `boolean` | No | - |
+| `helperText` | `string | ReactNode` | No | Helper text for the Checkbox group. Can be a React node. |
+| `label` | `string | ReactNode` | No | Label for the Checkbox group. Can be a React node. |
+| `signature` | `"value" is an array of currently selected Check...` | Yes | - |
+| `onClick` | `MouseEventHandler<HTMLInputElement>` | No | Callback function that is fired when a Checkbox has been clicked. |
+| `options` | `string[] | CheckboxOptionType[]` | No | - |
+| `size` | `'small' | 'medium'` | No | - |
+| `value` | `string | string[]` | No | The value used to currently select the Checkbox. |
+| `validationType` | `InlineValidationType` | No | - |
+| `validationMessage` | `string` | No | Validation Message |
+| `vertical` | `boolean` | No | - |
+| `description` | `ReactNode | string` | No | Checkbox description prop |
+| `disabled` | `boolean` | No | Checkbox disabled prop |
+| `label` | `string` | No | Checkbox label prop |
+| `onChange` | `CheckboxOnChangeType` | No | Checkbox onChange prop |
+| `onClick` | `MouseEventHandler<HTMLInputElement>` | No | Checkbox onClick prop |
+| `value` | `string` | Yes | Checkbox value prop |
+
+<details>
+<summary>Full CheckboxGroup TypeScript Interface</summary>
+
+```typescript
+export interface CheckboxGroupProps
+  extends Omit<ThemeableElement<'fieldset'>, 'onChange' | 'onClick'> {
+  /** aria-describedby attribute to handle non-semantic use case */
+  'aria-describedby'?: string;
+  /** A list of <Checkbox> */
+  children?: ReactElement | ReactElement[];
+  /** Specifies the initial state: whether or not Checkbox or Checkboxes checked. */
+  defaultValue?: string | string[];
+  /**
+   * Disable all checkboxes.
+   *
+   * @default false
+   */
+  disabled?: boolean;
+  /** Helper text for the Checkbox group. Can be a React node. */
+  helperText?: string | ReactNode;
+  /** Label for the Checkbox group. Can be a React node. */
+  label?: string | ReactNode;
+  /**
+   * Callback function that is fired when a Checkbox has been selected.
+   * The signature: "value" is an array of currently selected Checkbox values
+   */
+  onChange?: (value: string[]) => void;
+  /** Callback function that is fired when a Checkbox has been clicked. */
+  onClick?: MouseEventHandler<HTMLInputElement>;
+  /**
+   * Set the children checkbox by using an array of values or an array of objects.
+   *
+   * @default []
+   */
+  options?: string[] | CheckboxOptionType[];
+  /** Affects size of text rendered next to checkbox
+   *
+   * @default 'medium'
+   *
+   */
+  size?: 'small' | 'medium';
+  /** The value used to currently select the Checkbox. */
+  value?: string | string[];
+  /**
+   * Determines the type of Validation Message : ['error', 'warning', 'success', 'invalid', 'info', '']
+   *
+   * @default ''
+   */
+  validationType?: InlineValidationType;
+  /** Validation Message */
+  validationMessage?: string;
+  /**
+   * Layout type vertical or horizontal.
+   *
+   * @default false
+   */
+  vertical?: boolean;
+}
+
+export interface CheckboxOptionType {
+  /** Checkbox description prop */
+  description?: ReactNode | string;
+  /** Checkbox disabled prop */
+  disabled?: boolean;
+  /** Checkbox label prop */
+  label?: string;
+  /** Checkbox onChange prop */
+  onChange?: CheckboxOnChangeType;
+  /** Checkbox onClick prop */
+  onClick?: MouseEventHandler<HTMLInputElement>;
+  /** Checkbox value prop */
+  value: string;
+}
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**action** — Interactive element colors and hover/active/focus states
+- `--color-action-complementary`
+- `--color-action-complementary-active`
+- `--color-action-complementary-border`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+**icon** — Icon fill and stroke colors
+- `--color-icon-accent`
+- `--color-icon-complementary`
+- `--color-icon-disabled`
+
+### Space
+
+**component** — Component-level spacing (padding, gap)
+- `--space-component-gap-large`
+- `--space-component-gap-medium`
+- `--space-component-gap-small`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+### Size
+
+**icon** — Standard icon dimensions
+
+## Usage Patterns
+
+### Showcase
+
+```tsx
+() => (
+  <div className={styles.exampleCheckbox}>
+    <div data-automation-id="checkbox-basic">
+      <h3 id="checkbox-1">Checkbox: Basic</h3>
+      <Checkbox
+        onChange={(e) => action('checkbox 1 checked: ')(e.target.checked)}
+      >
+```
+
+### Checkbox Group Playground
+
+```tsx
+({
+  disableCheckbox3,
+  disabled,
+  helperText,
+  label,
+  size,
+  useOptions,
+  validationMessage,
+  validationType,
+  vertical
+}) => {
+  const labelOptions = ['Pineapple', 'Grapes', 'Eggplant'];
+
+  const [validationStatus, setValidationStatus] = useState(validationType);
+
+  const onChange = (checkboxName: number | string, value: any) => {
+    action(`checkbox '${checkboxName}' checked: `)(value);
+    if (typeof value === 'object') {
+      setValidationStatus(() => (value.length > 0 ? '' : validationType));
+    } else {
+      setValidationStatus(() => (value ? '' : validationType));
+    }
+  };
+
+  if (!useOptions) {
+    return (
+      <CheckboxGroup
+        vertical={vertical}
+        disabled={disabled}
+        size={size}
+        helperText={helperText}
+        label={label}
+        validationType={validationStatus}
+        validationMessage={validationMessage}
+        name="fruitLabels"
+        onChange={(value) => onChange('group', value)}
+      >
+        <Checkbox
+          value="Pineapple"
+          onChange={(e) => onChange('1', e.target.checked)}
+        >
+          Pineapple
+        </Checkbox>
+        <Checkbox
+          value="Grapes"
+          onChange={(e) => onChange('2', e.target.checked)}
+        >
+          Grapes
+        </Checkbox>
+        <Checkbox
+          disabled={disableCheckbox3}
+          value="Eggplant"
+          onChange={(e) => onChange('2', e.target.checked)}
+        >
+          Eggplant
+        </Checkbox>
+      </CheckboxGroup>
+    );
+  }
+
+  return (
+    <CheckboxGroup
+      vertical={vertical}
+      disabled={disabled}
+      helperText={helperText}
+      label={label}
+      options={labelOptions}
+      size={size}
+      validationType={validationStatus}
+      validationMessage={validationMessage}
+      name="fruitLabels"
+      onChange={(value) => onChange('group', value)}
+    />
+  );
+}
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- **Space** key checks/unchecks the checkbox
+- **Tab** should navigate focus to the next checkbox in the CheckBoxGroup.
+- **Shift + Tab** should navigate focus to the previous checkbox in the CheckBoxGroup.
+
+## Composes With
+
+- InlineValidationMessage
+- Typography
+
+---
+
+## References
+
+- [GitHub Source - Checkbox](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/Checkbox)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/checkbox.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-checkbox&theme=quickbooks&colorScheme=light)

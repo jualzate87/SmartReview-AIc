@@ -1,0 +1,1198 @@
+---
+description: Complete guide for using the Menu component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# Menu
+
+A IDS menu is a temporary list that is revealed upon a user’s interaction with a button, icon, or other control, which allows users to access a group of choices and/or actions.
+
+This is used primarily in our other IDS components, such as `Dropdown`, `DropdownButton`, and `SplitButton`.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/menu
+```
+
+```tsx
+import { Menu, MenuItem } from '@ids-ts/menu';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `accessStringMatch` | `string` | No | Key to match string |
+| `alignment` | `Alignments` | No | Alignment for the Menu: vertical (`'top'`, `'bottom'`, `'middle'`), horizontal (`'left'`, `'right'`, `'center'`). |
+| `anchorElement` | `React.ReactElement` | Yes | The element used to set the position of showing the Menu. |
+| `autoFocus` | `boolean` | No | Whether the menu should auto-focus on open. |
+| `children` | `ReactElement<MenuItemProps> \| ReactElement<MenuItemProps>[]` | No | Menu contents, normally `MenuItem` components. |
+| `className` | `string` | No | Class to be assigned to Menu. Use to extend the style. |
+| `disabled` | `boolean` | No | - |
+| `disableSearch` | `boolean` | No | - |
+| `getSelectedIndex` | `(index: number) => void` | No | A callback function to get index of current selected item in Menu |
+| `highlightIndex` | `number` | No | - |
+| `id` | `string` | No | ID to be applied to the menu. |
+| `ignoreIdsOnBlur` | `string[]` | No | - |
+| `maxHeight` | `string | number` | No | Determine the maximum width of Menu, unit is px. |
+| `menuItemRole` | `string` | No | - |
+| `menuRole` | `string` | No | - |
+| `minWidth` | `string | number` | No | Determine the minimum width of Menu, unit is px. |
+| `onBlur` | `(e: React.KeyboardEvent | React.FocusEvent) => ...` | No | Callback fired when the Menu wants to blur |
+| `onClose` | `(e: React.KeyboardEvent | React.FocusEvent) => ...` | No | Callback fired when the Menu wants to close |
+| `onMouseEnter` | `React.MouseEventHandler` | No | Callback fired when the mouse hover the Menu |
+| `onSelect` | `(e: React.MouseEvent<HTMLLIElement> \| React.KeyboardEvent) => void` | No | Called when a menu item is selected. |
+| `onClickAway` | `(e: React.MouseEvent \| React.KeyboardEvent) => void` | No | Called when the Menu is clicked away. |
+| `open` | `boolean` | Yes | If `true`, the Menu shows. |
+| `menuOffsetSkidding` | `number` | No | Cross-axis pixel offset of the popup. |
+| `menuOffsetDistance` | `number` | No | Main-axis pixel offset of the popup. |
+| `menuOffsetX` | `number` | No | X-axis pixel offset of the popup. |
+| `menuOffsetY` | `number` | No | Y-axis pixel offset of the popup. |
+| `positions` | `string[]` | No | Vertical positions to try: `'top'`, `'bottom'`. |
+| `preventMenuOverflow` | `an object variable` | Yes | - |
+| `preventMenuOverflow` | `PreventOverflow` | No | - |
+| `reference` | `(c: HTMLUListElement | null) => void` | No | Callback that returns the ref for menu |
+| `scrollToSelected` | `boolean` | No | - |
+| `searchMode` | `'full' | 'first' | 'partial'` | No | - |
+| `selectedItem` | `string | number | (string | number)[]` | No | This will highlight the selectedItem in Menu |
+| `showCheckmark` | `boolean` | No | - |
+| `size` | `'small' | 'medium'` | No | - |
+| `style` | `React.CSSProperties` | No | The optional styles applied to the MenuList. |
+| `stylePosition` | `React.CSSProperties` | No | The optional styles applied to the position node wrapped around the root node. |
+| `positionDependencies` | `unknown[]` | No | - |
+| `checkmark` | `boolean` | No | - |
+| `disabled` | `boolean` | No | - |
+| `highlighted` | `boolean` | No | - |
+| `id` | `string` | No | Id for component. Assigns a unique id if not provided. |
+| `menuItemLabel` | `string | number` | No | Menu item label for Dropdown |
+| `onMouseEnter` | `React.MouseEventHandler` | No | Callback function to be executed on mouse enter. |
+| `onMouseLeave` | `React.MouseEventHandler` | No | Callback function to be executed on mouse leave. |
+| `onClick` | `React.MouseEventHandler` | No | Callback function to be executed on click. |
+| `onKeyDown` | `React.KeyboardEventHandler` | No | Callback function to be executed on keydown. |
+| `onKeyUp` | `React.KeyboardEventHandler` | No | Callback function to be executed on keyUp. |
+| `onSelect` | `(e: React.MouseEvent<HTMLLIElement> \| React.KeyboardEvent) => void` | No | Selection callback. Internal use only. |
+| `role` | `string` | No | - |
+| `size` | `'small' | 'medium'` | No | - |
+| `selected` | `boolean` | No | - |
+| `value` | `string | number` | No | - |
+| `type` | `'status'` | No | Determines the type of MenuItem, can be status. |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface MenuProps extends Themeable {
+  /** Key to match string */
+  accessStringMatch?: string;
+  /**
+   * Alignment  to show the Menu, it is a string of alignments
+   * vertical: 'top', 'bottom', 'middle'
+   * horizontal: 'left', 'right', 'center'
+   * NOTE: horizontal alignments cannot be paired with horizontal positions
+   *
+   * @default 'left'
+   */
+  alignment?: Alignments;
+  /** The element used to set the position of showing the Menu. */
+  anchorElement: React.ReactElement;
+  /**
+   * If the anchor element is a React component, and it needs to an alternative reference, so setting the
+   * "anchorElementRefPropName" in order to let popper can forward the ref to call. For example: if anchor
+   * element is IDS TextField, then the "anchorElementRefPropName" would be "assignLabelRef" or "assignInputRef"
+   * which is a prop function to get the text field DOM reference from the TextField.
+   *
+   * @default ''
+   */
+  anchorElementRefPropName?: string;
+  /** aria-label */
+  'aria-label'?: string;
+  /** aria-labelledby */
+  'aria-labelledby'?: string;
+  /**
+   * Determine whether focus on a menu-item when Menu opens
+   *
+   * @default false
+   */
+  autoFocus?: boolean;
+  /** Menu contents, normally are `MenuItem`s. */
+  children?:
+    | React.ReactElement<MenuItemProps>
+    | React.ReactElement<MenuItemProps>[];
+  /** Class to be assigned to Menu. Use to extend the style. */
+  className?: string;
+  /**
+   * Determine whether Menu is disabled
+   *
+   * @default false
+   */
+  disabled?: boolean;
+  /**
+   * Determine whether MenuItem can be searched by typing
+   *
+   * @default false
+   */
+  disableSearch?: boolean;
+  /** A callback function to get index of current selected item in Menu */
+  getSelectedIndex?: (index: number) => void;
+  /**
+   * Determine whether the MenuItem is highlighted
+   *
+   * @default -1
+   */
+  highlightIndex?: number;
+  /** ID to be applied to the menu. */
+  id?: string;
+  /**
+   * Array of classnames.
+   * If these classnames are clicked, the component is not to call onBlur.
+   *
+   * @default []
+   */
+  ignoreIdsOnBlur?: string[];
+  /** Determine the maximum width of Menu, unit is px. */
+  maxHeight?: string | number;
+  /**
+   * An ARIA role to be assigned to MenuItem.
+   *
+   * @default 'menuitem'
+   */
+  menuItemRole?: string;
+  /**
+   * An ARIA role to be assigned to Menu.
+   *
+   * @default 'menu'
+   */
+  menuRole?: string;
+  /** Determine the minimum width of Menu, unit is px. */
+  minWidth?: string | number;
+  /** Callback fired when the Menu wants to blur */
+  onBlur?: (e: React.KeyboardEvent | React.FocusEvent) => void;
+  /** Callback fired when the Menu wants to close */
+  onClose?: (e: React.KeyboardEvent | React.FocusEvent) => void;
+  /** Callback fired when the mouse hover the Menu */
+  onMouseEnter?: React.MouseEventHandler;
+  /** onSelect callback receive from parent to handle open/close, get selectedItem */
+  onSelect?: (
+    e: React.MouseEvent<HTMLLIElement> | React.KeyboardEvent<HTMLLIElement>
+  ) => void;
+  /** Callback fired when the Menu gets clicked away */
+  onClickAway?: (e: React.MouseEvent | React.KeyboardEvent) => void;
+  /** If `true`, the Menu shows. */
+  open: boolean;
+  /**
+   * menuOffsetSkidding: the cross-axis pixel distance that the popup should be offset from targetElement
+   *
+   * @default 0
+   */
+  menuOffsetSkidding?: number;
+  /**
+   * menuOffsetDistance: the main-axis pixel distance that the popup should be offset from targetElement
+   *
+   * @default 0
+   */
+  menuOffsetDistance?: number;
+  /**
+   * menuOffsetX: the x axis pixel distance that the popup should be offset from targetElement
+   *
+   * @default 0
+   * @deprecated Please use menuOffsetSkidding instead
+   */
+  menuOffsetX?: number;
+  /**
+   * menuOffsetY: the y axis pixel distance that the popup should be offset from targetElement
+   *
+   * @default 0
+   * @deprecated Please use menuOffsetDistance instead
+   */
+  menuOffsetY?: number;
+  /**
+   * Position to show the Menu, value is string of alignments
+   * vertical: 'top', 'bottom'
+   * horizontal: 'left', 'right'
+   * NOTE: horizontal alignments cannot be paired with horizontal positions
+   *
+   * @default 'bottom'
+   */
+  position?: Positions;
+  /**
+   * preventMenuOverflow: an object variable; used to prevent Menu from being positioned outside the boundary.
+   * More detail in @ids-ts/position preventOverflow API document.
+   */
+  preventMenuOverflow?: PreventOverflow;
+  /** Callback that returns the ref for menu */
+  reference?: (c: HTMLUListElement | null) => void;
+  /**
+   * This will ensure that the currently highlighted element will scroll
+   * into the Menu view to always be visible if necessary
+   *
+   * @default false
+   */
+  scrollToSelected?: boolean;
+  /**
+   * Determine which search type to apply while typing
+   * full - search sequentially adding typed symbols from the beginning
+   * first - mimic all behavior to match first char only
+   * partial - search for the first occurrence in the middle of displayed items
+   *
+   * @default 'first'
+   */
+  searchMode?: 'full' | 'first' | 'partial';
+  /** This will highlight the selectedItem in Menu */
+  selectedItem?: string | number | (string | number)[];
+  /**
+   * This will show a CheckMark on the current selected item in Menu
+   *
+   * @default false
+   */
+  showCheckmark?: boolean;
+  /** Affects size of text rendered next to checkbox
+   *
+   * @default 'medium'
+   *
+   */
+  size?: 'small' | 'medium';
+  /** The optional styles applied to the MenuList. */
+  style?: React.CSSProperties;
+  /** The optional styles applied to the position node wrapped around the root node. */
+  stylePosition?: React.CSSProperties;
+  /**
+   * Dependencies that will cause the popperjs instance to recalculate its position, whenever any of the dependencies change.
+   * These dependencies work the same way as the list you would pass into a React useEffect()
+   */
+  positionDependencies?: unknown[];
+}
+
+export interface MenuItemProps extends ThemeableElement<'li'> {
+  /**
+   * Showing CheckMark on current selected item in Menu
+   *
+   * @default false
+   */
+  checkmark?: boolean;
+  /**
+   * Disable MenuItem if true.
+   *
+   * @default false
+   */
+  disabled?: boolean;
+  /**
+   * Set if the MenuItem is highlighted or not.
+   *
+   * @default false
+   */
+  highlighted?: boolean;
+  /** Id for component. Assigns a unique id if not provided. */
+  id?: string;
+  /** Menu item label for Dropdown */
+  menuItemLabel?: string | number;
+  /** Callback function to be executed on mouse enter. */
+  onMouseEnter?: React.MouseEventHandler;
+  /** Callback function to be executed on mouse leave. */
+  onMouseLeave?: React.MouseEventHandler;
+  /** Callback function to be executed on click. */
+  onClick?: React.MouseEventHandler;
+  /** Callback function to be executed on keydown. */
+  onKeyDown?: React.KeyboardEventHandler;
+  /** Callback function to be executed on keyUp. */
+  onKeyUp?: React.KeyboardEventHandler;
+  /** Callback function to be executed on selection. Internal use only. */
+  onSelect?: (
+    e: React.MouseEvent<HTMLLIElement> | React.KeyboardEvent<HTMLLIElement>
+  ) => void;
+  /**
+   * An ARIA role to be assigned to MenuItem.
+   *
+   * @default 'menuitem'
+   */
+  role?: string;
+  /** Affects size of text rendered next to checkbox
+   *
+   * @default 'medium'
+   *
+   */
+  size?: 'small' | 'medium';
+  /**
+   * Set if the MenuItem is selected or not.
+   *
+   * @default false
+   */
+  selected?: boolean;
+  /**
+   * Value to be assigned.
+   *
+   * @default ''
+   */
+  value?: string | number;
+  /** Determines the type of MenuItem, can be status. */
+  type?: 'status';
+}
+```
+
+</details>
+
+## Sub-Components
+
+### MenuItem
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `checkmark` | `boolean` | No | - |
+| `disabled` | `boolean` | No | - |
+| `highlighted` | `boolean` | No | - |
+| `id` | `string` | No | Id for component. Assigns a unique id if not provided. |
+| `menuItemLabel` | `string | number` | No | Menu item label for Dropdown |
+| `onMouseEnter` | `React.MouseEventHandler` | No | Callback function to be executed on mouse enter. |
+| `onMouseLeave` | `React.MouseEventHandler` | No | Callback function to be executed on mouse leave. |
+| `onClick` | `React.MouseEventHandler` | No | Callback function to be executed on click. |
+| `onKeyDown` | `React.KeyboardEventHandler` | No | Callback function to be executed on keydown. |
+| `onKeyUp` | `React.KeyboardEventHandler` | No | Callback function to be executed on keyUp. |
+| `onSelect` | `(e: React.MouseEvent<HTMLLIElement> \| React.KeyboardEvent) => void` | No | Selection callback. Internal use only. |
+| `role` | `string` | No | - |
+| `size` | `'small' | 'medium'` | No | - |
+| `selected` | `boolean` | No | - |
+| `value` | `string | number` | No | - |
+| `type` | `'status'` | No | Determines the type of MenuItem, can be status. |
+
+<details>
+<summary>Full MenuItem TypeScript Interface</summary>
+
+```typescript
+export interface MenuItemProps extends ThemeableElement<'li'> {
+  /**
+   * Showing CheckMark on current selected item in Menu
+   *
+   * @default false
+   */
+  checkmark?: boolean;
+  /**
+   * Disable MenuItem if true.
+   *
+   * @default false
+   */
+  disabled?: boolean;
+  /**
+   * Set if the MenuItem is highlighted or not.
+   *
+   * @default false
+   */
+  highlighted?: boolean;
+  /** Id for component. Assigns a unique id if not provided. */
+  id?: string;
+  /** Menu item label for Dropdown */
+  menuItemLabel?: string | number;
+  /** Callback function to be executed on mouse enter. */
+  onMouseEnter?: React.MouseEventHandler;
+  /** Callback function to be executed on mouse leave. */
+  onMouseLeave?: React.MouseEventHandler;
+  /** Callback function to be executed on click. */
+  onClick?: React.MouseEventHandler;
+  /** Callback function to be executed on keydown. */
+  onKeyDown?: React.KeyboardEventHandler;
+  /** Callback function to be executed on keyUp. */
+  onKeyUp?: React.KeyboardEventHandler;
+  /** Callback function to be executed on selection. Internal use only. */
+  onSelect?: (
+    e: React.MouseEvent<HTMLLIElement> | React.KeyboardEvent<HTMLLIElement>
+  ) => void;
+  /**
+   * An ARIA role to be assigned to MenuItem.
+   *
+   * @default 'menuitem'
+   */
+  role?: string;
+  /** Affects size of text rendered next to checkbox
+   *
+   * @default 'medium'
+   *
+   */
+  size?: 'small' | 'medium';
+  /**
+   * Set if the MenuItem is selected or not.
+   *
+   * @default false
+   */
+  selected?: boolean;
+  /**
+   * Value to be assigned.
+   *
+   * @default ''
+   */
+  value?: string | number;
+  /** Determines the type of MenuItem, can be status. */
+  type?: 'status';
+}
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container-complementary** — Elevated surface colors (modals, popovers, dropdowns)
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+**icon** — Icon fill and stroke colors
+- `--color-icon-accent`
+- `--color-icon-complementary`
+- `--color-icon-disabled`
+
+**action** — Interactive element colors and hover/active/focus states
+- `--color-action-complementary`
+- `--color-action-complementary-active`
+- `--color-action-complementary-border`
+
+### Space
+
+**container** — Container padding
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+**component** — Component-level spacing (padding, gap)
+- `--space-component-gap-large`
+- `--space-component-gap-medium`
+- `--space-component-gap-small`
+
+### Radius
+
+**radius** — Border radius for elevated surfaces
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Shadow
+
+**shadow** — Elevation shadow
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+### Size
+
+**icon** — Standard icon dimensions
+
+## Usage Patterns
+
+### Basic
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState('');
+  const [autoFocus, setAutoFocus] = useState(false);
+
+  const handleClose = () => setOpen(false);
+  const handleButtonClick = () => setOpen(!open);
+
+  const handleSelect = (e: any) => {
+    setSelectedItem(e.target.value);
+    setOpen(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (['ArrowDown', ' ', 'Enter'].indexOf(e.key) > -1) {
+      e.preventDefault();
+      setOpen(true);
+      setAutoFocus(true);
+    } else if (e.key === 'Tab') {
+      setOpen(false);
+    } else if (e.key === 'Escape' && open) {
+      e.preventDefault();
+      handleClose();
+    }
+  };
+
+  return (
+    <Menu
+      minWidth="99px"
+      open={open}
+      autoFocus={autoFocus}
+      selectedItem={selectedItem}
+      anchorElement={
+        <Button
+          name="buttonToOpen"
+          aria-haspopup="true"
+          aria-expanded={open}
+          className="anchorButton"
+          onClick={handleButtonClick}
+          onKeyDown={handleKeyDown}
+        >
+          Select a Screen Reader
+        </Button>
+      }
+      onSelect={handleSelect}
+      onClose={handleClose}
+    >
+      {menuItems}
+    </Menu>
+  );
+}
+```
+
+### Selected Item With Check Mark
+
+```tsx
+({ alignment }) => {
+  const [open, setOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState('');
+  const [autoFocus, setAutoFocus] = useState(false);
+
+  const handleClose = () => setOpen(false);
+  const handleButtonClick = () => setOpen(!open);
+
+  const handleSelect = (e: any) => {
+    setSelectedItem(e.target.value);
+    setOpen(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (['ArrowDown', ' ', 'Enter'].indexOf(e.key) > -1) {
+      e.preventDefault();
+      setOpen(true);
+      setAutoFocus(true);
+    } else if (e.key === 'Tab') {
+      setOpen(false);
+    } else if (e.key === 'Escape' && open) {
+      e.preventDefault();
+      handleClose();
+    }
+  };
+
+  return (
+    <Menu
+      showCheckmark
+      minWidth="127px"
+      alignment={alignment}
+      open={open}
+      autoFocus={autoFocus}
+      selectedItem={selectedItem}
+      anchorElement={
+        <Button
+          aria-haspopup="true"
+          aria-expanded={open}
+          className="anchorButton"
+          onClick={handleButtonClick}
+          onKeyDown={handleKeyDown}
+        >
+          My Orders
+        </Button>
+      }
+      onSelect={handleSelect}
+      onClose={handleClose}
+    >
+      <MenuItem value="Refund">Track my Refund</MenuItem>
+      <MenuItem value="View">View Order Details</MenuItem>
+      <MenuItem value="Return">Start a Return</MenuItem>
+      <MenuItem value="Exchange">Exchange Item</MenuItem>
+    </Menu>
+  );
+}
+```
+
+### Drop Down Text With Theme
+
+```tsx
+({ alignment }) => {
+  const [open, setOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState('');
+  const [autoFocus, setAutoFocus] = useState(false);
+
+  const handleClose = () => setOpen(false);
+  const handleButtonClick = () => setOpen(!open);
+
+  const handleSelect = (e: any) => {
+    setSelectedItem(e.target.value);
+    setOpen(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (['ArrowDown', ' ', 'Enter'].indexOf(e.key) > -1) {
+      e.preventDefault();
+      setOpen(true);
+      setAutoFocus(true);
+    } else if (e.key === 'Tab') {
+      setOpen(false);
+    } else if (e.key === 'Escape' && open) {
+      e.preventDefault();
+      handleClose();
+    }
+  };
+
+  return (
+    <>
+      <Menu
+        showCheckmark
+        theme="quickbooks"
+        minWidth="127px"
+        alignment={alignment}
+        open={open}
+        autoFocus={autoFocus}
+        selectedItem={selectedItem}
+        anchorElement={
+          <Button
+            aria-haspopup="true"
+            aria-expanded={open}
+            className="anchorButton"
+            onClick={handleButtonClick}
+            onKeyDown={handleKeyDown}
+          >
+            My Orders
+          </Button>
+        }
+        onSelect={handleSelect}
+        onClose={handleClose}
+      >
+        <MenuItem disabled value="Refund">
+          Track my Refund
+        </MenuItem>
+        <MenuItem value="View">View Order Details</MenuItem>
+        <MenuItem value="Return">Start a Return</MenuItem>
+        <MenuItem value="Exchange">Exchange Item</MenuItem>
+      </Menu>
+      <B2 as="p">
+        This is an example of a menu with the <strong>quickbooks</strong> theme
+        resulting in a specific background color of the menu items.
+      </B2>
+    </>
+  );
+}
+```
+
+### Highlight By Controlled
+
+```tsx
+() => {
+  const [highlightIndex, setHighlightIndex] = useState(-1);
+  const [open, setOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState('');
+  const [autoFocus, setAutoFocus] = useState(false);
+
+  const handleClose = () => setOpen(false);
+  const handleButtonClick = () => setOpen(!open);
+  const handleMouseEnter = () => setHighlightIndex(-1);
+
+  const handleSelect = (e: any) => {
+    setSelectedItem(e.target.value);
+    setOpen(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (['ArrowDown', ' ', 'Enter'].indexOf(e.key) > -1) {
+      e.preventDefault();
+      setOpen(true);
+      setAutoFocus(true);
+    } else if (e.key === 'Tab') {
+      setOpen(false);
+    } else if (e.key === 'Escape' && open) {
+      e.preventDefault();
+      handleClose();
+    }
+  };
+
+  const handleRadio = (e: any) =>
+    setHighlightIndex(parseInt(e.target.value, 10));
+
+  const radioItems = menuOptions.map((item, i) => (
+    <Radio key={item} disabled={item === 'Other'} value={i.toString()}>
+      {item}
+    </Radio>
+  ));
+
+  return (
+    <>
+      <div style={{ marginBottom: 30 }}>
+        <B2>Pick a Screen Reader from the options below</B2>
+        <RadioGroup
+          vertical
+          label="Highlight a screen reader"
+          value={highlightIndex.toString()}
+          onChange={handleRadio}
+        >
+          {radioItems}
+        </RadioGroup>
+      </div>
+      <Menu
+        showCheckmark
+        minWidth="99px"
+        open={open}
+        autoFocus={autoFocus}
+        highlightIndex={highlightIndex}
+        alignment="right"
+        selectedItem={selectedItem}
+        anchorElement={
+          <Button
+            name="anchorButton"
+            aria-haspopup="true"
+            aria-expanded={open}
+            className="anchorButton"
+            onClick={handleButtonClick}
+            onKeyDown={handleKeyDown}
+          >
+            Select a Screen Reader
+          </Button>
+        }
+        onMouseEnter={handleMouseEnter}
+        onSelect={handleSelect}
+        onClose={handleClose}
+      >
+        {menuItems}
+      </Menu>
+      <B2 as="p">
+        I am an example where selecting a choice results in auto highlighting
+        and selection of the corresponding menu item below.
+      </B2>
+// ...
+```
+
+### Drop Down Text
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState('');
+  const [textFieldValue, setTextFieldValue] = useState('');
+  const [autoFocus, setAutoFocus] = useState(false);
+  const inputRef = React.useRef<HTMLInputElement | null>(null);
+  const menuListRef = React.useRef<HTMLUListElement | null>(null);
+
+  const handleClick = () => {
+    setOpen(!open);
+    setAutoFocus(false);
+  };
+
+  const handleSelect = (
+    e: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>
+  ) => {
+    setOpen(false);
+    setAutoFocus(false);
+    // @ts-expect-error: value does not exist on EventTarget
+    setSelectedItem(e.target.value);
+    // @ts-expect-error: value does not exist on EventTarget
+    setTextFieldValue(e.target.value);
+    inputRef.current && inputRef.current.focus();
+  };
+
+  const handleClose = () => {
+    if (open && inputRef.current) {
+      setAutoFocus(false);
+      setOpen(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowDown') {
+      setAutoFocus(true);
+      setOpen(true);
+    } else if (e.key === 'Tab') {
+      inputRef.current && inputRef.current.blur();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      handleClose();
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent) => {
+    // @ts-expect-error: value exists on target
+    setTextFieldValue(e.target.value);
+  };
+
+  const handleBlur = (e: React.FocusEvent) => {
+    const activeElement = e.relatedTarget || document.activeElement;
+    if (menuListRef.current && menuListRef.current.contains(activeElement)) {
+      return;
+    }
+
+    if (open) {
+      setAutoFocus(false);
+      setOpen(false);
+    }
+  };
+
+  const handleMenuRef = (elem: HTMLUListElement | null) => {
+    if (elem) {
+      menuListRef.current = elem;
+    }
+  };
+
+  const menuWidth = inputRef.current
+    ? `${inputRef.current.offsetWidth}px`
+    : '185px';
+
+  return (
+    <>
+      <Menu
+        minWidth={menuWidth}
+        selectedItem={selectedItem}
+        autoFocus={autoFocus}
+        open={open}
+        menuItemRole="option"
+        menuRole="listbox"
+// ...
+```
+
+### Scroll Into View
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState('');
+  const [highlightIndex, setHighlightIndex] = useState(-1);
+  const [inputValue, setInputValue] = useState<string>();
+  const inputRef = React.useRef<HTMLInputElement | null>(null);
+  const menuListRef = React.useRef<HTMLUListElement | null>(null);
+  const itemData = menuOptions.map((label, i) => ({
+    value: i.toString(),
+    label
+  }));
+
+  const onClick = () => setOpen(!open);
+  const onMouseEnter = () => setHighlightIndex(-1);
+
+  const getIndexFromValue = (value: string) => {
+    let index = -1;
+    itemData.some((item, i) => {
+      if (item.value === value) {
+        index = i;
+        return true;
+      }
+
+      return false;
+    });
+    return index;
+  };
+
+  const getSelectedLabel = (value: string) => {
+    const index = getIndexFromValue(value);
+    if (index > -1) {
+      return itemData[index].label;
+    }
+
+    return '';
+  };
+
+  const getHighlightIndex = (keyName: string) => {
+    const selectedIndex = getIndexFromValue(selectedItem);
+    const dataLength = itemData.length;
+    let tempHighlightIndex = highlightIndex;
+    if (selectedIndex > -1 && highlightIndex === -1) {
+      tempHighlightIndex = selectedIndex;
+    }
+
+    if (keyName === 'ArrowDown') {
+      if (open) {
+        tempHighlightIndex =
+          highlightIndex === -1 ? 0 : (highlightIndex + 1) % dataLength;
+      } else {
+        tempHighlightIndex = highlightIndex === -1 ? 0 : highlightIndex;
+      }
+    }
+
+    if (keyName === 'ArrowUp') {
+      if (open) {
+        tempHighlightIndex =
+          highlightIndex === -1
+            ? dataLength - 1
+            : (highlightIndex - 1 + dataLength) % dataLength;
+      } else {
+        tempHighlightIndex =
+          highlightIndex === -1 ? dataLength - 1 : highlightIndex;
+      }
+    }
+
+    return tempHighlightIndex;
+  };
+
+  const onSelect = (e: any) => {
+    setOpen(false);
+    setSelectedItem(e.target.value);
+    setInputValue(getSelectedLabel(e.target.value));
+    setHighlightIndex(-1);
+    inputRef.current && inputRef.current.focus();
+  };
+
+  const onBlur = (event: React.FocusEvent) => {
+    const activeElement = event.relatedTarget || document.activeElement;
+    if (menuListRef.current && menuListRef.current.contains(activeElement)) {
+// ...
+```
+
+### Font Size Comparison
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState('');
+  const [autoFocus, setAutoFocus] = useState(false);
+
+  const handleClose = () => setOpen(false);
+  const handleButtonClick = () => setOpen(!open);
+
+  const handleSelect = (e: any) => {
+    setSelectedItem(e.target.value);
+    setOpen(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (['ArrowDown', ' ', 'Enter'].indexOf(e.key) > -1) {
+      e.preventDefault();
+      setOpen(true);
+      setAutoFocus(true);
+    } else if (e.key === 'Tab') {
+      setOpen(false);
+    } else if (e.key === 'Escape' && open) {
+      e.preventDefault();
+      handleClose();
+    }
+  };
+
+  const anchorButton = (
+    <Button
+      name="buttonToOpen"
+      aria-haspopup="true"
+      aria-expanded={open}
+      className="anchorButton"
+      onClick={handleButtonClick}
+      onKeyDown={handleKeyDown}
+    >
+      Choose a Screen Reader
+    </Button>
+  );
+
+  return (
+    <>
+      <H3>Font Size Comparison</H3>
+      <div style={{ display: 'flex' }}>
+        <div style={{ padding: '20px' }}>
+          <H4>Small Menu</H4>
+          <Menu
+            minWidth="99px"
+            open={open}
+            size="small"
+            autoFocus={autoFocus}
+            selectedItem={selectedItem}
+            anchorElement={anchorButton}
+            onSelect={handleSelect}
+            onClose={handleClose}
+          >
+            {menuItems}
+          </Menu>
+        </div>
+        <div style={{ padding: '20px' }}>
+          <H4>Medium Menu</H4>
+          <Menu
+            minWidth="99px"
+            open={open}
+            size="medium"
+            autoFocus={autoFocus}
+            selectedItem={selectedItem}
+            anchorElement={anchorButton}
+            onSelect={handleSelect}
+            onClose={handleClose}
+          >
+            {menuItems}
+          </Menu>
+        </div>
+      </div>
+    </>
+  );
+}
+```
+
+### Playground
+
+```tsx
+({
+  alignment,
+  disabled,
+  disableSearch,
+  highlightIndex,
+  maxHeight,
+  menuOffsetDistance,
+  menuOffsetSkidding,
+  minWidth,
+  position,
+  scrollToSelected,
+  searchMode,
+  showCheckmark,
+  size
+}) => {
+  const [open, setOpen] = useState(false);
+  const [delayedOpen, setDelayedOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState('');
+  const [autoFocus, setAutoFocus] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    delayedOpen && setOpen(true);
+    setDelayedOpen(false);
+  }, [delayedOpen]);
+
+  const handleButtonClick = () => setOpen(!open);
+  const handleClose = () => setOpen(false);
+
+  const handleSelect = (e: any) => {
+    setSelectedItem(e.target.value);
+    setOpen(false);
+    buttonRef.current?.focus();
+  };
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (['ArrowDown', ' ', 'Enter'].indexOf(e.key) > -1) {
+      e.preventDefault();
+      setAutoFocus(true);
+      setOpen(!open);
+      open && setDelayedOpen(true);
+    } else if (e.key === 'Tab') {
+      setOpen(false);
+    } else if (e.key === 'Escape' && open) {
+      e.preventDefault();
+      handleClose();
+    }
+  };
+
+  return (
+    <Menu
+      autoFocus={autoFocus}
+      alignment={alignment}
+      position={position}
+      disabled={disabled}
+      disableSearch={disableSearch}
+      highlightIndex={highlightIndex}
+      maxHeight={maxHeight}
+      minWidth={minWidth}
+      menuOffsetSkidding={menuOffsetSkidding}
+      menuOffsetDistance={menuOffsetDistance}
+      searchMode={searchMode}
+      showCheckmark={showCheckmark}
+      scrollToSelected={scrollToSelected}
+      size={size}
+      open={open}
+      data-automation-id="dropButton"
+      selectedItem={selectedItem}
+      anchorElement={
+        <Button
+          innerRef={buttonRef}
+          name="buttonToOpen"
+          aria-haspopup="true"
+          aria-expanded={open}
+          className="anchorButton"
+          onClick={handleButtonClick}
+          onKeyDown={handleKeyDown}
+        >
+          My Orders
+        </Button>
+// ...
+```
+
+### Showcase
+
+```tsx
+() => {
+  const {
+    open: open1,
+    autoFocus: autoFocus1,
+    selectedItem: selectedItem1,
+    anchorElement: anchorElement1,
+    handleSelect: handleSelect1,
+    handleClose: handleClose1
+  } = useMenu();
+  const {
+    open: open2,
+    autoFocus: autoFocus2,
+    selectedItem: selectedItem2,
+    anchorElement: anchorElement2,
+    handleSelect: handleSelect2,
+    handleClose: handleClose2
+  } = useMenu();
+  const {
+    open: open3,
+    autoFocus: autoFocus3,
+    selectedItem: selectedItem3,
+    anchorElement: anchorElement3,
+    handleSelect: handleSelect3,
+    handleClose: handleClose3
+  } = useMenu();
+  const {
+    open: open4,
+    autoFocus: autoFocus4,
+    selectedItem: selectedItem4,
+    anchorElement: anchorElement4,
+    handleSelect: handleSelect4,
+    handleClose: handleClose4
+  } = useMenu();
+
+  const menuItems = [
+    'JAWS',
+    'NVDA',
+    'VoiceOver',
+    'Other',
+    'ZoomText/Fusion',
+    'System Access or SA To Go',
+    'Narrator',
+    'ChromeVox'
+  ].map((item) => (
+    <MenuItem key={item} disabled={item === 'Other'} value={item}>
+      {item}
+    </MenuItem>
+  ));
+
+  return (
+    <>
+      <Menu
+        minWidth="99px"
+        alignment="left"
+        open={open1}
+        autoFocus={autoFocus1}
+        selectedItem={selectedItem1}
+        anchorElement={anchorElement1}
+        onSelect={handleSelect1}
+        onClose={handleClose1}
+      >
+        {menuItems}
+      </Menu>
+      <B2 as="p">I am an example of a standard IDS menu component.</B2>
+
+      <Menu
+        showCheckmark
+        minWidth="127px"
+        alignment="left"
+        open={open2}
+        autoFocus={autoFocus2}
+        selectedItem={selectedItem2}
+        anchorElement={anchorElement2}
+        onSelect={handleSelect2}
+        onClose={handleClose2}
+      >
+        {menuItems}
+      </Menu>
+      <B2 as="p">
+        I am an example of a menu where once the user selects an menu item, a{' '}
+// ...
+```
+
+## Composes With
+
+- TextField
+- Button
+- Typography
+- Radio
+- Position
+
+---
+
+## References
+
+- [GitHub Source - Menu](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/Menu)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/menu.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-menu&theme=quickbooks&colorScheme=light)

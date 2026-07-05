@@ -1,0 +1,252 @@
+---
+description: Complete guide for using the Position component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# Position
+
+This component is used to position components relative to a reference element on the page.
+Position is used inside of IDS Components: Dropdown, DropdownButton, Menu, and SplitButton.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/position
+```
+
+```tsx
+import { Position } from '@ids-ts/position';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `alignments` | `Alignments` | No | Alignment: vertical (`'top'`, `'bottom'`, `'middle'`), horizontal (`'left'`, `'right'`, `'center'`). |
+| `children` | `React.ReactNode` | No | The element would be rendered in correct position to show. |
+| `className` | `string` | No | Optional className applied to root node. |
+| `anchorId` | `string` | No | Identifier for the anchor element (e.g., `'componentName-topPosition-leftAlignment'`). |
+| `id` | `string` | No | Optional id to be passed to the portal |
+| `offsetSkidding` | `number` | No | Cross-axis pixel offset. |
+| `offsetDistance` | `number` | No | Main-axis pixel offset. |
+| `offsetX` | `number` | No | X-axis pixel offset. |
+| `offsetY` | `number` | No | Y-axis pixel offset. |
+| `positions` | `string[]` | No | Positions to try: `'top'`, `'bottom'`, `'left'`, `'right'`. |
+| `preventOverflow` | `PreventOverflow` | No | Prevents the popup from being positioned outside the boundary. |
+| `show` | `boolean` | No | Whether to show the rendered children |
+| `targetElement` | `Element | HTMLElement | null` | No | The HTML DOM element used for target. |
+| `style` | `React.CSSProperties` | No | Optional style applied to root node. |
+| `positionDependencies` | `unknown[]` | No | - |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface PositionProps {
+  /**
+   * vertical alignments: top, bottom, middle
+   * horizontal alignments: left, right, center
+   * NOTE: horizontal alignments cannot be paired with horizontal positions
+   *
+   * @default 'left'
+   */
+  alignment?: Alignments;
+  /** The element would be rendered in correct position to show. */
+  children?: React.ReactNode;
+  /** Optional className applied to root node. */
+  className?: string;
+  /**
+   * componentName is a required prefix with rendered position to generate a position className,
+   * if componentName is not given, then no position className been added.
+   * Position className would like: componentName-topPosition-leftAlignment
+   */
+  componentName?: string;
+  /** Optional id to be passed to the portal */
+  id?: string;
+  /**
+   * offsetSkidding: the cross-axis pixel distance that the popup should be offset from targetElement
+   *
+   * @default 0
+   */
+  offsetSkidding?: number;
+  /**
+   * offsetDistance: the main-axis pixel distance that the popup should be offset from targetElement
+   *
+   * @default 0
+   */
+  offsetDistance?: number;
+  /**
+   * offsetX: the x axis pixel distance that the popup should be offset from targetElement
+   *
+   * @default 0
+   * @deprecated Please use offsetSkidding instead
+   */
+  offsetX?: number;
+  /**
+   * offsetY: the y axis pixel distance that the popup should be offset from targetElement
+   *
+   * @default 0
+   * @deprecated Please use offsetDistance instead
+   */
+  offsetY?: number;
+  /**
+   * vertical positions: top, bottom
+   * horizontal positions: left, right
+   * NOTE: horizontal alignments cannot be paired with horizontal positions
+   *
+   * @default 'top'
+   */
+  position?: Positions;
+  /**
+   * preventOverflow: used to prevent the popper from being positioned outside the boundary.
+   * options:
+   * mainAxis: boolean, // true
+   * altAxis: boolean, // false
+   * padding: number | Partial<SideObject>, // 0
+   * boundary: HTMLElement | HTMLElement[] | "clippingParents", // "clippingParents"
+   * altBoundary: boolean, // false
+   * rootBoundary: "viewport" | "document", // "viewport"
+   * tether: boolean, // true
+   * tetherOffset: (({ popper: Rect, reference: Rect, placement: Placement }) => number) | number, // 0
+   * More detail in popper.js modifiers: preventOverflow API document.
+   */
+  preventOverflow?: Options;
+  /** Whether to show the rendered children */
+  show?: boolean;
+  /** The HTML DOM element used for target. */
+  targetElement?: Element | HTMLElement | null;
+  /** Optional style applied to root node. */
+  style?: React.CSSProperties;
+  /**
+   * Dependencies that will cause the popperjs instance to recalculate its position, whenever any of the dependencies change.
+   * These dependencies work the same way as the list you would pass into a React useEffect()
+   */
+  positionDependencies?: unknown[];
+}
+
+export type Alignments =
+  | 'left'
+  | 'right'
+  | 'top'
+  | 'bottom'
+  | 'middle'
+  | 'center';
+
+export type Positions = 'top' | 'bottom' | 'left' | 'right';
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Position Element Inside Iframe
+
+```tsx
+() => {
+  const [iframeLoaded, setIframeLoaded] = useState(false);
+  const iframeRef = React.useRef<HTMLIFrameElement>(null);
+  return (
+    <iframe
+      ref={iframeRef}
+      title="testPortalIframe"
+      onLoad={() => setIframeLoaded(true)}
+    >
+      {iframeLoaded && iframeRef.current && (
+        <Portal ownerDocument={iframeRef.current.contentDocument}>
+          <Showcase />
+        </Portal>
+      )}
+    </iframe>
+  );
+}
+```
+
+### Showcase
+
+```tsx
+() => {
+  const [show, setShow] = useState(false);
+  const [target, setTarget] = useState<HTMLElement>();
+  const buttonRef = React.createRef<HTMLButtonElement>();
+  const handleClick = (ref: React.RefObject<HTMLButtonElement>) => {
+    // eslint-disable-next-line react/no-find-dom-node
+    const newTarget = ReactDOM.findDOMNode(ref.current);
+    setTarget(newTarget as HTMLElement);
+    setShow(!show);
+  };
+
+  return (
+    <>
+      <Button
+        innerRef={buttonRef}
+        type="button"
+        style={buttonStyle}
+        onClick={() => handleClick(buttonRef)}
+      >
+        With Offset!
+      </Button>
+
+      <Position
+        componentName="TestPosition"
+        targetElement={target as Element}
+        offsetSkidding={175}
+        offsetDistance={50}
+        show={show}
+      >
+        <div style={childStyle}>
+          I have a 175 pixel cross-axis skidding and 50 pixel main-axis
+          distance!
+        </div>
+      </Position>
+    </>
+  );
+}
+```
+
+## Composes With
+
+- Button
+- Portal
+
+---
+
+## References
+
+- [GitHub Source - Position](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/Position)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-position&theme=quickbooks&colorScheme=light)

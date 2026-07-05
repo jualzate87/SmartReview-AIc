@@ -1,0 +1,199 @@
+---
+description: Complete guide for using the LinkActionButton component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# LinkActionButton
+
+A Link Action Button is a button that appear as highlighted words or images and take users to another page or screen.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/link-action-button
+```
+
+```tsx
+import { LinkActionButton } from '@ids-ts/link-action-button';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `automationId` | `string` | No | ID for automation tests |
+| `size` | `LinkActionButtonSize` | Yes | - |
+| `weight` | `LinkActionButtonWeight` | No | - |
+| `alignment` | `'left' | 'right'` | No | - |
+| `innerRef` | `| ((instance: HTMLButtonElement | null) => void...` | No | Function to return innerRef |
+| `variant` | `LinkActionButtonVariant` | No | - |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface LinkActionButtonProps extends ThemeableElement<'button'> {
+  /** ID for automation tests */
+  automationId?: string;
+  /**
+   * Specifies Button size, 'extraSmall', 'small' or 'medium'
+   *
+   * @default 'small'
+   */
+  size: LinkActionButtonSize;
+  /**
+   * variation for font weights
+   *
+   * @default 'medium'
+   */
+  weight?: LinkActionButtonWeight;
+  /**
+   * provide alignment for Link Action Button
+   *
+   * @default 'right'
+   */
+  alignment?: 'left' | 'right';
+  /** Function to return innerRef */
+  innerRef?:
+    | ((instance: HTMLButtonElement | null) => void)
+    | React.RefObject<HTMLButtonElement>
+    | null
+    | undefined;
+  /** Determines the type of link, primary or secondary
+   *
+   * @default standalone
+   */
+  variant?: LinkActionButtonVariant;
+}
+
+export type LinkActionButtonSize = 'extraSmall' | 'small' | 'medium';
+
+export type LinkActionButtonWeight = 'regular' | 'medium' | 'demi';
+
+export type LinkActionButtonVariant = 'standalone' | 'secondary';
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**action** — Interactive element colors and hover/active/focus states
+- `--color-action-complementary`
+- `--color-action-complementary-active`
+- `--color-action-complementary-border`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**component** — Component-level spacing (padding, gap)
+- `--space-component-gap-large`
+- `--space-component-gap-medium`
+- `--space-component-gap-small`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Basic Usage
+
+```tsx
+() => {
+  const largeMargin = { margin: '20px' };
+
+  return (
+    <div>
+      <div style={largeMargin}>
+        <LinkActionButton
+          size="medium"
+          onClick={action('Add functionality for link action button')}
+        >
+          Close - Medium
+        </LinkActionButton>
+      </div>
+      <div style={largeMargin}>
+        <LinkActionButton
+          size="small"
+          onClick={action('Add functionality for link action button')}
+        >
+          Dismiss - Small
+        </LinkActionButton>
+      </div>
+      <div style={largeMargin}>
+        <LinkActionButton
+          size="extraSmall"
+          onClick={action('Add functionality for link action button')}
+        >
+          Undo - Extra Small
+        </LinkActionButton>
+      </div>
+    </div>
+  );
+}
+```
+
+### With Variant
+
+```tsx
+() => {
+  const largeMargin = { margin: '20px' };
+
+  return (
+    <div>
+      <div style={largeMargin}>
+        <LinkActionButton
+          variant="secondary"
+          onClick={action('Add functionality for link action button')}
+        >
+          Link Text
+        </LinkActionButton>
+      </div>
+      <div style={largeMargin}>
+        <LinkActionButton
+          variant="standalone"
+          onClick={action('Add functionality for link action button')}
+        >
+          Link Text
+        </LinkActionButton>
+      </div>
+    </div>
+  );
+}
+```
+
+## Code Example
+
+```tsx
+import React from 'react';
+import LinkActionButton from '@ids-ts/link-action-button';
+
+const LinkActionButtonExample = () => (
+  <LinkActionButton
+    size="medium"
+    onClick={() => console.log('Add functionality for link action button')}
+  >
+    Close - Medium
+  </LinkActionButton>
+);
+
+export default LinkActionButtonExample;
+```
+
+---
+
+## References
+
+- [GitHub Source - LinkActionButton](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/LinkActionButton)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/link-action-button.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-linkactionbutton&theme=quickbooks&colorScheme=light)

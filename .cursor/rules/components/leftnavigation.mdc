@@ -1,0 +1,181 @@
+---
+description: Complete guide for using the LeftNavigation component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# LeftNavigation
+
+The IDS Left Nav component displays navigation items, application-specific actions, and a product logo. It gives users the ability to navigate to pre-defined areas in the product by selecting them from the navigation menu. It is designed primarily for use in the Fusion Shell.
+
+This component is currently experimental and its API is subject to change.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/left-navigation
+```
+
+```tsx
+import { LeftNavigation } from '@ids-ts/left-navigation';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `productContent` | `React.ReactNode` | No | Product-specific flex area actions/content to render above the navigaton items list |
+| `footer` | `React.ReactNode` | No | Global navigation actions/content to render at the bottom |
+| `logo` | `React.ReactNode` | No | Product logo to render at the bottom |
+| `open` | `boolean` | No | Whether the Navigation menu is open or not |
+| `anchorElementRefPropName` | `string` | No | Ref prop name if the anchor element is a custom React component. |
+| `onSelect` | `(newSelectedItem: string) => void` | No | * Callback that is invoked whenever a new item is selected, with the ID of the newly selected item |
+| `onClose` | `() => void` | No | - |
+| `variant` | `LeftNavigationVariant` | No | * What use case the left navigation component is for. Defaults to 'unified' |
+| `responsiveHeader` | `string` | No | * Header text to render above all nav items when the left nav is in responsive mode. |
+| `expandedItems` | `string[]` | No | - |
+| `onExpandedChange` | `(expandedItems: string[]) => void` | No | Called when expanded items change. |
+| `defaultExpandedItems` | `string[]` | No | Array of itemIds that should be expanded on initial render. |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface LeftNavigationProps
+  extends Omit<ThemeableElement<'nav'>, 'onSelect'> {
+  /** Product-specific flex area actions/content to render above the navigaton items list */
+  productContent?: React.ReactNode;
+  /** Global navigation actions/content to render at the bottom */
+  footer?: React.ReactNode;
+  /** Product logo to render at the bottom */
+  logo?: React.ReactNode;
+  /** Whether the Navigation menu is open or not */
+  open?: boolean;
+  /**
+   * Unique ID of the currently selected navigation item. This is used to automatically mark child items as selected
+   *
+   * This prop can be ignored if you prefer to manage selected items yourself.
+   * ex: you have a custom wrapper around <NavigationItem /> with your own state management logic
+   */
+  selectedItem?: string;
+  /**
+   * Callback that is invoked whenever a new item is selected, with the ID of the newly selected item
+   */
+  onSelect?: (newSelectedItem: string) => void;
+  /**
+   * Callback that is invoked when the LeftNavigation is closed. This is only used for responsive mode.
+   * If not specified, the component will not turn enter responsive mode at smaller screen sizes
+   */
+  onClose?: () => void;
+  /**
+   * What use case the left navigation component is for. Defaults to 'unified'
+   */
+  variant?: LeftNavigationVariant;
+  /**
+   * Header text to render above all nav items when the left nav is in responsive mode.
+   */
+  responsiveHeader?: string;
+  /**
+   * Array of itemIds that should be expanded.
+   * Required when using controlled mode (when onExpandedChange is provided).
+   */
+  expandedItems?: string[];
+  /**
+   * Callback that is invoked when the expansion state changes, with an array of expanded itemIds.
+   * When provided, the component operates in controlled mode and you must manage expansion state yourself.
+   */
+  onExpandedChange?: (
+    /** Array of currently expanded itemIds */
+    expandedIds: string[],
+    /** Metadata about the change including the action type and affected itemId */
+    meta: {
+      /**
+       * The action that triggered this change: 'expand' or 'collapse'
+       */
+      action: 'expand' | 'collapse';
+      /**
+       * The itemId of the item that was expanded or collapsed
+       */
+      itemId: string;
+    }
+  ) => void;
+  /**
+   * Uncontrolled: array of itemIds that should be expanded on initial render.
+   * The component manages expansion state internally after the initial render.
+   * Only used when onExpandedChange is not provided (uncontrolled mode).
+   * If not provided, parent items of the selectedItem will be automatically expanded.
+   */
+  defaultExpandedItems?: string[];
+}
+
+export type LeftNavigationVariant = 'fusion' | 'unified';
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+The following usage patterns are documented in Storybook:
+
+- **Fusion (Beta)**
+
+## Code Example
+
+```tsx
+<LeftNavigation selectedItem="INVOICES">
+  <LeftNavigation.Group>
+    <LeftNavigation.Item label="Transactions" itemId="TRANSACTIONS">
+      <LeftNavigation.Item label="Invoices" itemId="INVOICES" />
+      <LeftNavigation.Item label="Expenses" itemId="EXPENSES" />
+    </LeftNavigation.Item>
+  </LeftNavigation.Group>
+</LeftNavigation>
+```
+
+## Composes With
+
+- Button
+- IconControl
+
+---
+
+## References
+
+- [GitHub Source - LeftNavigation](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/LeftNavigation)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/left-navigation.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-left-navigation-(beta)&theme=quickbooks&colorScheme=light)

@@ -1,0 +1,47 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.root > * {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.root.spacing-0 {
+  gap: 0px;
+}
+
+.root.spacing-1 {
+  gap: 4px;
+}
+
+.root.spacing-2 {
+  gap: 8px;
+}
+
+.root.spacing-3 {
+  gap: 16px;
+}
+
+.root.spacing-4 {
+  gap: 20px;
+}
+
+.root.spacing-5 {
+  gap: 32px;
+}
+
+.root.spacing-6 {
+  gap: 40px;
+}
+
+.root.spacing-8 {
+  gap: 48px;
+}

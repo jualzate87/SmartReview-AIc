@@ -1,0 +1,463 @@
+---
+description: Complete guide for using the Badge component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# Badge
+
+A badge is used to draw attention to certain information, status, or items that may require the customers' attention. Use badges when communicating status or drawing attention to items, such as:
+
+- Status within tables, tabs, or lists
+- Errors or warnings regarding data we have or information being entered
+- New features or items that have been introduced or in limited release
+
+Badges themselves are not interactive but may be included in interactive components.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/badge
+```
+
+```tsx
+import { Badge } from '@ids-ts/badge';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `automationId` | `string` | No | This prop is used for testing purposes |
+| `label` | `React.ReactNode` | No | A label to show next to the badge |
+| `shape` | `Shape` | No | The layout of the status badge. Defaults to rectangular for text |
+| `status` | `Status` | No | - |
+| `value` | `React.ReactNode` | No | Optional value (children can also be used) |
+| `position` | `'left' | 'right' | 'center'` | No | Position of the badge relative to its parent. Default is center. |
+| `priority` | `Priority` | No | - |
+| `icon` | `React.FunctionComponent<IconProps>` | No | - |
+| `capitalization` | `Capitalization` | No | - |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface BadgeProps extends ThemeableElement<'div'> {
+  /** This prop is used for testing purposes */
+  automationId?: string;
+  /** Surfaces a label to assistive technology (critical when no `label` is supplied) */
+  'aria-label'?: string;
+  /** A label to show next to the badge  */
+  label?: React.ReactNode;
+  /** The layout of the status badge. Defaults to rectangular for text */
+  shape?: Shape;
+  /**
+   * The status for the badge to display
+   *
+   * @default 'info'
+   */
+  status?: Status;
+  /** Optional value (children can also be used) */
+  value?: React.ReactNode;
+  /** Position of the badge relative to its parent. Default is center. */
+  position?: 'left' | 'right' | 'center';
+  /**
+   * How the background prioritizes the button.
+   * Badge priority - primary, secondary.
+   *
+   * @default primary
+   */
+  priority?: Priority;
+  /**
+   * An optional icon component to display next to the badge.
+   * This icon is used when the badge has a secondary priority and sentence capitalization.
+   */
+  icon?: React.FunctionComponent<IconProps>;
+  /**
+   * Sentence case of the badge's text.
+   * Badge capitalization - caps, sentence.
+   *
+   * @default caps
+   */
+  capitalization?: Capitalization;
+}
+
+export type Shape = 'round';
+
+export type Status = 'info' | 'success' | 'pending' | 'warning' | 'error' | 'draft' | 'new' | 'beta';
+
+export type Priority = 'primary' | 'secondary';
+
+export type Capitalization = 'caps' | 'sentence';
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container-feedback** — Feedback container colors (info, success, warning, error)
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Showcase
+
+```tsx
+() => (
+  <div
+    style={{
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '20px'
+    }}
+  >
+    <div>
+      <H3>Example of a Text Badge</H3>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-start'
+        }}
+      >
+        <B3 as="p">A text badge contains a few words to indicate status.</B3>
+        <Badge status="success">Approved</Badge>
+      </div>
+    </div>
+
+    <div>
+      <H3>Example of an Icon Badge</H3>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-start'
+        }}
+      >
+        <B3 as="p">
+          Icon badges are used to indicate status with an icon. There are
+          multiple icons exported from the Badge package that are recommended
+          for use with icon badges. Here&apos;s an example with the success icon
+          badge.
+        </B3>
+        <Badge shape="round" status="success">
+          <SuccessBadgeIcon />
+        </Badge>
+        <br />
+        <Badge shape="round" status="success" label="Approved">
+          <SuccessBadgeIcon />
+        </Badge>
+      </div>
+    </div>
+
+    <div>
+      <H3>Example of a Numeric Badge</H3>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          gap: '8px'
+        }}
+      >
+        <B3 as="p">
+          A badge can display a number in the container. A number badge always
+          has a neutral status. If the number is higher than the max limit, a +
+          will appear next to the number inside the container. (Example: 99+).
+        </B3>
+        <NumericBadge quantity={42} />
+        <NumericBadge quantity={1000} />
+      </div>
+    </div>
+
+    <div>
+      <H3>Example of a Dot Badge</H3>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-start'
+        }}
+      >
+        <B3 as="p">
+          Dot badges are recommended to be used as an empty state for Numeric
+          Badges.
+        </B3>
+// ...
+```
+
+### Primary Badge
+
+```tsx
+() => {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        gap: '20px'
+      }}
+    >
+      <B3>A text badge contains a few words to indicate status.</B3>
+      <Badge status="info">Info</Badge>
+      <Badge status="success">Success</Badge>
+      <Badge status="pending">Pending</Badge>
+      <Badge status="warning">Warning</Badge>
+      <Badge status="error">Critical</Badge>
+      <Badge status="draft">Draft</Badge>
+      <Badge status="new">New</Badge>
+      <Badge status="beta">Beta</Badge>
+      <B3>
+        A text badge contains a few words to indicate status in a letter case
+        capitalization.
+      </B3>
+      <Badge capitalization="sentence" status="info">
+        Info
+      </Badge>
+      <Badge capitalization="sentence" status="success">
+        Success
+      </Badge>
+      <Badge capitalization="sentence" status="pending">
+        Pending
+      </Badge>
+      <Badge capitalization="sentence" status="warning">
+        Warning
+      </Badge>
+      <Badge capitalization="sentence" status="error">
+        Critical
+      </Badge>
+      <Badge capitalization="sentence" status="draft">
+        Draft
+      </Badge>
+      <Badge capitalization="sentence" status="new">
+        New
+      </Badge>
+      <Badge capitalization="sentence" status="beta">
+        Beta
+      </Badge>
+    </div>
+  );
+}
+```
+
+### Secondary Badge
+
+```tsx
+() => {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        gap: '20px'
+      }}
+    >
+      <B3 as="p">
+        A text badge contains a few words to indicate status secondary priority.
+      </B3>
+      <Badge status="info" priority="secondary">
+        Info
+      </Badge>
+      <Badge status="success" priority="secondary">
+        Success
+      </Badge>
+      <Badge status="pending" priority="secondary">
+        Pending
+      </Badge>
+      <Badge status="warning" priority="secondary">
+        Warning
+      </Badge>
+      <Badge status="error" priority="secondary">
+        Critical
+      </Badge>
+      <Badge status="new" priority="secondary">
+        New
+      </Badge>
+      <Badge status="beta" priority="secondary">
+        Beta
+      </Badge>
+      <Badge status="draft" priority="secondary">
+        Draft
+      </Badge>
+      <B3 as="p">
+        A text badge contains a few words to indicate status secondary priority
+        in a letter case capitalization.
+      </B3>
+      <Badge status="info" capitalization="sentence" priority="secondary">
+        Info
+      </Badge>
+      <Badge status="success" capitalization="sentence" priority="secondary">
+        Success
+      </Badge>
+      <Badge status="pending" capitalization="sentence" priority="secondary">
+        Pending
+      </Badge>
+      <Badge status="warning" capitalization="sentence" priority="secondary">
+        Warning
+      </Badge>
+      <Badge status="error" capitalization="sentence" priority="secondary">
+        Critical
+      </Badge>
+      <Badge status="new" capitalization="sentence" priority="secondary">
+        New
+      </Badge>
+      <Badge status="beta" capitalization="sentence" priority="secondary">
+        Beta
+      </Badge>
+      <Badge status="draft" capitalization="sentence" priority="secondary">
+        Draft
+      </Badge>
+      <B3 as="p">
+        A text badge contains a few words to indicate status secondary priority
+        with an icon in a letter case capitalization.
+      </B3>
+      <Badge
+        capitalization="sentence"
+        status="info"
+        priority="secondary"
+        icon={iconMap.info}
+      >
+        Info
+      </Badge>
+      <Badge
+        capitalization="sentence"
+        status="success"
+// ...
+```
+
+### Icon
+
+```tsx
+() => {
+  const statusKnob = 'info';
+  const statusKnob1 = 'success';
+  const statusKnob2 = 'pending';
+  const statusKnob3 = 'warning';
+  const statusKnob4 = 'error';
+
+  const StatusIcon = statusIcons[statusKnob];
+  const StatusIcon1 = statusIcons[statusKnob1];
+  const StatusIcon2 = statusIcons[statusKnob2];
+  const StatusIcon3 = statusIcons[statusKnob3];
+  const StatusIcon4 = statusIcons[statusKnob4];
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '32px'
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+          alignItems: 'flex-start'
+        }}
+      >
+        <Badge shape="round" status="info" aria-label="Info Badge">
+          <StatusIcon />
+        </Badge>
+        <Badge shape="round" status="info" label="Info">
+          <StatusIcon />
+        </Badge>
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+          alignItems: 'flex-start'
+        }}
+      >
+        <Badge shape="round" status="success" aria-label="Success Badge">
+          <StatusIcon1 />
+        </Badge>
+        <Badge
+          automationId="playground"
+          shape="round"
+          status="success"
+          label="Success"
+        >
+          <StatusIcon1 />
+        </Badge>
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+          alignItems: 'flex-start'
+        }}
+      >
+        <Badge shape="round" status="pending" aria-label="Pending Badge">
+          <StatusIcon2 />
+        </Badge>
+        <Badge shape="round" status="pending" label="Pending">
+          <StatusIcon2 />
+        </Badge>
+      </div>
+
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+          alignItems: 'flex-start'
+        }}
+      >
+// ...
+```
+
+## Code Example
+
+```tsx
+import Badge, { WarningBadgeIcon } from '@ids-ts/badge';
+
+<Badge shape="round" status="warning" label="Something went wrong.">
+  <WarningBadgeIcon />
+</Badge>;
+```
+
+## Composes With
+
+- Typography
+
+---
+
+## References
+
+- [GitHub Source - Badge](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/Badge)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/badge.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-badge&theme=quickbooks&colorScheme=light)

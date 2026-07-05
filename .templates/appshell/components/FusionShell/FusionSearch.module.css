@@ -1,0 +1,37 @@
+.root {
+  display: flex;
+
+  align-items: center;
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.5));
+  border: 1px solid var(--color-container-border-primary);
+  border-radius: 32px;
+  color: var(--color-text-passive-subtle);
+  gap: var(--space-component-gap-small);
+  margin: 0 var(--space-container-padding-large);
+  transition: all var(--duration-fade-moderate) var(--ease-fade);
+  width: 520px;
+  padding: var(--space-container-padding-xx-small) var(--space-container-padding-xx-small);
+}
+
+.icon {
+  flex-shrink: 0;
+}
+
+.text {
+  line-clamp: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.root:hover {
+  background-color: var(--color-container-background-primary);
+  outline: 2px solid var(--color-action-standard-hover);
+  cursor: text;
+}
+
+@media (max-width: 1200px) {
+  .root {
+    max-width: 320px;
+  }
+}

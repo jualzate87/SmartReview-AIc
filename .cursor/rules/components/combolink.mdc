@@ -1,0 +1,209 @@
+---
+description: Complete guide for using the ComboLink component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# ComboLink
+
+The Combo Link component is like a ComboButton but the initial label shows as a link.
+It can show the drop down menu on the top or at the bottom of the button link depending on the button location.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/combo-link
+```
+
+```tsx
+import { ComboLink } from '@ids-ts/combo-link';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactElement<MenuItemProps> \| ReactElement<MenuItemProps>[]` | Yes | MenuItem children for the dropdown. |
+| `label` | `string` | Yes | Required label to be placed on the combo link as the link |
+| `disabled` | `boolean` | No | Determines whether to disable the ComboLink and make it un-click-able |
+| `preventMenuOverflow` | `an object variable` | Yes | - |
+| `preventMenuOverflow` | `PreventOverflow` | No | - |
+| `onClick` | `(event: ReactComboLinkEvent) => void` | No | Function which will be called when the link section of ComboLink is clicked |
+| `onSelect` | `(event: ReactComboLinkEvent) => void` | No | Function which will be called when a menu item is selected |
+| `menuPositionStyle` | `React.CSSProperties` | No | The optional styles applied to the position node wrapped around the root node. |
+| `size` | `'standard' \| 'mini'` | No | Size variant. Defaults to `'standard'`. |
+| `displayMenuOnLinkClick` | `boolean` | No | - |
+| `badgeType` | `BadgeProps['status']` | No | badge type to display badge with combolink |
+| `preventMenuSelect` | `boolean` | No | - |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface ComboLinkProps
+  extends Omit<ThemeableElement<'div'>, 'onSelect'> {
+  /** Children of MenuItem */
+  children:
+    | React.ReactElement<MenuItemProps>
+    | React.ReactElement<MenuItemProps>[];
+  /** Required label to be placed on the combo link as the link */
+  label: string;
+  /** Determines whether to disable the ComboLink and make it un-click-able */
+  disabled?: boolean;
+  /**
+   * preventMenuOverflow: an object variable; used to prevent ComboLink Menu from being positioned outside the boundary.
+   * More detail in @ids-ts/position preventOverflow API document.
+   */
+  preventMenuOverflow?: PreventOverflow;
+  /** Function which will be called when the link section of ComboLink is clicked */
+  onClick?: (event: ReactComboLinkEvent) => void;
+  /** Function which will be called when a menu item is selected */
+  onSelect?: (event: ReactComboLinkEvent) => void;
+  /** The optional styles applied to the position node wrapped around the root node. */
+  menuPositionStyle?: React.CSSProperties;
+  /**
+   * variation in size: standard or mini
+   *
+   * @default 'standard'
+   */
+  size: ComboLinkSize;
+  /** Determines whether to open menu on label click
+   *
+   * @default false
+   */
+  displayMenuOnLinkClick?: boolean;
+  /** badge type to display badge with combolink */
+  badgeType?: BadgeProps['status'];
+  /**
+   * Set to true to prevent setting selected item
+   * when the actions behave purely as links and not options
+   */
+  preventMenuSelect?: boolean;
+}
+
+export type ReactComboLinkEvent = React.KeyboardEvent | React.MouseEvent;
+
+export type ComboLinkSize = 'mini' | 'standard';
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Showcase
+
+```tsx
+() => {
+  const options = ['Apple', 'Peach', 'Banana', 'Orange'];
+  const menuItems = getMenuItems(options, 4);
+  const [label, setLabel] = useState('Label');
+  const handleSelect = (event: ReactComboLinkEvent) => {
+    const { value } = event.target as HTMLInputElement;
+    setLabel(value);
+    action(`firing from onSelect in playground: ${value}`)();
+  };
+
+  return (
+    <div className={styles.showcase}>
+      <div>
+        Mini ComboLink
+        <ComboLink
+          size="mini"
+          label={label}
+          aria-label="mini-fruit-selection-combolink"
+          onSelect={handleSelect}
+        >
+          {menuItems}
+        </ComboLink>
+      </div>
+      <div>
+        Standard ComboLink
+        <ComboLink
+          size="standard"
+          label={label}
+          aria-label="standard-fruit-selection-combolink"
+          onSelect={handleSelect}
+        >
+          {menuItems}
+        </ComboLink>
+      </div>
+      <div>
+        Mini Disabled ComboLink
+        <ComboLink
+          disabled
+          size="mini"
+          label={label}
+          aria-label="mini-disabled-fruit-selection-combolink"
+        >
+          {menuItems}
+        </ComboLink>
+      </div>
+      <div>
+        Standard Disabled ComboLink
+        <ComboLink
+          disabled
+          size="standard"
+          label={label}
+          aria-label="standard-disabled-fruit-selection-combolink"
+        >
+          {menuItems}
+        </ComboLink>
+      </div>
+      <div>
+        Prevent Menu Select
+        <ComboLink
+          preventMenuSelect
+          size="mini"
+          label={label}
+          aria-label="prevent-menuSelect-fruit-selection-combolink"
+        >
+          {menuItems}
+        </ComboLink>
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+## References
+
+- [GitHub Source - ComboLink](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/ComboLink)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/combo-link.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-combo-link&theme=quickbooks&colorScheme=light)

@@ -1,0 +1,206 @@
+---
+description: Complete guide for using the Link component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# Link
+
+The IDS Link component gives users the ability to navigate to another specified destination, or is a treatment used for CTAs such as help content.
+IDS Links give users the ability to navigate to another destination on the website or product.
+They are distinguished from body text by color.
+
+A link is an HTML object that allows you to jump to a new location when you click or tap it. The target resource can be either external or local, i.e., either outside or within the current page or application. They are distinguished from body text by color.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/link
+```
+
+```tsx
+import { Link } from '@ids-ts/link';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `href` | `string` | Yes | URL that link navigates to |
+| `rel` | `string` | No | Supports rel="noopener noreferrer" when clicking the link opens a new tab or window |
+| `target` | `(typeof targetOptions)[number]` | No | Determines how link is opened |
+| `size` | `TypographyVariant | (typeof sizeComponentKeys)[...` | No | Determines the size of link, supports all Typography sizes. |
+| `weight` | `keyof typeof weightMap` | No | Determines the weight of link, supports all Typography weights |
+| `complementary` | `boolean` | No | Whether this link is rendered with complementary color or not, helpful for use on dark backgrounds in light mode |
+| `type` | `Type` | No | - |
+| `inline` | `boolean` | No | - |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface LinkProps extends ThemeableElement<'a'> {
+  /** URL that link navigates to */
+  href: string;
+  /** Used to define the label read out by screen reader when there is no visual label or label is not descriptive enough  */
+  'aria-label'?: string;
+  /** Supports rel="noopener noreferrer" when clicking the link opens a new tab or window */
+  rel?: string;
+  /** Determines how link is opened */
+  target?: (typeof targetOptions)[number];
+  /** Determines the size of link, supports all Typography sizes. */
+  size?: TypographyVariant | (typeof sizeComponentKeys)[number] | 'inherit';
+  /** Determines the weight of link, supports all Typography weights */
+  weight?: keyof typeof weightMap;
+  /** Whether this link is rendered with complementary color or not, helpful for use on dark backgrounds in light mode */
+  complementary?: boolean;
+  /** Determines the type of link, supports standalone, inline and secondary
+   *
+   * @default standalone
+   */
+  type?: Type;
+  /**
+   *  Whether this link is rendered inline with other content or not
+   *
+   * @deprecated Please use type instead
+   */
+  inline?: boolean;
+}
+
+export type Type = 'standalone' | 'inline' | 'secondary';
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**action** — Interactive element colors and hover/active/focus states
+- `--color-action-complementary`
+- `--color-action-complementary-active`
+- `--color-action-complementary-border`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**component** — Component-level spacing (padding, gap)
+- `--space-component-gap-large`
+- `--space-component-gap-medium`
+- `--space-component-gap-small`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Showcase
+
+```tsx
+() => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+    <div>
+      <Link
+        data-automation-id="basicLink"
+        href="https://intuit.com"
+        onClick={action('link clicked!')}
+      >
+        Intuit
+      </Link>
+    </div>
+    <div>
+      <Link
+        data-automation-id="ariaLabelLink"
+        href="https://www.w3.org/WAI/WCAG21/Techniques/aria/ARIA8"
+        aria-label="Learn more about aria-label"
+        onClick={action('link clicked!')}
+      >
+        Learn more
+      </Link>
+      <div>
+        <B3>
+          Aria-label should be provided to give more context to screenreader
+          users
+        </B3>
+        <B3>
+          In the above example, aria-label is <b>Learn more about aria-label</b>
+        </B3>
+      </div>
+    </div>
+    <div>
+      <Link
+        data-automation-id="withTargetLink"
+        href="https://intuit.com"
+        target="_blank"
+        onClick={action('link clicked!')}
+      >
+        Link with target
+      </Link>
+    </div>
+    <div>
+      This link is{' '}
+      <Link
+        type="inline"
+        data-automation-id="inlineLink"
+        href="https://intuit.com"
+        target="_blank"
+        onClick={action('link clicked!')}
+      >
+        inline
+      </Link>{' '}
+      with other content.
+    </div>
+    <div>
+      <Link
+        data-automation-id="withTargetLink"
+        href="https://intuit.com"
+        target="_blank"
+        onClick={action('link clicked!')}
+      >
+        Link with icon
+        <CaretRight />
+      </Link>
+    </div>
+    <div>
+      <Link
+        data-automation-id="withTargetLink"
+        href="https://intuit.com"
+        target="_blank"
+        type="secondary"
+        onClick={action('link clicked!')}
+      >
+        Secondary link with icon
+        <CaretRight />
+      </Link>
+    </div>
+  </div>
+)
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- **Tab** allows users to jump to the next link in a group of links or the next element on the screen.
+- **Shift + Tab** allows users to jump to the previous link in a group of links or the previous element on the screen.
+- **Enter** allows users to activate a link
+
+## Composes With
+
+- Typography
+
+---
+
+## References
+
+- [GitHub Source - Link](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/Link)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/link.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-link&theme=quickbooks&colorScheme=light)

@@ -1,0 +1,204 @@
+---
+description: Complete guide for using the RcCheckbox component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# RcCheckbox
+
+Welcome to my `RcCheckbox` component.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/rc-checkbox
+```
+
+```tsx
+import { RcCheckbox } from '@ids-ts/rc-checkbox';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `a11yFocus` | `boolean` | No | - |
+| `assignInputRef` | `(c: HTMLInputElement | null) => void` | No | A function to get reference to input element. |
+| `checked` | `boolean` | No | Specifies whether the checkbox is checked. |
+| `defaultChecked` | `boolean` | No | Initial checked state (uncontrolled). |
+| `disabled` | `boolean` | No | - |
+| `indeterminate` | `boolean` | No | Specifies when type is checkbox and in a indeterminate state [-]. |
+| `name` | `string` | No | a name assign to the checkbox input |
+| `onBlur` | `React.FocusEventHandler<HTMLInputElement>` | No | Callback function that is fired when a Checkbox has been blurred. |
+| `onChange` | `(e: { target: { checked: boolean; value: string } }) => void` | No | Called when the checkbox state changes. |
+| `onClick` | `React.MouseEventHandler<HTMLInputElement>` | No | Callback function that is fired when a Checkbox has been clicked. |
+| `onFocus` | `React.FocusEventHandler<HTMLInputElement>` | No | Callback function that is fired when a Checkbox has been focused. |
+| `readOnly` | `boolean` | No | - |
+| `tabIndex` | `number` | No | tab-index assign to the checkbox input. |
+| `type` | `'checkbox' | 'radio'` | No | - |
+| `validationMessage` | `string` | No | Validation Message. |
+| `InlineValidationMessage` | `'error', 'warning', 'success', 'invalid', 'info...` | Yes | - |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface RcCheckboxProps
+  extends Omit<ThemeableElement<'input'>, 'onChange'> {
+  /**
+   * A11yFocus flag.
+   *
+   * @default false
+   */
+  a11yFocus?: boolean;
+  /** A function to get reference to input element. */
+  assignInputRef?: (c: HTMLInputElement | null) => void;
+  /** Specifies whether the checkbox is checked. */
+  checked?: boolean;
+  /**
+   * Specifies the initial state: whether or not the checkbox is checked.
+   *
+   * @default false
+   */
+  defaultChecked?: boolean;
+  /**
+   * Disable the checkbox.
+   *
+   * @default false
+   */
+  disabled?: boolean;
+  /** Specifies when type is checkbox and in a indeterminate state [-]. */
+  indeterminate?: boolean;
+  /** a name assign to the checkbox input */
+  name?: string;
+  /** Callback function that is fired when a Checkbox has been blurred. */
+  onBlur?: React.FocusEventHandler<HTMLInputElement>;
+  /** Callback function that is fired when a Checkbox has been checked. */
+  onChange?: (
+    /** a customized event */
+    e: {
+      /** a modify event target */
+      target: {
+        /** a event target check value */
+        checked?: boolean;
+      };
+      /** a modify event target */
+      stopPropagation?(): void;
+      /** a modify event target */
+      preventDefault?(): void;
+    }
+  ) => void;
+  /** Callback function that is fired when a Checkbox has been clicked. */
+  onClick?: React.MouseEventHandler<HTMLInputElement>;
+  /** Callback function that is fired when a Checkbox has been focused. */
+  onFocus?: React.FocusEventHandler<HTMLInputElement>;
+  /**
+   * Make checkbox read only.
+   *
+   * @default false
+   */
+  readOnly?: boolean;
+  /** tab-index assign to the checkbox input. */
+  tabIndex?: number;
+  /**
+   * Type of the Rc-Checkbox, can be checkbox or radio
+   *
+   * @default 'checkbox'
+   */
+  type?: 'checkbox' | 'radio';
+  /** Validation Message. */
+  validationMessage?: string;
+  /**
+   * Validation Type from InlineValidationMessage: 'error', 'warning', 'success', 'invalid', 'info', or ''
+   *
+   * @default ''
+   */
+  validationType?: InlineValidationType;
+}
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+The following usage patterns are documented in Storybook:
+
+- **Checkbox Playground**
+- **Showcase**
+- **Checkbox Group Playground**
+
+### Checkbox Features
+
+- **Basic**
+- **Default Checked**
+- **Inline Validation Message**
+- **Checkbox With Description Text**
+- **No Visible Label Use Aria Label For Accessibility**
+- **Controlled Checked**
+- **Disabled**
+- **Indeterminate**
+- **On Change**
+- **Font Size Comparison**
+
+### CheckboxGroup Features
+
+- **Basic**
+- **With Options**
+- **With Inline Validation Message**
+- **With Helper Text**
+- **Vertical Layout**
+- **Theme Example**
+- **Font Size Comparison**
+
+## Code Example
+
+```tsx
+import React from 'react';
+import RcCheckbox from '@ids-ts/rc-checkbox';
+
+const ExampleRcCheckbox = () => <RcCheckbox data-testid="testid" />;
+
+export default ExampleRcCheckbox;
+```
+
+---
+
+## References
+
+- [GitHub Source - RcCheckbox](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/RcCheckbox)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-checkbox&theme=quickbooks&colorScheme=light)

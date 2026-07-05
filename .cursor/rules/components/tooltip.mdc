@@ -1,0 +1,895 @@
+---
+description: Complete guide for using the Tooltip component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# Tooltip
+
+The Tooltip component contains brief messages that appear in response to a user action. A tip can be used on any screen and can be implemented anywhere on the screen, making it more contextually relevant than a dialog.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/tooltip
+```
+
+```tsx
+import { Tooltip } from '@ids-ts/tooltip';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `NOTE` | `horizontal alignments cannot be paired with hor...` | Yes | - |
+| `autoFocus` | `boolean` | No | autoFocus: focus on Tooltip when it is opened |
+| `automationId` | `string` | No | - |
+| `containerRef` | `callback that returns the ref for Tooltip conta...` | Yes | - |
+| `disableFocusListener` | `boolean` | No | Disable response to focus events. |
+| `disableHoverListener` | `boolean` | No | Disable response to hover events. |
+| `disableClickListener` | `boolean` | No | Disable response to click events. |
+| `disableTouchListener` | `boolean` | No | Disable response to touch events. |
+| `dismissible` | `boolean` | No | If true, a 'X' close icon will appear by Tooltip to allow user to close (dismiss). Defaults to false. |
+| `duration` | `number` | Yes | - |
+| `enableClickAway` | `boolean` | Yes | - |
+| `message` | `string | React.ReactElement` | No | The inner content of the Tooltip. |
+| `offsetX` | `number` | Yes | - |
+| `offsetY` | `number` | Yes | - |
+| `onClose` | `ReactEventHandler` | No | Handler that's fired when close icon ('X') is clicked. Tooltip will still close by default if this is supplied. |
+| `onCloseButtonKeyDown` | `React.KeyboardEventHandler` | No | Handle that is fired when any keydown event fire on close icon control in tooltip. |
+| `onKeyDown` | `React.KeyboardEventHandler` | No | Handler that's fired when any keydown event fire on Tooltip content. |
+| `onShow` | `ReactEventHandler` | No | Called when tooltip opened. |
+| `open` | `boolean` | No | Whether to show the tooltip |
+| `position` | `Positions` | Yes | - |
+| `preventOverflow` | `PreventOverflow` | No | preventOverflow: an object variable; used to prevent Tooltip from being positioned outside the boundary. |
+| `stylePosition` | `React.CSSProperties` | No | The optional styles applied to the position node wrapped around the root node. |
+| `title` | `string` | No | A Tooltip title. |
+| `tooltipOffsetSkidding` | `number` | No | Cross-axis pixel offset of the tooltip. |
+| `tooltipOffsetDistance` | `number` | No | Main-axis pixel offset of the tooltip. |
+| `delayOpen` | `boolean` | No | Whether to delay showing the tooltip. |
+| `delayOpenDuration` | `number` | No | Time in milliseconds before tooltip shows when `delayOpen` is true. |
+| `event` | `ReactEvent) => void` | Yes | - |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface TooltipProps extends ThemeableElement<'div'> {
+  /**
+   * Defines where tooltip should align relative to its target element.
+   * NOTE: horizontal alignments cannot be paired with horizontal positions.
+   * NOTE: Alignment will also be ignored when position is set to left or right
+   *
+   * @default 'left'
+   */
+  alignment: Alignments;
+  /** autoFocus: focus on Tooltip when it is opened */
+  autoFocus?: boolean;
+  /**
+   * Allows easier access to elements while running functional tests. Renders
+   * as a data-automation-id attribute on the mounted Tooltip div. Defaults to tooltip.
+   */
+  automationId?: string;
+  /**
+   * containerRef: callback that returns the ref for Tooltip container.
+   *
+   * @default () => undefined
+   */
+  containerRef: (ref: HTMLDivElement | null) => void;
+  /** Disable response to focus events. */
+  disableFocusListener?: boolean;
+  /** Disable response to hover events. */
+  disableHoverListener?: boolean;
+  /** Disable response to click events. */
+  disableClickListener?: boolean;
+  /** Disable response to touch events. */
+  disableTouchListener?: boolean;
+  /** If true, a 'X' close icon will appear by Tooltip to allow user to close (dismiss). Defaults to false. */
+  dismissible?: boolean;
+  /**
+   * Time in milliseconds before Tooltip will start to dismiss after trigger event fires.
+   *
+   * @default 0
+   */
+  duration: number;
+  /**
+   * Enable close event on click away.
+   * enableClickAway does not work well when using focus or tabindex="0"
+   * When the user recieves keyboard focus on to the next element the focus is lost and hence enableClickAway isn't valid anymore, please use Infolink for this use case.
+   *
+   * @default false
+   */
+  enableClickAway: boolean;
+  /** The inner content of the Tooltip. */
+  message?: string | React.ReactElement;
+  /**
+   * Positions tooltip from right or left of target selector
+   *
+   * @default 0
+   * @deprecated Please use tooltipOffsetSkidding instead
+   */
+  offsetX: number;
+  /**
+   * Positions tooltip from top or bottom of target selector
+   *
+   * @default 0
+   * @deprecated Please use tooltipOffsetDistance instead
+   */
+  offsetY: number;
+  /** Handler that's fired when close icon ('X') is clicked. Tooltip will still close by default if this is supplied. */
+  onClose?: ReactEventHandler;
+  /** Handle that is fired when any keydown event fire on close icon control in tooltip. */
+  onCloseButtonKeyDown?: React.KeyboardEventHandler;
+  /** Handler that's fired when any keydown event fire on Tooltip content. */
+  onKeyDown?: React.KeyboardEventHandler;
+  /** Called when tooltip opened. */
+  onShow?: ReactEventHandler;
+  /** Whether to show the tooltip */
+  open?: boolean;
+  /**
+   * Defines where tooltip should appear relative to its target elements.
+   * If nothing specified, it will attempt to automatically position
+   * the tooltip where space is available.
+   *
+   * @default 'top'
+   */
+  position: Positions;
+  /** preventOverflow: an object variable; used to prevent Tooltip from being positioned outside the boundary. */
+  preventOverflow?: PreventOverflow;
+  /** The optional styles applied to the position node wrapped around the root node. */
+  stylePosition?: React.CSSProperties;
+  /** A Tooltip title. */
+  title?: string;
+  /**
+   * tooltipOffsetSkidding: the cross-axis pixel distance that the popup should be offset from targetElement
+   *
+   * @default 0
+   */
+  tooltipOffsetSkidding: number;
+  /**
+   * tooltipOffsetDistance: the main-axis pixel distance that the popup should be offset from targetElement
+   *
+   * @default 0
+   */
+  tooltipOffsetDistance: number;
+  /**
+   * delayOpen: Whether to delay the open of tooltip or not
+   *
+   * @default false
+   */
+  delayOpen: boolean;
+  /**
+   * delayOpenDuration: Time in milliseconds before Tooltip shows after trigger event fires.
+   *
+   * @default 800
+   */
+  delayOpenDuration: number;
+}
+
+export type ReactEventHandler = (event: ReactEvent) => void;
+
+export type ReactEvent =
+  | React.MouseEvent
+  | React.KeyboardEvent
+  | React.TouchEvent
+  | React.FocusEvent;
+```
+
+</details>
+
+## Design Variants
+
+The following variant axes control the component's visual appearance:
+
+### Position → use prop `position`
+
+- `Top left` **(default)**
+- `Top middle`
+- `Top right`
+- `Right top`
+- `Right middle`
+- `Right bottom`
+- `Bottom right`
+- `Bottom middle`
+- `Bottom left`
+- `Left bottom`
+- `Left middle`
+- `Left top`
+
+> **12 design variants** are defined in Figma. [View in Figma](https://www.figma.com/design/VO8rsMYDqsDY44J9yEVyES9Y?node-id=101939%3A2646&m=dev)
+
+## Token Usage
+
+### Color
+
+**container-complementary** — Elevated surface colors (modals, popovers, dropdowns)
+
+**text-complementary** — Text on elevated or inverted surfaces
+- `--color-text-complementary`
+- `--color-text-complementary`
+- `--color-text-complementary`
+
+### Space
+
+**container** — Container padding
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for elevated surfaces
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Shadow
+
+**shadow** — Elevation shadow
+
+### Font
+
+**font** — Font properties for complementary text
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Basic Usage
+
+```tsx
+() => {
+  return (
+    <TooltipContainer>
+      <Tooltip
+        automationId="tooltip_custom"
+        message={
+          <div>
+            <span>This is a default example.</span>
+          </div>
+        }
+      >
+        <B2 role="button" id="basic" tabIndex={0}>
+          Hover/Focus me
+        </B2>
+      </Tooltip>
+    </TooltipContainer>
+  );
+}
+```
+
+### Basic Usage With Icon
+
+```tsx
+() => {
+  return (
+    <TooltipContainer>
+      <Tooltip
+        automationId="tooltip_custom"
+        message={
+          <div>
+            <span>This is a default example using tooltip with an icon.</span>
+          </div>
+        }
+      >
+        <IconControl aria-label="Hover/Focus Me" size="small">
+          <CircleInfo size="small" />
+        </IconControl>
+      </Tooltip>
+    </TooltipContainer>
+  );
+}
+```
+
+### Controlled Click Example With Icon
+
+```tsx
+() => {
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  const handleClick = () => setShowTooltip(true);
+  const handleClose = () => setShowTooltip(false);
+
+  return (
+    <TooltipContainer>
+      <Tooltip
+        dismissible
+        disableHoverListener
+        open={showTooltip}
+        message={
+          <div>
+            <span>This is a controlled click example.</span>
+          </div>
+        }
+        position="bottom"
+        alignment="right"
+        onClose={handleClose}
+      >
+        <CircleInfo
+          size="medium"
+          aria-label="alert"
+          onClick={handleClick}
+          onFocus={handleClick}
+        />
+      </Tooltip>
+    </TooltipContainer>
+  );
+}
+```
+
+### Dismissible Example
+
+```tsx
+() => {
+  return (
+    <TooltipContainer>
+      <Tooltip
+        dismissible
+        disableHoverListener
+        automationId="tooltip_dismissibleTest"
+        title="Dismissible"
+        message={
+          <span>
+            Click the &apos;X&apos; button to be <b>dismissed</b>.
+          </span>
+        }
+      >
+        <B2 role="button" id="dismissibleTest" tabIndex={0}>
+          Click/Focus me
+        </B2>
+      </Tooltip>
+    </TooltipContainer>
+  );
+}
+```
+
+### Duration Example
+
+```tsx
+() => {
+  return (
+    <TooltipContainer>
+      <Tooltip
+        title="Duration"
+        duration={3000}
+        message={
+          <div>
+            <span>
+              I have a duration of <b>3 seconds</b> and am not dismissible!
+            </span>
+          </div>
+        }
+      >
+        <B2 role="button" id="durationTest" tabIndex={0}>
+          Hover/Focus me
+        </B2>
+      </Tooltip>
+    </TooltipContainer>
+  );
+}
+```
+
+### Position Top Example
+
+```tsx
+() => {
+  return (
+    <TooltipContainer>
+      <Tooltip
+        position="top"
+        automationId="tooltip_positionTopTest"
+        message={
+          <div>
+            <span>I am in top position</span>
+          </div>
+        }
+      >
+        <B2 role="button" id="positionTopTest" tabIndex={0}>
+          Hover me
+        </B2>
+      </Tooltip>
+    </TooltipContainer>
+  );
+}
+```
+
+### Position Top Alignment Right Example
+
+```tsx
+() => {
+  return (
+    <TooltipContainer>
+      <Tooltip
+        alignment="right"
+        automationId="tooltip_positionTopRightTest"
+        message={
+          <div>
+            <span>I am in top right position</span>
+          </div>
+        }
+      >
+        <B2 role="button" id="positionTopRightTest" tabIndex={0}>
+          Hover me
+        </B2>
+      </Tooltip>
+    </TooltipContainer>
+  );
+}
+```
+
+### Position Bottom Example
+
+```tsx
+() => {
+  return (
+    <TooltipContainer>
+      <Tooltip
+        position="bottom"
+        automationId="tooltip_positionBottomTest"
+        message={
+          <div>
+            <span>I am in bottom position</span>
+          </div>
+        }
+      >
+        <B2 role="button" id="positionBottomTest" tabIndex={0}>
+          Hover me
+        </B2>
+      </Tooltip>
+    </TooltipContainer>
+  );
+}
+```
+
+### Position Bottom Alignment Right Example
+
+```tsx
+() => {
+  return (
+    <TooltipContainer>
+      <Tooltip
+        position="bottom"
+        alignment="right"
+        automationId="tooltip_positionBottomRightTest"
+        message={
+          <div>
+            <span>I am in bottom right position</span>
+          </div>
+        }
+      >
+        <B2
+          role="button"
+          id="positionBottomRightTest"
+          tabIndex={0}
+          style={{ position: 'relative' }}
+        >
+          Hover me
+        </B2>
+      </Tooltip>
+    </TooltipContainer>
+  );
+}
+```
+
+### Position Left Example
+
+```tsx
+() => {
+  return (
+    <TooltipContainer>
+      <Tooltip
+        position="left"
+        alignment="middle"
+        automationId="tooltip_positionLeftTest"
+        message={
+          <div>
+            <span>I am in left position</span>
+          </div>
+        }
+      >
+        <B2
+          role="button"
+          id="positionLeftTest"
+          tabIndex={0}
+          style={{ position: 'relative' }}
+        >
+          Hover me
+        </B2>
+      </Tooltip>
+    </TooltipContainer>
+  );
+}
+```
+
+### Position Right Example
+
+```tsx
+() => {
+  return (
+    <TooltipContainer>
+      <Tooltip
+        position="right"
+        alignment="middle"
+        automationId="tooltip_positionRightTest"
+        message={
+          <div>
+            <span>I am in right position</span>
+          </div>
+        }
+      >
+        <B2 role="button" id="positionRightTest" tabIndex={0}>
+          Hover me
+        </B2>
+      </Tooltip>
+    </TooltipContainer>
+  );
+}
+```
+
+### Rich Content Example
+
+```tsx
+() => {
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  const openTooltip = () => setShowTooltip(true);
+  const hideTooltip = () => setShowTooltip(false);
+
+  return (
+    <TooltipContainer>
+      <Tooltip
+        open={showTooltip}
+        alignment="left"
+        position="bottom"
+        message={
+          <div>
+            <strong>Rich</strong> content, bottom position, left alignment,
+            trigger focus
+          </div>
+        }
+        onClose={hideTooltip}
+      >
+        <TextField
+          label="Rich content"
+          id="richContentTest"
+          tabIndex={0}
+          onFocus={openTooltip}
+          onMouseOver={openTooltip}
+        />
+      </Tooltip>
+    </TooltipContainer>
+  );
+}
+```
+
+### Text Overflow Example
+
+```tsx
+() => {
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  const openTooltip = () => setShowTooltip(true);
+  const hideTooltip = () => setShowTooltip(false);
+  return (
+    <TooltipContainer>
+      <Tooltip
+        open={showTooltip}
+        position="top"
+        automationId="tooltip_textoverflow"
+        message="This is a textView with content that will overflow on mobile devices. In the case of long strings, on mobile devices, the tooltip message will get shortened to fix on a max of 5 lines with ellipses added to the end of the line."
+        onClose={hideTooltip}
+      >
+        <TextField
+          id="textOverflowTest"
+          label="Text overflow"
+          tabIndex={0}
+          onFocus={openTooltip}
+          onMouseOver={openTooltip}
+        />
+      </Tooltip>
+    </TooltipContainer>
+  );
+}
+```
+
+### Auto Focus Example
+
+```tsx
+() => {
+  return (
+    <TooltipContainer>
+      <Tooltip
+        autoFocus
+        disableHoverListener
+        dismissible
+        title="Auto focus"
+        automationId="tooltip_autoFocusTest"
+        message={
+          <div>
+            <span>This is an auto focus on open example.</span>
+          </div>
+        }
+      >
+        <B2 role="button" id="autoFocusTest" tabIndex={0}>
+          Click me
+        </B2>
+      </Tooltip>
+    </TooltipContainer>
+  );
+}
+```
+
+### Controlled Tooltip Example
+
+```tsx
+() => {
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  const openTooltip = () => setShowTooltip(true);
+  const hideTooltip = () => setShowTooltip(false);
+
+  return (
+    <TooltipContainer>
+      <Tooltip
+        open={showTooltip}
+        message={
+          <div>
+            <span>This is a controlled hover/focus example.</span>
+          </div>
+        }
+        onClose={hideTooltip}
+      >
+        <B2
+          role="button"
+          tabIndex={0}
+          id="controlledTooltipTest"
+          onFocus={openTooltip}
+          onMouseOver={openTooltip}
+        >
+          Hover/Focus me
+        </B2>
+      </Tooltip>
+    </TooltipContainer>
+  );
+}
+```
+
+### Controlled Click Example
+
+```tsx
+() => {
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  const handleClick = () => setShowTooltip(true);
+  const handleClose = () => setShowTooltip(false);
+
+  return (
+    <TooltipContainer>
+      <Tooltip
+        dismissible
+        disableHoverListener
+        open={showTooltip}
+        message={
+          <div>
+            <span>This is a controlled click example.</span>
+          </div>
+        }
+        onClose={handleClose}
+      >
+        <B2
+          role="button"
+          id="controlledClickTest"
+          tabIndex={0}
+          onClick={handleClick}
+          onFocus={handleClick}
+        >
+          Click/Focus me
+        </B2>
+      </Tooltip>
+    </TooltipContainer>
+  );
+}
+```
+
+### Enable Click Away
+
+```tsx
+() => {
+  return (
+    <TooltipContainer>
+      <Tooltip
+        disableHoverListener
+        title="Title"
+        message={
+          <span>
+            Not dismissible tooltip and <b>enableClickAway</b> prop is false. So
+            the outcome will be to close when you click away. We do not want to
+            lock the Tooltip on the screen without a way to close it.
+          </span>
+        }
+      >
+        <B2 id="enableClickAwayTest1">
+          Not dismissible and enableClickAway as false. Tooltip would{' '}
+          <b>CLOSE</b>
+        </B2>
+      </Tooltip>
+      <br />
+      <br />
+      <br />
+      <br />
+
+      <Tooltip
+        dismissible
+        disableHoverListener
+        title="Title"
+        message={
+          <span>
+            Dismissible tooltip and <b>enableClickAway</b> prop is false. So I
+            would <b>NOT</b> close when you click away. Click on close button.
+          </span>
+        }
+      >
+        <B2 id="enableClickAwayTest2">
+          Dismissible and enableClickAway as false. Tooltip would{' '}
+          <b>NOT CLOSE</b>
+        </B2>
+      </Tooltip>
+      <br />
+      <br />
+      <br />
+      <br />
+
+      <Tooltip
+        disableHoverListener
+        enableClickAway
+        title="Title"
+        message={
+          <span>
+            Not dismissible tooltip and <b>enableClickAway</b> prop is true. So
+            I would close when you click away.
+          </span>
+        }
+      >
+        <B2 id="enableClickAwayTest3">
+          Not dismissible and enableClickAway as true. Tooltip would{' '}
+          <b>CLOSE</b>
+        </B2>
+      </Tooltip>
+      <br />
+      <br />
+      <br />
+      <br />
+
+      <Tooltip
+        dismissible
+        disableHoverListener
+        enableClickAway
+        title="Title"
+        message={
+          <span>
+            Dismissible tooltip and <b>enableClickAway</b> prop is true. So I
+            would close when you click away.
+          </span>
+        }
+      >
+        <B2 id="enableClickAwayTest4">
+          Dismissible and enableClickAway as true. Tooltip would <b>CLOSE</b>
+// ...
+```
+
+### Delay Open Example
+
+```tsx
+() => {
+  return (
+    <TooltipContainer>
+      <Tooltip
+        delayOpen
+        automationId="tooltip_delayOpen"
+        message={
+          <div>
+            <span>
+              This is a default delay open example. Tooltip shows 0.8 second
+              after hover/focus.
+            </span>
+          </div>
+        }
+      >
+        <B2 role="button" id="delayOpen" tabIndex={0}>
+          Hover/Focus me
+        </B2>
+      </Tooltip>
+    </TooltipContainer>
+  );
+}
+```
+
+### Delay Open Customized Duration Example
+
+```tsx
+() => {
+  return (
+    <TooltipContainer>
+      <Tooltip
+        delayOpen
+        automationId="tooltip_delayOpen"
+        delayOpenDuration={1000}
+        message={
+          <div>
+            <span>
+              This is a customized delay open example. Tooltip shows 1 second
+              after hover/focus.
+            </span>
+          </div>
+        }
+      >
+        <B2 role="button" id="delayOpen" tabIndex={0}>
+          Hover/Focus me
+        </B2>
+      </Tooltip>
+    </TooltipContainer>
+  );
+}
+```
+
+### Lazy Render Controlled Target
+
+```tsx
+() => {
+  const [openTooltip, setOpenTooltip] = useState(false);
+  const [showTextField, setShowTextField] = useState(false);
+
+  const handler = (e: React.ChangeEvent | React.FocusEvent) => {
+    const val = (e.target as HTMLInputElement).value;
+    setOpenTooltip(!val);
+  };
+
+  useEffect(() => {
+    setTimeout(() => {
+      setOpenTooltip(false);
+    }, 4000);
+  }, [openTooltip]);
+
+  return (
+    <div>
+      <Checkbox
+        description="Render lazy loaded Text Field"
+        name="fruitLabel"
+        size="medium"
+        onChange={(e: CheckboxOnChangeEventType) =>
+          setShowTextField(e.target.checked ?? false)
+        }
+      >
+        View Target
+      </Checkbox>
+      <Tooltip
+        open={openTooltip}
+        automationId="test"
+        message="no value set"
+        position="right"
+      >
+        {showTextField && <LazyLoadTextField handler={handler} />}
+      </Tooltip>
+    </div>
+  );
+}
+```
+
+## Composes With
+
+- Checkbox
+- Loader
+- TextField
+- Typography
+- IconControl
+
+---
+
+## References
+
+- [GitHub Source - Tooltip](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/Tooltip)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/tooltip.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-tooltip&theme=quickbooks&colorScheme=light)
+- [Figma Design](https://www.figma.com/design/VO8rsMYDqsDY44J9yEVyES9Y?node-id=101939%3A2646&m=dev)

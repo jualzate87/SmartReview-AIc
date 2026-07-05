@@ -1,0 +1,275 @@
+---
+description: @design-systems/icons package guidelines
+alwaysApply: false
+---
+
+## IDS Icons - Design System Asset Library
+
+`@design-systems/icons` is the Intuit Design System (IDS) asset library for SVG icons. Icons are provided as React components that can be imported and used directly in your application.
+
+**Important**: Use `@design-systems/icons` for all icon needs.
+
+[IDS Icon Search Tool](https://icons.app.intuit.com/search)
+
+[IDS Icons Repository](https://github.intuit.com/design-systems/icons)
+
+[IDS Badge Component Documentation](https://github.intuit.com/design-systems/ids-web/tree/next/components/Badge)
+
+## Usage Workflow
+
+When you need to add an icon to a component, follow this workflow:
+
+1. Check if a Badge component is more appropriate (see "Badges vs Icons" section below)
+2. Verify the icon exists by searching at https://icons.app.intuit.com/search
+3. Check if `@design-systems/icons` is installed in package.json
+4. Install if needed: `yarn add @design-systems/icons`
+5. Import the icon using PascalCase naming
+6. Use the icon directly as a React component
+7. If the icon is not found, inform the user and suggest alternatives (do not create custom SVG files)
+
+## Icon Naming Convention
+
+Icons are exported as PascalCase React components. The source SVG files use lowercase with dashes but are automatically transformed to PascalCase component names during the build process.
+
+**Naming rules:**
+
+- Icons use PascalCase (e.g., `PersonCalculator`, `Upload`, `CheckCircle`)
+- Icon names do not include the word "Icon" as a suffix
+- Partial icons use PascalCase with "Partial" suffix (e.g., `UploadPartial` from `upload-partial.svg`)
+
+**Correct imports:**
+
+```jsx
+import { PersonCalculator, Upload, CheckCircle } from "@design-systems/icons";
+import { UploadPartial, CheckCirclePartial } from "@design-systems/icons";
+```
+
+**Incorrect imports (these exports do not exist):**
+
+```jsx
+import { PersonCalculatorIcon, UploadIcon } from "@design-systems/icons";
+import { personCalculator, upload } from "@design-systems/icons";
+```
+
+If you prefer having "Icon" in your variable names, you can rename on import:
+
+```jsx
+import {
+  PersonCalculator as PersonCalculatorIcon,
+  Upload as UploadIcon,
+} from "@design-systems/icons";
+```
+
+## Finding Icons
+
+Always use the Icon Search App to verify icon availability before importing:
+
+https://icons.app.intuit.com/search
+
+You can search by icon name, meta tags, or visual appearance.
+
+**If an icon is not found:**
+
+1. Double-check the search tool using synonyms or related terms
+2. Inform the user that the specific icon is not available in `@design-systems/icons`
+3. Suggest similar available icons from the search results
+4. Do not create custom SVG files, use img tags with SVG sources, or use third-party icon libraries as alternatives
+
+## Badges vs Icons
+
+**When to use a Badge**: If a Badge exists for your use case, use `@ids-ts/badge` instead of importing an icon directly.
+
+See the Badge documentation for supported Badge icons: https://github.intuit.com/design-systems/ids-web/tree/next/components/Badge#badge-icons
+
+If you believe a Badge is missing, post in #ask-ids on Slack or consider contributing to @ids-ts.
+
+## Icon Partials
+
+Some icons are suffixed with `-partial` in their source files (e.g., `upload-partial.svg` exports as `UploadPartial`). These are scaled to be approximately 1/2 the size of a standard icon within the same viewbox, designed to be layered on top of background shapes.
+
+Common use case: Badge components where a partial icon is layered on top of shapes like `Circle` or `Triangle`.
+
+```jsx
+import { UploadPartial, Circle } from "@design-systems/icons";
+
+<div style={{ position: 'relative' }}>
+  <Circle size="large" color="var(--color-background-info)" />
+  <UploadPartial size="large" color="var(--color-text-inverse)" />
+</div>
+```
+
+## How do I install IDS Icons?
+
+**Before installing, check if `@design-systems/icons` is already in package.json.**
+
+```sh
+yarn add @design-systems/icons
+```
+
+The package is resolved from the Intuit npm registry configured in `.yarnrc.yml`.
+
+**Code Snippet for IDS Icons**
+
+Then to use icons in your code just import them:
+
+```jsx
+import { PersonCalculator, Upload } from "@design-systems/icons";
+
+// Use the icon directly as a component
+const IconExample = () => (
+  <div>
+    <PersonCalculator />
+    <Upload />
+  </div>
+);
+
+export default IconExample;
+```
+
+## Icon Props
+
+All icons from `@design-systems/icons` accept the following props:
+
+| Prop Name | Type   | Options                                                    | Default        |
+| --------- | ------ | ---------------------------------------------------------- | -------------- |
+| size      | string | 'xsmall', 'small', 'medium', 'large', 'xlarge', 'xxlarge' | 'medium'       |
+| color     | string | any string (recommend using design tokens)                 | 'currentColor' |
+
+**Examples:**
+
+```jsx
+// Medium icon with default color
+<PersonCalculator />
+
+// Large icon with custom color using design token
+<Upload size="large" color="var(--color-action-standard)" />
+
+// Small icon with currentColor (inherits from parent text color)
+<Upload size="small" />
+```
+
+## Best Practices
+
+**Do:**
+
+- Always use `@design-systems/icons` for all icon needs
+- Import icons as named exports using PascalCase names
+- Use design tokens for color (prefer `var(--color-*)` tokens over hardcoded hex/rgb values)
+- Use `currentColor` when appropriate (this allows icons to inherit text color from parent elements)
+- Check for Badges first before using an icon directly (see Badges vs Icons section)
+- Verify icon existence using https://icons.app.intuit.com/search before importing
+- Use semantic size names ('small', 'medium', 'large') not pixel values
+
+**Do not:**
+
+- Never create custom SVG files or inline SVG code as alternatives to missing icons
+- Never use `<img src="icon.svg">` or other image tags for icons
+- Never use icon fonts (FontAwesome, Material Icons, etc.)
+- Never use third-party icon libraries (heroicons, lucide, etc.)
+- Never use the deprecated `@ids-ts/icon` wrapper component
+- Never hardcode pixel sizes (use the size prop instead)
+- Never assume an icon exists (always verify in the search tool first)
+
+## Common Patterns
+
+**Icon with adjacent text:**
+
+```jsx
+import { Upload } from "@design-systems/icons";
+
+<button style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-100)' }}>
+  <Upload size="small" />
+  <span>Upload File</span>
+</button>
+```
+
+**Icon inheriting text color:**
+
+```jsx
+import { Upload } from "@design-systems/icons";
+
+<div style={{ color: 'var(--color-action-standard)' }}>
+  <Upload />
+  <span>Upload</span>
+</div>
+```
+
+**Icon with specific color:**
+
+```jsx
+import { Upload } from "@design-systems/icons";
+
+<Upload 
+  size="medium" 
+  color="var(--color-status-error)" 
+/>
+```
+
+---
+
+## Resources
+
+- [Icon Search Tool](https://icons.app.intuit.com/search)
+- [Icons Repository](https://github.intuit.com/design-systems/icons)
+- [Badge Component Documentation](https://github.intuit.com/design-systems/ids-web/tree/next/components/Badge)
+
+## Available Icons
+
+The Intuit Design System includes **600+ icons**. Below is the complete list of available icons organized by category. Remember to use PascalCase when importing (e.g., `PersonCalculator`, `ArrowDown`).
+
+### AI
+AiHeadset, AiSparkles, IntuitAssist
+
+### Actions
+AddColumn, AddRow, Attach, BordersAll, BordersDefault, BordersHorizontal, BordersHorizontalAndOuter, BordersInside, BordersOutside, BordersVertical, BordersVerticalAndOuter, Call, Camera, CameraFill, Cart, CartPlus, Checkmark, CirclesCluster, ClearField, Click, Close, Completed, Copy, Crop, Cut, Dash, Delete, DeleteTag, Duplicate, Edit, EditorAlignBottom, EditorAlignCenterHorizontal, EditorAlignCenterVertical, EditorAlignFullWidth, EditorAlignLeft, EditorAlignRight, EditorAlignTextCenter, EditorAlignTextJustify, EditorAlignTextLeft, EditorAlignTextRight, EditorAlignTop, EditorAnchorLink, EditorClearStyle, EditorColorFill, EditorColorText, EditorContent, EditorHorizontalRule, EditorIndent, EditorJustifySpaceAroundHorizontal, EditorJustifySpaceAroundVertical, EditorJustifySpaceBetweenHorizontal, EditorJustifySpaceBetweenVertical, EditorLetterSpacing, EditorLineHeight, EditorListNumber, EditorOutdent, EditorParagraph, EditorParagraphRtl, EditorPastePlain, EditorPasteWord, EditorRoundedCorners, EditorRoundedCornersBottomLeft, EditorRoundedCornersBottomRight, EditorRoundedCornersTopLeft, EditorRoundedCornersTopRight, EditorSpellcheck, EditorStrikethrough, EditorTextBold, EditorTextDirectionLtr, EditorTextDirectionRtl, EditorTextItalic, EditorTextUnderline, Email, EmailClick, EmailOpen, EmailUnread, Exit, ExpertLiveHelp, Export, Eyedropper, Fill, Filter, FolderAdd, FolderOpen, Hide, Highlight, Image, Integration, KeyTab, Link, Lock, Maximize, MenuFirst, MenuLast, Minimize, NewWindow, Notification, Paste, PhoneRinging, Plus, Print, Save, Search, Send, Settings, ShareAndroid, ShareIos, ShareWeb, Show, Shuffle, Signature, SlidersH, SlidersV, SplitDotted, Stamp, Subtask, TextTruncate, TextWrap, ThirdPartyIntegration, Ungroup, Unlink, Unlock, Unpin, ViewList, Watermark, ZoomIn, ZoomOut
+
+### Arrows
+ArrowAngledDown, ArrowAngledUp, ArrowBoxRepeat, ArrowDown, ArrowLeft, ArrowLgDown, ArrowLgLeft, ArrowLgRight, ArrowLgUp, ArrowOutlineLeft, ArrowOutlineRight, ArrowRight, ArrowUp, ArrowUpRight, ArrowsLgLeftRight, ArrowsRightLeft, ArrowsRightLeftFill, CaretDown, CaretLeft, CaretRight, CaretUp, ChevronDoubleLeft, ChevronDoubleRight, ChevronDown, ChevronLeft, ChevronRight, ChevronSmDown, ChevronSmLeft, ChevronSmRight, ChevronSmUp, ChevronUp, Collapse, CollapseAll, Download, Expand, ExpandAll, FitToHeight, FitToWidth, Merge, MoveArrows, NewLine, PopIn, PopOut, Redo, Refresh, Reply, Rotate, Sort, SortTable, Split, Swap, TableAscending, TableDescending, Undo, Upload, Upgrade
+
+### Building
+Bank, BankArrow, FinancialInstitution, Home, HomeFill, Market, University, VendorStand
+
+### Business
+Bill, Briefcase, BriefcaseX, Calculator, Card, CardCheck, CardReader, Cash, Checkbook, CheckbookFill, CheckbookPencil, Currency, Discount, Dolly, Estimate, FileBox, HandBell, HandCoin, HandMoney, HandPercent, Invoice, InvoiceCheck, InvoiceFill, InvoiceLightning, MoneyBagUk, MoneyBagUs, MoneyBagUsFill, OfficeChair, Percent, PercentStack, PercentStackFill, Receipt, ReceiptFill, Wallet
+
+### Cash
+Cash, CashChevronDown, CashChevronUp, CashEnvelope, CashPercent, CashStacked, CashappFill, DollarSign, DollarSignFill
+
+### Circle
+Circle, CircleAlertQuickbooks, CircleArrowDown, CircleArrowLeft, CircleArrowRight, CircleArrowUp, CircleBackslash, CircleCheck, CircleCheckFill, CircleChevronDown, CircleClock, CircleClockFill, CircleCompass, CircleDash, CircleDashFill, CircleExclamation, CircleExclamationFill, CircleInfo, CircleInfoFill, CircleLightning, CircleLightningFill, CirclePercent, CirclePlus, CirclePlusFill, CircleQuestion, CircleQuestionFill, CircleX, CircleXFill, CircleZap, CircleZapFill, TriangleExclamation, TriangleExclamationFill
+
+### Cloud
+Cloud, CloudCode, CloudDownload, CloudOffline, CloudOnline, CloudUpload
+
+### Communication
+CalloutStar, CampaignAbTest, CampaignAd, CampaignAutomation, CampaignPlainText, CampaignPostcard, CampaignRss, CampaignSocialPost, CampaignSurvey, Comment, CommentDots, CommentExclamation, CommentPencil, CommentStar, ComparativeReport, Conversation, ConversationFill, Create, Inbox, InboxActivity, Mailbox, MessageCui, MessageDots, MessageX, Nfc, PageBanner, Quotes, SiteBanner
+
+### Documents
+Annotation, BoxPlus, Clipboard, ClipboardCheck, ClipboardFileBox, ClipboardPencil, Document, DocumentCurled, DocumentHalfDashed, DocumentText, FileSearch, Folder, FolderArrowDown, FolderArrowUp, FolderCheck, FolderEmail, FolderSystem, Move, NewPage, News, Note, NotePlus, NotebookPlus
+
+### Dots
+DotsFour, DotsNine, DotsSix, DotsTen, DragResize, OverflowAndroidOffset, OverflowIos, OverflowWeb
+
+### Logos
+Argo, Cashapp, CreditKarma, Facebook, FacebookFill, FacebookLogo, Figma, Github, Ids, Iec, Instagram, InstagramFill, InstagramLogo, Intuit, IntuitLogo, Jira, JiraFill, Linkedin, LinkedinFill, LinkedinLogo, Mailchimp, Mint, Nfc, Paypal, PaypalFill, Quickbooks, Salesforce, Servicenow, Slack, SlackFill, Splunk, Storybook, TtFullService, Turbotax, Twitter, TwitterFill, TwitterLogo, Venmo, VenmoFill, Wavefront, WavefrontFill, Whatsapp, WhatsappFill, YoutubeLogo
+
+### Media
+Audio, Bluetooth, ClosedCaptioning, ExitFullscreen, Film, Fullscreen, Headset, Megaphone, Microphone, MonitorMessage, MonitorPlay, MuteAudio, MuteMicrophone, Pause, PauseFill, PauseNoCircle, Play, PlayFill, PlayNoCircle, Scanner, Stop, StopFill, StopNoCircle, Video, VideoCall, VideoCallOff, VideoResize, VideoResizeReversed, Waveform, Webcam
+
+### Misc
+AllDevices, Atom, AwardRibbon, Bag, Beaker, BirthdayCake, Book, Boolean, BrowserWindow, Bug, Champagne, ChartBar, ChartLine, ChartPie, Code, CoffeeCup, CoffeeMug, Cookie, Credits, CurlyBrackets, Cutlery, Diamond, Emoji, Featured, Gift, Glasses, GlobeSpindle, Growth, Hammer, Hexagon, Hourglass, IntegrationPuzzle, Keyboard, Laptop, LaptopCheck, LaptopPerson, Lightbulb, Lightning, Logo, Lotus, MagicWand, Mobile, Monitor, Moon, NumberSign, Paintbrush, PlusLg, Presentation, Question, QuotationMarks, RaceFlag, RobotBook, RulerPencil, RulerPencilCrossed, SalonTools, Scales, ShieldCheck, SprayBottle, SteeringWheel, Stethoscope, SuffixPerHour, SuffixPercent, Tools, Tooth, Trophy, Umbrella, Uniform, Vacation, Weather, Web, Webhook
+
+### Organization
+BarsCui, Checklist, GridTile, GridTileFill, List, Menu, MenuCollapse, MenuExpand, OrgTree, PanelArrowLeft, PanelArrowRight, SortAscending, SortDecending, Stack, Thumbnail, ThumbnailFill
+
+### People
+AddressBook, AudienceAdd, AudienceLeave, HandVolunteer, IdBadge, IdCard, Initials, Person, PersonCalculator, PersonChat, PersonCheck, PersonHardHat, PersonLg, PersonPlus, PersonStar, PersonSwap, PersonThree, PersonTie, PersonTwo, Profile, SubscriberEdit, SubscriberRemove, SubscriberTag
+
+### Reactions
+Bookmark, BookmarkFill, Flag, Heart, HeartFill, Pin, PinFill, Star, StarFill, StarHalf, Tag, ThumbDown, ThumbDownFill, ThumbUp, ThumbUpFill
+
+### Time
+AlarmClock, Calendar, CalendarAdd, CalendarBusy, CalendarClock, CalendarConfirm, CalendarDateRange, CalendarEdit, CalendarExclamation, CalendarMonth, CalendarRecurring, CalendarStar, ClockCounterclockwise, ProgressBars, StopWatch
+
+### Transportation
+Car, Gas, Gauge, LocationArrow, LocationArrowFill, Map, MapPin, MapSigns, Motorcycle, ParkingMeter, Plane, Rocket, Truck

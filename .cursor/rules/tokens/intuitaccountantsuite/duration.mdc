@@ -1,0 +1,65 @@
+---
+description: Intuit Design System - Duration Token Library - Complete primitive and semantic duration tokens
+globs: ["src/**/*.{ts,tsx,js,jsx,scss,css}"]
+alwaysApply: false
+---
+
+# Intuit Design System - Duration Token Library
+
+## Primitive Duration Tokens (DO NOT USE DIRECTLY IN PLUGINS)
+
+- `--duration-0`: 0ms
+- `--duration-50`: 50ms
+- `--duration-100`: 100ms
+- `--duration-150`: 150ms
+- `--duration-200`: 200ms
+- `--duration-250`: 250ms
+- `--duration-300`: 300ms
+- `--duration-350`: 350ms
+- `--duration-400`: 400ms
+- `--duration-450`: 450ms
+- `--duration-500`: 500ms
+- `--duration-600`: 600ms
+- `--duration-700`: 700ms
+- `--duration-800`: 800ms
+- `--duration-900`: 900ms
+- `--duration-1000`: 1000ms
+- `--duration-1500`: 1500ms
+- `--duration-2000`: 2000ms
+
+## Semantic Duration Tokens (USE THESE IN PLUGINS)
+
+### Appear
+- `--duration-appear-emphasize-fast`: --duration-500 /* Use with ease.appear.emphasize */
+- `--duration-appear-emphasize-moderate`: --duration-700 /* Use with ease.appear.emphasize */
+- `--duration-appear-emphasize-slow`: --duration-800 /* Use with ease.appear.emphasize */
+- `--duration-appear-fast`: --duration-250 /* Use with ease.appear */
+- `--duration-appear-moderate`: --duration-300 /* Use with ease.appear */
+- `--duration-appear-slow`: --duration-350 /* Use with ease.appear */
+
+### Disappear
+- `--duration-disappear-emphasize-fast`: --duration-500 /* Use with ease.disappear.emphasize */
+- `--duration-disappear-emphasize-moderate`: --duration-700 /* Use with ease.disappear.emphasize */
+- `--duration-disappear-emphasize-slow`: --duration-800 /* Use with ease.disappear.emphasize */
+- `--duration-disappear-fast`: --duration-200 /* Use with ease.disappear */
+- `--duration-disappear-moderate`: --duration-250 /* Use with ease.disappear */
+- `--duration-disappear-slow`: --duration-300 /* Use with ease.disappear */
+
+### Fade
+- `--duration-fade-fast`: --duration-150 /* Use with ease.fade */
+- `--duration-fade-moderate`: --duration-200 /* Use with ease.fade */
+- `--duration-fade-slow`: --duration-250 /* Use with ease.fade */
+
+### Progress
+- `--duration-progress-fast`: --duration-500
+- `--duration-progress-moderate`: --duration-1000
+- `--duration-progress-slow`: --duration-1500
+- `--duration-progress-slowest`: --duration-2000
+
+### Transform
+- `--duration-transform-emphasize-fast`: --duration-500 /* Use with ease.transform.emphasize */
+- `--duration-transform-emphasize-moderate`: --duration-700 /* Use with ease.transform.emphasize */
+- `--duration-transform-emphasize-slow`: --duration-800 /* Use with ease.transform.emphasize */
+- `--duration-transform-fast`: --duration-350 /* Use with ease.transform */
+- `--duration-transform-moderate`: --duration-400 /* Use with ease.transform */
+- `--duration-transform-slow`: --duration-450 /* Use with ease.transform */

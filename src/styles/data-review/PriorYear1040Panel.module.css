@@ -1,0 +1,141 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+/* ── Document image section — height set inline via JS split ── */
+.docSection {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── Extracted fields section — fills remaining height below drag handle ── */
+.fieldsSection {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Title row — exactly DetailFields .titleRow */
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px 0;
+  gap: 12px;
+}
+
+/* Title — exactly DetailFields .title */
+.title {
+  font-family: var(--font-family-component) !important;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 28px;
+  color: #21262a;
+  padding: 0;
+  margin: 0;
+}
+
+.subHeader {
+  font-family: var(--font-family-component) !important;
+  font-size: 14px;
+  font-weight: 400;
+  color: #5d686f;
+  padding: 2px 20px 8px;
+}
+
+.fieldsBody {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Section labels — exactly DetailFields .sectionHeader */
+.sectionLabel {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 20px;
+  margin: 0 20px;
+  background: #f0f4f6;
+  font-family: var(--font-family-component) !important;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  color: #21262a;
+}
+
+/* Field rows — exactly DetailFields .fieldRow */
+.fieldRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 0;
+  margin: 0 20px;
+  border-bottom: 1px solid #c3ced5;
+}
+
+.fieldRowBold {
+  background: transparent;
+}
+
+/* Line number — compact label left of the field name */
+.lineNum {
+  font-family: var(--font-family-component) !important;
+  font-size: 12px;
+  font-weight: 400;
+  color: #8a9399;
+  width: 28px;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Field label — exactly DetailFields .fieldLabel */
+.fieldLabel {
+  font-family: var(--font-family-component) !important;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: #000000;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fieldRowBold .fieldLabel {
+  font-weight: 500;
+}
+
+/* Amount — read-only input appearance matching DetailFields .fieldInput */
+.fieldAmount {
+  font-family: var(--font-family-component) !important;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  color: #21262a;
+  background: #ffffff;
+  border: 1px solid #859299;
+  border-radius: 4px;
+  padding: 6px 8px;
+  height: 36px;
+  width: 120px;
+  box-sizing: border-box;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.fieldRowBold .fieldAmount {
+  font-weight: 600;
+  background: #f8f9fa;
+  border-color: #859299;
+}

@@ -1,0 +1,190 @@
+---
+description: Complete guide for using the Typography component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# Typography
+
+Typography is measured by the bounding box, which is based off the type size and line height.
+These measurements in turn align with the spatial scale. Our type ramps are targeted to be screen size appropriate.
+Although they each pull from our one Intuit type scale, the type sizes are adjusted based on desktop or mobile screens.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/typography
+```
+
+```tsx
+import { Typography } from '@ids-ts/typography';
+```
+
+## Props
+
+Typography exports semantic components: `D1`, `D2` (Display), `H1`–`H6` (Heading), `B1`–`B3` (Body). All share the same props.
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | Yes | Text content. |
+| `as` | `string` | No | Override the rendered HTML element (e.g., `as="h3"` on `B2`). |
+| `weight` | `'regular' \| 'demi' \| 'bold'` | No | Font weight override. |
+| `style` | `CSSProperties` | No | Inline style overrides. |
+| `className` | `string` | No | Additional CSS class names. |
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Alignment
+
+```tsx
+() => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div>
+      <B2>Default text alignment</B2>
+    </div>
+    {/* Using inline styles */}
+    <div style={{ textAlign: 'center' }}>
+      <B2>Centered using inline styles</B2>
+    </div>
+  </div>
+)
+```
+
+### H T M L Element
+
+```tsx
+() => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <D1>A display renders as a div.</D1>
+    <H2>A headline matches the heading number, so an H2 renders an h2.</H2>
+    <B1>Body typography renders as a span.</B1>
+  </div>
+)
+```
+
+### Pairing
+
+```tsx
+() => (
+  <>
+    {/* Stack component used to space heading and body text */}
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: `${tokens.intuit.light.size.size1}`
+      }}
+    >
+      <B2 as="h3" weight="demi">
+        B2 styling, used as an `h3` element
+      </B2>
+      {/* Stack component used to space paragraphs */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: `${tokens.intuit.light.size.size3}`
+        }}
+      >
+        <B3>
+          By using a stack component, any subsequent paragraph will be
+          automatically spaced.
+        </B3>
+        <B3>
+          Nulla efficitur tellus convallis leo semper pretium. Maecenas
+          venenatis sem urna, non dapibus magna condimentum vel. Pellentesque et
+          nunc sit amet quam blandit volutpat ultrices congue est. Pellentesque
+          habitant morbi tristique senectus et netus et malesuada fames ac
+          turpis egestas.
+        </B3>
+      </div>
+    </div>
+  </>
+)
+```
+
+### Weight
+
+```tsx
+() => (
+  <div
+    style={{
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '40px'
+    }}
+  >
+    <H3>
+      Text that has <strong>partial bolding</strong> automatically applied using
+      `strong` tags.
+    </H3>
+    {/* Avoid <H3 as={Bold}>Hello world!</B2>, instead: */}
+    <H3 weight="bold">
+      This text has the same font weight override applied throughout and still
+      renders the semantic HTML tag.
+    </H3>
+    <div
+      style={{
+        backgroundColor: `${tokens.intuit.dark.color.colorContainerBackgroundPrimary}`,
+        padding: `${tokens.intuit.light.size.size8}`,
+        color: `${tokens.intuit.dark.color.colorTextPrimary}`
+      }}
+    >
+      <B1 weight="demi">
+        Demi weight rendered as light text against a dark background
+      </B1>
+      <B1
+        weight="demi"
+        style={{
+          WebkitFontSmoothing: 'antialiased',
+          MozOsxFontSmoothing: 'grayscale'
+        }}
+      >
+        Demi weight using additional CSS to compensate for MacOS + Chrome
+      </B1>
+    </div>
+  </div>
+)
+```
+
+---
+
+## References
+
+- [GitHub Source - Typography](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/Typography)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-typography&theme=quickbooks&colorScheme=light)

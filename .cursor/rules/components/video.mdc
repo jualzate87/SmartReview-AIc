@@ -1,0 +1,310 @@
+---
+description: Complete guide for using the Video component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# Video
+
+Use a video component to display YouTube videos in-product for customer use and convenience. It is recommended that embedded videos adhere to a 16:9 aspect ratio for best performance. The video player requires an `embed` url from YouTube in order to function properly; these urls are different than a standard YouTube URL. See the Embed URL section below for more details.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/video
+```
+
+```tsx
+import { Video } from '@ids-ts/video';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `closeAriaLabel` | `string` | No | Label for screen readers for the close button |
+| `minimizeAriaLabel` | `string` | No | Label for screen readers for the minimize button |
+| `open` | `boolean` | Yes | Whether or not the video is visible |
+| `recFromCurrentChannelOnly` | `boolean` | No | Tells YouTube iframe to only show videos from the channel of the embedded video when paused or video ends |
+| `restoreAriaLabel` | `string` | No | Label for screen readers for the restore button |
+| `titleText` | `string` | No | Optional title string that overrides the YouTube |
+| `url` | `string` | Yes | The YouTube embed URL of the video to play |
+| `onCloseVideo` | `(event: React.MouseEvent<HTMLElement> \| React.KeyboardEvent) => void` | Yes | Called when the X icon is clicked to close the video. |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface VideoProps extends ThemeableElement<'section'> {
+  /** Label for screen readers for the close button */
+  closeAriaLabel?: string;
+
+  /** Label for screen readers for the minimize button */
+  minimizeAriaLabel?: string;
+
+  /** Whether or not the video is visible */
+  open: boolean;
+
+  /** Tells YouTube iframe to only show videos from the channel of the embedded video when paused or video ends */
+  recFromCurrentChannelOnly?: boolean;
+
+  /** Label for screen readers for the restore button */
+  restoreAriaLabel?: string;
+
+  /** Optional title string that overrides the YouTube */
+  titleText?: string;
+
+  /** The YouTube embed URL of the video to play */
+  url: string;
+
+  /** Callback function that fires when the X icon is clicked */
+  onCloseVideo: (
+    event: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>
+  ) => void;
+}
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Basic Usage
+
+```tsx
+() => {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <>
+      <Button onClick={() => setIsOpen(true)}>Open Video Player</Button>
+      <Video open={isOpen} url={url} onCloseVideo={() => setIsOpen(false)} />
+    </>
+  );
+}
+```
+
+### Only Show Related Videos From Current Channel
+
+```tsx
+() => {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <>
+      <Button onClick={() => setIsOpen(true)}>Open Video Player</Button>
+      <Video
+        recFromCurrentChannelOnly
+        open={isOpen}
+        url={url}
+        onCloseVideo={() => setIsOpen(false)}
+      />
+    </>
+  );
+}
+```
+
+### Aria Label Overwrites
+
+```tsx
+() => {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <>
+      <Button onClick={() => setIsOpen(true)}>Open Video Player</Button>
+      <Video
+        open={isOpen}
+        url={url}
+        minimizeAriaLabel="Overwrite default aria label for making video player small"
+        restoreAriaLabel="Overwrite default aria label for making video player large"
+        closeAriaLabel="Overwrite default aria label for closing video player"
+        onCloseVideo={() => setIsOpen(false)}
+      />
+    </>
+  );
+}
+```
+
+### Title Overwrite
+
+```tsx
+() => {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <>
+      <Button onClick={() => setIsOpen(true)}>Open Video Player</Button>
+      <Video
+        open={isOpen}
+        url={url}
+        titleText="If provided, then it will replace the existing Youtube video title"
+        onCloseVideo={() => setIsOpen(false)}
+      />
+    </>
+  );
+}
+```
+
+### Multiple Z Indices Example
+
+```tsx
+() => {
+  const [trowserOpen, setTrowserOpen] = useState(false);
+  const [trowserVidOpen, setTrowserVidOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerVidOpen, setDrawerVidOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalVidOpen, setModalVidOpen] = useState(false);
+
+  return (
+    <div>
+      <Button
+        data-testid="open-trowser-btn-zindice-story"
+        onClick={() => setTrowserOpen(true)}
+      >
+        Open Trowser
+      </Button>
+      <Trowser
+        dismissible
+        open={trowserOpen}
+        data-testid="trowser-zindice-story"
+        onClose={() => setTrowserOpen(false)}
+      >
+        <Video
+          open={trowserVidOpen}
+          url={url}
+          data-testid="trowser-video-zindice-story"
+          onCloseVideo={() => setTrowserVidOpen(false)}
+        />
+        <Button
+          data-testid="open-trowser-video-btn-zindice-story"
+          onClick={() => setTrowserVidOpen(true)}
+        >
+          Open Trowser Video
+        </Button>
+        <Button
+          data-testid="open-drawer-btn-zindice-story"
+          onClick={() => setDrawerOpen(true)}
+        >
+          Open Drawer
+        </Button>
+        <Drawer
+          open={drawerOpen}
+          data-testid="drawer-zindice-story"
+          onClose={() => setDrawerOpen(false)}
+        >
+          <DrawerHeader
+            title="Drawer Title"
+            onClose={() => setDrawerOpen(false)}
+          />
+          <DrawerContent>
+            <Video
+              open={drawerVidOpen}
+              url={url}
+              data-testid="drawer-video-zindice-story"
+              onCloseVideo={() => setDrawerVidOpen(false)}
+            />
+            <Button
+              data-testid="open-drawer-video-btn-zindice-story"
+              onClick={() => setDrawerVidOpen(true)}
+            >
+              Open Drawer Video
+            </Button>
+            <Button
+              data-testid="open-modal-btn-zindice-story"
+              onClick={() => setModalOpen(true)}
+            >
+              Open Modal
+            </Button>
+            <Modal
+              dismissible
+              open={modalOpen}
+              data-testid="modal-zindice-story"
+              onClose={() => setModalOpen(false)}
+            >
+              <ModalContent>
+                <Video
+                  open={modalVidOpen}
+                  url={url}
+                  data-testid="modal-video-zindice-story"
+                  onCloseVideo={() => setModalVidOpen(false)}
+// ...
+```
+
+### Playground
+
+```tsx
+({
+  url,
+  minimizeAriaLabel,
+  restoreAriaLabel,
+  closeAriaLabel,
+  titleText
+}: VideoControls) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  // There isn't a knob for recFromCurrentChannelOnly because it would require re-instantiation of the YT player if a user has already opened the video.
+  // Instead, added a second story highlighting that feature.
+
+  return (
+    <>
+      <Button onClick={() => setIsOpen(true)}>Open Video Player</Button>
+      <Video
+        open={isOpen}
+        url={url}
+        minimizeAriaLabel={minimizeAriaLabel}
+        restoreAriaLabel={restoreAriaLabel}
+        closeAriaLabel={closeAriaLabel}
+        titleText={titleText}
+        onCloseVideo={() => setIsOpen(false)}
+      />
+    </>
+  );
+}
+```
+
+## Composes With
+
+- Button
+- Trowser
+- ModalDialog
+- Drawer
+
+---
+
+## References
+
+- [GitHub Source - Video](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/Video)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/video.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-video&theme=quickbooks&colorScheme=light)

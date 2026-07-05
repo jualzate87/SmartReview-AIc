@@ -1,0 +1,218 @@
+---
+description: Core instructions for Intuit Design System (IDS) usage and architecture
+alwaysApply: true
+---
+
+## General Instructions
+
+- Never use other design systems or UI libraries such as Material UI, Chakra, etc.
+- Never use other CSS frameworks such as Tailwind or SASS.
+- Use CSS Modules for styling.
+- Rely on the design system and avoid custom styling/components/icons as much as possible.
+- ALWAYS read the relevant custom builder rules first before implementation.
+- Do not hardcode typography-related CSS unless necessary, you should use IDS design tokens when possible.
+- When building from a Figma design, explicitly code every intentional styling decision from the Figma design. Never assume browser defaults or implicit behavior will match the design intent. When in doubt, declare it in CSS.
+- Prefer IDS icons over hardcoded SVGs whenever possible.
+
+## Architecture Rules
+
+### Component Usage
+
+- Use `@ids-ts/*` components directly in JSX without creating wrapper components
+- Only use `@ids-ts/*` component packages that are listed in the "Components available" section below
+- For any @ids-ts/* component you want to use or need info for, make sure to read the corresponding builder rules file to understand usage and props
+- In component rules, the props definition should generally trump other texts in the same file if they conflict
+- If the @ids-ts/* component you want to use is not yet installed and added to package.json, you should always immediately install it using `yarn add @ids-ts/<component-name>` (no aliasing needed — packages resolve directly from the Intuit npm registry)
+- When importing an `@ids-ts/*` component, always import its CSS file as well: `import '@ids-ts/<component>/dist/main.css'`
+- If a needed pattern/component is not available in `@ids-ts/*`, create one and make sure to note the gap to the user
+
+### Styling Approach
+
+- CSS Modules for component-specific styles
+- Design tokens for colors, spacing, typography, borders
+- Flexbox/Grid for layout, not absolute positioning unless needed for a specific use-case
+- Media queries for responsive design
+
+### File Organization
+
+```
+src/
+├── App.tsx                 (router shell — skills manage this, don't edit directly)
+├── pages/
+│   ├── HomePage.tsx        (default page — prototype starts here)
+│   └── [Name].tsx          (additional pages created by skills)
+├── styles/
+│   ├── App.module.css      (shell-level styles only)
+│   ├── HomePage.module.css (home page styles)
+│   ├── [Name].module.css   (per-page styles, one file per page)
+│   ├── index.css           (global styles, don't edit)
+│   ├── fonts.css           (font imports, don't edit)
+│   └── intuit.css          (IDS design tokens, synced from DDMS CDN, don't edit)
+```
+
+Pages use React Router v6 (HashRouter). Each page is a standalone component at `src/pages/[Name].tsx` with its own CSS module. See `routing` rule for full details on adding pages.
+
+## Components
+
+### Components available
+
+- `@ids-ts/a11yfocus`
+- `@ids-ts/accordion`
+- `@ids-ts/app-tile`
+- `@ids-ts/backdrop`
+- `@ids-ts/badge`
+- `@ids-ts/button`
+- `@ids-ts/cards`
+- `@ids-ts/carousel`
+- `@ids-ts/checkbox`
+- `@ids-ts/chip`
+- `@ids-ts/click-away-listener`
+- `@ids-ts/combo-link`
+- `@ids-ts/core`
+- `@ids-ts/date-picker`
+- `@ids-ts/date-range-picker`
+- `@ids-ts/drawer`
+- `@ids-ts/dropdown-button`
+- `@ids-ts/dropdown`
+- `@ids-ts/dropdown-typeahead`
+- `@ids-ts/flair`
+- `@ids-ts/guidance-tooltip`
+- `@ids-ts/guided-tour-tooltip`
+- `@ids-ts/icon-container`
+- `@ids-ts/icon-control`
+- `@ids-ts/info-link`
+- `@ids-ts/inline-validation-message`
+- `@ids-ts/left-navigation`
+- `@ids-ts/link-action-button`
+- `@ids-ts/link`
+- `@ids-ts/loader`
+- `@ids-ts/menu`
+- `@ids-ts/modal-dialog`
+- `@ids-ts/page-message`
+- `@ids-ts/pagination`
+- `@ids-ts/panel-contextual`
+- `@ids-ts/panel`
+- `@ids-ts/point-of-need`
+- `@ids-ts/popover`
+- `@ids-ts/portal`
+- `@ids-ts/position`
+- `@ids-ts/product-header`
+- `@ids-ts/radio`
+- `@ids-ts/rc-checkbox`
+- `@ids-ts/segmented-button`
+- `@ids-ts/skeleton`
+- `@ids-ts/split-button`
+- `@ids-ts/stacked-page-messages`
+- `@ids-ts/status-dropdown`
+- `@ids-ts/step-flow`
+- `@ids-ts/survey-tool`
+- `@ids-ts/switch`
+- `@ids-ts/table`
+- `@ids-ts/tabs`
+- `@ids-ts/text-field`
+- `@ids-ts/textarea`
+- `@ids-ts/toast-message`
+- `@ids-ts/tooltip`
+- `@ids-ts/trowser`
+- `@ids-ts/typography`
+- `@ids-ts/video`
+- `@ids-ts/zindex`
+
+## Icons
+
+- Always use icons from the `@design-systems/icons` package
+- For icon usage guidelines, installation, props, and best practices, refer to the `icons` rule
+- Import by name: `import { IconName } from '@design-systems/icons'`
+- Always verify icon exists before using it
+- Never hardcode inline SVGs unless the icon doesn't exist in the design system
+
+## Design Tokens
+
+- Always use design system tokens for colors, spacing, typography, etc.
+- Reference tokens as CSS variables: `var(--color-action-standard)`, `var(--space-medium)`, etc.
+- For an overview of all available token categories, refer to the `tokens` rule
+- For specific token values, read the category-specific rules (e.g., `tokens-color`, `tokens-space`)
+- When using Figma designs, validate tokens exist in the token rules before using them
+- Never hardcode values that have corresponding design tokens
+
+## Code Examples
+
+### Good Example - Using Design System Components
+
+```tsx
+// Page component — import path is relative from src/pages/
+import styles from '../styles/[Name].module.css'
+
+function App() {
+  return (
+    <div className={styles.appContainer}>
+      <header className={styles.header}>
+        <h1 className={styles.brandText}>Title</h1>
+        <Button priority="primary">Action</Button>
+      </header>
+      <main className={styles.mainContent}>
+        <div className={styles.card}>
+          <Typography variant="heading-6">Section</Typography>
+          <Badge status="success">Complete</Badge>
+        </div>
+      </main>
+    </div>
+  )
+}
+```
+
+### Good Example - Using Design Tokens
+
+```css
+.appContainer {
+  padding: var(--space-container-padding-medium);
+  background: var(--color-page-background-secondary);
+  font-family: var(--font-family-body);
+}
+
+.header {
+  background: var(--color-container-background-primary);
+  border-bottom: 1px solid var(--color-divider-tertiary);
+}
+
+.brandText {
+  font-size: var(--font-size-heading-6);
+  font-weight: var(--font-weight-heading-bold);
+  color: var(--color-text-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .appContainer {
+    padding: var(--space-container-padding-small);
+  }
+}
+```
+
+## Common Mistakes to Avoid
+
+1. Using CSS-in-JS (styled-components, emotion) - use CSS Modules instead
+2. Hardcoding colors instead of using tokens
+3. Creating wrapper components around design system components
+4. Using absolute positioning for layouts
+5. Importing inline SVGs instead of using @design-systems/icons
+6. Forgetting to import component CSS files
+7. Not testing responsive design on mobile/tablet/desktop
+
+## Success Checklist
+
+Before considering implementation complete, verify:
+
+- [ ] All components use @ids-ts/* packages when possible
+- [ ] All colors, spacing, and typography use design tokens
+- [ ] Component CSS files are imported alongside component imports
+- [ ] Icons come from @design-systems/icons (no inline SVGs or third-party libraries)
+- [ ] Proper semantic HTML structure with accessible markup
+
+## When to Ask Questions
+
+Ask for clarification if:
+1. The design uses a component type not available in @ids-ts/*
+2. The design requires custom styling beyond design tokens
+3. The design isn't pixel-perfect after initial implementation
+4. Multiple responsive states are shown (desktop vs mobile)

@@ -1,0 +1,47 @@
+/* Drag handle — shared styles for both vertical and horizontal */
+.handleHorizontal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  width: 100%;
+  cursor: row-resize;
+  background: var(--color-container-background-primary, #ffffff);
+  border-top: 1px solid #D5DEE3;
+  border-bottom: 1px solid #D5DEE3;
+  flex-shrink: 0;
+  z-index: 2;
+  user-select: none;
+}
+
+.handleHorizontal:hover {
+  background: #f0f4f6;
+}
+
+.handleVertical {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  cursor: col-resize;
+  background: var(--color-container-background-primary, #ffffff);
+  border-left: 1px solid #D5DEE3;
+  border-right: 1px solid #D5DEE3;
+  flex-shrink: 0;
+  z-index: 2;
+  user-select: none;
+}
+
+.handleVertical:hover {
+  background: #f0f4f6;
+}
+
+.handleIcon {
+  color: #5D686F;
+  pointer-events: none;
+}
+
+/* Rotate DotsSix 90° for horizontal drag */
+.rotated90 {
+  transform: rotate(90deg);
+}

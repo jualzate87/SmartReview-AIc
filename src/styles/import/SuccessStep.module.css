@@ -1,0 +1,89 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 12px;
+  text-align: center;
+  padding: 40px 24px;
+}
+
+.successIcon {
+  color: #12805c;
+  width: 48px;
+  height: 48px;
+}
+
+.heading {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 28px;
+  color: var(--color-text-primary, #393a3d);
+  margin: 0;
+}
+
+.body {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: var(--color-text-secondary, #6b6c72);
+  max-width: 480px;
+  margin: 0;
+}
+
+.ctaButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  border: none;
+  border-radius: var(--radius-small, 4px);
+  background: #ffffff;
+  color: #393a3d;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  cursor: pointer;
+  margin-top: 8px;
+  position: relative;
+  z-index: 0;
+}
+
+.ctaButton::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: calc(var(--radius-small, 4px) + 2px);
+  background: conic-gradient(from 150deg at 34.72% 28.57%, #236CFF 40.21153271198273deg, #38E8F6 212.00538396835327deg, #5DABFF 320.3948664665222deg);
+  z-index: -1;
+}
+
+.ctaButton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-small, 4px);
+  background: #ffffff;
+  z-index: -1;
+}
+
+.ctaButton:hover::after {
+  background: #f4f5f8;
+}
+
+.ctaIcon {
+  width: 20px;
+  height: 20px;
+  color: #205ea3;
+}
+
+.subCopy {
+  font-size: 14px;
+  font-weight: 400;
+  font-style: italic;
+  line-height: 20px;
+  color: var(--color-text-secondary, #6b6c72);
+  max-width: 480px;
+  margin: 0;
+}

@@ -1,0 +1,297 @@
+---
+description: Complete guide for using the StackedPageMessages component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# StackedPageMessages
+
+If you intend to display a stacked page message after page load, for screen readers to announce the change, make sure the page message is rendered in a page region with `aria-live=“assertive”` or `role="alert"`.
+Once a page message in stacked page message is closed, the focus should move to the next page message or next focusable element on the page.
+
+Page messages within the Stacked Page Message will be sitting inside a landmark:
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/stacked-page-messages
+```
+
+```tsx
+import { StackedPageMessages } from '@ids-ts/stacked-page-messages';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `automationId` | `string` | No | Test Automation ID. |
+| `children` | `React.ReactElement | React.ReactElement[]` | No | Page Messages |
+| `onClose` | `React.MouseEventHandler` | No | Callback when component is closed. |
+| `open` | `boolean` | Yes | - |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface StackedPageMessagesProps extends ThemeableElement<'div'> {
+  /** Test Automation ID. */
+  automationId?: string;
+  /** Page Messages */
+  children?: React.ReactElement | React.ReactElement[];
+  /** Callback when component is closed. */
+  onClose?: React.MouseEventHandler;
+  /**
+   * Whether component is open.
+   *
+   * @default true
+   */
+  open: boolean;
+}
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Basic Usage
+
+```tsx
+() => {
+  const [open, setOpen] = useState(true);
+  const [isInfoOpen, setIsInfoOpen] = useState(true);
+  const [isWarningOpen, setIsWarningOpen] = useState(true);
+  const [isErrorOpen, setIsErrorOpen] = useState(true);
+  const [isDiscoveryOpen, setIsDiscoveryOpen] = useState(true);
+
+  const handleClose = () => setOpen(false);
+
+  return (
+    <div id="basicExample">
+      <StackedPageMessages
+        automationId="basic"
+        open={open}
+        style={{ overflow: 'auto' }}
+        onClose={handleClose}
+      >
+        <PageMessage
+          title="Info"
+          type="info"
+          open={isInfoOpen}
+          onClose={() => setIsInfoOpen(false)}
+        >
+          {loremIpsum}
+        </PageMessage>
+        <PageMessage
+          title="Warning"
+          type="warn"
+          open={isWarningOpen}
+          onClose={() => setIsWarningOpen(false)}
+        >
+          {loremIpsum}
+        </PageMessage>
+        <PageMessage
+          title="Error"
+          type="error"
+          open={isErrorOpen}
+          dismissible={false}
+          onClose={() => setIsErrorOpen(false)}
+        >
+          {loremIpsum}
+        </PageMessage>
+        <PageMessage
+          title="Discovery"
+          type="discovery"
+          open={isDiscoveryOpen}
+          onClose={() => setIsDiscoveryOpen(false)}
+        >
+          {loremIpsum}
+        </PageMessage>
+      </StackedPageMessages>
+    </div>
+  );
+}
+```
+
+### All Dismissible
+
+```tsx
+() => {
+  const [open, setOpen] = useState(true);
+  const [isInfoOpen, setIsInfoOpen] = useState(true);
+  const [isWarningOpen, setIsWarningOpen] = useState(true);
+  const [isDiscoveryOpen, setIsDiscoveryOpen] = useState(true);
+
+  const handleClose = () => setOpen(false);
+
+  return (
+    <div id="dismissibleExample">
+      <StackedPageMessages
+        automationId="basic"
+        open={open}
+        style={{ overflow: 'auto' }}
+        onClose={handleClose}
+      >
+        <PageMessage
+          title="Info"
+          type="info"
+          open={isInfoOpen}
+          onClose={() => setIsInfoOpen(false)}
+        >
+          {loremIpsum}
+        </PageMessage>
+        <PageMessage
+          title="Warning"
+          type="warn"
+          open={isWarningOpen}
+          onClose={() => setIsWarningOpen(false)}
+        >
+          {loremIpsum}
+        </PageMessage>
+        <PageMessage
+          title="Discovery"
+          type="discovery"
+          open={isDiscoveryOpen}
+          onClose={() => setIsDiscoveryOpen(false)}
+        >
+          {loremIpsum}
+        </PageMessage>
+      </StackedPageMessages>
+    </div>
+  );
+}
+```
+
+### Showcase
+
+```tsx
+() => {
+  const loremIpsum = faker.lorem.sentence(20);
+
+  const [open, setOpen] = useState(true);
+  const [isInfoOpen, setIsInfoOpen] = useState(true);
+  const [isWarningOpen, setIsWarningOpen] = useState(true);
+  const [isErrorOpen, setIsErrorOpen] = useState(true);
+  const [isDiscoveryOpen, setIsDiscoveryOpen] = useState(true);
+
+  const handleClose = () => setOpen(false);
+
+  return (
+    <div id="stackedpagemessage">
+      <StackedPageMessages
+        automationId="stackedpagemessage_playground"
+        open={open}
+        style={{ overflow: 'auto' }}
+        onClose={handleClose}
+      >
+        <PageMessage
+          dismissible
+          title="Title 1"
+          type="info"
+          open={isInfoOpen}
+          onClose={() => setIsInfoOpen(false)}
+        >
+          {loremIpsum}
+        </PageMessage>
+        <PageMessage
+          dismissible
+          title="Title 2"
+          type="error"
+          open={isWarningOpen}
+          onClose={() => setIsWarningOpen(false)}
+        >
+          {loremIpsum}
+        </PageMessage>
+        <PageMessage
+          title="Title 3"
+          type="warn"
+          open={isErrorOpen}
+          dismissible={false}
+          onClose={() => setIsErrorOpen(false)}
+        >
+          {loremIpsum}
+        </PageMessage>
+        <PageMessage
+          dismissible
+          title="Title 4"
+          type="discovery"
+          open={isDiscoveryOpen}
+          onClose={() => setIsDiscoveryOpen(false)}
+        >
+          {loremIpsum}
+        </PageMessage>
+      </StackedPageMessages>
+    </div>
+  );
+}
+```
+
+## Accessibility
+
+## Code Example
+
+```tsx
+<div role="region" aria-label="Important messages">
+  <StackedPageMessage>
+    <PageMessage title="Info" type="info" role="alert">
+      Lorem ipsum
+    </PageMessage>
+    <PageMessage title="Warn" type="warn" role="alert">
+      Lorem ipsum
+    </PageMessage>
+    <PageMessage title="Error" type="error" role="alert">
+      Lorem ipsum
+    </PageMessage>
+    <PageMessage title="Discovery" type="discovery" role="alert">
+      Lorem ipsum
+    </PageMessage>
+  </StackedPageMessage>
+</div>
+```
+
+## Composes With
+
+- PageMessage
+
+---
+
+## References
+
+- [GitHub Source - StackedPageMessages](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/StackedPageMessages)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/stacked-page-messages.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-stacked-page-message&theme=quickbooks&colorScheme=light)

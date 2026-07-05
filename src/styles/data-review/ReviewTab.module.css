@@ -1,0 +1,144 @@
+/* Review tab bar — CGDS tab pattern */
+.container {
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+  padding: 8px 20px 0;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+/* Divider at bottom */
+.container::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #d5dee3;
+}
+
+.tabs {
+  display: flex;
+  flex: 1;
+  align-items: flex-start;
+}
+
+/* Individual tab */
+.tab {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+  padding: 0 16px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  position: relative;
+}
+
+.tabContent {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 0;
+}
+
+.tabIcon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.tabIconInactive {
+  filter: grayscale(1) opacity(0.5);
+}
+
+.tabLabel {
+  font-family: var(--font-family-component) !important;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.tabLabelActive {
+  color: #21262a;
+}
+
+.tabLabelInactive {
+  color: #5d686f;
+}
+
+/* Active underline */
+.tabUnderline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  height: 2px;
+}
+
+.tabUnderlineActive {
+  background: #205ea3;
+  height: 2px;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+.tabUnderlineInactive {
+  height: 2px;
+  width: 100%;
+}
+
+/* Pop-out / drag handle button — positioned top-right */
+.popOutBtn {
+  position: absolute;
+  top: 11px;
+  right: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #5D686F;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  width: 24px;
+  height: 24px;
+  z-index: 2;
+}
+
+.popOutBtn:hover {
+  opacity: 0.7;
+}
+
+/* Dock-back button — shown in the popout window instead of the pop-out icon */
+.dockBackBtn {
+  position: absolute;
+  top: 9px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: 1px solid #c8d3da;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #393a3d;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 8px 3px 6px;
+  line-height: 1;
+  z-index: 2;
+  white-space: nowrap;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.dockBackBtn:hover {
+  background: #f0f4f7;
+  border-color: #93a3ab;
+}

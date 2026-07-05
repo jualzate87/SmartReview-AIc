@@ -1,0 +1,1866 @@
+---
+description: Complete guide for using the Table component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# Table
+
+Tables provide structure to data sets enabling a customer to scan, analyze, compare, filter, sort and/or manipulate data.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/table
+```
+
+```tsx
+import { Table } from '@ids-ts/table';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `density` | `Density` | No | - |
+| `border` | `Border` | No | * The type of border to surround the table |
+| `stickyColumns` | `boolean` | No | * Flag to indicate if table needs column to be sticky |
+| `divider` | `Divider` | No | - |
+| `verticalDividerStyle` | `VerticalDividerStyle` | No | - |
+| `striped` | `boolean` | No | - |
+| `hover` | `Hover` | No | * Show some love to either the rows or columns on hover |
+| `Pin` | `pins the first column, with content flowing und...` | Yes | - |
+| `addons` | `React.ReactElement` | No | A slot for additional table things |
+| `wrapperProps` | `Omit<Element<'div'>, 'children'>` | No | Props to pass to the root div element. Rest props are spread on the table |
+| `disableScrollWrapper` | `boolean` | No | To disable scrollwrapper if needed |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface TableProps {
+  /**
+   * How spacious to make each of the cells
+   *
+   * @default 'comfortable'
+   */
+  density?: Density;
+  /**
+   * The type of border to surround the table
+   */
+  border?: Border;
+  /**
+   * Flag to indicate if table needs column to be sticky
+   */
+  stickyColumns?: boolean;
+  /**
+   * Where to put the dividers between cells
+   *
+   * @default false
+   */
+  divider?: Divider;
+  /**
+   * The line style for the vertical divider. Only affects vertical dividers.
+   *
+   * @default 'dotted'
+   */
+  verticalDividerStyle?: VerticalDividerStyle;
+  /**
+   * Zebras are cool. Stripe the rows.
+   *
+   * @default false
+   */
+  striped?: boolean;
+
+  /**
+   * Show some love to either the rows or columns on hover
+   */
+  hover?: Hover;
+
+  /**
+   * How the table should behave on mobile
+   * Pin: pins the first column, with content flowing underneath it
+   * Elevated: pins the first column, but elevates it above the other rows.
+   * Stack: stacks the rows on top of each other, merging the data into sections
+   *
+   * @default pin
+   */
+  responsive?: Responsive;
+
+  /** A slot for additional table things */
+  addons?: React.ReactElement;
+  /** Props to pass to the root div element. Rest props are spread on the table */
+  wrapperProps?: Omit<Element<'div'>, 'children'>;
+  /** To disable scrollwrapper if needed */
+  disableScrollWrapper?: boolean;
+}
+
+export type Density = 'roomy' | 'comfortable' | 'cozy' | 'compact';
+
+export type Border = 'square' | 'round' | undefined;
+
+export type Divider = 'horizontal' | 'vertical' | boolean;
+
+export type VerticalDividerStyle = 'dotted' | 'solid';
+
+export type Hover = 'row' | 'cell' | undefined;
+
+export type Responsive = 'pin' | 'elevate' | 'stack' | 'merge-and-stack';
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**action** — Interactive element colors and hover/active/focus states
+- `--color-action-complementary`
+- `--color-action-complementary-active`
+- `--color-action-complementary-border`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+**divider** — Divider and separator line colors
+- `--color-divider-inverse`
+- `--color-divider-primary`
+- `--color-divider-secondary`
+
+### Space
+
+**component** — Component-level spacing (padding, gap)
+- `--space-component-gap-large`
+- `--space-component-gap-medium`
+- `--space-component-gap-small`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Basic
+
+```tsx
+() => (
+  <Table
+    density="comfortable"
+    divider="horizontal"
+    responsive="elevate"
+    summary="contributors to the consumer group design systems table component"
+  >
+    <Table.Header divider="horizontal">
+      <Table.Row>
+        <Table.Cell>First name</Table.Cell>
+        <Table.Cell>Last name</Table.Cell>
+        <Table.Cell>City</Table.Cell>
+        <Table.Cell>State</Table.Cell>
+        <Table.Cell>Team</Table.Cell>
+      </Table.Row>
+    </Table.Header>
+    <Table.Body>
+      {data.map((item, index) => {
+        const id = `row-${index}`;
+        return (
+          <Table.Row key={id}>
+            <Table.Cell>{item.firstName}</Table.Cell>
+            <Table.Cell>{item.lastName}</Table.Cell>
+            <Table.Cell>{item.city}</Table.Cell>
+            <Table.Cell>{item.state}</Table.Cell>
+            <Table.Cell>{item.team}</Table.Cell>
+          </Table.Row>
+        );
+      })
+```
+
+### With Action Column
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  return (
+    <Table
+      density="comfortable"
+      divider="horizontal"
+      responsive="elevate"
+      summary="contributors to the consumer group design systems table component"
+    >
+      <Table.Header divider="horizontal">
+        <Table.Row>
+          <Table.Cell>First name</Table.Cell>
+          <Table.Cell>Last name</Table.Cell>
+          <Table.Cell>City</Table.Cell>
+          <Table.Cell>State</Table.Cell>
+          <Table.Cell>Team</Table.Cell>
+          <Table.Cell style={{ textAlign: 'right' }}>Action</Table.Cell>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
+        {data.map((item, index) => {
+          const id = `row-${index}`;
+          return (
+            <Table.Row key={id}>
+              <Table.Cell>{item.firstName}</Table.Cell>
+              <Table.Cell>{item.lastName}</Table.Cell>
+              <Table.Cell>{item.city}</Table.Cell>
+              <Table.Cell>{item.state}</Table.Cell>
+              <Table.Cell>{item.team}</Table.Cell>
+              <Table.Cell style={{ textAlign: 'right' }}>
+                <Button size="small" onClick={handleOpen}>
+                  View
+                </Button>
+              </Table.Cell>
+            </Table.Row>
+          );
+        })}
+      </Table.Body>
+      <ToastMessage
+        open={open}
+        onClose={handleClose}
+        onActionClick={handleClose}
+      >
+        View button clicked
+      </ToastMessage>
+    </Table>
+  );
+}
+```
+
+### Roomy Table
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  return (
+    <Table
+      density="roomy"
+      divider="horizontal"
+      responsive="elevate"
+      summary="contributors to the consumer group design systems table component"
+    >
+      <Table.Header divider="horizontal">
+        <Table.Row>
+          <Table.Cell>First name</Table.Cell>
+          <Table.Cell>Last name</Table.Cell>
+          <Table.Cell>City</Table.Cell>
+          <Table.Cell>State</Table.Cell>
+          <Table.Cell>Team</Table.Cell>
+          <Table.Cell style={{ textAlign: 'right' }}>Action</Table.Cell>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
+        {data.map((item, index) => {
+          const id = `row-${index}`;
+          return (
+            <Table.Row key={id}>
+              <Table.Cell>{item.firstName}</Table.Cell>
+              <Table.Cell>{item.lastName}</Table.Cell>
+              <Table.Cell>{item.city}</Table.Cell>
+              <Table.Cell>{item.state}</Table.Cell>
+              <Table.Cell>{item.team}</Table.Cell>
+              <Table.Cell style={{ textAlign: 'right' }}>
+                <Button size="small" onClick={handleOpen}>
+                  View
+                </Button>
+              </Table.Cell>
+            </Table.Row>
+          );
+        })}
+      </Table.Body>
+      <ToastMessage
+        open={open}
+        onClose={handleClose}
+        onActionClick={handleClose}
+      >
+        View button clicked
+      </ToastMessage>
+    </Table>
+  );
+}
+```
+
+### Comfortable Table
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  return (
+    <Table
+      density="comfortable"
+      divider="horizontal"
+      responsive="elevate"
+      summary="contributors to the consumer group design systems table component"
+    >
+      <Table.Header divider="horizontal">
+        <Table.Row>
+          <Table.Cell>First name</Table.Cell>
+          <Table.Cell>Last name</Table.Cell>
+          <Table.Cell>City</Table.Cell>
+          <Table.Cell>State</Table.Cell>
+          <Table.Cell>Team</Table.Cell>
+          <Table.Cell style={{ textAlign: 'right' }}>Action</Table.Cell>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
+        {data.map((item, index) => {
+          const id = `row-${index}`;
+          return (
+            <Table.Row key={id}>
+              <Table.Cell>{item.firstName}</Table.Cell>
+              <Table.Cell>{item.lastName}</Table.Cell>
+              <Table.Cell>{item.city}</Table.Cell>
+              <Table.Cell>{item.state}</Table.Cell>
+              <Table.Cell>{item.team}</Table.Cell>
+              <Table.Cell style={{ textAlign: 'right' }}>
+                <Button size="small" onClick={handleOpen}>
+                  View
+                </Button>
+              </Table.Cell>
+            </Table.Row>
+          );
+        })}
+      </Table.Body>
+      <ToastMessage
+        open={open}
+        onClose={handleClose}
+        onActionClick={handleClose}
+      >
+        View button clicked
+      </ToastMessage>
+    </Table>
+  );
+}
+```
+
+### Cozy Table
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  return (
+    <Table
+      density="cozy"
+      divider="horizontal"
+      responsive="elevate"
+      summary="contributors to the consumer group design systems table component"
+    >
+      <Table.Header divider="horizontal">
+        <Table.Row>
+          <Table.Cell>First name</Table.Cell>
+          <Table.Cell>Last name</Table.Cell>
+          <Table.Cell>City</Table.Cell>
+          <Table.Cell>State</Table.Cell>
+          <Table.Cell>Team</Table.Cell>
+          <Table.Cell style={{ textAlign: 'right' }}>Action</Table.Cell>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
+        {data.map((item, index) => {
+          const id = `row-${index}`;
+          return (
+            <Table.Row key={id}>
+              <Table.Cell>{item.firstName}</Table.Cell>
+              <Table.Cell>{item.lastName}</Table.Cell>
+              <Table.Cell>{item.city}</Table.Cell>
+              <Table.Cell>{item.state}</Table.Cell>
+              <Table.Cell>{item.team}</Table.Cell>
+              <Table.Cell style={{ textAlign: 'right' }}>
+                <Button size="small" onClick={handleOpen}>
+                  View
+                </Button>
+              </Table.Cell>
+            </Table.Row>
+          );
+        })}
+      </Table.Body>
+      <ToastMessage
+        open={open}
+        onClose={handleClose}
+        onActionClick={handleClose}
+      >
+        View button clicked
+      </ToastMessage>
+    </Table>
+  );
+}
+```
+
+### Compact Table
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  return (
+    <Table
+      density="compact"
+      divider="horizontal"
+      responsive="elevate"
+      summary="contributors to the consumer group design systems table component"
+    >
+      <Table.Header divider="horizontal">
+        <Table.Row>
+          <Table.Cell>First name</Table.Cell>
+          <Table.Cell>Last name</Table.Cell>
+          <Table.Cell>City</Table.Cell>
+          <Table.Cell>State</Table.Cell>
+          <Table.Cell>Team</Table.Cell>
+          <Table.Cell style={{ textAlign: 'right' }}>Action</Table.Cell>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
+        {data.map((item, index) => {
+          const id = `row-${index}`;
+          return (
+            <Table.Row key={id}>
+              <Table.Cell>{item.firstName}</Table.Cell>
+              <Table.Cell>{item.lastName}</Table.Cell>
+              <Table.Cell>{item.city}</Table.Cell>
+              <Table.Cell>{item.state}</Table.Cell>
+              <Table.Cell>{item.team}</Table.Cell>
+              <Table.Cell style={{ textAlign: 'right' }}>
+                <Button size="small" onClick={handleOpen}>
+                  View
+                </Button>
+              </Table.Cell>
+            </Table.Row>
+          );
+        })}
+      </Table.Body>
+      <ToastMessage
+        open={open}
+        onClose={handleClose}
+        onActionClick={handleClose}
+      >
+        View button clicked
+      </ToastMessage>
+    </Table>
+  );
+}
+```
+
+### With Header Colspan
+
+```tsx
+() => (
+  <Table
+    divider
+    density="comfortable"
+    responsive="elevate"
+    summary="contributors to the consumer group design systems table component"
+  >
+    <Table.Header>
+      <Table.Row>
+        <Table.Cell colSpan={2}>Name</Table.Cell>
+        <Table.Cell colSpan={2}>Location</Table.Cell>
+      </Table.Row>
+      <Table.Row>
+        <Table.Cell>First name</Table.Cell>
+        <Table.Cell>Last name</Table.Cell>
+        <Table.Cell>City</Table.Cell>
+        <Table.Cell>State</Table.Cell>
+      </Table.Row>
+    </Table.Header>
+    <Table.Body>
+      {data.map((item, index) => {
+        const id = `row-${index}`;
+        return (
+          <Table.Row key={id}>
+            <Table.Cell>{item.firstName}</Table.Cell>
+            <Table.Cell>{item.lastName}</Table.Cell>
+            <Table.Cell>{item.city}</Table.Cell>
+            <Table.Cell>{item.state}</Table.Cell>
+          </Table.Row>
+        );
+      })
+```
+
+### With Header Colspan Centered
+
+```tsx
+() => (
+  <Table
+    divider
+    density="comfortable"
+    responsive="elevate"
+    summary="contributors to the consumer group design systems table component"
+  >
+    <Table.Header>
+      <Table.Row>
+        <Table.Cell colSpan={2} align="center">
+          Name
+        </Table.Cell>
+        <Table.Cell colSpan={2} align="center">
+          Location
+        </Table.Cell>
+      </Table.Row>
+      <Table.Row>
+        <Table.Cell>First name</Table.Cell>
+        <Table.Cell>Last name</Table.Cell>
+        <Table.Cell>City</Table.Cell>
+        <Table.Cell>State</Table.Cell>
+      </Table.Row>
+    </Table.Header>
+    <Table.Body>
+      {data.map((item, index) => {
+        const id = `row-${index}`;
+        return (
+          <Table.Row key={id}>
+            <Table.Cell>{item.firstName}</Table.Cell>
+            <Table.Cell>{item.lastName}</Table.Cell>
+            <Table.Cell>{item.city}</Table.Cell>
+            <Table.Cell>{item.state}</Table.Cell>
+          </Table.Row>
+        );
+      })
+```
+
+### With Sticky Header
+
+```tsx
+() => (
+  <Table
+    density="comfortable"
+    divider="horizontal"
+    responsive="elevate"
+    tabIndex={0}
+    wrapperProps={{
+      className: styles.scrollTable
+    }}
+    summary="contributors to the consumer group design systems table component"
+  >
+    <Table.Header
+      className={clsx(styles.header, clsx(styles.header, styles.sticky))}
+      divider="horizontal"
+    >
+      <Table.Row>
+        <Table.Cell className={clsx(styles.header, styles.sticky)}>
+          First name
+        </Table.Cell>
+        <Table.Cell className={clsx(styles.header, styles.sticky)}>
+          Last name
+        </Table.Cell>
+        <Table.Cell className={clsx(styles.header, styles.sticky)}>
+          City
+        </Table.Cell>
+        <Table.Cell className={clsx(styles.header, styles.sticky)}>
+          State
+        </Table.Cell>
+      </Table.Row>
+    </Table.Header>
+    <Table.Body className={styles.body}>
+      {data.map((item, index) => {
+        const id = `row-${index}`;
+        return (
+          <Table.Row key={id}>
+            <Table.Cell>{item.firstName}</Table.Cell>
+            <Table.Cell>{item.lastName}</Table.Cell>
+            <Table.Cell>{item.city}</Table.Cell>
+            <Table.Cell>{item.state}</Table.Cell>
+          </Table.Row>
+        );
+      })
+```
+
+### With Subheaders
+
+```tsx
+() => (
+  <Table
+    divider
+    density="comfortable"
+    responsive="elevate"
+    summary="contributors to the consumer group design systems table component"
+  >
+    <Table.Header>
+      <Table.Row>
+        <Table.Cell>First name</Table.Cell>
+        <Table.Cell>Last name</Table.Cell>
+        <Table.Cell>City</Table.Cell>
+        <Table.Cell>State</Table.Cell>
+      </Table.Row>
+    </Table.Header>
+    <Table.Body>
+      <Table.Row key="cgds-subheader">
+        <Table.Cell colSpan={4} component="th">
+          Team: CGDS
+        </Table.Cell>
+      </Table.Row>
+      {data.map((item, index) => {
+        const id = `row-${index}`;
+        return (
+          item.team === 'CGDS' && (
+            <Table.Row key={id}>
+              <Table.Cell>{item.firstName}</Table.Cell>
+              <Table.Cell>{item.lastName}</Table.Cell>
+              <Table.Cell>{item.city}</Table.Cell>
+              <Table.Cell>{item.state}</Table.Cell>
+            </Table.Row>
+          )
+        );
+      })
+```
+
+### With Footer
+
+```tsx
+() => (
+  <Table
+    divider="horizontal"
+    density="comfortable"
+    responsive="elevate"
+    summary="contributors to the consumer group design systems table component"
+  >
+    <Table.Header divider="horizontal" background="gray">
+      <Table.Row>
+        <Table.Cell>First name</Table.Cell>
+        <Table.Cell>Last name</Table.Cell>
+        <Table.Cell>City</Table.Cell>
+        <Table.Cell>State</Table.Cell>
+      </Table.Row>
+    </Table.Header>
+    <Table.Body>
+      {data.map((item, index) => {
+        const id = `row-${index}`;
+        return (
+          <Table.Row key={id}>
+            <Table.Cell>{item.firstName}</Table.Cell>
+            <Table.Cell>{item.lastName}</Table.Cell>
+            <Table.Cell>{item.city}</Table.Cell>
+            <Table.Cell>{item.state}</Table.Cell>
+          </Table.Row>
+        );
+      })
+```
+
+### With Transparent Footer
+
+```tsx
+() => (
+  <Table
+    divider="horizontal"
+    density="comfortable"
+    responsive="elevate"
+    summary="contributors to the consumer group design systems table component"
+  >
+    <Table.Header divider="horizontal">
+      <Table.Row>
+        <Table.Cell>First name</Table.Cell>
+        <Table.Cell>Last name</Table.Cell>
+        <Table.Cell>City</Table.Cell>
+        <Table.Cell>State</Table.Cell>
+      </Table.Row>
+    </Table.Header>
+    <Table.Body>
+      {data.map((item, index) => {
+        const id = `row-${index}`;
+        return (
+          <Table.Row key={id}>
+            <Table.Cell>{item.firstName}</Table.Cell>
+            <Table.Cell>{item.lastName}</Table.Cell>
+            <Table.Cell>{item.city}</Table.Cell>
+            <Table.Cell>{item.state}</Table.Cell>
+          </Table.Row>
+        );
+      })
+```
+
+### With Rounded Border
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  return (
+    <Table
+      density="comfortable"
+      border="round"
+      divider="horizontal"
+      responsive="elevate"
+      summary="contributors to the consumer group design systems table component"
+    >
+      <Table.Header divider="horizontal">
+        <Table.Row>
+          <Table.Cell>First name</Table.Cell>
+          <Table.Cell>Last name</Table.Cell>
+          <Table.Cell>City</Table.Cell>
+          <Table.Cell>State</Table.Cell>
+          <Table.Cell>Team</Table.Cell>
+          <Table.Cell style={{ textAlign: 'right' }}>Action</Table.Cell>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
+        {data.map((item, index) => {
+          const id = `row-${index}`;
+          return (
+            <Table.Row key={id}>
+              <Table.Cell>{item.firstName}</Table.Cell>
+              <Table.Cell>{item.lastName}</Table.Cell>
+              <Table.Cell>{item.city}</Table.Cell>
+              <Table.Cell>{item.state}</Table.Cell>
+              <Table.Cell>{item.team}</Table.Cell>
+              <Table.Cell style={{ textAlign: 'right' }}>
+                <Button size="small" onClick={handleOpen}>
+                  View
+                </Button>
+              </Table.Cell>
+            </Table.Row>
+          );
+        })}
+      </Table.Body>
+      <ToastMessage
+        open={open}
+        onClose={handleClose}
+        onActionClick={handleClose}
+      >
+        View button clicked
+      </ToastMessage>
+    </Table>
+  );
+}
+```
+
+### With Square Border
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  return (
+    <Table
+      density="comfortable"
+      border="square"
+      divider="horizontal"
+      responsive="elevate"
+      summary="contributors to the consumer group design systems table component"
+    >
+      <Table.Header divider="horizontal">
+        <Table.Row>
+          <Table.Cell>First name</Table.Cell>
+          <Table.Cell>Last name</Table.Cell>
+          <Table.Cell>City</Table.Cell>
+          <Table.Cell>State</Table.Cell>
+          <Table.Cell>Team</Table.Cell>
+          <Table.Cell style={{ textAlign: 'right' }}>Action</Table.Cell>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
+        {data.map((item, index) => {
+          const id = `row-${index}`;
+          return (
+            <Table.Row key={id}>
+              <Table.Cell>{item.firstName}</Table.Cell>
+              <Table.Cell>{item.lastName}</Table.Cell>
+              <Table.Cell>{item.city}</Table.Cell>
+              <Table.Cell>{item.state}</Table.Cell>
+              <Table.Cell>{item.team}</Table.Cell>
+              <Table.Cell style={{ textAlign: 'right' }}>
+                <Button size="small" onClick={handleOpen}>
+                  View
+                </Button>
+              </Table.Cell>
+            </Table.Row>
+          );
+        })}
+      </Table.Body>
+      <ToastMessage
+        open={open}
+        onClose={handleClose}
+        onActionClick={handleClose}
+      >
+        View button clicked
+      </ToastMessage>
+    </Table>
+  );
+}
+```
+
+### With No Horizontal Divider
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  return (
+    <Table
+      density="comfortable"
+      responsive="elevate"
+      summary="contributors to the consumer group design systems table component"
+    >
+      <Table.Header divider="horizontal">
+        <Table.Row>
+          <Table.Cell>First name</Table.Cell>
+          <Table.Cell>Last name</Table.Cell>
+          <Table.Cell>City</Table.Cell>
+          <Table.Cell>State</Table.Cell>
+          <Table.Cell>Team</Table.Cell>
+          <Table.Cell style={{ textAlign: 'right' }}>Action</Table.Cell>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
+        {data.map((item, index) => {
+          const id = `row-${index}`;
+          return (
+            <Table.Row key={id}>
+              <Table.Cell>{item.firstName}</Table.Cell>
+              <Table.Cell>{item.lastName}</Table.Cell>
+              <Table.Cell>{item.city}</Table.Cell>
+              <Table.Cell>{item.state}</Table.Cell>
+              <Table.Cell>{item.team}</Table.Cell>
+              <Table.Cell style={{ textAlign: 'right' }}>
+                <Button size="small" onClick={handleOpen}>
+                  View
+                </Button>
+              </Table.Cell>
+            </Table.Row>
+          );
+        })}
+      </Table.Body>
+      <ToastMessage
+        open={open}
+        onClose={handleClose}
+        onActionClick={handleClose}
+      >
+        View button clicked
+      </ToastMessage>
+    </Table>
+  );
+}
+```
+
+### With Vertical Dividers
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  return (
+    <Table
+      divider
+      density="comfortable"
+      responsive="elevate"
+      summary="contributors to the consumer group design systems table component"
+    >
+      <Table.Header>
+        <Table.Row>
+          <Table.Cell>First name</Table.Cell>
+          <Table.Cell>Last name</Table.Cell>
+          <Table.Cell>City</Table.Cell>
+          <Table.Cell>State</Table.Cell>
+          <Table.Cell>Team</Table.Cell>
+          <Table.Cell style={{ textAlign: 'right' }}>Action</Table.Cell>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
+        {data.map((item, index) => {
+          const id = `row-${index}`;
+          return (
+            <Table.Row key={id}>
+              <Table.Cell>{item.firstName}</Table.Cell>
+              <Table.Cell>{item.lastName}</Table.Cell>
+              <Table.Cell>{item.city}</Table.Cell>
+              <Table.Cell>{item.state}</Table.Cell>
+              <Table.Cell>{item.team}</Table.Cell>
+              <Table.Cell style={{ textAlign: 'right' }}>
+                <Button size="small" onClick={handleOpen}>
+                  View
+                </Button>
+              </Table.Cell>
+            </Table.Row>
+          );
+        })}
+      </Table.Body>
+      <ToastMessage
+        open={open}
+        onClose={handleClose}
+        onActionClick={handleClose}
+      >
+        View button clicked
+      </ToastMessage>
+    </Table>
+  );
+}
+```
+
+### With Zebra Striping
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  return (
+    <Table
+      striped
+      responsive="elevate"
+      summary="contributors to the consumer group design systems table component"
+    >
+      <Table.Header divider="horizontal">
+        <Table.Row>
+          <Table.Cell>First name</Table.Cell>
+          <Table.Cell>Last name</Table.Cell>
+          <Table.Cell>City</Table.Cell>
+          <Table.Cell>State</Table.Cell>
+          <Table.Cell>Team</Table.Cell>
+          <Table.Cell style={{ textAlign: 'right' }}>Action</Table.Cell>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
+        {data.map((item, index) => {
+          const id = `row-${index}`;
+          return (
+            <Table.Row key={id}>
+              <Table.Cell>{item.firstName}</Table.Cell>
+              <Table.Cell>{item.lastName}</Table.Cell>
+              <Table.Cell>{item.city}</Table.Cell>
+              <Table.Cell>{item.state}</Table.Cell>
+              <Table.Cell>{item.team}</Table.Cell>
+              <Table.Cell style={{ textAlign: 'right' }}>
+                <Button size="small" onClick={handleOpen}>
+                  View
+                </Button>
+              </Table.Cell>
+            </Table.Row>
+          );
+        })}
+      </Table.Body>
+      <ToastMessage
+        open={open}
+        onClose={handleClose}
+        onActionClick={handleClose}
+      >
+        View button clicked
+      </ToastMessage>
+    </Table>
+  );
+}
+```
+
+### With Row Hover State
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  return (
+    <Table
+      hover="row"
+      divider="horizontal"
+      responsive="elevate"
+      summary="contributors to the consumer group design systems table component"
+    >
+      <Table.Header divider="horizontal">
+        <Table.Row>
+          <Table.Cell>First name</Table.Cell>
+          <Table.Cell>Last name</Table.Cell>
+          <Table.Cell>City</Table.Cell>
+          <Table.Cell>State</Table.Cell>
+          <Table.Cell>Team</Table.Cell>
+          <Table.Cell style={{ textAlign: 'right' }}>Action</Table.Cell>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
+        {data.map((item, index) => {
+          const id = `row-${index}`;
+          return (
+            <Table.Row key={id}>
+              <Table.Cell>{item.firstName}</Table.Cell>
+              <Table.Cell>{item.lastName}</Table.Cell>
+              <Table.Cell>{item.city}</Table.Cell>
+              <Table.Cell>{item.state}</Table.Cell>
+              <Table.Cell>{item.team}</Table.Cell>
+              <Table.Cell style={{ textAlign: 'right' }}>
+                <Button size="small" onClick={handleOpen}>
+                  View
+                </Button>
+              </Table.Cell>
+            </Table.Row>
+          );
+        })}
+      </Table.Body>
+      <ToastMessage
+        open={open}
+        onClose={handleClose}
+        onActionClick={handleClose}
+      >
+        View button clicked
+      </ToastMessage>
+    </Table>
+  );
+}
+```
+
+### With Row Hover State And Zebra Striping
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  return (
+    <Table
+      striped
+      hover="row"
+      divider="horizontal"
+      responsive="elevate"
+      summary="contributors to the consumer group design systems table component"
+    >
+      <Table.Header divider="horizontal">
+        <Table.Row>
+          <Table.Cell>First name</Table.Cell>
+          <Table.Cell>Last name</Table.Cell>
+          <Table.Cell>City</Table.Cell>
+          <Table.Cell>State</Table.Cell>
+          <Table.Cell>Team</Table.Cell>
+          <Table.Cell style={{ textAlign: 'right' }}>Action</Table.Cell>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
+        {data.map((item, index) => {
+          const id = `row-${index}`;
+          return (
+            <Table.Row key={id}>
+              <Table.Cell>{item.firstName}</Table.Cell>
+              <Table.Cell>{item.lastName}</Table.Cell>
+              <Table.Cell>{item.city}</Table.Cell>
+              <Table.Cell>{item.state}</Table.Cell>
+              <Table.Cell>{item.team}</Table.Cell>
+              <Table.Cell style={{ textAlign: 'right' }}>
+                <Button size="small" onClick={handleOpen}>
+                  View
+                </Button>
+              </Table.Cell>
+            </Table.Row>
+          );
+        })}
+      </Table.Body>
+      <ToastMessage
+        open={open}
+        onClose={handleClose}
+        onActionClick={handleClose}
+      >
+        View button clicked
+      </ToastMessage>
+    </Table>
+  );
+}
+```
+
+### With Cell Hover State
+
+```tsx
+() => {
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  return (
+    <Table
+      hover="cell"
+      divider="horizontal"
+      responsive="elevate"
+      summary="contributors to the consumer group design systems table component"
+    >
+      <Table.Header divider="horizontal">
+        <Table.Row>
+          <Table.Cell>First name</Table.Cell>
+          <Table.Cell>Last name</Table.Cell>
+          <Table.Cell>City</Table.Cell>
+          <Table.Cell>State</Table.Cell>
+          <Table.Cell>Team</Table.Cell>
+          <Table.Cell style={{ textAlign: 'right' }}>Action</Table.Cell>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
+        {data.map((item, index) => {
+          const id = `row-${index}`;
+          return (
+            <Table.Row key={id}>
+              <Table.Cell>{item.firstName}</Table.Cell>
+              <Table.Cell>{item.lastName}</Table.Cell>
+              <Table.Cell>{item.city}</Table.Cell>
+              <Table.Cell>{item.state}</Table.Cell>
+              <Table.Cell>{item.team}</Table.Cell>
+              <Table.Cell style={{ textAlign: 'right' }}>
+                <Button size="small" onClick={handleOpen}>
+                  View
+                </Button>
+              </Table.Cell>
+            </Table.Row>
+          );
+        })}
+      </Table.Body>
+      <ToastMessage
+        open={open}
+        onClose={handleClose}
+        onActionClick={handleClose}
+      >
+        View button clicked
+      </ToastMessage>
+    </Table>
+  );
+}
+```
+
+### Elevated Responsive Mode
+
+```tsx
+() => {
+  const {
+    headerGroups,
+    rows,
+    prepareRow,
+    getTableProps,
+    getTableBodyProps,
+    getToggleAllRowsSelectedProps
+  } = useTable(
+    {
+      columns,
+      data
+    },
+    useRowSelect
+  ) as TableInstanceWithRowSelect<DataItem>;
+
+  return (
+    <Table
+      divider="horizontal"
+      responsive="elevate"
+      {...getTableProps()}
+      summary="contributors to the consumer group design systems table component"
+    >
+      <Table.Header>
+        {headerGroups.map((headerGroup) => (
+          // eslint-disable-next-line react/jsx-key
+          <Table.Row {...headerGroup.getHeaderGroupProps()}>
+            <Table.Cell style={{ width: '5px' }} aria-label="Select content">
+              <Checkbox
+                {...getToggleAllRowsSelectedProps()}
+                className={styles.customMarginCheckbox}
+                aria-label="Select all rows"
+              />
+            </Table.Cell>
+            {headerGroup.headers.map((column) => (
+              // eslint-disable-next-line react/jsx-key
+              <Table.Cell {...column.getHeaderProps()}>
+                {/*
+                  WORKAROUND: The version of @types/react used by react-table might conflict
+                  with the main project version, causing a type mismatch on ReactNode.
+                  Casting to `any` bypasses this check without changing runtime behavior.
+                  This should be removed once dependency versions are aligned.
+                */}
+                <span>{column.render('Header') as any}</span>
+              </Table.Cell>
+            ))}
+          </Table.Row>
+        ))}
+      </Table.Header>
+      <Table.Body {...getTableBodyProps()}>
+        {rows.map((row, i) => {
+          const typedRow = row as RowWithRowSelect<DataItem>;
+
+          prepareRow(typedRow);
+          return (
+            // eslint-disable-next-line react/jsx-key
+            <Table.Row {...row.getRowProps()}>
+              <Table.Cell style={{ width: '5px' }}>
+                <Checkbox
+                  {...typedRow.getToggleRowSelectedProps()}
+                  aria-label={`choice-example-${i}`}
+                />
+              </Table.Cell>
+              {row.cells.map((cell) => {
+                return (
+                  // eslint-disable-next-line react/jsx-key
+                  <Table.Cell {...cell.getCellProps()}>{cell.value}</Table.Cell>
+                );
+              })}
+            </Table.Row>
+          );
+        })}
+      </Table.Body>
+    </Table>
+  );
+}
+```
+
+### Stack Responsive Mode
+
+```tsx
+() => (
+  <Table
+    density="comfortable"
+    divider="horizontal"
+    responsive="stack"
+    summary="contributors to the consumer group design systems table component"
+  >
+    <Table.Header divider="horizontal">
+      <Table.Row>
+        <Table.Cell>First name</Table.Cell>
+        <Table.Cell>Last name</Table.Cell>
+        <Table.Cell>City</Table.Cell>
+        <Table.Cell>State</Table.Cell>
+        <Table.Cell>Team</Table.Cell>
+      </Table.Row>
+    </Table.Header>
+    <Table.Body>
+      {data.map((item, index) => {
+        const id = `row-${index}`;
+        return (
+          <Table.Row key={id}>
+            <Table.Cell>{item.firstName}</Table.Cell>
+            <Table.Cell>{item.lastName}</Table.Cell>
+            <Table.Cell>{item.city}</Table.Cell>
+            <Table.Cell>{item.state}</Table.Cell>
+            <Table.Cell>{item.team}</Table.Cell>
+          </Table.Row>
+        );
+      })
+```
+
+### Stack Responsive Mode With Primary Secondary
+
+```tsx
+() => (
+  <Table
+    density="comfortable"
+    divider="horizontal"
+    responsive="stack"
+    summary="contributors to the consumer group design systems table component"
+  >
+    <Table.Header divider="horizontal">
+      <Table.Row>
+        <Table.Cell>First name</Table.Cell>
+        <Table.Cell>Last name</Table.Cell>
+        <Table.Cell>City</Table.Cell>
+        <Table.Cell>State</Table.Cell>
+        <Table.Cell>Team</Table.Cell>
+      </Table.Row>
+    </Table.Header>
+    <Table.Body>
+      {data.map((item, index) => {
+        const id = `row-${index}`;
+        return (
+          <Table.Row key={id}>
+            <Table.Cell stack="primary">{item.firstName}</Table.Cell>
+            <Table.Cell>{item.lastName}</Table.Cell>
+            <Table.Cell stack="secondary">{item.city}</Table.Cell>
+            <Table.Cell>{item.state}</Table.Cell>
+            <Table.Cell>{item.team}</Table.Cell>
+          </Table.Row>
+        );
+      })
+```
+
+### Merge Stack Responsive Mode
+
+```tsx
+() => (
+  <Table
+    density="comfortable"
+    divider="horizontal"
+    responsive="merge-and-stack"
+    summary="contributors to the consumer group design systems table component"
+  >
+    <Table.Header divider="horizontal">
+      <Table.Row>
+        <Table.Cell>First name</Table.Cell>
+        <Table.Cell>Last name</Table.Cell>
+        <Table.Cell>City</Table.Cell>
+        <Table.Cell>State</Table.Cell>
+        <Table.Cell>Team</Table.Cell>
+      </Table.Row>
+    </Table.Header>
+    <Table.Body>
+      {data.map((item, index) => {
+        const id = `row-${index}`;
+        return (
+          <Table.Row key={id}>
+            <Table.Cell>{item.firstName}</Table.Cell>
+            <Table.Cell>{item.lastName}</Table.Cell>
+            <Table.Cell>{item.city}</Table.Cell>
+            <Table.Cell>{item.state}</Table.Cell>
+            <Table.Cell>{item.team}</Table.Cell>
+          </Table.Row>
+        );
+      })
+```
+
+### Merge Stack Responsive Mode With Primary Secondary
+
+```tsx
+() => (
+  <Table
+    density="comfortable"
+    divider="horizontal"
+    responsive="merge-and-stack"
+    summary="contributors to the consumer group design systems table component"
+  >
+    <Table.Header divider="horizontal">
+      <Table.Row>
+        <Table.Cell>First name</Table.Cell>
+        <Table.Cell>Last name</Table.Cell>
+        <Table.Cell>City</Table.Cell>
+        <Table.Cell>State</Table.Cell>
+        <Table.Cell>Team</Table.Cell>
+      </Table.Row>
+    </Table.Header>
+    <Table.Body>
+      {data.map((item, index) => {
+        const id = `row-${index}`;
+        return (
+          <Table.Row key={id}>
+            <Table.Cell stack="primary">{item.firstName}</Table.Cell>
+            <Table.Cell>{item.lastName}</Table.Cell>
+            <Table.Cell stack="secondary">{item.city}</Table.Cell>
+            <Table.Cell>{item.state}</Table.Cell>
+            <Table.Cell>{item.team}</Table.Cell>
+          </Table.Row>
+        );
+      })
+```
+
+### With Row Expansion
+
+```tsx
+() => {
+  const memoColumns = React.useMemo(
+    () => [
+      {
+        Header: 'First name',
+        accessor: 'firstName' as const
+      },
+      {
+        Header: 'Last name',
+        accessor: 'lastName' as const
+      },
+      {
+        Header: 'City',
+        accessor: 'city' as const
+      },
+      {
+        Header: 'State',
+        accessor: 'state' as const
+      }
+    ],
+    []
+  );
+
+  const memoData = React.useMemo(() => dataWithSubrows, []);
+
+  const { headerGroups, rows, prepareRow } = useTable(
+    {
+      columns: memoColumns,
+      data: memoData
+    } as any,
+    useExpanded
+  );
+
+  return (
+    <Table
+      density="comfortable"
+      divider="horizontal"
+      responsive="elevate"
+      summary="contributors to the consumer group design systems table component"
+    >
+      <Table.Header>
+        <Table.Row>
+          {headerGroups.map((headerGroup) => {
+            return headerGroup.headers.map((column: any, key: number) => {
+              const id = `header-${key}`;
+              return (
+                <Table.Cell key={id} id={id}>
+                  {column.render('Header')}
+                </Table.Cell>
+              );
+            });
+          })}
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
+        {rows &&
+          rows.map((row: any, rowIndex: number) => {
+            prepareRow(row);
+            const id = `row-${rowIndex}`;
+            return (
+              <Table.Row key={id}>
+                {row.cells.map((cell: any, index: number) => {
+                  const cellId = `${id}-cell-${index}`;
+                  return (
+                    <Table.Cell
+                      key={cellId}
+                      style={{
+                        paddingLeft:
+                          !row.canExpand && index === 0 ? '72px' : undefined
+                      }}
+                    >
+                      <div className={styles.rowExpansionCellStyle}>
+                        {index < 1 && row.canExpand ? (
+                          <span
+                            {...row.getToggleRowExpandedProps({
+                              style: {
+                                display: 'inline-block',
+                                paddingRight: '4px'
+                              }
+                            })}
+// ...
+```
+
+### With Inline Filter
+
+```tsx
+() => {
+  const defaultColumn = React.useMemo(
+    () => ({
+      Filter: ColumnFilter
+    }),
+    []
+  );
+
+  const memoData = React.useMemo(() => data, []);
+  const memoColumns = React.useMemo(() => columns, []);
+  const memoFilterTypes = React.useMemo(() => filterTypes, []);
+  const { headerGroups, rows, prepareRow } = useTable(
+    {
+      filterTypes: memoFilterTypes,
+      defaultColumn,
+      columns: memoColumns,
+      data: memoData
+    } as any,
+    useFilters
+  );
+
+  const column = headerGroups[0].headers[0];
+  const { canFilter, Filter: filterFunction } = column as any;
+  return (
+    <>
+      {column && (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div>{canFilter ? filterFunction({ column, index: 0 }) : null}</div>
+        </div>
+      )}
+      <span className={styles.srOnly} role="status">
+        {rows.length} results
+      </span>
+      <Table
+        density="comfortable"
+        divider="horizontal"
+        responsive="elevate"
+        summary="contributors to the consumer group design systems table component"
+        id="coponents-table-in-line"
+      >
+        <Table.Header>
+          <Table.Row>
+            <Table.Cell>First name</Table.Cell>
+            <Table.Cell>Last name</Table.Cell>
+            <Table.Cell>City</Table.Cell>
+            <Table.Cell>State</Table.Cell>
+            <Table.Cell>Team</Table.Cell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {rows &&
+            rows.map((row: any, rowIndex: number) => {
+              prepareRow(row);
+              const id = `row-${rowIndex}`;
+              return (
+                <Table.Row key={id}>
+                  {row.cells.map((cell: any, index: number) => {
+                    const cellId = `${id}-cell-${index}`;
+                    return <Table.Cell key={cellId}>{cell.value}</Table.Cell>;
+                  })}
+                </Table.Row>
+              );
+            })}
+        </Table.Body>
+      </Table>
+    </>
+  );
+}
+```
+
+### With Add Item
+
+```tsx
+() => {
+  const [tableData, setTableData] = useState(data);
+
+  const addNewRow = () => {
+    const tempData = [...tableData];
+    tempData.splice(0, tableData.length);
+    tempData.push({
+      firstName: faker.person.firstName(),
+      lastName: faker.person.lastName(),
+      city: faker.location.city(),
+      state: faker.location.state(),
+      pet: 'Dog',
+      college: faker.person.firstName(),
+      role: 'Dev',
+      team: faker.person.firstName(),
+      company: faker.company.name(),
+      newRow: true
+    });
+    setTableData([
+      ...tableData,
+      ...tempData.filter((item) => item.newRow === true)
+    ]);
+  };
+
+  return (
+    <Table
+      striped
+      divider
+      responsive="elevate"
+      summary="contributors to the consumer group design systems table component"
+    >
+      <Table.Header>
+        <Table.Row>
+          <Table.Cell>First name</Table.Cell>
+          <Table.Cell>Last name</Table.Cell>
+          <Table.Cell>City</Table.Cell>
+          <Table.Cell>State</Table.Cell>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
+        {tableData.map((item, index) => {
+          const id = `row-${index}`;
+          return (
+            <Table.Row key={id}>
+              <Table.Cell>{item.firstName}</Table.Cell>
+              <Table.Cell>{item.lastName}</Table.Cell>
+              <Table.Cell>{item.city}</Table.Cell>
+              <Table.Cell>{item.state}</Table.Cell>
+            </Table.Row>
+          );
+        })}
+      </Table.Body>
+      <Table.Addons className={styles.addOns}>
+        <Table.Addons.Left>
+          <Button fullWidth="responsive" size="medium" onClick={addNewRow}>
+            Add Items
+          </Button>
+          <span className={styles.srOnly} role="status">
+            {tableData.length} items
+          </span>
+        </Table.Addons.Left>
+      </Table.Addons>
+    </Table>
+  );
+}
+```
+
+### With Pagination
+
+```tsx
+() => {
+  const DEFAULT_PAGE_SIZE = 10;
+  const [page, setPage] = useState(1);
+  const tableRef = useRef<HTMLTableRowElement | null>(null); // Ref to the first table row
+  const [firstRender, setFirstRender] = useState(true);
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  // Runs only on the first render
+  useEffect(() => {
+    setFirstRender(false);
+  }, []);
+
+  // Runs after a new page is rendered for the first time,
+  // and focuses on the first row of the table when pagination is clicked
+
+  useEffect(() => {
+    if (tableRef.current && !firstRender) {
+      tableRef.current.focus();
+    }
+  }, [page]);
+
+  const items = data.slice(
+    (page - 1) * DEFAULT_PAGE_SIZE,
+    (page - 1) * DEFAULT_PAGE_SIZE + DEFAULT_PAGE_SIZE
+  );
+
+  return (
+    <Table
+      striped
+      divider
+      responsive="elevate"
+      summary="contributors to the consumer group design systems table component"
+    >
+      <Table.Header>
+        <Table.Row>
+          <Table.Cell>First name</Table.Cell>
+          <Table.Cell>Last name</Table.Cell>
+          <Table.Cell>City</Table.Cell>
+          <Table.Cell>State</Table.Cell>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
+        {items.map((item, index) => {
+          const id = `row-${index}`;
+          const firstRowRef = index === 0 ? tableRef : null;
+          const firstRowTabIndex = index === 0 ? -1 : null;
+
+          return (
+            <Table.Row
+              key={id}
+              innerRef={firstRowRef}
+              tabIndex={firstRowTabIndex}
+            >
+              <Table.Cell>{item.firstName}</Table.Cell>
+              <Table.Cell>{item.lastName}</Table.Cell>
+              <Table.Cell>{item.city}</Table.Cell>
+              <Table.Cell>{item.state}</Table.Cell>
+            </Table.Row>
+          );
+        })}
+      </Table.Body>
+      <Table.Addons className={styles.addOns}>
+        <Table.Addons.Right>
+          <Pagination
+            totalPages={Math.ceil(data.length / DEFAULT_PAGE_SIZE)}
+            totalItems={data.length}
+            activePage={page}
+            pageSize={DEFAULT_PAGE_SIZE}
+            labels={{
+              page: 'Page',
+              of: 'of',
+              summaryItems: 'items',
+              previousPageButtonAriaLabel:
+                'Go to previous page, currently on page',
+              nextPageButtonAriaLabel: 'Go to next page, currently on page',
+              goToPageButtonAriaLabel: 'Go to page',
+              pageNumberTextFieldAriaLabel: 'Page number'
+// ...
+```
+
+### With Sorting
+
+```tsx
+() => {
+  const { headerGroups, rows, prepareRow } = useTable(
+    {
+      columns,
+      data
+    },
+    useSortBy
+  );
+
+  const getColumnSortIcon = (column: any) => {
+    if (!column.isSorted) {
+      return <SortTable color="#8D9096" aria-hidden="true" />;
+    }
+
+    if (column.isSortedDesc) {
+      return <ChevronDown color="#393A3D" aria-hidden="true" />;
+    }
+
+    return <ChevronUp color="#393A3D" aria-hidden="true" />;
+  };
+
+  const getAriaSortLabel = (column: any) => {
+    if (!column.isSorted) {
+      return 'none';
+    }
+
+    return column.isSortedDesc ? 'descending' : 'ascending';
+  };
+
+  return (
+    <Table
+      density="comfortable"
+      divider="horizontal"
+      responsive="elevate"
+      summary="contributors to the consumer group design systems table component"
+    >
+      <Table.Header divider="horizontal">
+        <Table.Row>
+          {headerGroups.map((headerGroup) => {
+            return headerGroup.headers.map((column: any, key: number) => {
+              const id = `header-${key}`;
+              const sortToggleProps = column.getSortByToggleProps();
+              const headerLabel = column.render('Header');
+              const ariaSortLabel = getAriaSortLabel(column);
+
+              return (
+                <Table.Cell
+                  key={id}
+                  id={id}
+                  {...column.getHeaderProps()}
+                  aria-sort={ariaSortLabel}
+                >
+                  <IconControl
+                    label={headerLabel}
+                    labelAlignment="left"
+                    size="small"
+                    aria-description={`Sort by ${headerLabel}`}
+                    onClick={sortToggleProps.onClick}
+                  >
+                    {getColumnSortIcon(column)}
+                  </IconControl>
+                </Table.Cell>
+              );
+            });
+          })}
+        </Table.Row>
+      </Table.Header>
+
+      <Table.Body>
+        {rows.map((item: any, index: number) => {
+          prepareRow(item);
+          const id = `row-${index}`;
+          return (
+            <Table.Row key={id}>
+              {item.cells.map((cell: any) => {
+                const cellId = `${id}-cell-${index}`;
+                return <Table.Cell key={cellId}>{cell.value}</Table.Cell>;
+              })}
+            </Table.Row>
+          );
+// ...
+```
+
+### With Async Data Fetching
+
+```tsx
+() => {
+  const [tableData, setTableData] = useState<DataItem[]>([]);
+
+  useEffect(() => {
+    let timeoutId: number | undefined;
+
+    const fetchData = async () => {
+      setTableData([]);
+
+      const newData: DataItem[] = await new Promise((resolve) => {
+        timeoutId = window.setTimeout(() => {
+          resolve(data);
+        }, 4500);
+      });
+      setTableData(newData);
+    };
+
+    fetchData();
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, []);
+
+  return (
+    <Table
+      tabIndex={0}
+      summary="contributors to the consumer group design systems table component"
+    >
+      <Table.Header
+        className={clsx(styles.header, styles.sticky)}
+        divider="horizontal"
+      >
+        <Table.Row>
+          <Table.Cell className={clsx(styles.header, styles.sticky)}>
+            First name
+          </Table.Cell>
+          <Table.Cell className={clsx(styles.header, styles.sticky)}>
+            Last name
+          </Table.Cell>
+          <Table.Cell className={clsx(styles.header, styles.sticky)}>
+            City
+          </Table.Cell>
+          <Table.Cell className={clsx(styles.header, styles.sticky)}>
+            State
+          </Table.Cell>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body className={styles.body}>
+        {tableData.length === 0 && <Activity shape="dots" />}
+        {tableData.length > 0 &&
+          tableData.map((item, index) => {
+            const id = `row-${index}`;
+            return (
+              <Table.Row key={id}>
+                <Table.Cell>{item.firstName}</Table.Cell>
+                <Table.Cell>{item.lastName}</Table.Cell>
+                <Table.Cell>{item.city}</Table.Cell>
+                <Table.Cell>{item.state}</Table.Cell>
+              </Table.Row>
+            );
+          })}
+      </Table.Body>
+    </Table>
+  );
+}
+```
+
+## Code Example
+
+```tsx
+<Table responsive="merge-and-stack">
+  <Table.Header>
+    <Table.Row>
+      <Table.Cell>First Name</Table.Cell>
+      <Table.Cell>Last Name</Table.Cell>
+      <Table.Cell>Actions</Table.Cell>
+      <Table.Cell>City</Table.Cell>
+    </Table.Row>
+  </Table.Header>
+  <Table.Body>
+    <Table.Row>
+      <Table.Cell stack="primary">Jorge</Table.Cell>
+      <Table.Cell>Alvarez</Table.Cell>
+      <Table.Cell>San Diego</Table.Cell>
+      <Table.Cell stack="secondary">
+        <Button>Edit</Button>
+      </Table.Cell>
+    </Table.Row>
+  </Table.Body>
+</Table>
+```
+
+## Composes With
+
+- Button
+- Checkbox
+- Pagination
+- IconControl
+- Loader
+- ToastMessage
+
+---
+
+## References
+
+- [GitHub Source - Table](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/Table)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/table.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-table&theme=quickbooks&colorScheme=light)

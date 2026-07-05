@@ -1,0 +1,125 @@
+---
+description: Complete guide for using the Switch component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# Switch
+
+IDS Switches are used as a binary choice input that gives users the ability to trigger a state with real time feedback.
+IDS Switches offer a binary choice input that gives users the ability to trigger a state with real time feedback.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/switch
+```
+
+```tsx
+import { Switch } from '@ids-ts/switch';
+```
+
+## Props
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `checked` | `boolean` | No | Controlled checked state. |
+| `onChange` | `(e: ChangeEvent<HTMLInputElement>) => void` | No | Called when the toggle state changes. |
+| `children` | `ReactNode` | No | Label text displayed next to the switch. |
+| `disabled` | `boolean` | No | Disables the switch when true. |
+| `automationId` | `string` | No | Test automation identifier. |
+| `aria-label` | `string` | No | Accessible label when no visible label is used. |
+
+## Token Usage
+
+### Color
+
+**action** — Interactive element colors and hover/active/focus states
+- `--color-action-complementary`
+- `--color-action-complementary-active`
+- `--color-action-complementary-border`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**component** — Component-level spacing (padding, gap)
+- `--space-component-gap-large`
+- `--space-component-gap-medium`
+- `--space-component-gap-small`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### No Visible Label Use Aria Label For Accessibility
+
+```tsx
+() => {
+  const [checked, setChecked] = useState(false);
+
+  const handleToggle = () => {
+    setChecked(!checked);
+    action('Switch Toggled')();
+  };
+
+  return (
+    <div>
+      <Switch
+        checked={checked}
+        automationId="noLabel"
+        aria-label="Privacy"
+        onChange={handleToggle}
+      />
+      <B2>
+        The element is used to associate a text label with a form field. The
+        label is used to tell users the value that should be entered in the
+        associated input field. If your design does not include a visible label,
+        then you must include an aria-label to provide information to the screen
+        reader.
+      </B2>
+    </div>
+  );
+}
+```
+
+## Accessibility
+
+## Code Example
+
+```tsx
+import React from 'react';
+import Switch from '@ids-ts/switch';
+
+const ExampleSwitch = () => {
+  const [checked, setChecked] = React.useState(false);
+
+  return (
+    <Switch checked={checked} onChange={() => setChecked(!checked)}>
+      Hello Switch Component!
+    </Switch>
+  );
+};
+
+export default ExampleSwitch;
+```
+
+## Composes With
+
+- Typography
+
+---
+
+## References
+
+- [GitHub Source - Switch](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/Switch)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/switch.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-switch&theme=quickbooks&colorScheme=light)

@@ -1,0 +1,24 @@
+---
+description: Intuit Design System - FontName Token Library - Complete primitive and semantic fontName tokens
+globs: ["src/**/*.{ts,tsx,js,jsx,scss,css}"]
+alwaysApply: true
+---
+
+# Intuit Design System - FontName Token Library
+
+## Primitive FontName Tokens (DO NOT USE DIRECTLY IN PLUGINS)
+
+- `--font-name-avenir`: Avenir Next forINTUIT
+- `--font-name-avenir-variable`: AvenirNextForINTUITVar
+- `--font-name-graphik`: Graphik
+- `--font-name-means`: Means
+- `--font-name-national`: National2
+
+## Semantic FontName Tokens (USE THESE IN PLUGINS)
+
+### Name
+- `--font-name-body`: --font-name-avenir /* For body text styles. Do not use these in atom sized UI components instead use font-component tokens. */
+- `--font-name-component`: --font-name-avenir /* For component text styles */
+- `--font-name-display`: --font-name-avenir /* For display text styles */
+- `--font-name-heading`: --font-name-avenir /* For heading text styles */
+- `--font-name-mega`: --font-name-avenir /* For mega text styles */

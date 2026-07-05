@@ -1,0 +1,84 @@
+---
+description: Complete guide for using the IconContainer component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# IconContainer
+
+Welcome to my `Icon` component.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/icon-container
+```
+
+```tsx
+import { IconContainer } from '@ids-ts/icon-container';
+```
+
+## Props
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | Yes | Icon component to wrap. |
+| `size` | `'small' \| 'medium' \| 'large'` | No | Container size. |
+| `automationId` | `string` | No | Test automation identifier. |
+
+## Token Usage
+
+### Color
+
+**icon** — Icon fill and stroke colors
+- `--color-icon-accent`
+- `--color-icon-complementary`
+- `--color-icon-disabled`
+
+### Size
+
+**icon** — Standard icon dimensions
+
+## Usage Patterns
+
+### Explorer
+
+```tsx
+() => {
+  return (
+    <>
+      <B1>
+        The icon search tool is available at{' '}
+        <Link
+          href="https://icons.app.intuit.com/search"
+          type="inline"
+          target="_blank"
+        >
+          icons.app.intuit.com/search
+        </Link>
+      </B1>
+      <iframe
+        src="https://icons.app.intuit.com/search"
+        title="Icon Explorer"
+        style={{
+          width: '100%',
+          height: '100vh',
+          border: 'none'
+        }}
+      />
+    </>
+  );
+}
+```
+
+## Composes With
+
+- Typography
+- Link
+
+---
+
+## References
+
+- [GitHub Source - IconContainer](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/IconContainer)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-iconcontainer&theme=quickbooks&colorScheme=light)

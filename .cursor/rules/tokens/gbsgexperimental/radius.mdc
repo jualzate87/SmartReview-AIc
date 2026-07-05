@@ -1,0 +1,57 @@
+---
+description: Intuit Design System - Radius Token Library - Complete primitive and semantic radius tokens
+globs: ["src/**/*.{ts,tsx,js,jsx,scss,css}"]
+alwaysApply: false
+---
+
+# Intuit Design System - Radius Token Library
+
+## Primitive Radius Tokens (DO NOT USE DIRECTLY IN PLUGINS)
+
+- `--radius-0`: 0
+- `--radius-10`: 2px
+- `--radius-20`: 4px
+- `--radius-30`: 6px
+- `--radius-40`: 8px
+- `--radius-50`: 10px
+- `--radius-60`: 12px
+- `--radius-70`: 14px
+- `--radius-80`: 16px
+- `--radius-90`: 18px
+- `--radius-100`: 20px
+- `--radius-110`: 22px
+- `--radius-120`: 24px
+- `--radius-1000`: 9999px
+
+## Semantic Radius Tokens (USE THESE IN PLUGINS)
+
+### Action
+- `--radius-action`: --radius-30 /* Optional radius for action components */
+
+### Container
+- `--radius-container-overlay`: --radius-30 /* For containers that overlay on top of other parts of a page. Examples: Tooltip, Toast, Popover, Menu. */
+
+### Content
+- `--radius-content-control`: --radius-30 /* For content that a user can control with some form of action that is not a button. Examples: Accordion, Page message, Segmented Button, Toggle */
+
+### Full
+- `--radius-full`: --radius-1000 /* Optional radius for pill-shaped or round components, such as Progress bar, Radio, Switch, Avatar */
+
+### Large
+- `--radius-large`: --radius-40 /* Optional radius for containers */
+
+### Medium
+- `--radius-medium`: --radius-30 /* Optional radius for large components */
+
+### None
+- `--radius-none`: --radius-0 /* For remove the radius completely (e.g. 0) */
+
+### Small
+- `--radius-small`: --radius-20 /* Default radius size for most components, such as Badge, Buttons, Date Picker, Checkbox, Flyout menu, Tooltip, Icon control */
+
+### Table
+- `--radius-table`: --radius-30 /* Radius for all tables including DataGrid. */
+
+### X
+- `--radius-x-large`: --radius-60 /* Optional radius for extra large components */
+- `--radius-x-small`: --radius-10 /* Optional radius for extra small components */

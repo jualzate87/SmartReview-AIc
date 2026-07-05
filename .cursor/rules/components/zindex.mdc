@@ -1,0 +1,173 @@
+---
+description: Complete guide for using the ZIndex component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# ZIndex
+
+ZIndex component is a basic and simple component that would wrap around any other component which deals with portal and requires
+zIndex manipulations. The main purpose of this component is to effectively manage zIndex calculations as and when components are
+mounted or unmounted.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/zindex
+```
+
+```tsx
+import { ZIndex } from '@ids-ts/zindex';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `assignZIndex` | `boolean` | No | - |
+| `children` | `React.ReactElement` | Yes | - |
+| `disableZIndex` | `boolean` | No | - |
+| `style` | `React.CSSProperties` | No | - |
+| `incrementBaseZIndex` | `() => void` | No | - |
+| `decrementBaseZIndex` | `() => void` | No | - |
+| `getCurrentBaseZIndex` | `() => number` | No | * Getter method to get topZIndex for the component from the Context. |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface ZIndexProps {
+  /**
+   * Flag to indicate if or not to assign z-index.
+   *
+   * @default false
+   */
+  assignZIndex?: boolean;
+  /**
+   * Children node may be actual components or portal that the ZIndex component
+   * would wrap.
+   */
+  children: React.ReactElement;
+  /**
+   * Flag to indicate if or not we need to disabled zIndex or if component wants to
+   * handle zIndex by itself.
+   *
+   * @default false
+   */
+  disableZIndex?: boolean;
+  /**
+   * Style object to cascade
+   *
+   * @default {}
+   */
+  style?: React.CSSProperties;
+  /**
+   * Method to increment topZIndex for the component. ZIndex would call this method
+   * to update when a component needs to be mounted and needed higher zIndex.
+   */
+  incrementBaseZIndex?: () => void;
+  /**
+   * Method to decrement topZIndex for the component. ZIndex would call this method
+   * to update when a component is unmounted and we need to reset the zIndex applied.
+   */
+  decrementBaseZIndex?: () => void;
+  /**
+   * Getter method to get topZIndex for the component from the Context.
+   */
+  getCurrentBaseZIndex?: () => number;
+}
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Code Example
+
+```tsx
+import IDSContext from '@ids/context';
+import ZIndex from '@ids-ts/zindex';
+
+class Tooltip extends React.Component {
+    ...
+    render() {
+        ...
+
+        return (
+            ...
+            <IDSContext.Consumer>
+                {
+                    (context) => (
+                        <ZIndex
+                            assignZIndex={openProp}
+                            getCurrentBaseZIndex={context.getCurrentBaseZIndex}
+                            incrementBaseZIndex={context.incrementBaseZIndex}
+                            decrementBaseZIndex={context.decrementBaseZIndex}
+                        >
+                            <Position
+                                offsetSkidding={offsetSkidding}
+                                offsetDistance={offsetDistance}
+                                targetElement={this.target}
+                                position={position}
+                                style={{ pointerEvents: 'none' }}
+                                alignment={alignment}
+                                show={openProp}
+                            >
+                                <Transition
+                                    transition={openProp ? transitions.enter : transitions.exit}
+                                    unmountOnExit
+                                >
+                                    {content}
+                                </Transition>
+                            </Position>
+                        </ZIndex>
+                    )
+                }
+            </IDSContext.Consumer>
+            ...
+        );
+    }
+}
+
+...
+```
+
+---
+
+## References
+
+- [GitHub Source - ZIndex](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/ZIndex)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-{component})

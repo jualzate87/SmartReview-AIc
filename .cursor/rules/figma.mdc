@@ -1,0 +1,174 @@
+---
+description: MANDATORY - Always read when Figma designs are detected. Extract components and design tokens from Figma designs.
+globs:
+alwaysApply: false
+---
+
+# Figma Plugin Analysis
+
+This rule defines how to parse and extract information from Figma plugin HTML exports to identify required IDS components and design tokens.
+
+## Trigger Conditions
+
+**You MUST read this rule using ReadRule("figma") when you detect ANY of the following:**
+
+- HTML with `data-component-name="..."` attributes
+- HTML with `layer-name="..."` attributes  
+- `data-is-figma-content="true"` marker in user prompt
+- `data-is-absolute-html="true"` marker in user prompt
+- Figma URLs (figma.com links)
+- User explicitly mentions "Figma design", "Figma export", or "Figma file"
+- HTML code with inline styles containing Figma design specifications
+- User provides attachments with Figma HTML content
+
+**DO NOT PROCEED WITH IMPLEMENTATION WITHOUT READING THIS RULE FIRST**
+
+This is NOT optional. Reading this rule ensures:
+1. Proper IDS component identification and mapping
+2. Correct design token extraction and usage
+3. Following the established Figma-to-code workflow
+4. Avoiding duplicate or incorrect component usage
+
+## Figma Export Structure
+
+Figma plugin exports provide:
+- HTML with inline styles containing all design specifications
+- `layer-name` attributes indicating Figma layer names
+- `data-component-name` attributes indicating Figma component names
+- `data-variant-name` attributes indicating component variants
+- Inline `style=""` attributes with exact CSS values
+
+## Required Workflow
+
+When Figma content is detected, follow these steps IN ORDER:
+
+1. **Read this rule** using ReadRule("figma")
+2. **Parse and analyze** the Figma HTML export
+3. **Extract components and tokens** (see sections below)
+4. **Read component rules** for each IDS component identified using ReadRule()
+5. **Implement** using proper IDS components and design tokens
+
+Do NOT skip steps or assume you know the workflow.
+
+## Extraction Workflow
+
+### 1. Parse Component Hierarchy
+
+Scan the Figma HTML export for component indicators:
+
+**Search for:**
+- `data-component-name="[name]"` - Identifies Figma components
+- `layer-name="[name]"` - Identifies layer structure
+- Pattern matching: `01 - Button`, `02 - Search Input`, `01 - Large Card`, etc.
+
+**Map to IDS:**
+- Extract component names from attributes
+- Match Figma naming patterns to IDS packages (@ids-ts/button, @ids-ts/card, etc.)
+- List ALL unique IDS components required
+- Use ReadRule("component-ids-web-[name]-rules") for each component identified
+
+### 2. Extract Design Tokens
+
+Parse inline styles to extract all design token values:
+
+#### Color Extraction
+
+**Search patterns:**
+- `color:#[hex]`
+- `background:#[hex]` or `background:rgb()`
+- `fill:#[hex]`
+- `border:[width] solid #[hex]`
+
+**Action:** Extract all unique hex values, map using ReadRule("tokens-color")
+
+#### Spacing Extraction
+
+**Search patterns:**
+- `padding:[value]`
+- `margin:[value]`
+- `gap:[value]`
+- `width:[value]` / `height:[value]`
+
+**Action:** Extract all unique pixel values, reference ReadRule("tokens-space")
+
+#### Typography Extraction
+
+**Search patterns:**
+- `font-family:'[name]'`
+- `font-size:[value]px`
+- `font-weight:[value]`
+- `line-height:[value]px`
+
+**Action:** Extract all unique combinations, reference ReadRule("tokens-fontSize"), ReadRule("tokens-fontWeight"), ReadRule("tokens-lineHeight")
+
+#### Border Radius Extraction
+
+**Search patterns:**
+- `border-radius:[value]`
+
+**Action:** Extract all unique values, reference ReadRule("tokens-radius")
+
+## Analysis Output Format
+
+When receiving a Figma export, output:
+
+```markdown
+## Figma Export Analysis
+
+### IDS Components Detected:
+- @ids-ts/button (found: "01 - Button (Web + Mobile)")
+- @ids-ts/card (found: "01 - Large Card (Mobile)")
+- @ids-ts/input (found: "02 - Search Input (Web)")
+[... complete list]
+
+### Design Tokens Extracted:
+Colors: #21262A, #5D686F, #205EA3, #F4F4EF, #C3CED5 [etc.]
+Spacing: 4px, 8px, 12px, 16px, 20px, 24px [etc.]
+Typography: 
+  - 12px/16px weight 400
+  - 14px/20px weight 500
+  - 24px/32px weight 600
+[... complete list]
+Border Radius: 0, 16px [etc.]
+
+### Next Steps:
+1. Reading component documentation for each detected component
+2. Verifying token mappings
+3. Ready to implement
+```
+
+## Key Parsing Rules
+
+1. **Exact Values Only** - Extract precise pixel values, never approximate
+2. **Complete Inventory** - List every unique component and token value found
+3. **No Assumptions** - If a component pattern is unclear, ask for clarification
+4. **Reference Other Rules** - Use ReadRule() to access component and token documentation, don't duplicate their content
+
+## Common Figma Component Patterns
+
+| Figma Pattern | IDS Package |
+|--------------|--------------|
+| `01 - Button` | @ids-ts/button |
+| `01 - Large Card`, `01 - Expandable Card` | @ids-ts/card |
+| `02 - Text Status Badge`, `01 - Icon Status Badge` | @ids-ts/badge |
+| `02 - Search Input` | @ids-ts/input |
+| `.Typography`, headings, body text | @ids-ts/typography |
+| Named icons (search, notification, cart, etc.) | Custom Icon component |
+| `01 - Control` | Button or icon button |
+
+## Implementation Guidelines
+
+After extraction and analysis, proceed to implementation using the identified components and tokens. Refer to individual component rules and token rules for specific usage guidelines.
+
+## Common Mistakes
+
+You are NOT following this rule properly if you:
+
+- Implement Figma designs without reading this rule first
+- Skip the analysis and go straight to code
+- Don't extract and list all IDS components detected
+- Don't read individual component rules for identified components
+- Use hardcoded values instead of design tokens
+- Create custom components when IDS equivalents exist
+- Ignore the Figma component naming patterns
+- Convert designs without verifying proper IDS component mapping

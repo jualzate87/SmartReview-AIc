@@ -1,0 +1,32 @@
+---
+description: Rules for the src/styles/ directory — prevents manual edits to managed files
+globs: src/styles/**
+---
+
+# src/styles/ Directory Rules
+
+## Do Not Manually Edit These Files
+
+- **intuit.css** — Synced from the DDMS CDN via `npm run sync-tokens`. Contains all IDS design token CSS custom properties. Run `npm run sync-tokens [version]` to update.
+- **index.css** — Global styles. Should not need modification during prototyping.
+- **fonts.css** — Font imports. Should not need modification during prototyping.
+
+## Editable Files
+
+- **App.module.css** — Shell-level styles only (minimal). Do not put page-specific styles here.
+- **[Name].module.css** — Per-page styles (e.g. `HomePage.module.css`, `SettingsPage.module.css`). Each page has its own CSS Module file. This is where all page-specific styling goes. Uses CSS Modules (Vite auto-scopes `.module.css` files) and design tokens.
+
+## Adding a New Page's Stylesheet
+
+When a skill creates a new page, it also creates a matching `src/styles/[Name].module.css` file. The page component imports it with:
+
+```tsx
+import styles from '../styles/[Name].module.css'
+```
+
+## References
+
+- **Design Tokens**: `.cursor/rules/tokens/intuit/*.mdc`
+- **Token Overview**: `.cursor/rules/tokens.mdc`
+- **Component Rules**: `.cursor/rules/components/*.mdc`
+- **Design System**: `.cursor/rules/design-system.mdc`

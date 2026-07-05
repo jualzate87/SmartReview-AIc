@@ -1,0 +1,494 @@
+---
+description: Complete guide for using the TextArea component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# TextArea
+
+IDS Text Area allows users to input or edit multiline texts.
+IDS Text Area would also allow for validating input, provide suggestions, and help users fix errors.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/textarea
+```
+
+```tsx
+import { TextArea } from '@ids-ts/textarea';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `automationId` | `string` | No | AutomationID property used for testing purposes |
+| `disabled` | `boolean` | No | - |
+| `errorText` | `string` | No | Error message to be rendered. |
+| `helperText` | `string` | No | Text to be display for extra information |
+| `infoText` | `string` | No | Info message to be rendered. |
+| `label` | `string` | No | Label to be displayed for the field. |
+| `name` | `string` | No | Name to be assigned to the input field. |
+| `maxLength` | `number` | No | max length to be assigned to the input field. |
+| `onBlur` | `FocusEventHandler<HTMLTextAreaElement>` | No | Prop for handling callBack for onBlur event. |
+| `placeholder` | `string` | No | Ghost text for textarea inputs. |
+| `size` | `'small' | 'medium'` | No | - |
+| `readOnly` | `boolean` | No | - |
+| `resizeTextArea` | `boolean` | No | - |
+| `value` | `string` | No | Value to be displayed in the input field. |
+| `warningText` | `string` | No | warning message to be rendered. |
+| `width` | `string` | No | Specifies width of Text Area component. This updates both the Text Area wrapper and input. |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface TextAreaProps extends ThemeableElement<'textarea'> {
+  /** AutomationID property used for testing purposes */
+  automationId?: string;
+  /**
+   * Disabled prop to pass on to root when set as true.
+   *
+   * @default false
+   */
+  disabled?: boolean;
+  /** Error message to be rendered. */
+  errorText?: string;
+  /** Text to be display for extra information */
+  helperText?: string;
+  /** Info message to be rendered. */
+  infoText?: string;
+  /** Label to be displayed for the field. */
+  label?: string;
+  /** Name to be assigned to the input field. */
+  name?: string;
+  /** max length to be assigned to the input field. */
+  maxLength?: number;
+  /** Prop for handling callBack for onBlur event. */
+  onBlur?: FocusEventHandler<HTMLTextAreaElement>;
+  /** Ghost text for textarea inputs. */
+  placeholder?: string;
+  /** Affects size of text rendered next to checkbox
+   *
+   * @default 'medium'
+   *
+   */
+  size?: 'small' | 'medium';
+  /**
+   * Readonly prop to pass on to root when set as true.
+   *
+   * @default false
+   */
+  readOnly?: boolean;
+  /**
+   * Prop to allow users to set resize as none on textarea.
+   *
+   * @default true
+   */
+  resizeTextArea?: boolean;
+  /** Value to be displayed in the input field. */
+  value?: string;
+  /** warning message to be rendered. */
+  warningText?: string;
+  /** Specifies width of Text Area component. This updates both the Text Area wrapper and input. */
+  width?: string;
+}
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**input** — Input background, border, placeholder, and focus colors
+- `--color-input-background-disabled`
+- `--color-input-background-error`
+- `--color-input-background-error-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**component** — Input padding
+- `--space-component-gap-large`
+- `--space-component-gap-medium`
+- `--space-component-gap-small`
+
+### Radius
+
+**radius** — Input border radius
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Basic
+
+```tsx
+() => {
+  const [value, setValue] = useState('');
+
+  return (
+    <TextArea
+      label="Message on invoice"
+      placeholder="Thank you for your business and have a great day!"
+      value={value}
+      automationId="idsTextAreaBasic"
+      onChange={(e: any) => setValue(e.target.value)}
+    />
+  );
+}
+```
+
+### No Visible Label Use Aria Label For Accessibility
+
+```tsx
+() => {
+  const [value, setValue] = useState('');
+
+  return (
+    <div>
+      <h3>No Visible Label Example</h3>
+      <TextArea
+        placeholder="Thank you for your business and have a great day!"
+        aria-label="Message on invoice"
+        helperText="Always use a label. In rare case where visible label is not used, use aria-label instead"
+        value={value}
+        automationId="idsTextAreawithAriaLabel"
+        onChange={(e: any) => setValue(e.target.value)}
+      />
+      <p>
+        The element is used to associate a text label with a form field. The
+        label is used to tell users the value that should be entered in the
+        associated input field. If your design does not include a visible label,
+        then you must include an aria-label to provide information to the screen
+        reader.
+      </p>
+    </div>
+  );
+}
+```
+
+### Disabled
+
+```tsx
+() => (
+  <TextArea
+    disabled
+    label="Disabled Text Area"
+    automationId="idsTextAreaDisabled"
+  />
+)
+```
+
+### With Error
+
+```tsx
+() => {
+  const [value, setValue] = useState('');
+
+  return (
+    <TextArea
+      label="Billing Address"
+      placeholder="221B Baker Street"
+      errorText="Billing address does not match with our records"
+      value={value}
+      automationId="idsTextAreaError"
+      onChange={(e: any) => setValue(e.target.value)}
+    />
+  );
+}
+```
+
+### With Warning
+
+```tsx
+() => {
+  const [value, setValue] = useState('');
+
+  return (
+    <TextArea
+      label="Message on statement"
+      placeholder="Thank you for the Business"
+      warningText="This will show up on the invoice"
+      value={value}
+      automationId="idsTextAreaWarning"
+      onChange={(e: any) => setValue(e.target.value)}
+    />
+  );
+}
+```
+
+### With Info
+
+```tsx
+() => {
+  const [value, setValue] = useState('');
+
+  return (
+    <TextArea
+      label="Additional notes"
+      placeholder="Enter any additional information"
+      infoText="This information will be used for internal reference only"
+      value={value}
+      automationId="idsTextAreaInfo"
+      onChange={(e: any) => setValue(e.target.value)}
+    />
+  );
+}
+```
+
+### With Helper Text
+
+```tsx
+() => {
+  const [value, setValue] = useState('');
+
+  return (
+    <TextArea
+      label="Description"
+      placeholder="Description on sales form"
+      helperText="Note: This sales form description will appear on invoice"
+      value={value}
+      automationId="idsTextAreaHelper"
+      onChange={(e: any) => setValue(e.target.value)}
+    />
+  );
+}
+```
+
+### With Required
+
+```tsx
+() => {
+  const [value, setValue] = useState('');
+  const [errorText, setErrorText] = useState('');
+
+  return (
+    <>
+      <TextArea
+        required
+        label="Shipping address (required)"
+        helperText="Add required=true for screen readers"
+        value={value}
+        errorText={errorText}
+        automationId="idsTextAreaRequired"
+        onChange={(e: any) => {
+          const { value: newValue } = e.target;
+          setValue(newValue);
+          if (newValue.trim()) {
+            setErrorText('');
+          }
+        }}
+        onBlur={(e: any) => {
+          const newValue = e.target.value.trim();
+          const newErrorText = newValue ? '' : 'Field is required.';
+          setErrorText(newErrorText);
+        }}
+      />
+      <p>
+        When a semantic HTML <code>&lt;input&gt;</code>,{' '}
+        <code>&lt;select&gt;</code>, or <code>&lt;textarea&gt;</code> must have
+        a value, it should have the <code>required</code> attribute applied to
+        it. The HTML <code>required</code> attribute disables submitting the
+        form unless the required form controls have valid values, while ensuring
+        those navigating with the aid of assistive technologies understand which
+        semantic form controls need valid content.
+        <br />
+        When form controls are created using non-semantic elements, such as a{' '}
+        <code>&lt;div&gt;</code> with a role of <code>checkbox</code>, the{' '}
+        <code>aria-required</code> attribute should be included, with a value of{' '}
+        <code>true</code>, to indicate to assistive technologies that user input
+        is required on the element for the form to be submittable. The{' '}
+        <code>aria-required</code> attribute can be used with HTML form
+        elements; it is not limited to elements that have an ARIA role assigned.
+      </p>
+    </>
+  );
+}
+```
+
+### With On Change Example
+
+```tsx
+() => {
+  const [value, setValue] = useState('');
+  const [errorText, setErrorText] = useState('');
+  const [warningText, setWarningText] = useState('');
+
+  return (
+    <TextArea
+      label="onChange adds a warning at 4 characters and error at 8 characters"
+      placeholder="Warning and error example"
+      errorText={errorText}
+      warningText={warningText}
+      helperText="Optional helper text"
+      value={value}
+      onChange={(e: any) => {
+        const { value: newValue } = e.target;
+        const newWarningText =
+          newValue.length >= 5 && newValue.length < 8
+            ? 'Warning!! Entered 5 chars'
+            : '';
+        const newErrorText =
+          newValue.length >= 8 ? 'Error!! Entered 8 chars' : '';
+
+        setValue(newValue);
+        setErrorText(newErrorText);
+        setWarningText(newWarningText);
+      }}
+    />
+  );
+}
+```
+
+### With Resize Prop As False
+
+```tsx
+() => (
+  <TextArea
+    label="cannotResize"
+    placeholder="I cannot be resized"
+    helperText="Add resizeTextArea=false to create non resizable TextArea"
+    automationId="idsTextAreaResize"
+    resizeTextArea={false}
+  />
+)
+```
+
+### Font Size Comparison
+
+```tsx
+() => (
+  <div>
+    <h2>Font Size Comparison</h2>
+    <div style={{ marginBottom: '20px' }}>
+      <TextArea
+        size="small"
+        label="Small text area"
+        placeholder="Placeholder text is here"
+        helperText="Use the size prop to change font-size"
+        automationId="fontSizeCompareSmall"
+        resizeTextArea={false}
+      />
+    </div>
+    <div>
+      <TextArea
+        size="medium"
+        label="Medium text area"
+        placeholder="Placeholder text is here"
+        helperText="Use the size prop to change font-size"
+        automationId="fontSizeCompareMedium"
+        resizeTextArea={false}
+      />
+    </div>
+  </div>
+)
+```
+
+### Showcase
+
+```tsx
+() => {
+  return (
+    <>
+      <div className={styles.exampleTextArea}>
+        <TextArea
+          aria-label="Message on invoice"
+          required={false}
+          label="Message on invoice"
+          placeholder="Thank you for your business and have a great day!"
+          automationId="idsTextAreaBasic"
+        />
+      </div>
+      <div className={styles.exampleTextArea}>
+        <TextArea
+          disabled
+          aria-label="Disabled textarea"
+          required={false}
+          label="Disabled textarea"
+          placeholder="This textarea is disabled"
+          automationId="idsTextAreaBasic"
+        />
+      </div>
+      <div className={styles.exampleTextArea}>
+        <TextArea
+          aria-label="Description"
+          required={false}
+          label="Description"
+          placeholder="Description on sales form"
+          helperText="Note: This sales form description will appear on invoice"
+          automationId="idsTextAreaBasic"
+        />
+      </div>
+      <div className={styles.exampleTextArea}>
+        <TextArea
+          aria-label="Billing Address"
+          required={false}
+          label="Billing Address"
+          placeholder="221B Baker Street"
+          errorText="Billing address does not match with our records"
+          automationId="idsTextAreaBasic"
+        />
+      </div>
+      <div className={styles.exampleTextArea}>
+        <TextArea
+          aria-label="Max Length"
+          required={false}
+          maxLength={16}
+          label="Max length limited to 16"
+          automationId="idsTextAreaBasic"
+        />
+      </div>
+      <div className={styles.exampleTextArea}>
+        <TextArea
+          aria-label="Message on statement"
+          required={false}
+          label="Message on statement"
+          placeholder="Thank you for the Business"
+          warningText="This will show up on the invoice"
+          automationId="idsTextAreaBasic"
+        />
+      </div>
+      <div className={styles.exampleTextArea}>
+        <TextArea
+          aria-label="Additional notes"
+          required={false}
+          label="Additional notes"
+          placeholder="Enter any additional information"
+          infoText="This information will be used for internal reference only"
+          automationId="idsTextAreaInfo"
+        />
+      </div>
+      <div className={styles.exampleTextArea}>
+        <TextArea
+          aria-label="Cannot Resize"
+          required={false}
+          resizeTextArea={false}
+          label="Cannot Resize"
+          placeholder="I cannot be resized"
+          helperText="Add resizeTextArea=false to create non resizable TextArea"
+          automationId="idsTextAreaBasic"
+// ...
+```
+
+---
+
+## References
+
+- [GitHub Source - TextArea](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/TextArea)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/textarea.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-text-area&theme=quickbooks&colorScheme=light)

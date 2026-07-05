@@ -1,0 +1,1411 @@
+---
+description: Complete guide for using the TextField component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# TextField
+
+IDS Text Fields allow users to input, edit, and select text or numeric values.
+Input fields validate input, provide suggestions, and help users fix errors.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/text-field
+```
+
+```tsx
+import { TextField } from '@ids-ts/text-field';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `addonAfter` | `ReactElement` | No | Sets Icon/ addonAfter for the field |
+| `addonBefore` | `ReactElement` | No | Sets Icon/ addonBefore for the field |
+| `assignInputRef` | `(c: HTMLInputElement | null) => void` | No | - |
+| `assignLabelRef` | `(c?: HTMLElement | null) => void` | No | Get reference to the label element |
+| `automationId` | `string` | No | Sets data-automation-id on the input for testing |
+| `disabled` | `boolean` | No | - |
+| `errorText` | `string` | No | Error message to be rendered |
+| `hasWeightedLabel` | `boolean` | No | Boolean flag to allow label to be bold |
+| `footerTextClass` | `string` | No | Class to be applied to all the footer text (validation & helper) |
+| `infoText` | `string` | No | Info message to be rendered |
+| `ghostText` | `string` | No | - |
+| `helperText` | `React.ReactNode` | No | Text to be display for extra information |
+| `hideArrows` | `boolean` | No | Hide Arrows in the number type input element |
+| `icon` | `ReactElement` | No | - |
+| `iconPosition` | `'right' | 'left'` | No | - |
+| `id` | `string` | No | Id of the input |
+| `label` | `string` | No | - |
+| `labelAddOnAfter` | `ReactNode` | No | * Label Add On After component |
+| `onBlur` | `FocusEventHandler` | No | Callback fired when the input loses focus (blurs) |
+| `onFocus` | `FocusEventHandler` | No | Callback fired when the input receives focus |
+| `placeholder` | `string` | No | Placeholder label displayed in the field |
+| `type` | `'text' \| 'tel' \| 'number' \| 'email' \| 'password'` | No | Input type. Defaults to `'text'`. |
+| `validationError` | `boolean` | No | - |
+| `value` | `number | string` | No | Input value |
+| `warningText` | `string` | No | Warning message to be rendered |
+| `readOnly` | `boolean` | No | - |
+| `disableReadOnlyStyle` | `boolean` | No | - |
+| `size` | `'small' | 'medium'` | No | - |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface TextFieldProps
+  extends Omit<ThemeableElement<'input'>, 'size'> {
+  /** Sets Icon/ addonAfter for the field */
+  addonAfter?: ReactElement;
+  /** Sets Icon/ addonBefore for the field */
+  addonBefore?: ReactElement;
+  /** Surfaces a label to assistive technology (critical when no `label` is supplied) */
+  'aria-label'?: string;
+  /**
+   * Get reference to the input field
+   *
+   * @deprecated Use ref instead
+   */
+  assignInputRef?: (c: HTMLInputElement | null) => void;
+  /** Get reference to the label element */
+  assignLabelRef?: (c?: HTMLElement | null) => void;
+  /** Sets data-automation-id on the input for testing */
+  automationId?: string;
+  /**
+   * Sets the input in a disabled state when true
+   *
+   * @default false
+   */
+  disabled?: boolean;
+  /** Error message to be rendered */
+  errorText?: string;
+  /** Boolean flag to allow label to be bold */
+  hasWeightedLabel?: boolean;
+  /** Class to be applied to all the footer text (validation & helper) */
+  footerTextClass?: string;
+  /** Info message to be rendered */
+  infoText?: string;
+  /**
+   * Ghost text (like a placeholder, but controllable)
+   *
+   * @deprecated Use a placeholder
+   */
+  ghostText?: string;
+  /** Text to be display for extra information */
+  helperText?: React.ReactNode;
+  /** Hide Arrows in the number type input element */
+  hideArrows?: boolean;
+  /**
+   * Prop to set desired Icon on textfield (this Icon is from the Icons-v3 component)
+   *
+   * @deprecated Use addOnBefore or addOnAfter
+   */
+  icon?: ReactElement;
+  /**
+   * Position of the icon
+   *
+   * @deprecated Use addOnBefore or addOnAfter
+   * @default 'right'
+   */
+  iconPosition?: 'right' | 'left';
+  /** Id of the input */
+  id?: string;
+  /**
+   * Label to be displayed for the field
+   *
+   * @default ''
+   */
+  label?: string;
+  /**
+   * Label Add On After component
+   */
+  labelAddOnAfter?: ReactNode;
+  /** Callback fired when the input loses focus (blurs) */
+  onBlur?: FocusEventHandler;
+  /** Callback fired when the input receives focus */
+  onFocus?: FocusEventHandler;
+  /** Placeholder label displayed in the field */
+  placeholder?: string;
+  /**
+   * Input type (such as: text, tel, number)
+   *
+   * @default 'text'
+   */
+  type?: string;
+  /**
+   * Renders warning message
+   *
+   * @default false
+   */
+  validationError?: boolean;
+  /** Input value */
+  value?: number | string;
+  /** Warning message to be rendered */
+  warningText?: string;
+  /**
+   * Sets the input in a read-only state when true
+   *
+   * @default false
+   */
+  readOnly?: boolean;
+  /**
+   * Prevents CSS selector to be added for read-only styling
+   *
+   * @default false
+   */
+  disableReadOnlyStyle?: boolean;
+  /**
+   * Size of rendered text inside of the input
+   *
+   * @default 'medium'
+   */
+  size?: 'small' | 'medium';
+}
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Basic
+
+```tsx
+(props: { theme: ThemeType }) => {
+  const { theme } = props;
+
+  return <TextField theme={theme} label="Name" id="textfield-basic" />;
+}
+```
+
+### No Visible Label Use Aria Label For Accessibility
+
+```tsx
+(props: {
+  theme: ThemeType;
+}) => {
+  const { theme } = props;
+
+  return (
+    <div>
+      <h3>No Visible Label Example</h3>
+      <TextField
+        theme={theme}
+        placeholder="Apt or Suite no"
+        aria-label="Shipping Address"
+        id="textfield-basic"
+      />
+      <p>
+        The element is used to associate a text label with a form field. The
+        label is used to tell users the value that should be entered in the
+        associated input field. If your design does not include a visible label,
+        then you must include an aria-label to provide information to the screen
+        reader.
+      </p>
+    </div>
+  );
+}
+```
+
+### With Placeholder
+
+```tsx
+(props: { theme: ThemeType }) => {
+  const { theme } = props;
+
+  return (
+    <TextField
+      theme={theme}
+      label="Address"
+      placeholder="Apt or Suite no"
+      aria-label="Shipping Address"
+      id="textfield-placeholder"
+    />
+  );
+}
+```
+
+### Disabled Example
+
+```tsx
+(props: { theme: ThemeType }) => {
+  const { theme } = props;
+
+  return (
+    <TextField
+      disabled
+      theme={theme}
+      label="Name"
+      placeholder="Jane Doe"
+      helperText="Optional helper text"
+      id="textfield-disabled"
+    />
+  );
+}
+```
+
+### With Helper Text
+
+```tsx
+(props: { theme: ThemeType }) => {
+  const { theme } = props;
+
+  return (
+    <TextField
+      theme={theme}
+      label="Email address"
+      placeholder="example@mail.com"
+      helperText="This must be your work email address"
+      id="textfield-helper"
+    />
+  );
+}
+```
+
+### With Point Of Need In Label
+
+```tsx
+(props: { theme: ThemeType }) => {
+  const { theme } = props;
+
+  return (
+    <>
+      <TextField
+        theme={theme}
+        label="Amount"
+        labelAddOnAfter={
+          <PointOfNeed
+            message="Point of need tooltip"
+            alignment="left"
+            containerRef={() => undefined}
+            duration={0}
+            enableClickAway={false}
+            offsetX={0}
+            offsetY={0}
+            position="left"
+            tooltipOffsetSkidding={0}
+            tooltipOffsetDistance={0}
+            delayOpen={false}
+            delayOpenDuration={0}
+          />
+        }
+        id="textfield-labelTooltip"
+      />
+      <p>
+        Note the positioning of the tooltip here despite specifying position
+        &quot;top&quot; and alignment &quot;center&quot;. Tooltip will perform
+        position calculations on its own. It&rsquo;s best to further customize
+        this depending on your designs.
+      </p>
+      <br />
+      <TextField
+        theme={theme}
+        label="Some label"
+        labelAddOnAfter={
+          <PointOfNeed
+            message="Point of need tooltip"
+            alignment="center"
+            containerRef={() => undefined}
+            duration={0}
+            enableClickAway={false}
+            offsetX={0}
+            offsetY={0}
+            position="top"
+            tooltipOffsetSkidding={0}
+            tooltipOffsetDistance={0}
+            delayOpen={false}
+            delayOpenDuration={0}
+          />
+        }
+        id="textfield-labelTooltip-amount"
+      />
+      <br />
+      <TextField
+        theme={theme}
+        label="Payments Processing Limit"
+        labelAddOnAfter={
+          <PointOfNeed
+            message="Your anticipated monthly processing limit"
+            alignment="left"
+            containerRef={() => undefined}
+            duration={0}
+            enableClickAway={false}
+            offsetX={0}
+            offsetY={0}
+            position="left"
+            tooltipOffsetSkidding={0}
+            tooltipOffsetDistance={0}
+            delayOpen={false}
+            delayOpenDuration={0}
+          />
+        }
+        id="textfield-labelTooltip-limit"
+      />
+    </>
+  );
+}
+```
+
+### With Error Example
+
+```tsx
+(props: { theme: ThemeType }) => {
+  const { theme } = props;
+
+  return (
+    <TextField
+      theme={theme}
+      label="Email address"
+      placeholder="example@mail.com"
+      errorText="Enter valid email address"
+      id="textfield-error"
+    />
+  );
+}
+```
+
+### With Warning Example
+
+```tsx
+(props: { theme: ThemeType }) => {
+  const { theme } = props;
+
+  return (
+    <TextField
+      theme={theme}
+      label="User ID"
+      placeholder=""
+      warningText="User ID must contain at least 8 characters"
+      id="textfield-warning"
+    />
+  );
+}
+```
+
+### With Info Example
+
+```tsx
+(props: { theme: ThemeType }) => {
+  const { theme } = props;
+
+  return (
+    <TextField
+      theme={theme}
+      label="Account number"
+      placeholder=""
+      infoText="Your account number can be found on your statement"
+      id="textfield-info"
+    />
+  );
+}
+```
+
+### With Error Required
+
+```tsx
+(props: { theme: ThemeType }) => {
+  const { theme } = props;
+  const [value, setValue] = useState('');
+  const [errorText, setErrorText] = useState('');
+
+  const handleBlur = (e: React.FocusEvent) => {
+    // @ts-expect-error: Value does not exist on a focus event target?
+    const newValue = e.target.value.trim();
+    const newErrorText = newValue ? '' : 'Field is required.';
+    setErrorText(newErrorText);
+  };
+
+  return (
+    <>
+      <TextField
+        required
+        label="First Name (required)"
+        theme={theme}
+        value={value}
+        errorText={errorText}
+        id="textfield-required"
+        onChange={(e) => {
+          const { value: newValue } = e.target;
+          setValue(newValue);
+          if (newValue.trim()) {
+            setErrorText('');
+          }
+        }}
+        onBlur={handleBlur}
+      />
+      <p>
+        When a semantic HTML <code>&lt;input&gt;</code>,{' '}
+        <code>&lt;select&gt;</code>, or <code>&lt;textarea&gt;</code> must have
+        a value, it should have the <code>required</code> attribute applied to
+        it. The HTML <code>required</code> attribute disables submitting the
+        form unless the required form controls have valid values, while ensuring
+        those navigating with the aid of assistive technologies understand which
+        semantic form controls need valid content.
+        <br />
+        When form controls are created using non-semantic elements, such as a{' '}
+        <code>&lt;div&gt;</code> with a role of <code>checkbox</code>, the{' '}
+        <code>aria-required</code> attribute should be included, with a value of{' '}
+        <code>true</code>, to indicate to assistive technologies that user input
+        is required on the element for the form to be submittable. The{' '}
+        <code>aria-required</code> attribute can be used with HTML form
+        elements; it is not limited to elements that have an ARIA role assigned.
+      </p>
+    </>
+  );
+}
+```
+
+### With Addon
+
+```tsx
+(props: { theme: ThemeType }) => {
+  const { theme } = props;
+
+  return (
+    <>
+      <TextField
+        theme={theme}
+        id="aria-label-l-addon-before"
+        label="Search"
+        addonBefore={<Search size="medium" color="#6B6C72" />}
+      />
+      <TextField
+        theme={theme}
+        id="label-l-placeholder-l-addon-before"
+        placeholder="Search Here"
+        label="Search"
+        addonBefore={<Search size="medium" color="#6B6C72" />}
+      />
+      <TextField
+        theme={theme}
+        id="label-l-placeholder-l-addon-before-l-addon-after"
+        placeholder="Search Here"
+        label="Search"
+        addonBefore={<Search size="medium" color="#6B6C72" />}
+        addonAfter={<Calendar size="medium" color="#6B6C72" />}
+      />
+      <TextField
+        theme={theme}
+        id="aria-label-l-addon-after"
+        label="Search"
+        addonAfter={<Search size="medium" color="#6B6C72" />}
+      />
+      <TextField
+        disabled
+        theme={theme}
+        id="disabled-l-aria-label-l-addon-before"
+        label="Search"
+        addonBefore={<Search size="medium" color="#6B6C72" />}
+      />
+      <TextField
+        disabled
+        theme={theme}
+        id="disabled-l-aria-label-l-addon-after"
+        label="Search"
+        addonAfter={<Search size="medium" color="#6B6C72" />}
+      />
+      <TextField
+        theme={theme}
+        id="aria-label-l-calendar-addon-after"
+        label="Due Date"
+        addonAfter={
+          <Calendar size="medium" color="#6B6C72" aria-label="Calendar" />
+        }
+      />
+      <TextField
+        theme={theme}
+        id="label-l-helper-text-l-addon-after"
+        label="Name"
+        helperText="Optional text"
+        addonAfter={<Search size="medium" color="#6B6C72" />}
+      />
+      <TextField
+        theme={theme}
+        id="label-l-error-text-l-addon-after"
+        label="Due Date"
+        errorText="Invalid Date"
+        addonAfter={
+          <Calendar size="medium" color="#6B6C72" aria-label="Calendar" />
+        }
+      />
+      <TextField
+        theme={theme}
+        id="label-l-width-l-addon-before"
+        label="Long width left icon"
+        width="250px"
+        addonBefore={<Search size="medium" color="#6B6C72" />}
+      />
+      <TextField
+        theme={theme}
+        id="label-l-width-l-addon-before"
+// ...
+```
+
+### With On Change
+
+```tsx
+(props: { theme: ThemeType }) => {
+  const { theme } = props;
+  const [value, setValue] = useState('');
+  const [errorText, setErrorText] = useState('');
+  const [warningText, setWarningText] = useState('');
+
+  return (
+    <TextField
+      theme={theme}
+      label="Name"
+      placeholder="Jane Doe"
+      errorText={errorText}
+      warningText={warningText}
+      value={value}
+      helperText="onChange adds a warning at 4 characters and error at 8 characters"
+      onChange={(e) => {
+        const { value: newValue } = e.target;
+        const newWarningText =
+          newValue.length >= 5 && newValue.length < 8
+            ? 'Warning!! Entered 5 chars'
+            : '';
+        const newErrorText =
+          newValue.length >= 8 ? 'Error!! Entered 8 chars' : '';
+
+        setValue(newValue);
+        setErrorText(newErrorText);
+        setWarningText(newWarningText);
+      }}
+    />
+  );
+}
+```
+
+### With Ghost Text
+
+```tsx
+(props: { theme: ThemeType }) => {
+  const { theme } = props;
+  const [value, setValue] = useState('');
+  const [showGhost, setShowGhost] = useState(true);
+  const ghostTxt = 'Jane Doe';
+
+  const startWithGhostTxt = (text: string, newValue: string) => {
+    if (!text) {
+      return false;
+    }
+
+    return text.indexOf(newValue) === 0;
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (
+      e.key === 'Tab' &&
+      value &&
+      value !== ghostTxt &&
+      startWithGhostTxt(ghostTxt, value)
+    ) {
+      e.preventDefault();
+      setValue(ghostTxt);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value: newValue } = e.target;
+    setValue(newValue);
+    if (!newValue) {
+      setShowGhost(true);
+    }
+  };
+
+  const handleBlur = () => {
+    if (value) {
+      setShowGhost(false);
+    }
+  };
+
+  const ghostText =
+    showGhost && startWithGhostTxt(ghostTxt, value) ? ghostTxt : '';
+
+  return (
+    <>
+      <TextField
+        theme={theme}
+        label="First Name"
+        ghostText={ghostText}
+        helperText="A ghost text is like placeholder, but can be controllable."
+        value={value}
+        onBlur={handleBlur}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
+      />
+      <TextField
+        theme={theme}
+        label="First Name"
+        ghostText={ghostText}
+        helperText="Here it is with an addonBefore"
+        addonBefore={<Search size="medium" color="#6B6C72" />}
+        value={value}
+        onBlur={handleBlur}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
+      />
+    </>
+  );
+}
+```
+
+### W R I T E4 U With Autocomplete Text
+
+```tsx
+(props: { theme: ThemeType }) => {
+  const { theme } = props;
+  const [value, setValue] = useState('');
+  const [value2, setValue2] = useState('');
+  const [value3, setValue3] = useState('');
+
+  const helperText = 'Start typing, use `tab` key to accept suggestion';
+
+  return (
+    <>
+      <AutocompleteField
+        theme={theme}
+        label="Autocomplete Field"
+        helperText={helperText}
+        autocompleteText="Hello World!"
+        value={value}
+        setValue={setValue}
+      />
+      <AutocompleteField
+        theme={theme}
+        label="Autocomplete Field (long suggestion)"
+        helperText={helperText}
+        autocompleteText="Another example with some super duper long text that will overflow"
+        value={value2}
+        setValue={setValue2}
+      />
+      <AutocompleteField
+        theme={theme}
+        label="Autocomplete Field"
+        helperText={helperText}
+        autocompleteText="Using the addonBefore prop!"
+        value={value3}
+        setValue={setValue3}
+        addonBefore={<Search size="medium" color="#6B6C72" />}
+      />
+      <h3>
+        For more information see{' '}
+        <a href="http://in/write4u" target="_blank" rel="noreferrer">
+          http://in/write4u
+        </a>
+      </h3>
+    </>
+  );
+}
+```
+
+### With Custom Formatter
+
+```tsx
+(props: { theme: ThemeType }) => {
+  const { theme } = props;
+  const [value, setValue] = useState('');
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    action('should be unformatted value: ')(e.target.value);
+    setValue(e.target.value);
+  };
+
+  const handleCreditCardFormatter = (newValue: string) => {
+    const sanitizedValue = newValue.replace(/\D/g, '');
+    const formattedValue = sanitizedValue.replace(/.{4}(?=.)/g, '$&-');
+    return formattedValue.substr(0, 19);
+  };
+
+  const handleUnFormat = (newValue: string) => {
+    return newValue.replace(/\D/g, '');
+  };
+
+  return (
+    <FormattedField
+      theme={theme}
+      label="Card Number (with hyphens)"
+      placeholder="Enter the card number"
+      value={value}
+      unformat={handleUnFormat}
+      formatter={handleCreditCardFormatter}
+      id="textfield-customformatter"
+      onChange={handleChange}
+    />
+  );
+}
+```
+
+### With Custom Formatter And Point Of Need In Label
+
+```tsx
+(props: {
+  theme: ThemeType;
+}) => {
+  const { theme } = props;
+  const [value, setValue] = useState('');
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    action('should be unformatted value: ')(e.target.value);
+    setValue(e.target.value);
+  };
+
+  const handleCreditCardFormatter = (newValue: string) => {
+    const sanitizedValue = newValue.replace(/\D/g, '');
+    const formattedValue = sanitizedValue.replace(/.{4}(?=.)/g, '$&-');
+    return formattedValue.substr(0, 19);
+  };
+
+  const handleUnFormat = (newValue: string) => {
+    return newValue.replace(/\D/g, '');
+  };
+
+  return (
+    <div style={{ marginTop: '100px' }}>
+      <FormattedField
+        theme={theme}
+        label="Card Number (with hyphens)"
+        placeholder="Enter the card number"
+        value={value}
+        unformat={handleUnFormat}
+        formatter={handleCreditCardFormatter}
+        id="textfield-customformatter"
+        labelAddOnAfter={
+          <PointOfNeed
+            message="Your card number should be 16 digits long"
+            alignment="center"
+            containerRef={() => undefined}
+            duration={0}
+            enableClickAway={false}
+            offsetX={0}
+            offsetY={0}
+            position="top"
+            tooltipOffsetSkidding={0}
+            tooltipOffsetDistance={0}
+            delayOpen={false}
+            delayOpenDuration={0}
+          />
+        }
+        onChange={handleChange}
+      />
+    </div>
+  );
+}
+```
+
+### Credit Card Field Example
+
+```tsx
+(props: { theme: ThemeType }) => {
+  const { theme } = props;
+  const [ccValue, setCcValue] = useState('');
+
+  return (
+    <CreditCardField
+      theme={theme}
+      label="Card Number"
+      value={ccValue}
+      placeholder="Enter 16 digits card number"
+      helperText="We accept visa and mastercard only"
+      id="textfield-creditcard"
+      onChange={(e) => setCcValue(e.target.value)}
+    />
+  );
+}
+```
+
+### Phone Number Field Example
+
+```tsx
+(props: { theme: ThemeType }) => {
+  const { theme } = props;
+  const [value, setValue] = useState('');
+
+  return (
+    <PhoneNumberField
+      theme={theme}
+      label="Phone Number"
+      name="phoneNumber"
+      value={value}
+      placeholder="Work phone"
+      helperText="Enter your work phone Number"
+      id="textfield-phonenumber"
+      onChange={(e) => setValue(e.target.value)}
+    />
+  );
+}
+```
+
+### Canada Phone Number Field Example
+
+```tsx
+(props: { theme: ThemeType }) => {
+  const { theme } = props;
+  const [value, setValue] = useState('');
+
+  return (
+    <PhoneNumberField
+      theme={theme}
+      label="Phone Number"
+      name="phoneNumber"
+      value={value}
+      placeholder="Work phone"
+      helperText="Enter your work phone Number"
+      id="textfield-phonenumber"
+      region={PhoneNumberRegion.CA}
+      onChange={(e) => setValue(e.target.value)}
+    />
+  );
+}
+```
+
+### U K Phone Number Field Example
+
+```tsx
+(props: { theme: ThemeType }) => {
+  const { theme } = props;
+  const [value, setValue] = useState('');
+
+  return (
+    <PhoneNumberField
+      theme={theme}
+      label="Phone Number"
+      name="phoneNumber"
+      value={value}
+      placeholder="Work phone"
+      helperText="Enter your work phone Number"
+      id="textfield-phonenumber"
+      region={PhoneNumberRegion.GB}
+      onChange={(e) => setValue(e.target.value)}
+    />
+  );
+}
+```
+
+### Masked Field Example
+
+```tsx
+(props: { theme: ThemeType }) => {
+  const { theme } = props;
+  const [value, setValue] = useState('');
+
+  return (
+    <MaskedField
+      theme={theme}
+      maskLength={5}
+      maxLength={9}
+      type="tel"
+      label="SSN"
+      name="ssn"
+      value={value}
+      placeholder="Enter 9-digit SSN"
+      helperText={`Real value: ${value}`}
+      id="textfield-ssn"
+      onChange={(e) => setValue(e.target.value)}
+    />
+  );
+}
+```
+
+### Masked Formatted Field Example
+
+```tsx
+(props: { theme: ThemeType }) => {
+  const { theme } = props;
+  const [value, setValue] = useState('');
+
+  return (
+    <MaskedField
+      formatter={formatSSN}
+      unformat={unformatSSN}
+      theme={theme}
+      maskLength={5}
+      label="SSN"
+      name="ssn"
+      value={value}
+      placeholder="Enter 9-digit SSN"
+      helperText={`Real value: ${value}`}
+      id="textfield-ssn"
+      onChange={(e) => setValue(e.target.value)}
+    />
+  );
+}
+```
+
+### Currency Formatted Field Example
+
+```tsx
+(props: { theme: ThemeType }) => {
+  const { theme } = props;
+  const [value, setValue] = useState('');
+
+  const handleCurrencyFormatter = (newValue: string) => {
+    let sanitizedValue = newValue.replace(/[^0-9.]/g, '');
+    sanitizedValue = sanitizedValue
+      .split('.')
+      .map((part, index) =>
+        index === 0 ? part.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : part
+      )
+      .join('.');
+    const decimalIndex = sanitizedValue.indexOf('.');
+    if (decimalIndex !== -1) {
+      sanitizedValue = sanitizedValue.slice(0, decimalIndex + 3);
+    }
+
+    return `$${sanitizedValue}`; // Added $ in the returned value
+  };
+
+  const handleUnFormat = (newValue: string) => {
+    return newValue.replace(/[^0-9.]/g, '');
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = handleUnFormat(e.target.value);
+    setValue(handleCurrencyFormatter(newValue));
+  };
+
+  const handleCurrencyCursorPosition = (
+    prevVal: string,
+    nextVal: string,
+    selectionStart: number | null,
+    digitEntered?: boolean
+  ) => {
+    // eslint-disable-next-line no-param-reassign
+    selectionStart = selectionStart || 1;
+
+    // this is executed when a comma is added due to number formatting
+    if (nextVal.length - prevVal.length > 1 && digitEntered) {
+      return selectionStart + 1;
+    }
+
+    return selectionStart;
+  };
+
+  return (
+    <FormattedField
+      theme={theme}
+      label="Currency"
+      placeholder="Enter currency"
+      value={value}
+      id="textfield-currency"
+      unformat={handleUnFormat}
+      formatter={handleCurrencyFormatter}
+      cursorPositionHandler={handleCurrencyCursorPosition}
+      onChange={handleChange}
+    />
+  );
+}
+```
+
+### Text Field With Width Prop
+
+```tsx
+(props: { theme: ThemeType }) => {
+  const { theme } = props;
+
+  return (
+    <TextField
+      theme={theme}
+      label="With width prop"
+      helperText="This textfield has width of 165px"
+      width="165px"
+    />
+  );
+}
+```
+
+### Text Field With Hide Arrows
+
+```tsx
+(props: { theme: ThemeType }) => {
+  const { theme } = props;
+
+  return (
+    <TextField
+      hideArrows
+      theme={theme}
+      label="Inventory count"
+      helperText="Removes browser's up down arrows within type=number input"
+      type="number"
+    />
+  );
+}
+```
+
+### Read Only Example
+
+```tsx
+(props: { theme: ThemeType }) => {
+  const { theme } = props;
+
+  return (
+    <TextField
+      hideArrows
+      readOnly
+      theme={theme}
+      value="Try editing me"
+      label="Read-only"
+      helperText="This text field is read-only"
+    />
+  );
+}
+```
+
+### With Bold Label
+
+```tsx
+(props: { theme: ThemeType }) => {
+  const { theme } = props;
+
+  return (
+    <TextField
+      hasWeightedLabel
+      theme={theme}
+      label="Address"
+      placeholder="Apt or Suite no"
+      aria-label="Shipping Address"
+      id="textfield-placeholder"
+    />
+  );
+}
+```
+
+### Font Size Comparison
+
+```tsx
+() => {
+  return (
+    <>
+      <TextField
+        label="Address"
+        placeholder="Apt or Suite no"
+        aria-label="Shipping Address 1"
+        id="textfield-placeholder-1"
+        size="medium"
+      />
+      <TextField
+        label="Address"
+        placeholder="Apt or Suite no"
+        aria-label="Shipping Address 2"
+        id="textfield-placeholder-2"
+        size="small"
+      />
+    </>
+  );
+}
+```
+
+### Percent And Per Hour Suffixes
+
+```tsx
+() => {
+  return (
+    <>
+      <TextField
+        label="Hourly Pay Rate"
+        placeholder="65"
+        aria-label="Hourly Pay Rate"
+        addonAfter={<SuffixPerHour />}
+        id="textfield-hourly-rate"
+        size="small"
+      />
+      <TextField
+        label="Amount (in percent)"
+        placeholder="85"
+        aria-label="Amount in percentage"
+        addonAfter={<SuffixPercent />}
+        id="textfield-percentage-amount"
+        size="small"
+      />
+    </>
+  );
+}
+```
+
+### Link In Helper Text
+
+```tsx
+(props: { theme: ThemeType }) => {
+  const { theme } = props;
+
+  return (
+    <TextField
+      theme={theme}
+      label="Name"
+      id="textfield-basic"
+      helperText={[
+        'Check',
+        <Link
+          key="link"
+          type="inline"
+          style={{ fontSize: 'inherit' }}
+          href="https://www.intuit.com"
+        >
+          here
+        </Link>,
+        'for more info.'
+      ]}
+    />
+  );
+}
+```
+
+### Search Field
+
+```tsx
+(props: { theme: ThemeType }) => {
+  const { theme } = props;
+  const [value, setValue] = useState('keywords');
+
+  const SearchIcon = <Search size="small" />;
+
+  const ClearIconControl = value ? (
+    <IconControl aria-label="Clear search" onClick={() => setValue('')}>
+      <Close size="small" />
+    </IconControl>
+  ) : undefined;
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Escape') {
+      setValue('');
+    }
+  };
+
+  return (
+    <TextField
+      theme={theme}
+      label="Search"
+      placeholder="Search..."
+      value={value}
+      addonBefore={SearchIcon}
+      addonAfter={ClearIconControl}
+      helperText="Search icon is always visible, clear button appears when typing. Press Escape to clear."
+      id="textfield-search"
+      width="100%"
+      onChange={(e) => setValue(e.target.value)}
+      onKeyDown={handleKeyDown}
+    />
+  );
+}
+```
+
+### Search Field Small
+
+```tsx
+(props: { theme: ThemeType }) => {
+  const { theme } = props;
+  const [value, setValue] = useState('keywords');
+
+  const SearchIcon = <Search size="small" />;
+
+  const ClearIconControl = value ? (
+    <IconControl aria-label="Clear search" onClick={() => setValue('')}>
+      <Close size="small" />
+    </IconControl>
+  ) : undefined;
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Escape') {
+      setValue('');
+    }
+  };
+
+  return (
+    <TextField
+      theme={theme}
+      label="Search"
+      placeholder="Search..."
+      value={value}
+      addonBefore={SearchIcon}
+      addonAfter={ClearIconControl}
+      helperText="Small size search field with same functionality"
+      id="textfield-search-small"
+      width="100%"
+      size="small"
+      onChange={(e) => setValue(e.target.value)}
+      onKeyDown={handleKeyDown}
+    />
+  );
+}
+```
+
+### Search Field Interaction Test
+
+```tsx
+(props: { theme: ThemeType }) => {
+  const { theme } = props;
+  const [value, setValue] = useState('');
+
+  const SearchIcon = <Search size="small" />;
+
+  const ClearIconControl = value ? (
+    <IconControl
+      size="small"
+      aria-label="Clear search"
+      onClick={() => setValue('')}
+    >
+      <Close size="small" />
+    </IconControl>
+  ) : undefined;
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Escape') {
+      setValue('');
+    }
+  };
+
+  return (
+    <TextField
+      theme={theme}
+      label="Search"
+      placeholder="Search..."
+      value={value}
+      addonBefore={SearchIcon}
+      addonAfter={ClearIconControl}
+      helperText="Interaction test: verifies clear button click and Escape key both properly reset hover state"
+      id="textfield-search-interaction-test"
+      width="100%"
+      onChange={(e) => setValue(e.target.value)}
+      onKeyDown={handleKeyDown}
+    />
+  );
+}
+```
+
+### Showcase
+
+```tsx
+() => {
+  const ghostTxt = 'Jane Doe';
+
+  const [value, setValue] = useState('');
+  const [showGhost, setShowGhost] = useState(true);
+  const [searchValue, setSearchValue] = useState('keywords');
+  const [searchValueSmall, setSearchValueSmall] = useState('keywords');
+
+  const startWithGhostTxt = (textVal: string, newValue: string) => {
+    if (!textVal) {
+      return false;
+    }
+
+    return textVal.indexOf(newValue) === 0;
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (
+      e.key === 'Tab' &&
+      value &&
+      value !== ghostTxt &&
+      startWithGhostTxt(ghostTxt, value)
+    ) {
+      e.preventDefault();
+      setValue(ghostTxt);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value: newValue } = e.target;
+    setValue(newValue);
+    if (!newValue) {
+      setShowGhost(true);
+    }
+  };
+
+  const handleBlur = () => {
+    if (value) {
+      setShowGhost(false);
+    }
+  };
+
+  const ghostText =
+    showGhost && startWithGhostTxt(ghostTxt, value) ? ghostTxt : '';
+
+  return (
+    <>
+      <div>
+        <TextField
+          label="Address"
+          placeholder="Apt or Suite no"
+          id="textfield-basic"
+        />
+      </div>
+      <div>
+        <TextField
+          disabled
+          label="Disabled Text Field"
+          id="textfield-disabled"
+        />
+      </div>
+      <div>
+        <TextField
+          label="Email address"
+          placeholder="example@mail.com"
+          helperText="This must be your work email address"
+          id="textfield-email-work"
+        />
+      </div>
+      <div>
+        <TextField
+          label="Email address"
+          placeholder="example@mail.com"
+          errorText="Enter valid email address"
+          id="textfield-email"
+        />
+      </div>
+      <div>
+        <TextField
+          label="User ID"
+// ...
+```
+
+## Composes With
+
+- IconControl
+- PointOfNeed
+- Link
+
+---
+
+## References
+
+- [GitHub Source - TextField](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/TextField)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/text-field.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-text-field&theme=quickbooks&colorScheme=light)

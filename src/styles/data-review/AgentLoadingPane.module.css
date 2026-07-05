@@ -1,0 +1,237 @@
+/* Agent Loading Pane — interim screen while AI processes */
+
+@keyframes panelSlideIn {
+  from { opacity: 0; transform: translateX(100%); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Continuous snowflake spin */
+@keyframes snowflakeSpin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Greeting group fades + lifts in (icon + text together) */
+@keyframes greetingGroupIn {
+  0%   { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Greeting group fades + drops out */
+@keyframes greetingGroupOut {
+  0%   { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(8px); }
+}
+
+/* GIF-only phase: fade in */
+@keyframes gifFadeIn {
+  0%   { opacity: 0; transform: scale(0.92); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  background: var(--color-container-background-primary, #ffffff);
+  border-left: 1px solid var(--color-divider-tertiary, #d4d7dc);
+  overflow: hidden;
+  animation: panelSlideIn 350ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes panelSlideOut {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(100%); }
+}
+
+.panelClosing {
+  animation: panelSlideOut 350ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Header — 60px, identical to AgentReportPane */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  padding: 0 16px;
+  background: var(--color-container-background-primary, #ffffff);
+  border-bottom: 1px solid var(--color-container-border-primary, #d4d7dc);
+  flex-shrink: 0;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 80px;
+}
+
+.headerTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 20px;
+}
+
+.assistIcon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.titleText {
+  font-family: var(--font-family-component) !important;
+  font-size: var(--font-size-component-medium, 16px);
+  font-weight: var(--font-weight-component-bold, 600);
+  line-height: 1.3;
+  color: var(--color-text-primary, #393a3d);
+  white-space: nowrap;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  width: 80px;
+}
+
+.iconBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  color: #393a3d;
+  flex-shrink: 0;
+}
+.iconBtn:hover { background: rgba(57, 58, 61, 0.06); }
+
+/* Pane — centered, fills remaining height, single child at a time */
+.pane {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* ── Phase A: GIF only ── */
+.gifOnlyPhase {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: gifFadeIn 300ms cubic-bezier(0, 0, 0.25, 1) both;
+}
+
+.logo {
+  width: 48px;
+  height: 48px;
+  display: block;
+  object-fit: contain;
+}
+
+/* ── Phase B: Greeting (icon + text fade in together) ── */
+.greetingPhase {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 0 32px;
+  text-align: center;
+  animation: greetingGroupIn 400ms cubic-bezier(0, 0, 0.25, 1) both;
+}
+
+/* ── Phase C: Greeting exiting (icon + text fade out together) ── */
+.greetingExiting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 0 32px;
+  text-align: center;
+  animation: greetingGroupOut 200ms cubic-bezier(0.35, 0, 0.25, 1) forwards;
+}
+
+/* Spinning snowflake icon container */
+.spinningIcon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  animation: snowflakeSpin 3s linear infinite;
+}
+
+.greetingIconImg {
+  width: 44px;
+  height: 44px;
+  display: block;
+}
+
+/* Text block — fades in as part of the whole group */
+.greetingText {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.greetingTitle {
+  font-family: var(--font-family-component) !important;
+  font-size: 24px;
+  font-weight: 400;
+  color: #21262a;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.greetingSubtext {
+  font-family: var(--font-family-component) !important;
+  font-size: 14px;
+  font-weight: 400;
+  color: #6b6c72;
+  margin: 0;
+  line-height: 1.5;
+  max-width: 260px;
+}
+
+/* ── Body — flex container between header and bottom of panel ── */
+.body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Report content: fade in after loading phases ── */
+@keyframes reportFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.reportFadeIn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  animation: reportFadeIn 200ms cubic-bezier(0, 0, 0.25, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel,
+  .gifOnlyPhase,
+  .greetingPhase,
+  .greetingExiting,
+  .spinningIcon,
+  .reportFadeIn { animation: none; }
+}

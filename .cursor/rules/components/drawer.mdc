@@ -1,0 +1,446 @@
+---
+description: Complete guide for using the Drawer component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# Drawer
+
+IDS Drawers use a modal state to focus the user’s attention on a key action or flow.
+They are supplementary surfaces used alongside the main content. They appear only
+from the page margins displaying content that lives off the edge of the screen.
+
+IDS Drawers block content and are intended as a temporary workspace.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/drawer
+```
+
+```tsx
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerSearchHeader,
+  DrawerFooter,
+  DrawerMenuIcon,
+} from '@ids-ts/drawer';
+```
+
+## Sub-Components
+
+### DrawerContent
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `autoFocus` | `boolean` | No | Internal use only: Determine if the drawer should automatically have focus after being opened |
+| `dissolveSection` | `boolean` | No | Whether to show dissolve section or not |
+| `open` | `boolean` | No | Internal use only: Whether the drawer is opened or not |
+| `restoreFocus` | `boolean` | No | Internal use only: restoreFocus prop to allow focus back on trigger button |
+| `Note` | `this is handled automatically, do not specify t...` | Yes | - |
+| `Note` | `this is handled automatically, do not specify t...` | Yes | - |
+| `size` | `DrawerSize` | No | Size of drawer |
+| `title` | `string` | No | An optional large title to show above the content |
+
+<details>
+<summary>Full DrawerContent TypeScript Interface</summary>
+
+```typescript
+export interface DrawerContentProps extends Element<'section'> {
+  /** Internal use only: Determine if the drawer should automatically have focus after being opened */
+  autoFocus?: boolean;
+  /** Whether to show dissolve section or not */
+  dissolveSection?: boolean;
+  /** Internal use only: Whether the drawer is opened or not */
+  open?: boolean;
+  /** Internal use only: restoreFocus prop to allow focus back on trigger button */
+  restoreFocus?: boolean;
+  /**
+   * Determines whether the user scrolled to the top
+   * Note: this is handled automatically, do not specify this manually.
+   */
+  scrolledTop?: () => void;
+  /**
+   * Determines if content is scrolling
+   * Note: this is handled automatically, do not specify this manually.
+   */
+  scrolling?: () => void;
+  /** Size of drawer */
+  size?: DrawerSize;
+  /** An optional large title to show above the content */
+  title?: string;
+}
+
+export type DrawerSize = 'xsmall' | 'small' | 'medium' | 'large';
+```
+
+</details>
+
+### DrawerHeader
+
+### DrawerSearchHeader
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `backActionLabel` | `string` | No | * Label for step-flow action |
+| `color` | `SearchHeaderColor` | No | * Configurable search header color |
+| `onBackActionClick` | `MouseEventFunction` | No | * Callback for step-flow action |
+| `onClose` | `ReactEventHandler` | No | * Callback when modal dialog is closed |
+| `scrollTop` | `boolean` | No | - |
+| `title` | `string` | Yes | * The search header's title text color |
+| `background` | `string` | Yes | * The search header's background color |
+| `param1` | `React.MouseEvent) => void` | No | - |
+| `param1` | `ReactEvent) => void` | No | - |
+| `size` | `DrawerSize,
+  transitionStatus: TransitionStatu...` | Yes | - |
+| `title` | `string` | Yes | * The search header's title text color |
+| `background` | `string` | Yes | * The search header's background color |
+| `size` | `'small' | 'medium' | 'large'` | Yes | * The size of the close icon |
+| `onClick` | `MouseEventFunction` | No | * Callback for when the close icon is clicked |
+| `param1` | `ReactEvent) => void` | No | - |
+| `size` | `DrawerSize,
+  transitionStatus: TransitionStatu...` | Yes | - |
+| `title` | `string` | Yes | * The search header's title text color |
+| `background` | `string` | Yes | * The search header's background color |
+| `size` | `'small' | 'medium' | 'large'` | Yes | * The size of the close icon |
+| `onClick` | `MouseEventFunction` | No | * Callback for when the close icon is clicked |
+
+<details>
+<summary>Full DrawerSearchHeader TypeScript Interface</summary>
+
+```typescript
+export interface DrawerSearchHeaderProps extends Omit<Element<'div'>, 'color'> {
+  /**
+   * Label for step-flow action
+   */
+  backActionLabel?: string;
+  /**
+   * Configurable search header color
+   */
+  color?: SearchHeaderColor;
+  /**
+   * Callback for step-flow action
+   */
+  onBackActionClick?: MouseEventFunction;
+  /**
+   * Callback when modal dialog is closed
+   */
+  onClose?: ReactEventHandler;
+  /**
+   * Determine if content is scrolled to top
+   * (Ignore, handled via code logic, please don't add)
+   */
+  scrollTop?: boolean;
+}
+
+export interface SearchHeaderColor {
+  /**
+   * The search header's title text color
+   */
+  title: string;
+  /**
+   * The search header's background color
+   */
+  background: string;
+}
+
+export type MouseEventFunction = (param1?: React.MouseEvent) => void;
+export type ReactEventHandler = (param1?: ReactEvent) => void;
+export type TransitionClassFunction = (
+  size: DrawerSize,
+  transitionStatus: TransitionStatus,
+  bottomUp?: boolean,
+  isMobile?: boolean
+) => string | null;
+
+export interface SearchHeaderColor {
+  /**
+   * The search header's title text color
+   */
+  title: string;
+  /**
+   * The search header's background color
+   */
+  background: string;
+}
+
+export interface CloseIconProps {
+  /**
+   * The size of the close icon
+   */
+  size: 'small' | 'medium' | 'large';
+  /**
+   * Callback for when the close icon is clicked
+   */
+  onClick?: MouseEventFunction;
+}
+
+type ReactEvent =
+  | React.KeyboardEvent
+  | React.MouseEvent
+  | React.TouchEvent
+  | React.FocusEvent;
+
+export type DrawerSize = 'xsmall' | 'small' | 'medium' | 'large';
+
+export type ReactEventHandler = (param1?: ReactEvent) => void;
+export type TransitionClassFunction = (
+  size: DrawerSize,
+  transitionStatus: TransitionStatus,
+  bottomUp?: boolean,
+  isMobile?: boolean
+) => string | null;
+
+export interface SearchHeaderColor {
+  /**
+   * The search header's title text color
+   */
+  title: string;
+  /**
+   * The search header's background color
+   */
+  background: string;
+}
+
+export interface CloseIconProps {
+  /**
+   * The size of the close icon
+   */
+  size: 'small' | 'medium' | 'large';
+  /**
+   * Callback for when the close icon is clicked
+   */
+  onClick?: MouseEventFunction;
+}
+```
+
+</details>
+
+### DrawerFooter
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `center` | `boolean` | No | * Whether to align the buttons in the center of the footer or not |
+| `color` | `string` | No | * Color overrides for the footer |
+| `footerPrimaryAction` | `React.ReactNode` | No | - |
+| `footerSecondaryAction` | `React.ReactNode` | No | - |
+| `footerTertiaryAction` | `React.ReactNode` | No | - |
+
+<details>
+<summary>Full DrawerFooter TypeScript Interface</summary>
+
+```typescript
+export interface DrawerFooterProps extends Element<'div'> {
+  /**
+   * Whether to align the buttons in the center of the footer or not
+   */
+  center?: boolean;
+  /**
+   * Color overrides for the footer
+   */
+  color?: string;
+  /**
+   * Primary footer action, can be any button
+   * aligned to right side of Drawer Footer
+   */
+  footerPrimaryAction?: React.ReactNode;
+  /**
+   * Secondary footer action, can be any button
+   *  aligned to right side of Drawer Footer next to Primary
+   */
+  footerSecondaryAction?: React.ReactNode;
+  /**
+   * Tertiary footer action, can be any button
+   *  aligned to left side of Drawer Footer
+   */
+  footerTertiaryAction?: React.ReactNode;
+}
+```
+
+</details>
+
+### DrawerMenuIcon
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `primaryIcon` | `React.ReactElement` | No | First Icon to be displayed |
+| `secondaryIcon` | `React.ReactElement` | No | Second Icon to be displayed |
+
+<details>
+<summary>Full DrawerMenuIcon TypeScript Interface</summary>
+
+```typescript
+export interface DrawerMenuIconProps {
+  /** First Icon to be displayed */
+  primaryIcon?: React.ReactElement;
+  /** Second Icon to be displayed */
+  secondaryIcon?: React.ReactElement;
+}
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container-complementary** — Elevated surface colors (modals, popovers, dropdowns)
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+**action** — Interactive element colors and hover/active/focus states
+- `--color-action-complementary`
+- `--color-action-complementary-active`
+- `--color-action-complementary-border`
+
+**overlay** — Backdrop/overlay colors
+- `--color-overlay`
+- `--color-overlay`
+- `--color-overlay`
+
+### Space
+
+**container** — Container padding
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+**component** — Component-level spacing (padding, gap)
+- `--space-component-gap-large`
+- `--space-component-gap-medium`
+- `--space-component-gap-small`
+
+### Radius
+
+**radius** — Border radius for elevated surfaces
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Shadow
+
+**shadow** — Elevation shadow
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Playground
+
+```tsx
+({
+  autoFocus,
+  backActionLabel,
+  backdrop,
+  bottomUp,
+  center,
+  drawerContentTitle,
+  drawerHeaderTitle,
+  restoreFocus,
+  showSearchHeader,
+  showStepFlowUsage,
+  size
+}) => {
+  const [open, setOpen] = useState(false);
+  const [openStep, setOpenStep] = useState(false);
+
+  const openDrawer = () => setOpen(true);
+  const closeDrawer = () => setOpen(false);
+
+  const closeStepDrawer = () => setOpenStep(false);
+  const openStepDrawer = () => setOpenStep(true);
+
+  return (
+    <>
+      <Button id="open_drawer_sizes_example" onClick={openDrawer}>
+        Open drawer
+      </Button>
+      <Drawer
+        bottomUp={bottomUp}
+        backdrop={backdrop}
+        open={open}
+        autoFocus={autoFocus}
+        restoreFocus={restoreFocus}
+        size={size}
+        onClose={closeDrawer}
+        onShow={openDrawer}
+      >
+        {showSearchHeader ? (
+          <DrawerSearchHeader
+            backActionLabel={backActionLabel}
+            onClose={closeDrawer}
+          />
+        ) : (
+          <DrawerHeader
+            backActionLabel={backActionLabel}
+            title={drawerHeaderTitle}
+            onClose={closeDrawer}
+          />
+        )}
+        <DrawerContent title={drawerContentTitle}>
+          {showSearchHeader ? <SearchDrawerContent /> : <DrawerChildren />}
+          {showStepFlowUsage && (
+            <Button onClick={openStepDrawer}>Go To Level 2</Button>
+          )}
+        </DrawerContent>
+        <DrawerFooter
+          center={center}
+          footerPrimaryAction={
+            <Button purpose="standard" onClick={closeDrawer}>
+              Primary
+            </Button>
+          }
+          footerSecondaryAction={
+            <Button purpose="standard" priority="secondary">
+              Secondary
+            </Button>
+          }
+          footerTertiaryAction={
+            <Button purpose="standard" priority="tertiary">
+              Tertiary
+            </Button>
+          }
+        />
+      </Drawer>
+      {showStepFlowUsage && (
+        <Drawer stepFlow open={openStep} onClose={closeStepDrawer}>
+          <DrawerHeader
+            title="Second Page"
+            backActionLabel="Go back"
+            onBackActionClick={closeStepDrawer}
+// ...
+```
+
+## Accessibility
+
+## Code Example
+
+```tsx
+const Drawer = lazyReact('@ids-ts/drawer', 'Drawer');
+const DrawerHeader = lazyReact('@ids-ts/drawer', 'DrawerHeader');
+const DrawerContent = lazyReact('@ids-ts/drawer', 'DrawerContent');
+```
+
+## Composes With
+
+- Button
+- Typography
+- Dropdown
+
+---
+
+## References
+
+- [GitHub Source - Drawer](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/Drawer)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/drawer.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-drawer&theme=quickbooks&colorScheme=light)

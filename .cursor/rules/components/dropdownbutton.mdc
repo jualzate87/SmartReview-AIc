@@ -1,0 +1,394 @@
+---
+description: Complete guide for using the DropdownButton component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# DropdownButton
+
+IDS DropdownButtons are primarily used when there are multiple actions available for an item or multiple items, none of which are considered to be primary action.
+The IDS DropdownButton saves space and de-clutters the interface, but also hides the available actions within the drop menu.
+The label on the IDS DropdownButton is not an action, but rather directs the user to open the dropdown menu to select an action.
+The action is executed when the menu selection is made.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/dropdown-button
+```
+
+```tsx
+import { DropdownButton } from '@ids-ts/dropdown-button';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `automationId` | `string` | No | Automation test id. |
+| `buttonPriority` | `Priority` | No | - |
+| `buttonPurpose` | `ButtonPurpose` | No | - |
+| `buttonSize` | `ButtonSize` | No | - |
+| `children` | `ReactElement<MenuItemProps> \| ReactElement<MenuItemProps>[]` | No | MenuItem children for the dropdown. |
+| `className` | `string` | No | ClassName to be used on the base element |
+| `maxHeight` | `string | number` | No | Determine the maximum height of the dropdown list, unit is px. |
+| `disabled` | `boolean` | No | - |
+| `icon` | `React.ReactElement` | No | Icon component. Show as ChevronDownIcon if not set. |
+| `label` | `string` | No | Label to be used for the button tertiary |
+| `menuClassName` | `string` | No | Custom classname to pass to the underlying Menu component. |
+| `onOpen` | `() => void` | No | Called when the menu button is clicked and the menu is opened. |
+| `onSelect` | `(e: React.MouseEvent | React.KeyboardEvent) => ...` | No | Called when menu items are selected. |
+| `preventMenuOverflow` | `an object variable` | Yes | - |
+| `preventMenuOverflow` | `PreventOverflow` | No | - |
+| `style` | `React.CSSProperties` | No | styles to be used on the base element |
+| `stylePosition` | `React.CSSProperties` | No | The optional styles applied to the position node wrapped around the root node. |
+| `positions` | `string[]` | No | Vertical positions: `'top'`, `'bottom'`. |
+| `alignments` | `string[]` | No | Alignment of the menu relative to the trigger. |
+| `offsetSkidding` | `number` | No | Cross-axis pixel offset of the popup. |
+| `offsetDistance` | `number` | No | Main-axis pixel offset of the popup. |
+| `scrollToSelected` | `boolean` | No | - |
+| `positionDependencies` | `unknown[]` | No | - |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface DropdownButtonProps
+  extends Omit<ThemeableElement<'div'>, 'onSelect'> {
+  /** Aria label */
+  'aria-label'?: string;
+  /** Automation  test id. */
+  automationId?: string;
+  /**
+   * Button priority - 'primary', 'secondary' or ''tertiary
+   *
+   * @default 'primary'
+   */
+  buttonPriority?: Priority;
+  /**
+   * Type of dropdown button specified by the user
+   * ButtonPurpose - 'standard' or 'passive' or 'complementary' or 'ai'
+   *
+   * @default 'standard'
+   */
+  buttonPurpose?: ButtonPurpose;
+  /**
+   * Size of button and menu - 'small', 'medium' or 'large'
+   *
+   * @default 'medium'
+   */
+  buttonSize?: ButtonSize;
+  /** Children of Menu, which are MenuItem types in the dropdown */
+  children?:
+    | React.ReactElement<MenuItemProps>
+    | React.ReactElement<MenuItemProps>[];
+  /** ClassName to be used on the base element */
+  className?: string;
+  /** Determine the maximum height of the dropdown list, unit is px. */
+  maxHeight?: string | number;
+  /**
+   * Whether dropdown button should be disabled
+   *
+   * @default false
+   */
+  disabled?: boolean;
+  /** Icon component. Show as ChevronDownIcon if not set. */
+  icon?: React.ReactElement;
+  /** Label to be used for the button tertiary */
+  label?: string;
+  /** Custom classname to pass to the underlying Menu component. */
+  menuClassName?: string;
+  /** Called when the menu button is clicked and the menu is opened. */
+  onOpen?: () => void;
+  /** Called when menu items are selected. */
+  onSelect?: (e: React.MouseEvent | React.KeyboardEvent) => void;
+  /**
+   * preventMenuOverflow: an object variable; used to prevent DropdownButton Menu from being positioned outside the boundary.
+   * More detail in @ids-ts/position preventOverflow API document.
+   */
+  preventMenuOverflow?: PreventOverflow;
+  /** styles to be used on the base element */
+  style?: React.CSSProperties;
+  /** The optional styles applied to the position node wrapped around the root node. */
+  stylePosition?: React.CSSProperties;
+  /**
+   * vertical positions: top, bottom
+   * horizontal positions: left, right
+   * NOTE: horizontal alignments cannot be paired with horizontal positions
+   *
+   * @default 'bottom'
+   */
+  position?: Positions;
+  /**
+   * vertical alignments: top, bottom, middle
+   * horizontal alignments: left, right, center
+   * NOTE: horizontal alignments cannot be paired with horizontal positions
+   *
+   * @default 'right'
+   */
+  alignment?: Alignments;
+  /**
+   * offsetSkidding: the cross-axis pixel distance that the popup should be offset from targetElement
+   *
+   * @default 0
+   */
+  offsetSkidding?: number;
+  /**
+   * offsetDistance: the main-axis pixel distance that the popup should be offset from targetElement
+   *
+   * @default 0
+   */
+  offsetDistance?: number;
+  /**
+   * Scroll current selected item into view from Menu if necessary
+   *
+   * @default false
+   */
+  scrollToSelected?: boolean;
+  /**
+   * Dependencies that will cause the Menu's popperjs instance to recalculate its position, whenever any of the dependencies change.
+   * These dependencies work the same way as the list you would pass into a React useEffect()
+   */
+  positionDependencies?: unknown[];
+}
+
+export type ButtonPurpose = Filter<
+  Purpose,
+  'standard' | 'passive' | 'complementary' | 'ai'
+>;
+
+export type Positions = 'top' | 'bottom' | 'left' | 'right';
+
+export type Alignments =
+  | 'left'
+  | 'right'
+  | 'top'
+  | 'bottom'
+  | 'middle'
+  | 'center';
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+**action** — Interactive element colors and hover/active/focus states
+- `--color-action-complementary`
+- `--color-action-complementary-active`
+- `--color-action-complementary-border`
+
+**input** — Input background, border, placeholder, and focus colors
+- `--color-input-background-disabled`
+- `--color-input-background-error`
+- `--color-input-background-error-focus`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+**component** — Component-level spacing (padding, gap)
+- `--space-component-gap-large`
+- `--space-component-gap-medium`
+- `--space-component-gap-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+**radius** — Input border radius
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Playground
+
+```tsx
+({
+  alignment,
+  buttonPriority,
+  buttonPurpose,
+  buttonSize,
+  disabled,
+  disableOption1,
+  disableOption3,
+  label,
+  offsetDistance,
+  offsetSkidding,
+  position,
+  maxHeight
+}) => (
+  <DropdownButton
+    disabled={disabled}
+    label={label}
+    buttonPurpose={buttonPurpose}
+    buttonPriority={buttonPriority}
+    buttonSize={buttonSize}
+    automationId="basic_example"
+    position={position}
+    alignment={alignment}
+    offsetSkidding={offsetSkidding}
+    offsetDistance={offsetDistance}
+    maxHeight={maxHeight}
+    onSelect={(e: any) => action('Clicked')(e.target.value)}
+  >
+```
+
+### Showcase
+
+```tsx
+() => (
+  <div>
+    <div>
+      <h3>Dropdown Purposes</h3>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px' }}>
+        {purposes.map((purpose) => (
+          <DropdownButton
+            key={purpose}
+            label={upperCaseUtil(purpose)}
+            buttonPurpose={purpose}
+            automationId="primaryAction"
+            className={styles.exampleDropdownButton}
+            onClick={action('Dropdown Button has been clicked')}
+            onSelect={(e: any) => action('Clicked')(e.target.value)}
+          >
+            <MenuItem value="Contribute">Contribute</MenuItem>
+            <MenuItem value="FileBug">File bug</MenuItem>
+            <MenuItem value="EnhDesign">Enhance design</MenuItem>
+            <MenuItem value="ProSuggest">Provide suggestions</MenuItem>
+          </DropdownButton>
+        )
+```
+
+### Basic
+
+```tsx
+() => (
+  <DropdownButton
+    label="What is your favorite fruit?"
+    automationId="basic_example"
+    onSelect={(e: any) => action('Clicked')(e.target.value)}
+  >
+```
+
+### Update Position
+
+```tsx
+() => {
+  const [y, setY] = useState(0);
+
+  useEffect(() => {
+    const timerId = setInterval(() => {
+      setY((oldY) => (oldY + 100) % 600);
+    }, 1500);
+
+    return () => {
+      clearInterval(timerId);
+    };
+  }, []);
+
+  return (
+    <DropdownButton
+      label="Choose a site"
+      automationId="basic_example"
+      positionDependencies={[y]}
+      style={{
+        marginTop: y
+      }}
+      onSelect={(e: any) => action('Clicked')(e.target.value)}
+    >
+      <MenuItem value="Intuit">Intuit</MenuItem>
+      <MenuItem value="Google">Google</MenuItem>
+    </DropdownButton>
+  );
+}
+```
+
+### Log On Open
+
+```tsx
+() => {
+  return (
+    <DropdownButton
+      label="Choose a site"
+      automationId="basic_example"
+      onSelect={(e: any) => action('Clicked')(e.target.value)}
+      onOpen={action('Opened')}
+    >
+      <MenuItem value="Intuit">Intuit</MenuItem>
+      <MenuItem value="Google">Google</MenuItem>
+    </DropdownButton>
+  );
+}
+```
+
+### Size Comparison
+
+```tsx
+() => {
+  return (
+    <div className={styles.sizeComparison}>
+      <DropdownButton
+        label="buttonSize small"
+        data-automation-id="basicMedium"
+        aria-label="Choose a fruit medium-small"
+        buttonSize="small"
+        onChange={action('onChange')}
+      >
+        <MenuItem value="1">Banana</MenuItem>
+        <MenuItem value="2">Apple</MenuItem>
+        <MenuItem value="3">Guava</MenuItem>
+        <MenuItem value="4">Durian</MenuItem>
+      </DropdownButton>
+      <DropdownButton
+        label="buttonSize medium"
+        data-automation-id="basicMedium"
+        aria-label="Choose a fruit medium-medium"
+        buttonSize="medium"
+        onChange={action('onChange')}
+      >
+        <MenuItem value="1">Banana</MenuItem>
+        <MenuItem value="2">Apple</MenuItem>
+        <MenuItem value="3">Guava</MenuItem>
+        <MenuItem value="4">Durian</MenuItem>
+      </DropdownButton>
+    </div>
+  );
+}
+```
+
+## Accessibility
+
+---
+
+## References
+
+- [GitHub Source - DropdownButton](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/DropdownButton)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/dropdown-button.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-button---dropdown&theme=quickbooks&colorScheme=light)

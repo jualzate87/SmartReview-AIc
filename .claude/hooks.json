@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "command": "FILE=$(echo \"$TOOL_INPUT\" | grep -oE '[^\"]*\\.module\\.css' | head -1); if [ -n \"$FILE\" ] && [ -f \"$FILE\" ]; then HEX=$(grep -En '#[0-9a-fA-F]{3,8}' \"$FILE\" | grep -v 'var(--' || true); RGB=$(grep -En 'rgb[a]?\\(' \"$FILE\" | grep -v 'var(--' || true); HSL=$(grep -En 'hsl[a]?\\(' \"$FILE\" | grep -v 'var(--' || true); PX=$(grep -En '(padding|margin|gap|font-size|border-radius|line-height|box-shadow):\\s*[0-9]+px' \"$FILE\" | grep -v 'var(--' || true); WARNS=''; if [ -n \"$HEX\" ]; then WARNS=\"${WARNS}WARNING: Hardcoded hex colors in $FILE (use design tokens):\\n${HEX}\\n\"; fi; if [ -n \"$RGB\" ]; then WARNS=\"${WARNS}WARNING: Hardcoded rgb() colors in $FILE (use design tokens):\\n${RGB}\\n\"; fi; if [ -n \"$HSL\" ]; then WARNS=\"${WARNS}WARNING: Hardcoded hsl() colors in $FILE (use design tokens):\\n${HSL}\\n\"; fi; if [ -n \"$PX\" ]; then WARNS=\"${WARNS}WARNING: Hardcoded pixel values in $FILE (use design tokens):\\n${PX}\\n\"; fi; if [ -n \"$WARNS\" ]; then echo -e \"$WARNS\"; fi; fi"
+      }
+    ]
+  }
+}

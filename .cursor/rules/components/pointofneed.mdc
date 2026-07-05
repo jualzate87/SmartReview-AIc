@@ -1,0 +1,142 @@
+---
+description: Complete guide for using the PointOfNeed component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# PointOfNeed
+
+IDS Point of Need allows users to include an icon with a tooltip to provide additional information on PointOfNeed labels
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/point-of-need
+```
+
+```tsx
+import { PointOfNeed } from '@ids-ts/point-of-need';
+```
+
+## Props
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `message` | `string` | Yes | Tooltip message content. |
+| `position` | `'left' \| 'right' \| 'top' \| 'bottom'` | No | Tooltip position relative to the icon. |
+| `alignment` | `string` | No | Alignment of the tooltip. |
+| `enableClickAway` | `boolean` | No | Closes tooltip on outside click when true. |
+| `duration` | `number` | No | Auto-close duration in ms (0 = no auto-close). |
+| `delayOpen` | `boolean` | No | Delays tooltip opening. |
+| `delayOpenDuration` | `number` | No | Delay duration in ms when `delayOpen` is true. |
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Basic
+
+```tsx
+() => (
+  <div
+    style={{
+      height: 200,
+      width: '50%',
+      marginTop: 50,
+      marginLeft: 100,
+      marginRight: 'auto'
+    }}
+  >
+    <PointOfNeed
+      message="Point of need tooltip"
+      alignment="left"
+      containerRef={() => undefined}
+      duration={0}
+      enableClickAway={false}
+      offsetX={0}
+      offsetY={0}
+      position="left"
+      tooltipOffsetSkidding={0}
+      tooltipOffsetDistance={0}
+      delayOpen={false}
+      delayOpenDuration={0}
+    />
+```
+
+### Showcase
+
+```tsx
+() => {
+  return (
+    <div>
+      <PointOfNeed
+        message="Point of need tooltip"
+        alignment="left"
+        containerRef={() => undefined}
+        duration={0}
+        enableClickAway={false}
+        offsetX={0}
+        offsetY={0}
+        position="left"
+        tooltipOffsetSkidding={0}
+        tooltipOffsetDistance={0}
+        delayOpen={false}
+        delayOpenDuration={0}
+      />
+    </div>
+  );
+}
+```
+
+## Code Example
+
+```tsx
+import PointOfNeed from '@ids-ts/point-of-need';
+// and with css-modules
+import '@ids-ts/point-of-need/dist/main.css';
+```
+
+## Composes With
+
+- Tooltip
+
+---
+
+## References
+
+- [GitHub Source - PointOfNeed](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/PointOfNeed)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/point-of-need.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-point-of-need&theme=quickbooks&colorScheme=light)

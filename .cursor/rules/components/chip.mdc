@@ -1,0 +1,250 @@
+---
+description: Complete guide for using the Chip component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# Chip
+
+A IDS chip is a compact visual label that gives visual context to content that has been filtered or is filterable..
+
+This is used primarily in our other IDS components, such as `DataGrid`, and `Table`.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/chip
+```
+
+```tsx
+import { Chip } from '@ids-ts/chip';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `header` | `string` | No | The value for the component to display |
+| `selectionLabels` | `string[]` | Yes | - |
+| `dismissButtonAriaLabel` | `string` | No | - |
+| `onClose` | `React.MouseEventHandler` | No | - |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface ChipProps extends ThemeableElement<'div'> {
+  /** The value for the component to display */
+  header?: string;
+  /**
+   * Selected labels that can be added for a header
+   *
+   */
+  selectionLabels: string[];
+  /**
+   * Aria label for the close button
+   *
+   */
+  dismissButtonAriaLabel?: string;
+  /**
+   * Callback when component is closed.
+   *
+   */
+  onClose?: React.MouseEventHandler;
+}
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+**icon** — Icon fill and stroke colors
+- `--color-icon-accent`
+- `--color-icon-complementary`
+- `--color-icon-disabled`
+
+**action** — Interactive element colors and hover/active/focus states
+- `--color-action-complementary`
+- `--color-action-complementary-active`
+- `--color-action-complementary-border`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+**component** — Component-level spacing (padding, gap)
+- `--space-component-gap-large`
+- `--space-component-gap-medium`
+- `--space-component-gap-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+### Size
+
+**icon** — Standard icon dimensions
+
+## Usage Patterns
+
+### Basic Usage
+
+```tsx
+() => {
+  const [showChip, setShowChip] = useState(true);
+  const handleClose = () => setShowChip(false);
+
+  return (
+    <div className={styles.exampleChip}>
+      {showChip ? (
+        <Chip
+          header="Job attributes"
+          selectionLabels={['Location']}
+          onClose={handleClose}
+        />
+      ) : (
+        <Button onClick={() => setShowChip(true)}>Reset</Button>
+      )}
+    </div>
+  );
+}
+```
+
+### With Long Selection Label
+
+```tsx
+() => {
+  const [showChip, setShowChip] = useState(true);
+  const handleClose = () => setShowChip(false);
+
+  return (
+    <div className={styles.exampleChip}>
+      {showChip ? (
+        <Chip
+          header="Long label"
+          selectionLabels={[
+            'A really long selection label that gets truncated'
+          ]}
+          onClose={handleClose}
+        />
+      ) : (
+        <Button onClick={() => setShowChip(true)}>Reset</Button>
+      )}
+    </div>
+  );
+}
+```
+
+### With Nested Selection Labels
+
+```tsx
+() => {
+  const [showChip, setShowChip] = useState(true);
+
+  const handleClose = () => setShowChip(false);
+
+  return (
+    <div className={styles.exampleChip}>
+      {showChip ? (
+        <Chip
+          header="Technologies Used"
+          selectionLabels={['React.js', 'TypeScript', 'CSS']}
+          onClose={handleClose}
+        />
+      ) : (
+        <Button onClick={() => setShowChip(true)}>Reset</Button>
+      )}
+    </div>
+  );
+}
+```
+
+### With Long Nested Selection Labels
+
+```tsx
+() => {
+  const [showChip, setShowChip] = useState(true);
+
+  const handleClose = () => setShowChip(false);
+
+  return (
+    <div className={styles.exampleChip}>
+      {showChip ? (
+        <Chip
+          header="Long label +1"
+          selectionLabels={[
+            'A really long selection label that gets truncated',
+            'Becomes +1'
+          ]}
+          onClose={handleClose}
+        />
+      ) : (
+        <Button onClick={() => setShowChip(true)}>Reset</Button>
+      )}
+    </div>
+  );
+}
+```
+
+### With No Header
+
+```tsx
+() => {
+  const [showChip, setShowChip] = useState(true);
+
+  const handleClose = () => setShowChip(false);
+
+  return (
+    <div className={styles.exampleChip}>
+      {showChip ? (
+        <Chip
+          selectionLabels={[
+            'A really long selection label that gets truncated',
+            'Becomes +1'
+          ]}
+          onClose={handleClose}
+        />
+      ) : (
+        <Button onClick={() => setShowChip(true)}>Reset</Button>
+      )}
+    </div>
+  );
+}
+```
+
+## Composes With
+
+- Button
+
+---
+
+## References
+
+- [GitHub Source - Chip](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/Chip)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/chip.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-chip&theme=quickbooks&colorScheme=light)

@@ -1,0 +1,97 @@
+---
+description: Intuit Design System - Space Token Library - Complete primitive and semantic space tokens
+globs: ["src/**/*.{ts,tsx,js,jsx,scss,css}"]
+alwaysApply: false
+---
+
+# Intuit Design System - Space Token Library
+
+## Primitive Space Tokens (DO NOT USE DIRECTLY IN PLUGINS)
+
+- `--space-0`: 0
+- `--space-2`: 2px
+- `--space-4`: 4px
+- `--space-6`: 6px
+- `--space-8`: 8px
+- `--space-10`: 10px
+- `--space-12`: 12px
+- `--space-16`: 16px
+- `--space-20`: 20px
+- `--space-24`: 24px
+- `--space-32`: 32px
+- `--space-40`: 40px
+- `--space-56`: 56px
+- `--space-60`: 60px
+- `--space-72`: 72px
+- `--space-96`: 96px
+
+## Semantic Space Tokens (USE THESE IN PLUGINS)
+
+### Column
+- `--space-column-gap-large`: --space-24 /* Large space used between columns of a grid or collection of components. */
+- `--space-column-gap-medium`: --space-20 /* Default space used between columns of a grid or collection of components. */
+- `--space-column-gap-small`: --space-16 /* Small space used between columns of a grid or collection of components. */
+- `--space-column-gap-x-large`: --space-40 /* Largest space used between columns of a grid or collection of components. */
+- `--space-column-gap-x-small`: --space-8 /* Smallest space used between columns of a grid or collection of components. */
+- `--space-column-gap-xx-small`: --space-4 /* Extra Smallest space used between columns of a grid or collection of components. */
+
+### Component
+- `--space-component-gap-large`: --space-12 /* Gaps between text or icon elements */
+- `--space-component-gap-medium`: --space-8 /* Gaps between text or icon elements */
+- `--space-component-gap-small`: --space-4 /* Gaps between text or icon elements */
+- `--space-component-gap-x-small`: --space-2 /* Gaps between text or icon elements */
+- `--space-component-inline-padding-large`: --space-10 /* Horizontal padding */
+- `--space-component-inline-padding-medium`: --space-8 /* Horizontal padding */
+- `--space-component-inline-padding-small`: --space-6 /* Horizontal padding */
+- `--space-component-inline-padding-x-large`: --space-12 /* Horizontal padding */
+- `--space-component-inline-padding-x-small`: --space-4 /* Horizontal padding */
+- `--space-component-inline-padding-xx-large`: --space-16 /* Horizontal padding */
+- `--space-component-inline-padding-xx-small`: --space-2 /* Horizontal padding */
+- `--space-component-inline-padding-xxx-large`: --space-20 /* Horizontal padding */
+- `--space-component-inline-padding-xxx-small`: --space-0 /* Horizontal padding */
+- `--space-component-stack-padding-large`: --space-8 /* Vertical padding */
+- `--space-component-stack-padding-medium`: --space-6 /* Vertical padding */
+- `--space-component-stack-padding-small`: --space-4 /* Vertical padding */
+- `--space-component-stack-padding-x-large`: --space-10 /* Vertical padding */
+- `--space-component-stack-padding-x-small`: --space-2 /* Vertical padding */
+- `--space-component-stack-padding-xx-small`: --space-0 /* Vertical padding */
+
+### Container
+- `--space-container-padding-large`: --space-24 /* Large container padding (any direction). */
+- `--space-container-padding-medium`: --space-20 /* Medium container padding (any direction). */
+- `--space-container-padding-small`: --space-16 /* Small container padding (any direction). */
+- `--space-container-padding-x-large`: --space-32 /* Extra large container padding (any direction). */
+- `--space-container-padding-x-small`: --space-12 /* Extra small container padding (any direction). */
+- `--space-container-padding-xx-large`: --space-40 /* Extra extra large container padding (any direction). */
+- `--space-container-padding-xx-small`: --space-8 /* Extra extra small container padding (any direction). */
+- `--space-container-padding-xxx-large`: --space-60 /* Extra extra extra large container padding (any direction). */
+- `--space-container-padding-xxx-small`: --space-4 /* Extra extra extra small container padding (any direction). */
+
+### Input
+- `--space-input-inline-padding-medium`: --space-10 /* For the left and right padding of medium input fields */
+- `--space-input-inline-padding-small`: --space-8 /* For the left and right padding of small input fields */
+- `--space-input-stack-padding-medium`: --space-8 /* For the top and bottom padding of medium input fields */
+- `--space-input-stack-padding-small`: --space-6 /* For the top and bottom padding of small input fields */
+
+### Large
+- `--space-large`: --space-24 /* Large size of optional, theme-specific scale of spacing tokens for general purpose use. */
+
+### Medium
+- `--space-medium`: --space-16 /* Medium size of optional, theme-specific scale of spacing tokens for general purpose use. */
+
+### Page
+- `--space-page-inline`: --space-20 /* Margin of the main page content */
+
+### Row
+- `--space-row-gap-large`: --space-40 /* Large space used between rows of a page layout or collection of components. */
+- `--space-row-gap-medium`: --space-20 /* Default (Medium) space used between rows of a page layout or collection of components. */
+- `--space-row-gap-small`: --space-12 /* Small space used between rows of a page layout or collection of components. */
+- `--space-row-gap-x-large`: --space-60 /* Largest space used between rows of a page layout or collection of components. */
+- `--space-row-gap-x-small`: --space-8 /* Smallest space used between rows of a page layout or collection of components. */
+
+### Small
+- `--space-small`: --space-12 /* Small size of optional, theme-specific scale of spacing tokens for general purpose use. */
+
+### X
+- `--space-x-large`: --space-40 /* Optional, theme-specific scale of spacing tokens for general purpose use. */
+- `--space-x-small`: --space-8 /* Optional, theme-specific scale of spacing tokens for general purpose use. */

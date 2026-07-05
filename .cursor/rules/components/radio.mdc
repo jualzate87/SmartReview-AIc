@@ -1,0 +1,747 @@
+---
+description: Complete guide for using the Radio component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# Radio
+
+Radio buttons are for making an individual selection from a list of multiple options.
+Always have a default radio option selected, whichever is the most common choice for users.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/radio
+```
+
+```tsx
+import { Radio, RadioGroup } from '@ids-ts/radio';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `checked` | `boolean` | No | Specifies whether the radio is checked. |
+| `children` | `ReactNode | string` | No | The Radio label. |
+| `description` | `ReactNode | string` | No | * Description text below the label |
+| `disabled` | `boolean` | No | - |
+| `name` | `string` | No | a name assign to the radio input |
+| `size` | `'small' | 'medium'` | No | - |
+| `onChange` | `RadioOnChangeType` | No | Callback function with customize event object that is fired when a Radio has been checked. |
+| `value` | `string` | No | Radio current value. |
+| `validationType` | `InlineValidationType` | No | - |
+| `e` | `RadioOnChangeEventType): void` | Yes | - |
+| `target` | `{ checked: boolean; value: string }` | Yes | Modified event target with radio value. |
+| `value` | `string` | No | a event target value |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface RadioProps
+  extends Omit<ThemeableElement<'input'>, 'size' | 'onChange' | 'type'> {
+  /** Specifies whether the radio is checked. */
+  checked?: boolean;
+  /** The Radio label. */
+  children?: ReactNode | string;
+  /**
+   * Description text below the label
+   */
+  description?: ReactNode | string;
+  /**
+   * Disable the Radio.
+   *
+   * @default false
+   */
+  disabled?: boolean;
+  /** a name assign to the radio input */
+  name?: string;
+  /** Affects size of text rendered next to checkbox
+   *
+   * @default 'medium'
+   *
+   */
+  size?: 'small' | 'medium';
+  /** Callback function with customize event object that is fired when a Radio has been checked.  */
+  onChange?: RadioOnChangeType;
+  /** Radio current value. */
+  value?: string;
+  /**
+   * Determines the type of Validation Message : ['error', 'warning', 'success', 'invalid', 'info', '']
+   *
+   * @default ''
+   */
+  validationType?: InlineValidationType;
+}
+
+export interface RadioOnChangeType {
+  (e: RadioOnChangeEventType): void;
+}
+
+export interface RadioOnChangeEventType {
+  /** a modify event target */
+  target: {
+    /** a event target check value */
+    checked?: boolean;
+    /** a event target value */
+    value?: string;
+  };
+  stopPropagation?(): void;
+  preventDefault?(): void;
+}
+```
+
+</details>
+
+## Sub-Components
+
+### RadioGroup
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactElement | ReactElement[]` | No | A list of <Radio> |
+| `defaultValue` | `string | string[]` | No | Specifies the initial state: whether or not a Radio is checked. |
+| `disabled` | `boolean` | No | - |
+| `helperText` | `string | ReactNode` | No | Helper text for the Radio group. Can be a React node. |
+| `label` | `string | ReactNode` | No | Label for the Radio group. Can be a React node. |
+| `name` | `string` | No | The name that will be applied to all child Radio buttons. |
+| `onChange` | `RadioOnChangeType` | No | Callback function that is fired when a Radio button has been selected. |
+| `options` | `string[] | RadioOptionType[]` | No | - |
+| `size` | `'small' | 'medium'` | No | - |
+| `value` | `string | string[]` | No | The value used to currently select the Radio. |
+| `validationType` | `InlineValidationType` | No | - |
+| `validationMessage` | `string` | No | Validation Message |
+| `vertical` | `boolean` | No | - |
+| `description` | `ReactNode | string` | No | Radio description prop |
+| `disabled` | `boolean` | No | Radio disabled prop |
+| `label` | `string` | No | Radio label prop |
+| `onChange` | `RadioOnChangeType` | No | Radio onChange prop |
+| `value` | `string` | Yes | Radio value prop |
+
+<details>
+<summary>Full RadioGroup TypeScript Interface</summary>
+
+```typescript
+export interface RadioGroupProps
+  extends Omit<ThemeableElement<'fieldset'>, 'onChange'> {
+  /** aria-describedby attribute to handle non-semantic use case */
+  'aria-describedby'?: string;
+  /** A list of <Radio> */
+  children?: ReactElement | ReactElement[];
+  /** Specifies the initial state: whether or not a Radio is checked. */
+  defaultValue?: string | string[];
+  /**
+   * Disable all radio buttons.
+   *
+   * @default false
+   */
+  disabled?: boolean;
+  /** Helper text for the Radio group. Can be a React node. */
+  helperText?: string | ReactNode;
+  /** Label for the Radio group. Can be a React node. */
+  label?: string | ReactNode;
+  /** The name that will be applied to all child Radio buttons. */
+  name?: string;
+  /** Callback function that is fired when a Radio button has been selected. */
+  onChange?: RadioOnChangeType;
+  /**
+   * Set the children Radio by using an array of values or an array of objects.
+   *
+   * @default []
+   */
+  options?: string[] | RadioOptionType[];
+  /** Affects size of text rendered next to checkbox
+   *
+   * @default 'medium'
+   *
+   */
+  size?: 'small' | 'medium';
+  /** The value used to currently select the Radio. */
+  value?: string | string[];
+  /**
+   * Determines the type of Validation Message : ['error', 'warning', 'success', 'invalid', 'info', '']
+   *
+   * @default ''
+   */
+  validationType?: InlineValidationType;
+  /** Validation Message */
+  validationMessage?: string;
+  /**
+   * Layout type vertical or horizontal.
+   *
+   * @default false
+   */
+  vertical?: boolean;
+}
+
+export interface RadioOptionType {
+  /** Radio description prop */
+  description?: ReactNode | string;
+  /** Radio disabled prop */
+  disabled?: boolean;
+  /** Radio label prop */
+  label?: string;
+  /** Radio onChange prop */
+  onChange?: RadioOnChangeType;
+  /** Radio value prop */
+  value: string;
+}
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**action** — Interactive element colors and hover/active/focus states
+- `--color-action-complementary`
+- `--color-action-complementary-active`
+- `--color-action-complementary-border`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**component** — Component-level spacing (padding, gap)
+- `--space-component-gap-large`
+- `--space-component-gap-medium`
+- `--space-component-gap-small`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Basic
+
+```tsx
+() => (
+  <RadioGroup
+    label="Ready to learn more about IDS Radio Buttons?"
+    name="numLabels"
+    data-automation-id="globalRadio"
+  >
+    <Radio value="1" data-automation-id="basicRadio">
+      Yes
+    </Radio>
+    <Radio value="2">No</Radio>
+    <Radio value="3">Maybe</Radio>
+  </RadioGroup>
+)
+```
+
+### No Visible Label Use Aria Label For Accessibility
+
+```tsx
+() => (
+  <>
+    <RadioGroup
+      aria-label="Did you find the feature helpful?"
+      name="numLabels"
+      data-automation-id="globalRadio"
+    >
+      <Radio value="1" data-automation-id="ariaRadio" aria-label="Yes">
+        Yes
+      </Radio>
+      <Radio value="2">No</Radio>
+      <Radio value="3">Maybe</Radio>
+    </RadioGroup>
+    <B2 as="p">
+      The element is used to associate a text label with a form field. The label
+      is used to tell users the value that should be entered in the associated
+      input field. If your design does not include a visible label, then you
+      must include an aria-label to provide information to the screen reader.
+    </B2>
+  </>
+)
+```
+
+### Radio Group With Inline Validation Message
+
+```tsx
+() => (
+  <>
+    <RadioGroup
+      label="Select your pizza crust type"
+      name="errorlabels"
+      validationType="error"
+      validationMessage="Please make a selection before proceeding"
+      style={{ marginBottom: 30 }}
+    >
+      <Radio value="1">Hand Tossed</Radio>
+      <Radio value="2">Thin Crust</Radio>
+      <Radio value="3">Gluten Free Crust</Radio>
+    </RadioGroup>
+
+    <RadioGroup
+      label="Select your pizza sauce"
+      name="warningLables"
+      validationType="warning"
+      validationMessage="Your pizza will not have any sauce since no selection has been made"
+    >
+      <Radio value="1">Marinara</Radio>
+      <Radio value="2">Alfredo</Radio>
+      <Radio value="3">Pesto</Radio>
+    </RadioGroup>
+  </>
+)
+```
+
+### Radio Group With Helper Text
+
+```tsx
+() => (
+  <>
+    <RadioGroup
+      helperText="For more information about crust types, visit our website"
+      label="Select your pizza crust type"
+      name="errorlabels"
+      validationType="error"
+      validationMessage="Please make a selection before proceeding"
+      style={{ marginBottom: 30 }}
+    >
+      <Radio value="1">Hand Tossed</Radio>
+      <Radio value="2">Thin Crust</Radio>
+      <Radio value="3">Gluten Free Crust</Radio>
+    </RadioGroup>
+    <RadioGroup
+      helperText="For more information about sauce types, visit our website"
+      label="Select your pizza sauce"
+      name="warningLables"
+      validationType="warning"
+      validationMessage="Your pizza will not have any sauce since no selection has been made"
+    >
+      <Radio value="1">Marinara</Radio>
+      <Radio value="2">Alfredo</Radio>
+      <Radio value="3">Pesto</Radio>
+    </RadioGroup>
+  </>
+)
+```
+
+### Radio With Description Text
+
+```tsx
+() => (
+  <RadioGroup
+    label="Select your pizza crust type"
+    name="errorlabels"
+    validationType="error"
+    validationMessage="Please make a selection before proceeding"
+    style={{ marginBottom: 30 }}
+  >
+    <Radio value="1" description="Add $1">
+      Hand Tossed
+    </Radio>
+    <Radio value="2">Thin Crust</Radio>
+    <Radio value="3">Gluten Free Crust</Radio>
+  </RadioGroup>
+)
+```
+
+### Group Default Value
+
+```tsx
+() => (
+  <RadioGroup
+    label="Do you still need help? (No is selected by default)"
+    defaultValue="2"
+    name="numbers"
+  >
+    <Radio value="1">Yes</Radio>
+    <Radio value="2">No</Radio>
+  </RadioGroup>
+)
+```
+
+### Group Default Value Controlled
+
+```tsx
+() => {
+  const [value, setValue] = useState('1');
+
+  return (
+    <RadioGroup
+      name="controlledRb"
+      label="Radio Group Default Value Controlled Example - Value set in the background depending on the choice made"
+      value={value}
+      onChange={(e: any) => {
+        action('Clicked')(e.target.value);
+        setValue(e.target.value);
+      }}
+    >
+      <Radio value="1">Set value to 1</Radio>
+      <Radio value="2">Set value to 2</Radio>
+      <Radio value="3">Set value to 3</Radio>
+    </RadioGroup>
+  );
+}
+```
+
+### Disabled
+
+```tsx
+() => (
+  <div data-automation-id="radio-disabled">
+    <RadioGroup name="disableRb" label="How can I help you?">
+      <Radio value="1">Start a Return</Radio>
+      <Radio value="2">View Order Details</Radio>
+      <Radio disabled value="3">
+        Status of my refund (once you start return)
+      </Radio>
+    </RadioGroup>
+    <br />
+    <RadioGroup
+      disabled
+      label="The return window for the following order has closed"
+    >
+      <Radio value="1">Initiate a Return</Radio>
+      <Radio value="2">Replace existing item</Radio>
+      <Radio value="3">Track status of your refund</Radio>
+    </RadioGroup>
+  </div>
+)
+```
+
+### Name
+
+```tsx
+() => (
+  <div data-automation-id="radio-name">
+    <RadioGroup name="fruits" label="Choose your favorite fruit">
+      <Radio value="1">Apple</Radio>
+      <Radio value="2">Pear</Radio>
+      <Radio value="3">Orange</Radio>
+    </RadioGroup>
+  </div>
+)
+```
+
+### Vertical Orientation
+
+```tsx
+() => (
+  <RadioGroup
+    vertical
+    label="Choose your favorite ice cream flavor"
+    onChange={(value) => action('Radio group checked: ')(value)}
+  >
+```
+
+### Group Using Options
+
+```tsx
+() => (
+  <>
+    <RadioGroup
+      name="optionsRb"
+      options={['A', 'B', 'C']}
+      defaultValue="A"
+      label="Option Strings"
+    />
+    <br />
+    <RadioGroup
+      options={[
+        { label: 'A', value: 'a' },
+        { label: 'B', value: 'b' },
+        { label: 'C', value: 'c' }
+      ]}
+      defaultValue="c"
+      label="Option Objects"
+      onMouseEnter={action('here')}
+    />
+  </>
+)
+```
+
+### Theme Prop
+
+```tsx
+() => (
+  <>
+    <RadioGroup
+      theme="intuit"
+      name="intuitTheme"
+      defaultValue="1"
+      label="Intuit"
+    >
+      <Radio value="1">Option 1</Radio>
+      <Radio value="2" aria-label="Option 2 for Proconnect">
+        Option 2 - Contains aria-label
+      </Radio>
+      <Radio disabled value="3">
+        Option 3
+      </Radio>
+    </RadioGroup>
+
+    <RadioGroup
+      theme="quickbooks"
+      name="qbTheme"
+      defaultValue="1"
+      label="Quickbooks"
+    >
+      <Radio value="1">Option 1</Radio>
+      <Radio value="2" aria-label="Option 2 for Quickbooks">
+        Option 2 - Contains aria-label
+      </Radio>
+      <Radio disabled value="3">
+        Option 3
+      </Radio>
+    </RadioGroup>
+    <RadioGroup
+      theme="turbotax"
+      name="ttTheme"
+      defaultValue="1"
+      label="Turbotax"
+    >
+      <Radio value="1">Option 1</Radio>
+      <Radio value="2" aria-label="Option 2 for Turbotax">
+        Option 2 - Contains aria-label
+      </Radio>
+      <Radio disabled value="3">
+        Option 3
+      </Radio>
+    </RadioGroup>
+    <RadioGroup theme="mint" name="mintTheme" defaultValue="1" label="Mint">
+      <Radio value="1">Option 1</Radio>
+      <Radio value="2" aria-label="Option 2 for Mint">
+        Option 2 - Contains aria-label
+      </Radio>
+      <Radio disabled value="3">
+        Option 3
+      </Radio>
+    </RadioGroup>
+    <Theme theme="turbotax">
+      <RadioGroup
+        theme="quickbooks"
+        name="ttThemeOverride"
+        defaultValue="1"
+        label="QuickBooks styles overriding TurboTax theme"
+      >
+        <Radio value="1" aria-label="Option 1 for Turbotax override">
+          Option 1
+        </Radio>
+        <Radio value="2" aria-label="Option 2 for Turbotax override">
+          Option 2 - Contains aria-label
+        </Radio>
+        <Radio disabled value="3">
+          Option 3 for Turbotax override
+        </Radio>
+      </RadioGroup>
+    </Theme>
+  </>
+)
+```
+
+### Radio Group Custom
+
+```tsx
+() => (
+  <RadioGroup
+    label="The style for this RadioGroup can be customized, this has an additional extra bottom margin"
+    data-automation-id="radio-custom"
+  >
+    <Radio value="1">Option 1</Radio>
+    <Radio value="2">Option 2</Radio>
+    <Radio value="3">Option 3</Radio>
+  </RadioGroup>
+)
+```
+
+### Font Size Comparison
+
+```tsx
+() => (
+  <div>
+    <RadioGroup
+      aria-describedby="radio-1"
+      label="Small Radio Group"
+      size="small"
+    >
+      <Radio value="Apple" aria-label="Apples are in the box">
+        Apple
+      </Radio>
+      <Radio value="Pear" aria-label="Pears are in the box">
+        Pear
+      </Radio>
+      <Radio value="Orange" aria-label="Oranges are in the box">
+        Orange
+      </Radio>
+    </RadioGroup>
+
+    <RadioGroup
+      aria-describedby="radio-2"
+      label="Medium Radio Group"
+      size="medium"
+    >
+      <Radio value="Apple" aria-label="Apples are in the box">
+        Apple
+      </Radio>
+      <Radio value="Pear" aria-label="Pears are in the box">
+        Pear
+      </Radio>
+      <Radio value="Orange" aria-label="Oranges are in the box">
+        Orange
+      </Radio>
+    </RadioGroup>
+  </div>
+)
+```
+
+### Aria Labelled By
+
+```tsx
+() => (
+  <div>
+    <B2 id="customLabel">Is this example useful?</B2>
+    <RadioGroup name="numLabels" aria-labelledby="customLabel">
+      <Radio value="1">Yes</Radio>
+      <Radio value="2">No</Radio>
+      <Radio value="3">Maybe</Radio>
+    </RadioGroup>
+  </div>
+)
+```
+
+### With Custom Ids
+
+```tsx
+() => (
+  <RadioGroup label="Group where children have custom IDs" name="customIdGroup">
+    <Radio id="custom-radio-for-apple" value="apple">
+      Apple
+    </Radio>
+    <Radio id="custom-radio-for-orange" value="orange">
+      Orange
+    </Radio>
+  </RadioGroup>
+)
+```
+
+### Showcase
+
+```tsx
+() => (
+  <>
+    <RadioGroup
+      label="Ready to learn more about IDS Radio Buttons?"
+      name="learnLabels"
+    >
+      <Radio value="Yes" data-automation-id="basicRadio">
+        Yes
+      </Radio>
+      <Radio value="No"> No </Radio>
+      <Radio value="Maybe"> Maybe </Radio>
+    </RadioGroup>
+
+    <RadioGroup
+      defaultValue="Grapes"
+      label="Do you still need help? (No is selected by default)"
+      name="defaultLabels"
+    >
+      <Radio value="Yes" data-automation-id="radio-default">
+        Yes
+      </Radio>
+      <Radio value="No"> No </Radio>
+      <Radio value="Talk to an agent"> Talk to an agent </Radio>
+    </RadioGroup>
+
+    <RadioGroup
+      disabled
+      label="The return window for the following order has closed"
+      name="disabledLabels"
+    >
+      <Radio value="Initiate a Return" data-automation-id="radioGroup-disabled">
+        Initiate a Return
+      </Radio>
+      <Radio value="Replace existing item"> Replace existing item </Radio>
+      <Radio value="Track status of your refund">
+        {' '}
+        Track status of your refund{' '}
+      </Radio>
+    </RadioGroup>
+
+    <RadioGroup label="How can I help you?" name="disabledLabel">
+      <Radio value="Start a Return" data-automation-id="radio-disabled">
+        Start a Return
+      </Radio>
+      <Radio disabled value="Status of my refund">
+        Status of my refund (once you start return)
+      </Radio>
+      <Radio value="View Order Details"> View Order Details </Radio>
+    </RadioGroup>
+    <RadioGroup
+      vertical
+      label="Choose your favorite icecream flavor"
+      name="verticalLabels"
+    >
+      <Radio value="Strawberry" data-automation-id="radio-name">
+        Strawberry
+      </Radio>
+      <Radio value="Chocolate"> Chocolate </Radio>
+      <Radio value="Oreo"> Oreo </Radio>
+    </RadioGroup>
+    <RadioGroup
+      validationType="error"
+      validationMessage="Please make a selection before proceeding"
+      label="Select your pizza crust type"
+      name="errorLabels"
+    >
+      <Radio value="Hand Tossed" data-automation-id="errorRadio">
+        Hand Tossed
+      </Radio>
+      <Radio value="Thin Crust"> Thin Crust </Radio>
+      <Radio value="Gluten Free Crust"> Gluten Free Crust </Radio>
+    </RadioGroup>
+    <RadioGroup
+      validationType="warning"
+      validationMessage="Your pizza will not have any sauce since no selection has been made"
+      label="Select your pizza sauce"
+      name="warningLabels"
+    >
+      <Radio value="Marinara" data-automation-id="warningRadio">
+        Marinara
+// ...
+```
+
+## Accessibility
+
+## Code Example
+
+```tsx
+import React from 'react';
+import Radio, { RadioGroup } from '@ids-ts/radio';
+
+const ExampleRadioGroup = () => (
+  <RadioGroup label="Group with label" name="numLabels">
+    <Radio value="1">Option 1</Radio>
+    <Radio value="2">Option 2</Radio>
+    <Radio value="3">Option 3</Radio>
+  </RadioGroup>
+);
+
+export default ExampleRadioGroup;
+```
+
+## Composes With
+
+- Typography
+- InlineValidationMessage
+
+---
+
+## References
+
+- [GitHub Source - Radio](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/Radio)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/radio.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-radio&theme=quickbooks&colorScheme=light)

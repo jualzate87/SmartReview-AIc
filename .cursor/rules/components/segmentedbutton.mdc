@@ -1,0 +1,364 @@
+---
+description: Complete guide for using the SegmentedButton component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# SegmentedButton
+
+Use segmented buttons to allow users to select from a group of mutually exclusive options.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/segmented-button
+```
+
+```tsx
+import { SegmentedButton } from '@ids-ts/segmented-button';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `ariaLabel` | `string` | Yes | The aria-label to define the purpose of the group of the buttons |
+| `buttonInfos` | `ButtonInterface[]` | Yes | Type providing information for each button. See ButtonInterface for more information. |
+| `size` | `'standard' \| 'mini'` | No | Size variant. Defaults to `'standard'`. |
+| `align` | `'center' \| 'right' \| 'left'` | No | Alignment of the button group. Defaults to `'left'`. |
+| `className` | `string` | No | Custom classes to be added to the segmented button's HTML <section>. |
+| `label` | `string` | Yes | Label for button. |
+| `selected` | `boolean` | Yes | The selected button segment; only one segment should be set as a selected. |
+| `content` | `ReactNode` | No | A component or string shown underneath the segmented button. |
+| `buttonAriaLabel` | `string` | No | The aria-label for a single segmented button. |
+| `onClick` | `React.ReactEventHandler<HTMLButtonElement>` | No | Called when a single button is clicked. |
+| `onKeyDown` | `React.KeyboardEventHandler<HTMLButtonElement>` | No | A callback to be fired when a single button has a key pressed on it. |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface SegmentedButtonProps extends Themeable {
+  /** The aria-label to define the purpose of the group of the buttons */
+  ariaLabel: string;
+
+  /** Type providing information for each button. See ButtonInterface for more information. */
+  buttonInfos: ButtonInterface[];
+
+  /** Type of button:'standard' or 'mini'
+   *
+   * @default 'standard'
+   */
+  buttonType?: 'standard' | 'mini';
+
+  /** The segmented button's position inside the container:'center','right' or 'left'
+   *
+   * @default 'left'
+   */
+  buttonPosition?: 'center' | 'right' | 'left';
+
+  /** Custom classes to be added to the segmented button's HTML <section>. */
+  className?: string;
+}
+
+export interface ButtonInterface {
+  /** Label for button. */
+  label: string;
+
+  /** The selected button segment; only one segment should be set as a selected. */
+  selected: boolean;
+
+  /** A component or string shown underneath the segmented button. */
+  content?: ReactNode;
+
+  /** The aria-label for a single segmented button. */
+  buttonAriaLabel?: string;
+
+  /** A callback to be fired when a single button is clicked. */
+  onClick?:
+    | React.ReactEventHandler<HTMLButtonElement>
+    | React.MouseEventHandler<HTMLButtonElement>;
+
+  /** A callback to be fired when a single button has a key pressed on it. */
+  onKeyDown?: React.KeyboardEventHandler<HTMLButtonElement>;
+}
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Standard
+
+```tsx
+() => (
+  <SegmentedButton
+    ariaLabel="segmented button"
+    buttonInfos={generateData(2)}
+    buttonType="standard"
+    id="segmented-button-standard"
+  />
+)
+```
+
+### Mini
+
+```tsx
+() => (
+  <SegmentedButton
+    ariaLabel="segmented button"
+    buttonInfos={generateData(3)}
+    buttonType="mini"
+    id="segmented-button-mini"
+  />
+)
+```
+
+### Two Buttons
+
+```tsx
+() => (
+  <SegmentedButton
+    ariaLabel="segmented button"
+    buttonInfos={generateData(2)}
+    buttonType="standard"
+    id="segmented-button-two"
+  />
+)
+```
+
+### Three Buttons
+
+```tsx
+() => (
+  <SegmentedButton
+    ariaLabel="segmented button"
+    buttonInfos={generateData(3)}
+    buttonType="standard"
+    id="segmented-button-three"
+  />
+)
+```
+
+### Four Buttons
+
+```tsx
+() => (
+  <SegmentedButton
+    ariaLabel="segmented button"
+    buttonInfos={generateData(4)}
+    buttonType="standard"
+    id="segmented-button-four"
+  />
+)
+```
+
+### Five Buttons
+
+```tsx
+() => {
+  return (
+    <div>
+      <SegmentedButton
+        ariaLabel="segmented button"
+        buttonInfos={generateData(5)}
+        buttonType="standard"
+        id="segmented-button-five"
+      />
+    </div>
+  );
+}
+```
+
+### Click Event Handler
+
+```tsx
+() => {
+  // The same or different callbacks could be passed in for each ButtonInterface through the buttonInfos prop.
+  const customOnClickCallback: React.EventHandler<React.SyntheticEvent>[] = [
+    () => action('click')('Custom onClick for SegmentedButton 1'),
+    () => action('click')('Custom onClick for SegmentedButton 2'),
+    () => action('click')('Custom onClick for SegmentedButton 3')
+  ];
+
+  return (
+    <SegmentedButton
+      ariaLabel="IDS SegmentedButton onClick example"
+      buttonInfos={generateData(3, customOnClickCallback)}
+      buttonType="standard"
+      id="segmented-button-click-handler"
+    />
+  );
+}
+```
+
+### Pre Selected Button
+
+```tsx
+() => {
+  // Pre selecting the button at index 2
+  const boolean = [false, false, true, false];
+  // The same callbacks is passed in for each ButtonInterface.
+  const selectedOnClick: React.EventHandler<React.SyntheticEvent>[] = [
+    () => action('click')('Custom onClick for SegmentedButton 1'),
+    () => action('click')('Custom onClick for SegmentedButton 2'),
+    () => action('click')('Custom onClick for SegmentedButton 3'),
+    () => action('click')('Custom onClick for SegmentedButton 4')
+  ];
+
+  return (
+    <SegmentedButton
+      ariaLabel="segmented button"
+      buttonInfos={generateData(4, selectedOnClick, boolean)}
+      buttonType="standard"
+      id="segmented-button-preselected"
+    />
+  );
+}
+```
+
+### Externally Controlled
+
+```tsx
+() => {
+  const [selectedArray, setSelectedArray] = useState([
+    true,
+    false,
+    false,
+    false
+  ]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const colors = ['gray', 'blue', 'green', 'red'];
+  const selectRandomTab = () => {
+    let randomIndex = Math.floor(Math.random() * selectedArray.length);
+
+    while (randomIndex === selectedIndex) {
+      randomIndex = Math.floor(Math.random() * selectedArray.length);
+    }
+
+    const newSelectedArray = [...selectedArray];
+
+    newSelectedArray[randomIndex] = true;
+    newSelectedArray[selectedIndex] = false;
+
+    setSelectedArray(newSelectedArray);
+    setSelectedIndex(randomIndex);
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '100px' }}>
+      <Button onClick={selectRandomTab}>
+        Change the tab by not changing the tab!
+      </Button>
+      <SegmentedButton
+        ariaLabel="segmented button"
+        buttonInfos={selectedArray.map((selected, index) => ({
+          label: buttonNames[index],
+          selected,
+          content: (
+            <ContentExample
+              message={faker.lorem.paragraphs(2)}
+              color={colors[index]}
+            />
+          ),
+          onClick: () => action('click')(`Segment ${index} clicked`)
+        }))}
+        buttonType="standard"
+        id="segmented-button-externally-controlled"
+      />
+    </div>
+  );
+}
+```
+
+## Code Example
+
+```tsx
+import React from 'react';
+import SegmentedButton from '@ids-ts/segmented-button';
+// and with css-modules
+import '@ids-ts/segmented-button/dist/main.css';
+
+const ContentExample = ({ message }) => {
+  const renderStyle = {
+    padding: '10px',
+    display: 'block',
+    width: '1030px'
+  };
+
+  return <p style={renderStyle}>{message}</p>;
+};
+
+const SegmentedButtonExample = () => (
+  <SegmentedButton
+    ariaLabel="segmented button"
+    buttonPosition="center"
+    buttonType="standard"
+    buttonInfos={[
+      {
+        label: 'Segmented 1',
+        content: <ContentExample message="Good Morning!" />,
+        selected: true,
+      },
+      {
+        label: 'Segmented 2',
+        selected: false,
+      },
+      {
+        label: 'Segmented 3',
+        content: <ContentExample message="Good Night!" />,
+        selected: false,
+      }
+    ]},
+  />
+);
+
+export default SegmentedButtonExample;
+```
+
+## Composes With
+
+- Button
+
+---
+
+## References
+
+- [GitHub Source - SegmentedButton](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/SegmentedButton)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/segmented-button.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-segmented-button&theme=quickbooks&colorScheme=light)

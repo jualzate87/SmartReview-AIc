@@ -1,0 +1,210 @@
+---
+description: Intuit Design System - Design Tokens Overview and Reference
+alwaysApply: false
+---
+
+# Design Tokens Overview
+
+Design tokens are the visual design atoms of the Intuit Design System. They are named entities that store visual design attributes such as colors, spacing, typography, and more. Always reference tokens as CSS variables: `var(--token-name)`.
+
+## General Guidelines
+
+- Always use semantic tokens (not primitive tokens) when available
+- Reference tokens as CSS variables: `var(--color-text-primary)`, `var(--space-medium)`, etc.
+- Never hardcode values that have corresponding design tokens
+- When you need specific token values, refer to the detailed token rules files listed below
+- Read the relevant token rules file before using tokens from that category
+
+## Available Token Categories
+
+### Color Tokens
+**File:** `tokens-color`
+
+Contains all color tokens for text, backgrounds, borders, icons, states, and semantic colors.
+
+Key categories:
+- Text colors (primary, secondary, tertiary, inverse, disabled)
+- Background colors (page, container, special use)
+- Border/divider colors
+- Action/interactive colors (standard, hover, active, disabled)
+- Status colors (error, warning, success, info)
+- Data visualization colors
+- Primitive color palette (agave, blueberry, dragonfruit, eggplant, honey, kiwi, olive, pepper, persimmon, spearmint, watermelon)
+
+**Usage:** Read `tokens-color` rule for complete color palette and usage guidelines.
+
+### Space Tokens
+**File:** `tokens-space`
+
+Contains all spacing tokens for margins, padding, gaps, and layout spacing.
+
+Key categories:
+- Primitive space values (0, 2px, 4px, 8px, 12px, 16px, 20px, 24px, 32px, 40px, 56px, 60px, 72px, 96px)
+- Semantic spacing (column, container padding, gap, margin, padding)
+- Size tokens (component dimensions)
+
+**Usage:** Read `tokens-space` rule for complete spacing system.
+
+### Typography Tokens
+**Files:** `tokens-fontFamily`, `tokens-fontSize`, `tokens-fontWeight`, `tokens-lineHeight`, `tokens-fontName`
+
+Contains all typography-related tokens.
+
+Key categories:
+- Font families (body, heading, component, code, monospace)
+- Font sizes (body, heading, component scales)
+- Font weights (regular, medium, semibold, bold)
+- Line heights (body, heading, component)
+- Font names (system font stack definitions)
+
+**Usage:** Read the specific typography token rules for font styling.
+
+### Radius Tokens
+**File:** `tokens-radius`
+
+Contains border-radius tokens for rounded corners.
+
+Key categories:
+- Border radius values (none, small, medium, large, xlarge, full/circle)
+- Component-specific radius tokens
+
+**Usage:** Read `tokens-radius` rule for border-radius options.
+
+### Elevation Tokens
+**File:** `tokens-elevation`
+
+Contains box-shadow tokens for elevation/depth effects.
+
+Key categories:
+- Elevation levels (100-500)
+- Shadow variations for different UI layers
+
+**Usage:** Read `tokens-elevation` rule for shadow/elevation system.
+
+### Opacity Tokens
+**File:** `tokens-opacity`
+
+Contains opacity values for transparency effects.
+
+Key categories:
+- Opacity levels (0-100)
+- Semantic opacity tokens for different states
+
+**Usage:** Read `tokens-opacity` rule for transparency values.
+
+### Duration Tokens
+**File:** `tokens-duration`
+
+Contains timing duration tokens for animations and transitions.
+
+Key categories:
+- Animation durations (instant, quick, moderate, slow)
+- Transition timing values
+
+**Usage:** Read `tokens-duration` rule for animation timing.
+
+### Ease Tokens
+**File:** `tokens-ease`
+
+Contains easing function tokens for animation curves.
+
+Key categories:
+- Easing functions (linear, ease-in, ease-out, ease-in-out)
+- Custom cubic-bezier curves
+
+**Usage:** Read `tokens-ease` rule for animation easing functions.
+
+## Quick Reference by Use Case
+
+### Styling Text
+- Color: `tokens-color` (--color-text-*)
+- Size: `tokens-fontSize` (--font-size-*)
+- Weight: `tokens-fontWeight` (--font-weight-*)
+- Line height: `tokens-lineHeight` (--line-height-*)
+- Font family: `tokens-fontFamily` (--font-family-*)
+
+### Styling Containers
+- Background: `tokens-color` (--color-container-background-*)
+- Padding: `tokens-space` (--space-container-padding-*)
+- Border: `tokens-color` (--color-divider-*)
+- Border radius: `tokens-radius` (--radius-*)
+- Shadow: `tokens-elevation` (--elevation-*)
+
+### Spacing & Layout
+- Margins: `tokens-space` (--space-margin-*)
+- Padding: `tokens-space` (--space-padding-*)
+- Gaps: `tokens-space` (--space-gap-*)
+- Sizes: `tokens-space` (--size-*)
+
+### Interactive States
+- Hover colors: `tokens-color` (--color-action-hover)
+- Active colors: `tokens-color` (--color-action-active)
+- Disabled colors: `tokens-color` (--color-*-disabled)
+- Transitions: `tokens-duration` and `tokens-ease`
+
+### Status & Feedback
+- Error: `tokens-color` (--color-status-error*)
+- Warning: `tokens-color` (--color-status-warning*)
+- Success: `tokens-color` (--color-status-success*)
+- Info: `tokens-color` (--color-status-info*)
+
+## Workflow
+
+1. Identify what visual attribute you need to style (color, spacing, typography, etc.)
+2. Refer to the appropriate token category above
+3. Read the detailed token rules file for that category
+4. Use the semantic token (not primitive) as a CSS variable
+5. If no semantic token exists, check if a primitive token is appropriate
+
+## Example Usage
+
+```css
+.myComponent {
+  /* Colors */
+  color: var(--color-text-primary);
+  background: var(--color-container-background-primary);
+  border: 1px solid var(--color-divider-tertiary);
+  
+  /* Spacing */
+  padding: var(--space-container-padding-medium);
+  margin: var(--space-margin-medium);
+  gap: var(--space-gap-medium);
+  
+  /* Typography */
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-1);
+  font-weight: var(--font-weight-body);
+  line-height: var(--line-height-body);
+  
+  /* Border radius */
+  border-radius: var(--radius-medium);
+  
+  /* Elevation */
+  box-shadow: var(--elevation-200);
+  
+  /* Transitions */
+  transition: all var(--duration-moderate) var(--ease-in-out);
+}
+```
+
+## Token Scale Summary
+
+The Intuit Design System includes approximately **780 design tokens** across all categories:
+
+- **Color**: ~506 tokens (primitive palettes + semantic color system)
+- **Typography**: ~99 tokens (fonts, sizes, weights, line heights)
+- **Space**: ~65 tokens (primitive sizes + semantic spacing)
+- **Duration**: ~43 tokens (animation timing)
+- **Radius**: ~25 tokens (border-radius values)
+- **Ease**: ~17 tokens (animation curves)
+- **Opacity**: ~16 tokens (transparency values)
+- **Elevation**: ~10 tokens (box shadows)
+
+This comprehensive token system ensures consistent styling across all Intuit products.
+
+## Important Notes
+
+- Primitive tokens (e.g., `--color-blueberry-50`, `--space-16`) should generally not be used directly in application code
+- Always prefer semantic tokens (e.g., `--color-text-primary`, `--space-medium`) as they provide meaning and adapt to themes
+- When using Figma designs, validate that referenced tokens exist in the token rules before using them
+- Token values are subject to change; always use the CSS variable reference, never hardcode the actual value

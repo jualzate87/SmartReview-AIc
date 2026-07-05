@@ -1,0 +1,135 @@
+---
+description: Complete guide for using the Indeterminate component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# Indeterminate
+
+⚠️ **Deprecation warning** ⚠️
+
+This component has been deprecated and is no longer maintained. We recommend using the `Loader` package instead.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/indeterminate
+```
+
+```tsx
+import { Indeterminate, IndeterminateLong, IndeterminateShort } from '@ids-ts/indeterminate';
+```
+
+## Sub-Components
+
+### IndeterminateLong
+
+<details>
+<summary>Full IndeterminateLong TypeScript Interface</summary>
+
+```typescript
+export type IndeterminateLongProps = ThemeableElement<'div'> & {
+```
+
+</details>
+
+### IndeterminateShort
+
+<details>
+<summary>Full IndeterminateShort TypeScript Interface</summary>
+
+```typescript
+export type IndeterminateShortProps = ThemeableElement<'div'> & {
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Indeterminate Long Spinner
+
+```tsx
+() => (
+  <IndeterminateLong data-testid="shortIntuitSpinner" />
+)
+```
+
+### Playground
+
+```tsx
+({ size, spinnerType })
+```
+
+### Showcase
+
+```tsx
+() => (
+  <>
+    <div>
+      <h3>Indeterminate Long Spinner</h3>
+      <IndeterminateLong
+        data-testid="longIntuitSpinner"
+        ariaLabel="indeterminate-long-spinner"
+      />
+    </div>
+    <div>
+      <h3>Indeterminate Short Spinner with size variation</h3>
+      <IndeterminateShort
+        size={64}
+        data-testid="shortIntuitSpinner"
+        ariaLabel="indeterminate-short-spinner"
+      />
+    </div>
+  </>
+)
+```
+
+## Accessibility
+
+## Code Example
+
+```tsx
+<Activity shape="dots" />
+```
+
+---
+
+## References
+
+- [GitHub Source - Indeterminate](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/Indeterminate)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-loader---activity&theme=quickbooks&colorScheme=light)

@@ -1,0 +1,78 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.leftPanel {
+  width: 692px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-right: 1px solid var(--color-container-border-primary, #d5dee3);
+}
+
+.rightPanel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--color-container-background-primary, #ffffff);
+}
+
+/* Scrollable chat content — fills space above input */
+.chatScrollArea {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 68px;
+  padding: 0 var(--space-container-padding-medium, 20px);
+  background: var(--color-container-background-complementary, #21262a);
+  border-top: 1px solid var(--color-container-border-primary, #c3ced5);
+  flex-shrink: 0;
+}
+
+.footerCancel {
+  font-family: inherit;
+  font-size: var(--font-size-action-medium, 16px);
+  font-weight: 600;
+  color: #ffffff;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.footerOpenReturn {
+  font-family: inherit;
+  font-size: var(--font-size-action-medium, 16px);
+  font-weight: 600;
+  color: #ffffff;
+  background: #205EA3;
+  border: none;
+  border-radius: var(--radius-action, 4px);
+  padding: var(--space-component-stack-padding-medium, 6px) var(--space-component-inline-padding-medium, 8px);
+  cursor: pointer;
+  min-height: 36px;
+  min-width: 100px;
+}
+
+.footerOpenReturn:hover {
+  background: #1a4f8e;
+}

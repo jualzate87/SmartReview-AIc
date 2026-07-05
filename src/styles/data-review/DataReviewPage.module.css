@@ -1,0 +1,309 @@
+/* Data Review Page — full screen layout */
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Header — 68px, white bg, bottom border */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 68px;
+  padding: var(--space-medium, 16px) var(--space-medium, 16px) var(--space-medium, 16px) 22px;
+  background: var(--color-container-background-primary, #ffffff);
+  border-bottom: 1px solid #C3CED5;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  overflow: hidden;
+}
+
+/* Back button — bordered box */
+.backButton {
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  background: var(--color-input-background-primary, #ffffff);
+  border: 1px solid #859299;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #5D686F;
+  flex-shrink: 0;
+}
+
+.backButton:hover {
+  background: #f4f5f8;
+}
+
+/* Divider after back button */
+.backDivider {
+  border-right: 1px solid #D5DEE3;
+  padding-right: 22px;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+/* Title — Regular weight, not Demi */
+.headerTitle {
+  font-family: var(--font-family-component) !important;
+  font-size: var(--font-size-heading-5, 24px);
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--color-text-primary, #393a3d);
+  white-space: nowrap;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-medium, 16px);
+  justify-content: flex-end;
+}
+
+/* Intuit Intelligence button — bordered box */
+.intuitIntelBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--color-container-background-primary, #ffffff);
+  border: 1px solid #859299;
+  border-radius: 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.intuitIntelLabel {
+  font-family: var(--font-family-component, sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  color: #21262a;
+  white-space: nowrap;
+}
+
+.intuitIntelBtn:hover {
+  background: #f4f5f8;
+}
+
+.intuitIntelBtnActive {
+  background: #e0edff;
+  border-color: #103661;
+}
+
+.intuitIntelBtnActive .intuitIntelLabel {
+  color: #103661;
+}
+
+.intuitIntelIcon {
+  width: 24px;
+  height: 24px;
+}
+
+/* Red badge on Notes button in header */
+.notesBadge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  background: #c9500f;
+  color: #fff;
+  font-family: var(--font-family-component);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  text-align: center;
+  padding: 0 4px;
+  pointer-events: none;
+}
+
+/* Body — fills remaining space */
+.body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Left panel — flex:1, smoothly grows/shrinks as panels open/close */
+.leftPanel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+  transition: flex 380ms cubic-bezier(0.4, 0, 0.25, 1);
+}
+
+/* Right panel — fixed width, flex column */
+.rightPanel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-left: 1px solid #D5DEE3;
+  min-height: 0;
+  flex-shrink: 0;
+  /* Width transition: panel smoothly expands from 0 when appearing */
+  transition: width 350ms cubic-bezier(0.4, 0, 0.25, 1),
+              opacity 350ms cubic-bezier(0.4, 0, 0.25, 1);
+}
+
+/* ── Slide in from right (agent close → doc panel appears) ── */
+@keyframes rightPanelSlideIn {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0);    }
+}
+
+/* ── Slide out to right (doc panel dismissed) ── */
+@keyframes rightPanelSlideOut {
+  from { opacity: 1; transform: translateX(0);    }
+  to   { opacity: 0; transform: translateX(40px); }
+}
+
+.rightPanelEntering {
+  animation: rightPanelSlideIn 350ms cubic-bezier(0.2, 0, 0.25, 1) both;
+}
+
+.rightPanelExiting {
+  animation: rightPanelSlideOut 280ms cubic-bezier(0.4, 0, 1, 1) both;
+  display: flex !important;
+  pointer-events: none;
+}
+
+/* Agent panel wrapper — smooth width transition */
+.agentPanelWrapper {
+  display: flex;
+  height: 100%;
+  flex-shrink: 0;
+  overflow: hidden;
+  transition: width 380ms cubic-bezier(0.4, 0, 0.25, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leftPanel { transition: none; }
+  .rightPanel { transition: none; }
+  .agentPanelWrapper { transition: none; }
+  .rightPanelEntering, .rightPanelExiting { animation: none; }
+}
+
+/* Back to agent insights link — shown in right panel when navigated from agent */
+.agentBackLink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px 4px 16px;
+  flex-shrink: 0;
+}
+
+.agentBackBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-family-component) !important;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: #0365ac;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.agentBackBtn:hover { text-decoration: underline; }
+
+.agentPopOutBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #5d686f;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.agentPopOutBtn:hover {
+  background: #f0f4f7;
+  color: #21262a;
+}
+
+/* Source document panel header — Prototype A */
+.sourcePanelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 8px 8px 8px;
+  flex-shrink: 0;
+  border-bottom: 1px solid #e8edf0;
+}
+
+.sourcePanelTitle {
+  font-family: var(--font-family-component) !important;
+  font-size: 16px;
+  font-weight: 500;
+  color: #21262a;
+}
+
+/* Issue banner — shown below the panel header, above the tabs */
+.issueBanner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 16px 6px;
+  padding: 10px 14px;
+  border: 1px solid #ff6a00;
+  border-radius: 8px;
+  background: rgba(255, 187, 0, 0.15);
+  flex-shrink: 0;
+}
+
+.issueBannerIcon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: #cc5500;
+}
+
+.issueBannerText {
+  font-family: var(--font-family-component) !important;
+  font-size: 13px;
+  font-weight: 500;
+  color: #393a3d;
+  flex: 1;
+}
+
+.issueBannerPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 6px;
+  background: #ff6a00;
+  color: #fff;
+  font-family: var(--font-family-component) !important;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: none;
+  flex-shrink: 0;
+}
+.issueBannerPill:hover {
+  background: #e05500;
+}

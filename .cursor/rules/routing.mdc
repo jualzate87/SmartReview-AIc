@@ -1,0 +1,183 @@
+---
+description: Multi-page routing architecture for the IDS prototyping environment
+alwaysApply: false
+---
+
+# Routing Architecture
+
+This prototyping environment uses React Router v6 with HashRouter. Pages are accessed via hash URLs (e.g., `http://localhost:5174/#/home`).
+
+## How It Works
+
+- `src/App.tsx` is the router shell — skills manage it, designers don't edit it directly
+- Each page lives in `src/pages/[Name].tsx`
+- Each page has its own stylesheet at `src/styles/[Name].module.css`
+- Routes are defined in `App.tsx` — either in the `APP_PAGES` array (for app pages) or as standalone `<Route>` elements (for shell-level pages like onboarding)
+
+## Two Types of Pages
+
+### Shell Pages (top-level)
+Pages outside the app navigation: `/home`, `/workspace`, `/onboarding`. These are defined as standalone `<Route>` elements in `App.tsx`.
+
+### App Pages (within AppShell navigation)
+Pages accessed through the SubNav sidebar: `/app/accounting/bank-transactions`, `/app/sales-payments/invoices`, etc. These are registered in the `APP_PAGES` array in `App.tsx` and render inside the FusionShell layout.
+
+Any unmatched `/app/*` path renders a `NotFoundPage` placeholder that tells the designer how to create the page.
+
+## Adding a New App Page
+
+When a designer asks to create a page for a SubNav item (e.g., "build the Bank Transactions page"), do all four of these things in order:
+
+1. Create `src/pages/[Name]Page.tsx` — the page component
+2. Create `src/styles/[Name]Page.module.css` — the page stylesheet
+3. Add an import to `App.tsx`: `import [Name]Page from './pages/[Name]Page'`
+4. Add an entry to `APP_PAGES` in `App.tsx`: `{ path: 'section/page-name', component: [Name]Page }`
+
+The `path` value in `APP_PAGES` is relative to `/app/` — so `'accounting/bank-transactions'` maps to the URL `/app/accounting/bank-transactions`.
+
+After creating a page, always tell the designer: "Your new page is at `http://localhost:5174/#/app/[section]/[page-name]`"
+
+### App Page Path Convention
+
+App paths follow the SubNav structure defined in `src/components/FusionShell/SubNav.tsx`:
+
+```
+/app/accounting/bank-transactions
+/app/accounting/chart-of-accounts
+/app/sales-payments/invoices
+/app/expenses-bills/vendors
+/app/customer-hub/customers
+/app/team/employees
+/app/time/time-entries
+/app/projects/projects
+/app/inventory/inventory
+/app/business-tax/overview
+/app/lending/overview
+```
+
+When adding a page, match the link path from SubNav. For example, SubNav defines:
+```ts
+{ name: 'Bank Transactions', link: '/accounting/bank-transactions' }
+```
+The corresponding `APP_PAGES` entry would be:
+```ts
+{ path: 'accounting/bank-transactions', component: BankTransactionsPage }
+```
+
+## Adding a New Shell Page
+
+For pages outside the app navigation (rare — most pages should be app pages):
+
+1. Create `src/pages/[Name]Page.tsx` — the page component
+2. Create `src/styles/[Name]Page.module.css` — the page stylesheet
+3. Add an import to `App.tsx`: `import [Name]Page from './pages/[Name]Page'`
+4. Add a `<Route>` element inside the `<Route element={<AppLayout />}>` block in `App.tsx`
+
+## Page Naming Conventions
+
+- **File names**: PascalCase with "Page" suffix — `BankTransactionsPage.tsx`, `InvoicesPage.tsx`
+- **CSS files**: match the page file — `BankTransactionsPage.module.css`
+- **App paths**: lowercase, hyphenated, matching SubNav — `accounting/bank-transactions`
+- **Labels**: title case, short — `Bank Transactions`, `Invoices`
+
+## CSS Import in Page Files
+
+Each page imports its own module CSS using a relative path from `src/pages/`:
+
+```tsx
+import styles from '../styles/BankTransactionsPage.module.css'
+```
+
+Note the `../styles/` prefix — page files live one level deeper than `src/`.
+
+## App.tsx Structure (AppShell Mode)
+
+```tsx
+// App.tsx — AppShell version with FusionShell layout.
+import { HashRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom'
+import ErrorBoundary from './ErrorBoundary'
+import { FusionProvider } from './contexts/fusion'
+import FusionShell from './components/FusionShell'
+import { FUSION_CONFIG } from './navigation'
+import OnboardingPage from './pages/OnboardingPage'
+import WorkspacePage from './pages/WorkspacePage'
+import HomePage from './pages/HomePage'
+import NotFoundPage from './pages/NotFoundPage'
+import BankTransactionsPage from './pages/BankTransactionsPage'
+
+function AppLayout() {
+  return (
+    <FusionShell businessName={FUSION_CONFIG.businessName}>
+      <Outlet />
+    </FusionShell>
+  )
+}
+
+// APP_PAGES — add new app page routes here (managed by /page skill)
+const APP_PAGES: { path: string; component: React.ComponentType }[] = [
+  { path: 'accounting/bank-transactions', component: BankTransactionsPage },
+]
+
+export default function App() {
+  return (
+    <ErrorBoundary>
+      <HashRouter>
+        <FusionProvider pathPrefix={FUSION_CONFIG.pathPrefix || ''}>
+          <Routes>
+            <Route path="/onboarding" element={<OnboardingPage />} />
+            <Route element={<AppLayout />}>
+              <Route path="/" element={<Navigate to="/home" replace />} />
+              <Route path="/home" element={<HomePage />} />
+              <Route path="/workspace" element={<WorkspacePage />} />
+              {APP_PAGES.map(({ path, component: Page }) => (
+                <Route key={path} path={`/app/${path}`} element={<Page />} />
+              ))}
+              <Route path="/app/*" element={<NotFoundPage />} />
+              <Route path="*" element={<NotFoundPage />} />
+            </Route>
+          </Routes>
+        </FusionProvider>
+      </HashRouter>
+    </ErrorBoundary>
+  )
+}
+```
+
+## Styles Directory
+
+```
+src/styles/
+├── App.module.css          ← Shell-level styles (minimal, for the router shell only)
+├── HomePage.module.css     ← Home page styles
+├── NotFoundPage.module.css ← Not-found placeholder styles
+├── [Name]Page.module.css   ← Per-page styles
+├── index.css               ← Global styles (do not edit)
+├── fonts.css               ← Font imports (do not edit)
+└── intuit.css              ← IDS design tokens (do not edit)
+```
+
+## Navigation Between Pages
+
+The AppShell's SubNav sidebar handles all primary navigation. Clicking a SubNav item navigates to the corresponding `/app/...` path. The SubNav automatically highlights the active section and item based on the current URL.
+
+### Programmatic Navigation
+
+Use `useNavigate` from React Router when you need to navigate from within a page component:
+
+```tsx
+import { useNavigate } from 'react-router-dom'
+
+const navigate = useNavigate()
+navigate('/app/accounting/bank-transactions')
+```
+
+### Hash-Based URLs
+
+Since the app uses HashRouter, all URLs are hash-based: `/#/app/accounting/bank-transactions`. The `path` values in `APP_PAGES` are relative (e.g. `'accounting/bank-transactions'`) and the router handles the `#` prefix automatically.
+
+## Snapshot Awareness
+
+Skills that snapshot the prototype must capture:
+- `src/App.tsx`
+- All files in `src/pages/`
+- All `*.module.css` files in `src/styles/` (excluding `index.css`, `fonts.css`, `intuit.css`)

@@ -1,0 +1,385 @@
+---
+description: Complete guide for using the ProgressBar component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# ProgressBar
+
+⚠️ **Deprecation warning** ⚠️
+
+This component has been deprecated and is no longer maintained. We recommend using the `loader` component instead.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/progress-bar
+```
+
+```tsx
+import { ProgressBar } from '@ids-ts/progress-bar';
+```
+
+## Props
+
+> **Deprecated** — Use the `loader` component instead.
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `value` | `number` | Yes | Current progress value. |
+| `max` | `number` | Yes | Maximum progress value. |
+| `counterElement` | `ReactNode` | No | Custom counter element displayed above the bar. |
+| `isReversed` | `boolean` | No | Reverses the fill direction when true. |
+| `automationId` | `string` | No | Test automation identifier. |
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**action** — Interactive element colors and hover/active/focus states
+- `--color-action-complementary`
+- `--color-action-complementary-active`
+- `--color-action-complementary-border`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+**component** — Component-level spacing (padding, gap)
+- `--space-component-gap-large`
+- `--space-component-gap-medium`
+- `--space-component-gap-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+## Usage Patterns
+
+### Basic
+
+```tsx
+({ value, max }) => (
+  <div style={displayWidthStyle}>
+    <ProgressBar
+      automationId="basicUsage"
+      value={value}
+      max={max}
+      counterElement={
+        <Counter max={max} value={value} automationId="basicCounter" />
+      }
+    />
+  </div>
+)
+```
+
+### Custom Counter
+
+```tsx
+({ value, max }) => {
+  return (
+    <div style={displayWidthStyle}>
+      <ProgressBar
+        automationId="basicUsage"
+        value={value}
+        max={max}
+        counterElement={
+          <div style={{ marginBottom: '8px' }}>Some other form of counter</div>
+        }
+      />
+    </div>
+  );
+}
+```
+
+### Reverse Order
+
+```tsx
+({ value, max }) => {
+  return (
+    <div style={displayWidthStyle}>
+      <ProgressBar isReversed value={value} max={max} />
+    </div>
+  );
+}
+```
+
+### Complete
+
+```tsx
+({ max, p1Value, p2Value, p3Value }) => {
+  return (
+    <div style={displayWidthStyle}>
+      <ProgressBar
+        value={p1Value}
+        max={200}
+        counterElement={<Counter max={max} value={p1Value} />}
+        style={{ marginBottom: '20px' }}
+      />
+      <ProgressBar
+        value={p2Value}
+        max={200}
+        counterElement={<Counter max={max} value={p2Value} />}
+        style={{ marginBottom: '20px' }}
+      />
+      <ProgressBar
+        value={p3Value}
+        max={200}
+        counterElement={<Counter max={max} value={p3Value} />}
+      />
+    </div>
+  );
+}
+```
+
+### Default Properties
+
+```tsx
+({ value }) => {
+  return (
+    <div style={displayWidthStyle}>
+      <ProgressBar value={value} />
+    </div>
+  );
+}
+```
+
+### Persistent
+
+```tsx
+({ value }) => {
+  return (
+    <div style={displayWidthStyle}>
+      <ProgressBar persistent value={value} />
+    </div>
+  );
+}
+```
+
+### Animated
+
+```tsx
+() => {
+  const count = [0, 13, 25, 38, 50, 63, 75, 88, 100];
+  const [flag, setFlag] = useState(false);
+  const [currentValue, setCurrentValue] = useState(count[0]);
+  if (!flag) {
+    count.forEach((element, index) => {
+      if (index !== 0) {
+        setTimeout(() => {
+          setCurrentValue(element);
+        }, 700 * index);
+      }
+    });
+    setFlag(true);
+  }
+
+  return (
+    <div style={displayWidthStyle}>
+      <ProgressBar
+        value={currentValue}
+        counterElement={<Counter max={100} value={currentValue} />}
+      />
+    </div>
+  );
+}
+```
+
+### Themed Example
+
+```tsx
+({ value, max }) => {
+  const labelStyles = { marginBottom: '8px' };
+  const themedStyles = { marginBottom: '40px' };
+
+  return (
+    <div style={displayWidthStyle}>
+      <div style={themedStyles}>
+        <p style={labelStyles}>intuit</p>
+        <ProgressBar
+          value={value}
+          max={max}
+          theme="intuit"
+          data-automation-id="intuitThemed"
+        />
+      </div>
+      <div style={themedStyles}>
+        <p style={labelStyles}>turbotax</p>
+        <ProgressBar
+          value={value}
+          max={max}
+          theme="turbotax"
+          data-automation-id="turbotaxThemed"
+        />
+      </div>
+      <div style={themedStyles}>
+        <p style={labelStyles}>turbo</p>
+        <ProgressBar
+          value={value}
+          max={max}
+          theme="turbo"
+          data-automation-id="turboThemed"
+        />
+      </div>
+      <div style={themedStyles}>
+        <p style={labelStyles}>mint</p>
+        <ProgressBar
+          value={value}
+          max={max}
+          theme="mint"
+          data-automation-id="mintThemed"
+        />
+      </div>
+      <div style={themedStyles}>
+        <p style={labelStyles}>expert</p>
+        <ProgressBar
+          value={value}
+          max={max}
+          theme="expert"
+          data-automation-id="expertThemed"
+        />
+      </div>
+      <div style={themedStyles}>
+        <p style={labelStyles}>quickbooks</p>
+        <ProgressBar
+          value={value}
+          max={max}
+          theme="quickbooks"
+          data-automation-id="quickbooksThemed"
+        />
+      </div>
+      <div style={themedStyles}>
+        <p style={labelStyles}>proconnect</p>
+        <ProgressBar
+          value={value}
+          max={max}
+          theme="proconnect"
+          data-automation-id="proconnectThemed"
+        />
+      </div>
+      <div style={themedStyles}>
+        <p style={labelStyles}>formfly</p>
+        <ProgressBar
+          value={value}
+          max={max}
+          theme="formfly"
+          data-automation-id="formflyThemed"
+        />
+      </div>
+    </div>
+  );
+// ...
+```
+
+### Showcase
+
+```tsx
+() => {
+  return (
+    <>
+      <div style={displayWidthStyle}>
+        <h3>Without Counter</h3>
+        <ProgressBar max={200} value={75} automationId="basicUsage" />
+      </div>
+
+      <div style={displayWidthStyle}>
+        <h3>With Standard Counter</h3>
+        <ProgressBar
+          max={200}
+          value={75}
+          automationId="basicUsage"
+          counterElement={
+            <Counter max={200} value={75} automationId="basicCounter" />
+          }
+        />
+      </div>
+
+      <div style={displayWidthStyle}>
+        <h3>With Custom Counter</h3>
+        <ProgressBar
+          max={200}
+          value={75}
+          automationId="basicUsage"
+          counterElement={
+            <div style={{ marginBottom: '8px' }}>
+              Some other form of counter
+            </div>
+          }
+        />
+      </div>
+
+      <div style={displayWidthStyle}>
+        <h3>Reverse Direction</h3>
+        <ProgressBar
+          isReversed
+          max={200}
+          value={75}
+          automationId="basicUsage"
+          counterElement={
+            <Counter max={200} value={75} automationId="basicCounter" />
+          }
+        />
+      </div>
+
+      <div style={displayWidthStyle}>
+        <h3>Persistent</h3>
+        <ProgressBar
+          persistent
+          max={200}
+          value={200}
+          automationId="basicUsage"
+          counterElement={
+            <Counter max={200} value={200} automationId="basicCounter" />
+          }
+        />
+      </div>
+
+      <div style={displayWidthStyle}>
+        <h3>Complete</h3>
+        <ProgressBar
+          max={200}
+          value={75}
+          automationId="basicUsage"
+          counterElement={
+            <Counter max={200} value={75} automationId="basicCounter" />
+          }
+          style={{ marginBottom: '20px' }}
+        />
+        <ProgressBar
+          max={200}
+          value={150}
+          automationId="basicUsage"
+          counterElement={
+            <Counter max={200} value={150} automationId="basicCounter" />
+          }
+          style={{ marginBottom: '20px' }}
+        />
+// ...
+```
+
+## Accessibility
+
+## Code Example
+
+```tsx
+<Progress shape="bar" value={80} />
+```
+
+---
+
+## References
+
+- [GitHub Source - ProgressBar](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/ProgressBar)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/progress-bar.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-{component})

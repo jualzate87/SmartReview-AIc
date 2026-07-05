@@ -1,0 +1,369 @@
+---
+description: Complete guide for using the SplitButton component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# SplitButton
+
+A IDS split button helps consolidate multiple actions while surfacing the most common action used by customers. It reduces the amount of visual noise, especially for complex use cases like bulk actions for tables. Use it when there are two or more non-primary actions that are needed for the context.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/split-button
+```
+
+```tsx
+import { SplitButton } from '@ids-ts/split-button';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `automationId` | `string` | No | Test automation ID. |
+| `buttonPriority` | `ButtonPriority` | No | - |
+| `buttonPurpose` | `ButtonPurpose` | No | - |
+| `buttonSize` | `ButtonSize` | No | - |
+| `children` | `ReactElement<MenuItemProps> \| ReactElement<MenuItemProps>[]` | No | MenuItem children for the dropdown menu. |
+| `disabled` | `boolean` | No | Disable the actionable item. |
+| `label` | `string` | Yes | Label used to display action choices. |
+| `menuAlignment` | `'right' | 'left'` | No | - |
+| `menuOffsetSkidding` | `number` | No | Cross-axis pixel offset of the dropdown menu. |
+| `menuOffsetDistance` | `number` | No | Main-axis pixel offset of the dropdown menu. |
+| `menuOffsetX` | `number` | No | X-axis pixel offset of the dropdown menu. |
+| `menuOffsetY` | `number` | No | Y-axis pixel offset of the dropdown menu. |
+| `onClick` | `(e: React.MouseEvent<HTMLButtonElement>) => void` | No | Called when the main button is clicked. |
+| `onSelect` | `(e: React.MouseEvent<HTMLElement> \| React.KeyboardEvent) => void` | No | Called when a dropdown action is selected. |
+| `preventMenuOverflow` | `an object variable` | Yes | - |
+| `preventMenuOverflow` | `PreventOverflow` | No | - |
+| `stylePosition` | `React.CSSProperties` | No | The optional styles applied to the position node wrapped around the root node. |
+| `positionDependencies` | `unknown[]` | No | - |
+| `isLoading` | `boolean` | No | * Specifies if the button is isLoading state. Loads a spinner |
+| `loadingComponent` | `JSX.Element` | No | - |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface SplitButtonProps
+  extends Omit<ThemeableElement<'div'>, 'onClick' | 'onSelect'> {
+  /** Test  automation ID. */
+  automationId?: string;
+  /**
+   * Specifies Button priority, 'primary', 'secondary', 'tertiary'
+   *
+   * @default 'primary'
+   */
+  buttonPriority?: ButtonPriority;
+  /**
+   * Specifies Button purpose, 'standard', 'passive', 'complementary', 'ai'
+   *
+   * @default 'standard'
+   */
+  buttonPurpose?: ButtonPurpose;
+  /**
+   * Size of button - size of button small, medium, large
+   *
+   * @default 'medium'
+   */
+  buttonSize?: ButtonSize;
+  /** Consumes menu item(s) to be displayed as additional actions. */
+  children?:
+    | React.ReactElement<MenuItemProps>
+    | React.ReactElement<MenuItemProps>[];
+  /** Disable the actionable item. */
+  disabled?: boolean;
+  /** Label used to display action choices. */
+  label: string;
+  /** */
+  menuAlignment?: 'right' | 'left';
+  /**
+   * menuOffsetSkidding: the cross-axis pixel distance that the popup should be offset from targetElement
+   *
+   * @default 0
+   */
+  menuOffsetSkidding?: number;
+  /**
+   * menuOffsetDistance: the main-axis pixel distance that the popup should be offset from targetElement
+   *
+   * @default 0
+   */
+  menuOffsetDistance?: number;
+  /**
+   * menuOffsetX: the x axis pixel distance that the popup should be offset from targetElement
+   *
+   * @deprecated Please use menuOffsetSkidding instead
+   */
+  menuOffsetX?: number;
+  /**
+   * menuOffsetY: the y axis pixel distance that the popup should be offset from targetElement
+   *
+   * @deprecated Please use menuOffsetDistance instead
+   */
+  menuOffsetY?: number;
+  /** A callback function that is fired when a button has been clicked. */
+  onClick?: (
+    e:
+      | React.MouseEvent<HTMLButtonElement>
+      | React.KeyboardEvent<HTMLButtonElement>
+  ) => void;
+  /** A Callback function that is fired when an action has been selected. */
+  onSelect?: (
+    e: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>
+  ) => void;
+  /**
+   * preventMenuOverflow: an object variable; used to prevent SplitButton Menu from being positioned outside the boundary.
+   * More detail in @ids-ts/position preventOverflow API document.
+   */
+  preventMenuOverflow?: PreventOverflow;
+  /** The optional styles applied to the position node wrapped around the root node. */
+  stylePosition?: React.CSSProperties;
+  /**
+   * Dependencies that will cause the Menu's popperjs instance to recalculate its position, whenever any of the dependencies change.
+   * These dependencies work the same way as the list you would pass into a React useEffect()
+   */
+  positionDependencies?: unknown[];
+
+  /**
+   * Specifies if the button is isLoading state. Loads a spinner
+   */
+  isLoading?: boolean;
+
+  /**
+   * Specify the component to render when isLoading === true
+   * When not specified, will render children no matter the value of isLoading
+   */
+  loadingComponent?: JSX.Element;
+}
+
+export type ButtonPriority = Filter<Priority, 'primary' | 'secondary'>;
+
+export type ButtonPurpose = Filter<
+  Purpose,
+  'standard' | 'passive' | 'complementary' | 'ai'
+>;
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Dark Background
+
+```tsx
+() => (
+  <div
+    style={{
+      backgroundColor: '#393a3d',
+      padding: '20px'
+    }}
+  >
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <SplitButton label="Add trip (Standard styling)">
+        <MenuItem value="View">View trip</MenuItem>
+        <MenuItem value="Cancel">Cancel trip</MenuItem>
+        <MenuItem value="Manage">Manage trip</MenuItem>
+        <MenuItem value="Download">Download itinerary</MenuItem>
+      </SplitButton>
+      <SplitButton
+        label="Add trip (Standard secondary styling)"
+        buttonPriority="secondary"
+      >
+        <MenuItem value="View">View trip</MenuItem>
+        <MenuItem value="Cancel">Cancel trip</MenuItem>
+        <MenuItem value="Manage">Manage trip</MenuItem>
+        <MenuItem value="Download">Download itinerary</MenuItem>
+      </SplitButton>
+      <SplitButton label="Add trip (Passive styling)" buttonPurpose="passive">
+        <MenuItem value="View">View trip</MenuItem>
+        <MenuItem value="Cancel">Cancel trip</MenuItem>
+        <MenuItem value="Manage">Manage trip</MenuItem>
+        <MenuItem value="Download">Download itinerary</MenuItem>
+      </SplitButton>
+      <SplitButton
+        label="Add trip  (Passive secondary styling)"
+        buttonPurpose="passive"
+        buttonPriority="secondary"
+      >
+        <MenuItem value="View">View trip</MenuItem>
+        <MenuItem value="Cancel">Cancel trip</MenuItem>
+        <MenuItem value="Manage">Manage trip</MenuItem>
+        <MenuItem value="Download">Download itinerary</MenuItem>
+      </SplitButton>
+    </div>
+  </div>
+)
+```
+
+### Update Position
+
+```tsx
+() => {
+  const [y, setY] = useState(0);
+
+  useEffect(() => {
+    const timerId = setInterval(() => {
+      setY((oldY) => (oldY + 100) % 600);
+    }, 1500);
+
+    return () => {
+      clearInterval(timerId);
+    };
+  }, []);
+
+  return (
+    <SplitButton
+      label="Add trip (Standard styling)"
+      positionDependencies={[y]}
+      automationId="primaryAction"
+      style={{
+        marginTop: y
+      }}
+      onClick={action('SplitButton clicked')}
+      onSelect={action('MenuItem clicked')}
+    >
+      <MenuItem value="View">View trip</MenuItem>
+      <MenuItem value="Cancel">Cancel trip</MenuItem>
+      <MenuItem value="Manage">Manage trip</MenuItem>
+      <MenuItem value="Download">Download itinerary</MenuItem>
+    </SplitButton>
+  );
+}
+```
+
+### Showcase
+
+```tsx
+() => {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '60px'
+      }}
+    >
+      {PURPOSES.map((purpose) => (
+        <div
+          key={`stack-${purpose}`}
+          className={makeClass(
+            styles.showcase,
+            purpose === 'complementary' && styles.complementaryBackground
+          )}
+        >
+          <h3>{purpose}</h3>
+          <div
+            style={{
+              display: 'flex',
+              gap: '20px'
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '20px',
+                width: '120px'
+              }}
+            >
+              {SIZES.map((size) => (
+                <h4 key={size}>{size}</h4>
+              ))}
+            </div>
+            {PRIORITIES.map((priority) => (
+              <div
+                key={`stack-${purpose}-${priority}`}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  gap: '20px'
+                }}
+              >
+                {SIZES.map((size) => (
+                  <SplitButton
+                    key={`button-${purpose}-${priority}-${size}`}
+                    buttonPurpose={purpose}
+                    buttonPriority={priority}
+                    buttonSize={size}
+                    label={DEFAULT_LABEL}
+                    automationId="primaryAction"
+                    onClick={action('SplitButton clicked')}
+                    onSelect={action('MenuItem clicked')}
+                  >
+                    {Object.keys(MENU_ITEMS).map((key) => (
+                      <MenuItem key={key} value={key}>
+                        {MENU_ITEMS[key as keyof typeof MENU_ITEMS]}
+                      </MenuItem>
+                    ))}
+                  </SplitButton>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+      <div>
+        <h3>With disabled menu items</h3>
+        <SplitButton
+          label={DEFAULT_LABEL}
+          buttonPurpose="standard"
+          automationId="primaryAction"
+          onClick={action('SplitButton clicked')}
+          onSelect={action('MenuItem clicked')}
+        >
+          {Object.keys(MENU_ITEMS).map((key, i) => (
+            <MenuItem key={key} value={key} disabled={i === 0 || i === 2}>
+// ...
+```
+
+## Accessibility
+
+## Composes With
+
+- Loader
+
+---
+
+## References
+
+- [GitHub Source - SplitButton](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/SplitButton)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/split-button.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-button---split-button&theme=quickbooks&colorScheme=light)

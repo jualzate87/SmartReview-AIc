@@ -1,0 +1,745 @@
+---
+description: Complete guide for using the Accordion component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# Accordion
+
+An accordion is a stacked list of items that, when clicked, reveal or hide related sections of content.
+It puts customers in control of showing or hiding content.
+
+It also help them organize information to keep screens less cluttered so that customers can accomplish tasks in short,
+intuitive steps.
+
+This component is one of the best ways to satisfy customers’ needs of control and simplicity,
+which are sometimes conflicting requirements.
+
+It’s also a key component in providing progressive disclosure,
+showing customers just the right amount of content for that screen or step while allowing them to select additional content if they choose to.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/accordion
+```
+
+```tsx
+import {
+  Accordion,
+  AccordionItem,
+  AccordionItemHeader,
+  AccordionItemBody,
+} from '@ids-ts/accordion';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `id` | `string` | No | Element ID |
+| `ref` | `RefObject<HTMLDivElement>` | No | Accordion Item ref object |
+| `Parameters` | `* It will be called with a json object as a par...` | Yes | - |
+| `onChange` | `(infoObject?: OnChangeInfoType) => void` | No | - |
+| `children` | `React.ReactElement | React.ReactElement[]` | No | Array of <AccordionItem /> |
+| `index` | `number` | Yes | index of AccordionItem |
+| `id` | `string` | No | id: string, to identify the AccordionItem |
+| `expanded` | `boolean` | Yes | expanded: bool, indicating whether the item is expanded or collapsed |
+| `allowMultipleExpanded` | `boolean` | No | Allow multiple accordion sections to be expanded at the same time |
+| `allowZeroExpanded` | `boolean` | No | - |
+| `chevronPosition` | `'left' | 'right' | 'split'` | No | Prop to specify if chevron position is to the left, right or split |
+| `className` | `string` | No | className prop to allow customizing the style for Accordion |
+| `isCardTypeContainer` | `boolean` | No | Flag to indicate if Accordion container is card type. |
+| `stackingType` | `'list' | 'row'` | No | - |
+| `size` | `'x-small' | 'small' | 'medium' | 'large' | 'x-l...` | No | size of accordion. size value would be applied to both chevron icon and title of accordion |
+| `signifierLabel` | `string` | No | * Signifier label is additional text control for AccordionItem header. |
+| `signifierLabelAlignment` | `'left' | 'center' | 'right'` | No | * Alignment for signifierLabel. Supported values are left, right, center. |
+| `useSignifierLinkAsBlue` | `boolean` | No | - |
+| `variant` | `'text' | 'standard' | 'card'` | No | Predefined variants and they can be text or card |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface AccordionProps
+  extends AccordionContextProps,
+    Omit<ThemeableElement<'section'>, 'onChange'> {
+  /** Element ID */
+  id?: string;
+  /** Accordion Item ref object */
+  ref?: RefObject<HTMLDivElement>;
+  /**
+   * Change listener callback function
+   * It will be called when an AccordionItem is expanded/collapsed
+   *
+   * Function Parameters:
+   * It will be called with a json object as a parameter with following properties
+   * - index: number, to identify the AccordionItem
+   * - id: string, to identify the AccordionItem
+   * - expanded: bool, indicating whether the item is expanded or collapsed. NOTE: the boolean
+   *   value is the negation of the actual expanded state (i.e. false when the item is expanded).
+   *   This is intentionally left unfixed because it would cause substantial impact
+   *
+   * props.onChange({ index, id, expanded });
+   */
+  onChange?: (infoObject?: OnChangeInfoType) => void;
+  /** Array of <AccordionItem /> */
+  children?: React.ReactElement | React.ReactElement[];
+}
+
+export type OnChangeInfoType = {
+  /** index of AccordionItem */
+  index: number;
+  /** id: string, to identify the AccordionItem */
+  id?: string;
+  /** expanded: bool, indicating whether the item is expanded or collapsed */
+  expanded: boolean;
+}
+
+export interface AccordionContextProps {
+  /** Allow multiple accordion sections to be expanded at the same time */
+  allowMultipleExpanded?: boolean;
+  /**
+   * Allows all sections to be collapsed.
+   * Default value is false, which will enforce at least one section to be expanded.
+   */
+  allowZeroExpanded?: boolean;
+  /** Prop to specify if chevron position is to the left, right or split */
+  chevronPosition?: 'left' | 'right' | 'split';
+  /** className prop to allow customizing the style for Accordion */
+  className?: string;
+  /** Flag to indicate if Accordion container is card type. */
+  isCardTypeContainer?: boolean;
+  /**
+   * Accordion items can be stacked as row or list.
+   * This prop would help cascade that information.
+   */
+  stackingType?: 'list' | 'row';
+  /** size of accordion. size value would be applied to both chevron icon and title of accordion */
+  size?: 'x-small' | 'small' | 'medium' | 'large' | 'x-large';
+  /**
+   * Signifier label is additional text control for AccordionItem header.
+   */
+  signifierLabel?: string;
+  /**
+   * Alignment for signifierLabel. Supported values are left, right, center.
+   */
+  signifierLabelAlignment?: 'left' | 'center' | 'right';
+  /**
+   * Accordion needs to support blue color variant for signifierLabel along with grey.
+   * This flag would allow it to be specified.
+   */
+  useSignifierLinkAsBlue?: boolean;
+  /** Predefined variants and they can be text or card */
+  variant?: 'text' | 'standard' | 'card';
+}
+```
+
+</details>
+
+## Sub-Components
+
+### AccordionItem
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `children` | `React.ReactElement | React.ReactElement[]` | Yes | - |
+| `className` | `string` | No | className prop to allow customizing the style for AccordionItem |
+| `disabled` | `boolean` | No | Enable/Disable AccordionItem |
+| `defaultExpanded` | `boolean` | No | Expand/Collapse AccordionItem by default |
+| `expanded` | `boolean` | No | Flag to indicate if an item is expanded |
+| `id` | `string` | No | Element ID |
+| `index` | `number` | No | - |
+| `ref` | `RefObject<HTMLDivElement>` | No | AccordionItem ref object |
+| `sectionDivider` | `boolean` | No | Flag to indicate if accordion items should add section divider. |
+| `Property` | `remove the labeled regions from the DOM.
+   * U...` | Yes | - |
+
+<details>
+<summary>Full AccordionItem TypeScript Interface</summary>
+
+```typescript
+export interface AccordionItemProps extends ThemeableElement<'section'> {
+  /**
+   * It should only have two child components
+   * - AccordionItemHeader
+   * - AccordionItemBody
+   */
+  children: React.ReactElement | React.ReactElement[];
+  /** className prop to allow customizing the style for AccordionItem */
+  className?: string;
+  /** Enable/Disable AccordionItem */
+  disabled?: boolean;
+  /** Expand/Collapse AccordionItem by default */
+  defaultExpanded?: boolean;
+  /** Flag to indicate if an item is expanded */
+  expanded?: boolean;
+  /** Element ID */
+  id?: string;
+  /**
+   * Index number of item in AccordionItem array
+   *
+   * @default 0
+   */
+  index?: number;
+  /** AccordionItem ref object */
+  ref?: RefObject<HTMLDivElement>;
+  /** Flag to indicate if accordion items should add section divider. */
+  sectionDivider?: boolean;
+  /**
+   * Accessibility Property: remove the labeled regions from the DOM.
+   * Use this prop if your accordion has more than 6 panels and allowMultipleExpanded.
+   * Do NOT use this prop if you are using nested accordions.
+   */
+  removeRegion?: boolean;
+}
+```
+
+</details>
+
+### AccordionItemHeader
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `ariaDisabled` | `boolean` | No | aria attribute for disabled item |
+| `ariaControls` | `string` | No | aria attribute for matching the expanded item |
+| `children` | `React.ReactNode` | No | custom elements |
+| `className` | `string` | No | className prop to allow customizing the style for AccordionItem |
+| `disabled` | `boolean` | No | flag to indicate if an item is disabled |
+| `expanded` | `boolean` | No | flag to indicate if an item is expanded |
+| `id` | `string` | No | Element ID |
+| `index` | `number` | No | index number of Item in AccordionItem array |
+| `sectionTitle` | `string` | No | AccordionItem sectionTitle for header |
+
+<details>
+<summary>Full AccordionItemHeader TypeScript Interface</summary>
+
+```typescript
+export interface AccordionItemHeaderProps extends ThemeableElement<'div'> {
+  /** aria attribute for disabled item */
+  ariaDisabled?: boolean;
+  /** aria attribute for matching the expanded item */
+  ariaControls?: string;
+  /** custom elements */
+  children?: React.ReactNode;
+  /** className prop to allow customizing the style for AccordionItem */
+  className?: string;
+  /** flag to indicate if an item is disabled */
+  disabled?: boolean;
+  /** flag to indicate if an item is expanded */
+  expanded?: boolean;
+  /** Element ID */
+  id?: string;
+  /** index number of Item in AccordionItem array */
+  index?: number;
+  /** AccordionItem sectionTitle for header */
+  sectionTitle?: string;
+}
+```
+
+</details>
+
+### AccordionItemBody
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `ariaLabelledby` | `string` | No | aria attribute |
+| `children` | `React.ReactNode` | Yes | custom elements |
+| `className` | `string` | No | className prop to allow customizing the style for AccordionItem |
+| `expanded` | `boolean` | No | Flag to indicate if an accordion item is expanded |
+| `id` | `string` | No | Element ID |
+
+<details>
+<summary>Full AccordionItemBody TypeScript Interface</summary>
+
+```typescript
+export interface AccordionItemBodyProps extends ThemeableElement<'section'> {
+  /** aria attribute */
+  ariaLabelledby?: string;
+  /** custom elements */
+  children: React.ReactNode;
+  /** className prop to allow customizing the style for AccordionItem */
+  className?: string;
+  /** Flag to indicate if an accordion item is expanded */
+  expanded?: boolean;
+  /** Element ID */
+  id?: string;
+}
+```
+
+</details>
+
+## Design Variants
+
+The following variant axes control the component's visual appearance:
+
+### Size → use prop `size`
+
+- `X-Small` **(default)**
+- `Small`
+- `Medium`
+- `Large`
+- `X-Large`
+
+### Expanded → use prop `expanded`
+
+- `True`
+- `False` **(default)**
+
+### Chevron → use prop `chevronPosition`
+
+- `Left` **(default)**
+- `Right`
+- `Split`
+
+### Blue signifier
+
+- `False` **(default)**
+- `True`
+
+### Additional Design Controls
+
+| Control | Type | Default | Description |
+| --- | --- | --- | --- |
+| Signifier label | text | Signifier | * Signifier label is additional text control for AccordionItem header. |
+| Title | text | Accordion | - |
+| Signifier | boolean | true | * Signifier label is additional text control for AccordionItem header. |
+| Left Icon | boolean | false | - |
+| ↳ Icon | instance_swap | 132354:9710 | - |
+
+> **40 design variants** are defined in Figma. [View in Figma](https://www.figma.com/design/VO8rsMYDqsDY44J9yEVyES9Y?node-id=71875%3A23731&m=dev)
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+**icon** — Icon fill and stroke colors
+- `--color-icon-accent`
+- `--color-icon-complementary`
+- `--color-icon-disabled`
+
+**divider** — Divider and separator line colors
+- `--color-divider-inverse`
+- `--color-divider-primary`
+- `--color-divider-secondary`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+**component** — Spacing around dividers
+- `--space-component-gap-large`
+- `--space-component-gap-medium`
+- `--space-component-gap-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+### Size
+
+**icon** — Standard icon dimensions
+
+## Usage Patterns
+
+### Showcase
+
+```tsx
+() => (
+  <>
+    <H3>Accordion styled as Text with Section title only</H3>
+    <Accordion allowZeroExpanded chevronPosition="left" variant="text">
+      <AccordionItem>
+        <AccordionItemHeader sectionTitle="Learn about aria-braillelabel" />
+        <AccordionItemBody>
+          <B2>
+            The global aria-braillelabel property defines a string value that
+            labels the current element, which is intended to be converted into
+            Braille. The global aria-braillelabel attribute is similar to the
+            global aria-label in that it defines a string value that labels the
+            current element. While aria-label is read by the screen reader, the
+            contents of the aria-braillelabel attribute are converted into
+            Braille; providing the user with a recognizable name of the object
+            in braille.
+          </B2>
+        </AccordionItemBody>
+      </AccordionItem>
+      <AccordionItem>
+        <AccordionItemHeader sectionTitle="Learn about aria-brailleroledescription" />
+        <AccordionItemBody>
+          <B2>
+            The global aria-brailleroledescription attribute defines a
+            human-readable, author-localized abbreviated description for the
+            role of an element intended to be converted into Braille. Braille is
+            not a one-to-one transliteration of letters and numbers, but rather
+            it includes various abbreviations, contractions, and characters that
+            represent words (known as logograms).
+          </B2>
+        </AccordionItemBody>
+      </AccordionItem>
+    </Accordion>
+    <br />
+
+    <H3>
+      Accordion styled as text within the card container with Section title only
+    </H3>
+    <Accordion
+      allowZeroExpanded
+      isCardTypeContainer
+      chevronPosition="right"
+      variant="text"
+    >
+      <AccordionItem>
+        <AccordionItemHeader sectionTitle="Learn about aria-busy" />
+        <AccordionItemBody>
+          <B2>
+            Used in ARIA live regions, the global aria-busy state indicates an
+            element is being modified and that assistive technologies may want
+            to wait until the changes are complete before informing the user
+            about the update. When multiple parts of a live region need to be
+            loaded before changes are announced to the user, set
+            aria-busy=&quot;true&quot; until loading is complete. Then set to
+            aria-busy=&quot;false&quot;. This prevents assistive technologies
+            from announcing changes before updates are done.
+          </B2>
+        </AccordionItemBody>
+      </AccordionItem>
+      <AccordionItem>
+        <AccordionItemHeader sectionTitle="Learn about aria-checked" />
+        <AccordionItemBody>
+          <B2>
+            The aria-checked attribute indicates the current &quot;checked&quot;
+            state of checkboxes, radio buttons, and other widgets. Note: Where
+            possible use an HTML &lt;input&gt; element with
+            type=&quot;checkbox&quot; and type=&quot;radio&quot; as these have
+            built in semantics and do not require ARIA attributes.
+          </B2>
+        </AccordionItemBody>
+      </AccordionItem>
+    </Accordion>
+    <br />
+
+    <H3>Accordion styled as Text with Signifier label only</H3>
+    <Accordion
+      allowZeroExpanded
+      chevronPosition="left"
+      signifierLabel="Using only a signifierLabel is not accessible"
+      signifierLabelAlignment="left"
+// ...
+```
+
+### basic
+
+```tsx
+() => (
+  <Accordion allowZeroExpanded variant="text">
+    <AccordionItem>
+      <AccordionItemHeader sectionTitle="Learn about aria-describedby" />
+      <AccordionItemBody>
+        <B2>
+          The global aria-describedby attribute identifies the element (or
+          elements) that describes the element on which the attribute is set.
+          The aria-describedby attribute lists the ids of the elements that
+          describe the object. It is used to establish a relationship between
+          widgets or groups and the text that describes them.
+        </B2>
+      </AccordionItemBody>
+    </AccordionItem>
+  </Accordion>
+)
+```
+
+### Basic Long
+
+```tsx
+() => (
+  <Accordion variant="text">
+    <AccordionItem>
+      <AccordionItemHeader sectionTitle="Example with 7 children to demonstrate best practices for long items" />
+      <AccordionItemBody>
+        <B2>
+          It is best practice to remove the role=&quot;region&quot; and the
+          aria-labelledby when you have too many items.
+        </B2>
+      </AccordionItemBody>
+    </AccordionItem>
+    <AccordionItem>
+      <AccordionItemHeader sectionTitle="accordion titles" />
+      <AccordionItemBody>
+        <B2>
+          The title of each accordion header is contained in an element with
+          role button.
+        </B2>
+      </AccordionItemBody>
+    </AccordionItem>
+    <AccordionItem>
+      <AccordionItemHeader sectionTitle="accordion headers" />
+      <AccordionItemBody>
+        <ul>
+          <li>
+            <B2>
+              Each accordion header button is wrapped in an element with role
+              heading that has a value set for aria-level that is appropriate
+              for the information architecture of the page.
+            </B2>
+          </li>
+          <li>
+            <B2>
+              If the native host language has an element with an implicit
+              heading and aria-level, such as an HTML heading tag, a native host
+              language element may be used.
+            </B2>
+          </li>
+          <li>
+            <B2>
+              The button element is the only element inside the heading element.
+              That is, if there are other visually persistent elements, they are
+              not included inside the heading element.
+            </B2>
+          </li>
+        </ul>
+      </AccordionItemBody>
+    </AccordionItem>
+    <AccordionItem>
+      <AccordionItemHeader sectionTitle="accordion panels" />
+      <AccordionItemBody>
+        <B2>
+          If the accordion panel associated with an accordion header is visible,
+          the header button element has aria-expanded set to true. If the panel
+          is not visible, aria-expanded is set to false.
+        </B2>
+      </AccordionItemBody>
+    </AccordionItem>
+    <AccordionItem>
+      <AccordionItemHeader sectionTitle="accordion header buttons" />
+      <AccordionItemBody>
+        <B2>
+          The accordion header button element has aria-controls set to the ID of
+          the element containing the accordion panel content.
+        </B2>
+      </AccordionItemBody>
+    </AccordionItem>
+    <AccordionItem>
+      <AccordionItemHeader sectionTitle="accordion panels associated with headers" />
+      <AccordionItemBody>
+        <B2>
+          If the accordion panel associated with an accordion header is visible,
+          and if the accordion does not permit the panel to be collapsed, the
+          header button element has aria-disabled set to true.
+        </B2>
+      </AccordionItemBody>
+    </AccordionItem>
+    <AccordionItem>
+      <AccordionItemHeader sectionTitle="accordion body containers for long examples" />
+      <AccordionItemBody>
+// ...
+```
+
+### With Card Container
+
+```tsx
+() => (
+  <Accordion allowZeroExpanded isCardTypeContainer variant="text">
+    <AccordionItem>
+      <AccordionItemHeader sectionTitle="First section should have rounded corners at the top" />
+      <AccordionItemBody>
+        <B2>Some content</B2>
+      </AccordionItemBody>
+    </AccordionItem>
+    <AccordionItem>
+      <AccordionItemHeader sectionTitle="Middle section should have sharp corners" />
+      <AccordionItemBody>
+        <B2>Some content</B2>
+      </AccordionItemBody>
+    </AccordionItem>
+    <AccordionItem>
+      <AccordionItemHeader sectionTitle="Last section should have rounded corners at the bottom" />
+      <AccordionItemBody>
+        <B2>Some content</B2>
+      </AccordionItemBody>
+    </AccordionItem>
+  </Accordion>
+)
+```
+
+### Controlled Accordion Item State
+
+```tsx
+() => {
+  const [expanded, setExpanded] = useState(false);
+  const toggleExpanded = () => setExpanded(!expanded);
+  const handleChange = (e: OnChangeInfoType | undefined) => {
+    if (e?.expanded !== undefined) setExpanded(e.expanded);
+  };
+
+  return (
+    <>
+      <Button aria-expanded={expanded} onClick={toggleExpanded}>
+        Learn about aria-multiline
+      </Button>
+      <br />
+      <Accordion allowZeroExpanded variant="text" onChange={handleChange}>
+        <AccordionItem expanded={expanded}>
+          <AccordionItemHeader>Learn about aria-multiline</AccordionItemHeader>
+          <AccordionItemBody>
+            <H3>aria-multiline</H3>
+            <B2>
+              The aria-multiline attribute indicates whether a textbox accepts
+              multiple lines of input or only a single line.
+            </B2>
+            <H3>Description</H3>
+            <B2>
+              The default behavior of the Enter or Return key differs between
+              single-line and multi-line text fields. When user focus is in a
+              single-line &lt;input type=&quot;text&quot;&gt;, an Enter or
+              Return keystroke usually submits the form.
+            </B2>
+          </AccordionItemBody>
+        </AccordionItem>
+      </Accordion>
+    </>
+  );
+}
+```
+
+### Add Accordions Example
+
+```tsx
+() => {
+  const [expanded, setExpanded] = useState(false);
+  const [accordion, setAccordion] = useState([
+    <AccordionItem key={0}>
+      <AccordionItemHeader>Accordion Item 0</AccordionItemHeader>
+      <AccordionItemBody>Accordion Item 0</AccordionItemBody>
+    </AccordionItem>
+  ]);
+  const handleChange = (e: OnChangeInfoType | undefined) => {
+    if (e?.expanded !== undefined) setExpanded(e.expanded);
+  };
+
+  const handleAddToTop = () => {
+    setAccordion([
+      <AccordionItem key={accordion.length}>
+        <AccordionItemHeader>{`Accordion Item ${accordion.length}`}</AccordionItemHeader>
+        <AccordionItemBody>{`Accordion Item ${accordion.length}`}</AccordionItemBody>
+      </AccordionItem>,
+      ...accordion
+    ]);
+  };
+
+  const handleAddToBottom = () => {
+    setAccordion([
+      ...accordion,
+      <AccordionItem key={accordion.length}>
+        <AccordionItemHeader>{`Accordion Item ${accordion.length}`}</AccordionItemHeader>
+        <AccordionItemBody>{`Accordion Item ${accordion.length}`}</AccordionItemBody>
+      </AccordionItem>
+    ]);
+  };
+
+  return (
+    <>
+      <Button aria-expanded={expanded} onClick={handleAddToTop}>
+        Add Accordion to top
+      </Button>
+      <Button aria-expanded={expanded} onClick={handleAddToBottom}>
+        Add Accordion to bottom
+      </Button>
+      <br />
+      <Accordion
+        allowZeroExpanded
+        allowMultipleExpanded
+        variant="text"
+        onChange={handleChange}
+      >
+        {accordion.map((accordionItem) => {
+          return accordionItem;
+        })}
+      </Accordion>
+    </>
+  );
+}
+```
+
+## Guidelines
+
+**Use when:**
+- Organizing related information.
+- Shortening pages and reducing scrolling when content is lower priority, or not crucial to read or view in full.
+
+**Do not use when:**
+- Hiding high priority information or error messages that require an immediate action or attention.
+
+
+## Accessibility
+
+### Keyboard Navigation
+
+- Pressing `Tab or ArrowKeys` will navigate though different Accordion items while displaying a focus ring.
+- Pressing `Enter or SpaceBar` while focusing on an AccordionItem, would expand or collapse the item.
+- If an AccordionItem contains any other interactive components, then pressing `Tab` after expanding the item, the focus would be on the interactive component.
+
+### Screen Reader
+
+Accordion is built as single target area and would announce `role, state, value and label`.
+
+## Code Example
+
+```tsx
+const ItemExample = ({ title, body, ...props }) => (
+  <AccordionItem {...props}>
+    <AccordionItemHeader sectionTitle={title} />
+    <AccordionItemBody>{body}</AccordionItemBody>
+  </AccordionItem>
+);
+
+const AccordionExample = () => {
+  const arr = [
+    { title: 'title1', body: 'body1' },
+    { title: 'title2', body: 'body2' }
+  ];
+  const items = arr.map(({ title, body }) => (
+    <ItemExample key={`key-${title}`} title={title} body={body} />
+  ));
+
+  return <Accordion variant="standard">{items}</Accordion>;
+};
+```
+
+## Composes With
+
+- Typography
+- Link
+- Button
+
+---
+
+## References
+
+- [GitHub Source - Accordion](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/Accordion)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/accordion.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-accordion&theme=quickbooks&colorScheme=light)
+- [Figma Design](https://www.figma.com/design/VO8rsMYDqsDY44J9yEVyES9Y?node-id=71875%3A23731&m=dev)

@@ -1,0 +1,86 @@
+/* Document preview — fills parent container, scrollable with zoom */
+.container {
+  background: var(--color-container-background-primary, #ffffff);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+  border-bottom: 1px solid #adbac2;
+}
+
+/* Scrollable image area */
+.imageArea {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 10px;
+  min-height: 0;
+  background: #ffffff;
+}
+
+.documentImage {
+  border: 1px solid #000000;
+  display: block;
+  /* intrinsic size — zoom is controlled by wrapper width, image fills wrapper */
+  width: 100%;
+  height: auto;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+}
+
+/* Zoom toolbar — same pattern as LeftPanel1040 */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 45px;
+  padding: 4px 10px;
+  background: #e2e9ed;
+  flex-shrink: 0;
+}
+
+.toolbarControls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.zoomLevel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #21262a;
+  border-radius: 4px;
+  padding: 0 8px;
+  height: 24px;
+  font-family: var(--font-family-component) !important;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 16px;
+  color: #21262a;
+  white-space: nowrap;
+  min-width: 44px;
+}
+
+.toolbarBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #21262a;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  width: 24px;
+  height: 24px;
+}
+
+.toolbarBtn:hover {
+  opacity: 0.7;
+}
+
+.toolbarBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}

@@ -1,0 +1,92 @@
+---
+description: Complete guide for using the Loader component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# Loader
+
+Loading indicators communicate to the user that a time-consuming operation, roughly one second or longer, is taking place.
+
+IDS Loader supports the following States: Progress circle, Progress bar, Activity spinner
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/loader
+```
+
+```tsx
+import { Loader } from '@ids-ts/loader';
+```
+
+## Props
+
+### Activity (Spinner)
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `shape` | `'dots' \| 'bar'` | No | Visual style of the loader. |
+| `size` | `'small' \| 'medium' \| 'large'` | No | Size of the loader indicator. |
+| `automationId` | `string` | No | Test automation identifier. |
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+The following usage patterns are documented in Storybook:
+
+- **Playground**
+
+### Features
+
+- **Bar**
+- **Dots**
+
+## Code Example
+
+```tsx
+<Activity shape="dots" size="small" />
+<Activity shape="bar" size="large" />
+```
+
+---
+
+## References
+
+- [GitHub Source - Loader](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/Loader)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/loader.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-{component})

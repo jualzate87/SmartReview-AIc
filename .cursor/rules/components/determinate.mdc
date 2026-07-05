@@ -1,0 +1,265 @@
+---
+description: Complete guide for using the Determinate component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# Determinate
+
+⚠️ **Deprecation warning** ⚠️
+
+This component has been deprecated and is no longer maintained. We recommend using the `loader` component instead.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/determinate
+```
+
+```tsx
+import { Determinate, DeterminateLong, DeterminateShort } from '@ids-ts/determinate';
+```
+
+## Sub-Components
+
+### DeterminateLong
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `automationId` | `string` | No | This prop is used for testing purposes |
+| `checkRounded` | `boolean` | No | If determinate and ending with checkmark, true if checkmark should be rounded. |
+| `checkStrokeWidth` | `number` | No | If determinate and ending with checkmark, stroke width for checkmark. |
+| `endWithCheckmark` | `boolean` | No | End with a checkmark. Only for determinate types. |
+| `endWithFill` | `boolean` | No | End by filling the spinner circle. Only for determinate types. |
+| `progress` | `number` | No | Current percentage of the progress bar that is filled. |
+| `size` | `number` | Yes | Height and width of the spinner: 24 - 64 (px). |
+
+<details>
+<summary>Full DeterminateLong TypeScript Interface</summary>
+
+```typescript
+export type DeterminateLongProps = ThemeableElement<'div'> & LongPropTypes;
+
+export type LongPropTypes = Omit<ShortPropTypes, 'size'>;
+
+export type ShortPropTypes = {
+  /** This prop is used for testing purposes */
+  automationId?: string;
+  /** If determinate and ending with checkmark, true if checkmark should be rounded. */
+  checkRounded?: boolean;
+  /** If determinate and ending with checkmark, stroke width for checkmark. */
+  checkStrokeWidth?: number;
+  /** End with a checkmark. Only for determinate types. */
+  endWithCheckmark?: boolean;
+  /** End by filling the spinner circle. Only for determinate types. */
+  endWithFill?: boolean;
+  /** Current percentage of the progress bar that is filled. */
+  progress?: number;
+  /** Height and width of the spinner: 24 - 64 (px). */
+  size: number;
+}
+```
+
+</details>
+
+### DeterminateShort
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `automationId` | `string` | No | This prop is used for testing purposes |
+| `checkRounded` | `boolean` | No | If determinate and ending with checkmark, true if checkmark should be rounded. |
+| `checkStrokeWidth` | `number` | No | If determinate and ending with checkmark, stroke width for checkmark. |
+| `endWithCheckmark` | `boolean` | No | End with a checkmark. Only for determinate types. |
+| `endWithFill` | `boolean` | No | End by filling the spinner circle. Only for determinate types. |
+| `progress` | `number` | No | Current percentage of the progress bar that is filled. |
+| `size` | `number` | Yes | Height and width of the spinner: 24 - 64 (px). |
+
+<details>
+<summary>Full DeterminateShort TypeScript Interface</summary>
+
+```typescript
+export type DeterminateShortProps = ThemeableElement<'svg'> & ShortPropTypes;
+
+export type ShortPropTypes = {
+  /** This prop is used for testing purposes */
+  automationId?: string;
+  /** If determinate and ending with checkmark, true if checkmark should be rounded. */
+  checkRounded?: boolean;
+  /** If determinate and ending with checkmark, stroke width for checkmark. */
+  checkStrokeWidth?: number;
+  /** End with a checkmark. Only for determinate types. */
+  endWithCheckmark?: boolean;
+  /** End by filling the spinner circle. Only for determinate types. */
+  endWithFill?: boolean;
+  /** Current percentage of the progress bar that is filled. */
+  progress?: number;
+  /** Height and width of the spinner: 24 - 64 (px). */
+  size: number;
+}
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Playground
+
+```tsx
+({
+  checkRounded,
+  checkStrokeWidth,
+  endWithCheckmark,
+  endWithFill,
+  size,
+  spinnerType
+}) => {
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    if (progress === 0) {
+      increase(progress, 8, setProgress);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleClick = () => {
+    if (progress >= 100) {
+      increase(-8, 8, setProgress);
+    } else {
+      action('Button Clicked. Spinner still in progress, please wait.')();
+    }
+  };
+
+  return spinnerType === 'DeterminateLong' ? (
+    <>
+      <DeterminateLong
+        progress={progress}
+        aria-label="A basic DeterminateLong"
+        endWithFill={endWithFill}
+        endWithCheckmark={endWithCheckmark}
+        checkRounded={checkRounded}
+        checkStrokeWidth={checkStrokeWidth}
+        tabIndex={0}
+        data-testid="longIntuitBasic"
+      />
+      <Button onClick={handleClick}>Restart</Button>
+    </>
+  ) : (
+    <DeterminateShort
+      progress={progress}
+      size={size}
+      aria-label="A basic DeterminateLong"
+      endWithFill={endWithFill}
+      endWithCheckmark={endWithCheckmark}
+      checkRounded={checkRounded}
+      checkStrokeWidth={checkStrokeWidth}
+      tabIndex={0}
+      data-testid="shortIntuitBasic"
+    />
+  );
+}
+```
+
+### Showcase
+
+```tsx
+() => {
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    if (progress === 0) {
+      increase(progress, 8, setProgress);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleClick = () => {
+    if (progress >= 100) {
+      increase(-8, 8, setProgress);
+    } else {
+      action('Button Clicked. Spinner still in progress, please wait.')();
+    }
+  };
+
+  return (
+    <>
+      <div>
+        <h3>Determinate Long Spinner</h3>
+        <DeterminateLong
+          progress={progress}
+          aria-label="A basic DeterminateLong"
+          checkStrokeWidth={20}
+          tabIndex={0}
+          data-testid="longIntuitBasic"
+        />
+      </div>
+      <div>
+        <h3>Determinate Short Spinner</h3>
+        <DeterminateShort
+          progress={progress}
+          size={64}
+          aria-label="A basic DeterminateLong"
+          checkStrokeWidth={20}
+          tabIndex={0}
+          data-testid="shortIntuitBasic"
+        />
+      </div>
+      <Button onClick={handleClick}>Restart</Button>
+    </>
+  );
+}
+```
+
+## Accessibility
+
+## Code Example
+
+```tsx
+<Progress shape="circle" value={80} size="small" />
+```
+
+## Composes With
+
+- Button
+
+---
+
+## References
+
+- [GitHub Source - Determinate](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/Determinate)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-loader---progress&theme=quickbooks&colorScheme=light)

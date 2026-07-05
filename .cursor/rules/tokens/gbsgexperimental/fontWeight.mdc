@@ -1,0 +1,37 @@
+---
+description: Intuit Design System - FontWeight Token Library - Complete primitive and semantic fontWeight tokens
+globs: ["src/**/*.{ts,tsx,js,jsx,scss,css}"]
+alwaysApply: true
+---
+
+# Intuit Design System - FontWeight Token Library
+
+## Primitive FontWeight Tokens (DO NOT USE DIRECTLY IN PLUGINS)
+
+- `--font-weight-100`: 100
+- `--font-weight-200`: 200
+- `--font-weight-300`: 300
+- `--font-weight-400`: 400
+- `--font-weight-500`: 500
+- `--font-weight-600`: 600
+- `--font-weight-700`: 700
+- `--font-weight-800`: 800
+- `--font-weight-900`: 900
+
+## Semantic FontWeight Tokens (USE THESE IN PLUGINS)
+
+### Weight
+- `--font-weight-body`: --font-weight-400 /* For body text styles (paragraph text). Do not use these in atom sized UI components instead use font-component tokens. */
+- `--font-weight-body-bold`: --font-weight-600 /* For inline bolding, emphasis or adding visual hierarchy to body text styles (paragraph text) */
+- `--font-weight-body-semibold`: --font-weight-500 /* Optional weight for adding emphasis or visual hierarchy to body text styles (paragraph text) */
+- `--font-weight-component`: --font-weight-400 /* For component text styles */
+- `--font-weight-component-bold`: --font-weight-600 /* For inline bolding, emphasis, or adding visual hierarchy to component text styles */
+- `--font-weight-component-semibold`: --font-weight-500 /* Optional weight for adding emphasis or visual hierarchy to component text styles */
+- `--font-weight-display`: --font-weight-500 /* For display text styles */
+- `--font-weight-display-bold`: --font-weight-700 /* For inline bolding of display text styles */
+- `--font-weight-heading`: --font-weight-500 /* For heading text styles */
+- `--font-weight-heading-bold`: --font-weight-700 /* For inline bolding of heading text styles */
+- `--font-weight-input-label`: --font-weight-400 /* For input label text styles */
+- `--font-weight-input-text`: --font-weight-400 /* For input text styles */
+- `--font-weight-mega`: --font-weight-400 /* For mega text styles */
+- `--font-weight-mega-bold`: --font-weight-500 /* For inline bolding of mega text styles */

@@ -1,0 +1,39 @@
+.root {
+  padding: 24px;
+}
+
+.item {
+  text-decoration: none;
+  color: var(--color-text-primary);
+  background-color: transparent;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  display: flex;
+  border-radius: 4px;
+  align-items: center;
+  font-size: var(--font-size-body-3);
+  font-family: var(--font-family-body);
+  gap: 8px;
+}
+
+.sectionTitle {
+  color: var(--color-text-secondary);
+  text-indent: 8px;
+  width: 180px;
+}
+
+.item:hover {
+  background-color: var(--color-action-passive-subtle-hover);
+}
+
+.item:active {
+  background-color: var(--color-action-passive-subtle-active);
+}
+
+.item:focus {
+  background-color: var(--color-action-passive-subtle-focus);
+  outline: 0;
+}

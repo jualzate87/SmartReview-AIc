@@ -1,0 +1,192 @@
+/* Check Return Page — Screen 33 — exact Figma values */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--page\/background\/secondary, #f0f4f6);
+  font-family: var(--font-family-component) !important;
+  overflow: hidden;
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  background: var(--page\/background\/secondary, #f0f4f6);
+}
+
+/* Content area: left nav + main, with padding matching Figma 20px */
+.contentArea {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  padding: 20px;
+  gap: 20px;
+  background: var(--page\/background\/secondary, #f0f4f6);
+}
+
+/* ── Left Check Navigation ── */
+/* Figma: white bg items, border #c3ced5, category 44px */
+.leftNav {
+  width: 283px;
+  min-width: 283px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  height: fit-content;
+}
+
+/* Category item — white bg, border-top+left+right #c3ced5, 14px Demi */
+.navCategory {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 10px;
+  background: var(--page\/background\/primary, #ffffff);
+  border-top: 1px solid #c3ced5;
+  border-left: 1px solid #c3ced5;
+  border-right: 1px solid #c3ced5;
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+}
+.navCategory:hover {
+  background: #f0f4f6;
+}
+
+.navCategoryLast {
+  border-bottom: 1px solid #c3ced5;
+}
+
+.navCategoryLabel {
+  font-family: var(--font-family-component) !important;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--text\/primary, #21262a);
+  white-space: nowrap;
+}
+
+/* Secondary item — bg #f0f4f6, pl: 32px */
+.navSecondary {
+  display: flex;
+  align-items: center;
+  padding: 12px 10px 12px 32px;
+  background: var(--container\/background\/secondary, #f0f4f6);
+  width: 100%;
+  cursor: pointer;
+}
+.navSecondary:hover {
+  background: #e2e9ed;
+}
+
+/* Active secondary — bg #e2e9ed, border-left: 4px solid #205ea3 */
+.navSecondaryActive {
+  background: #e2e9ed;
+  border-left: 4px solid #205ea3;
+  padding-left: 28px; /* 32px - 4px border */
+}
+
+.navSecondaryLabel {
+  font-family: var(--font-family-component) !important;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--text\/primary, #21262a);
+  white-space: nowrap;
+}
+
+/* ── Main content ── */
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  min-width: 0;
+}
+
+/* Title — 20px Medium #21262a */
+.sectionTitle {
+  font-family: var(--font-family-component) !important;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 28px;
+  color: #21262a;
+  margin: 0;
+}
+
+/* Table container — border: 1px solid #c3ced5, border-radius: 16px, padding: 16px */
+.tableContainer {
+  background: #ffffff;
+  border: 1px solid #c3ced5;
+  border-radius: 16px;
+  padding: 16px;
+  overflow: hidden;
+}
+
+/* Table row — border-bottom: 1px solid #d5dee3 */
+.tableRow {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #d5dee3;
+  padding: 0;
+}
+
+.tableRowHeader {
+  border-bottom: 1px solid #d5dee3;
+}
+
+.tableRowLast {
+  border-bottom: none;
+}
+
+/* Columns — label takes 352px (from Figma), values flex:1 */
+.colLabel {
+  width: 352px;
+  min-width: 352px;
+  padding: 8px;
+  font-family: var(--font-family-component) !important;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #21262a;
+}
+
+.colValue {
+  flex: 1;
+  padding: 8px;
+  font-family: var(--font-family-component) !important;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #21262a;
+}
+
+.colDemi {
+  font-weight: 600;
+}
+
+.colAction {
+  width: 44px;
+  min-width: 44px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.expandBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  color: #393a3d;
+  display: flex;
+  align-items: center;
+}
+.expandBtn:hover {
+  background: rgba(226, 233, 237, 0.6);
+}

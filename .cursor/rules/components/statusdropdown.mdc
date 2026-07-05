@@ -1,0 +1,466 @@
+---
+description: Complete guide for using the StatusDropdown component — props, variants, design properties, accessibility, and usage patterns
+globs:
+alwaysApply: false
+---
+
+# StatusDropdown
+
+Welcome to my `StatusDropdown` component.
+
+## Installation & Import
+
+```bash
+yarn add @ids-ts/status-dropdown
+```
+
+```tsx
+import { StatusDropdown } from '@ids-ts/status-dropdown';
+```
+
+## Props API
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactElement<MenuItemProps> \| ReactElement<MenuItemProps>[]` | Yes | MenuItem children for the dropdown. |
+| `label` | `string` | Yes | Required label to be placed on the StatusDropdown as the label |
+| `status` | `Status` | Yes | Required status to be placed on the StatusDropdown as the status |
+| `preventMenuOverflow` | `an object variable` | Yes | - |
+| `preventMenuOverflow` | `PreventOverflow` | No | - |
+| `onSelect` | `(event: ReactStatusDropdownEvent) => void` | No | Function which will be called when a menu item is selected |
+| `menuPositionStyle` | `React.CSSProperties` | No | The optional styles applied to the position node wrapped around the root node. |
+| `size` | `'standard' \| 'mini'` | No | Size variant. Defaults to `'standard'`. |
+| `warningText` | `string` | No | warning message to be rendered. |
+| `validationWarning` | `boolean` | No | validation warning displays only warning styles without text |
+| `disabled` | `boolean` | No | whether the component should be disabled or not |
+
+<details>
+<summary>Full TypeScript Interface</summary>
+
+```typescript
+export interface StatusDropdownProps
+  extends Omit<ThemeableElement<'div'>, 'onSelect'> {
+  /** Children of Menu or MenuItems */
+  children:
+    | React.ReactElement<MenuItemProps>
+    | React.ReactElement<MenuItemProps>[];
+  /** Required label to be placed on the StatusDropdown as the label */
+  label: string;
+  /** Required status to be placed on the StatusDropdown as the status */
+  status: Status;
+  /**
+   * preventMenuOverflow: an object variable; used to prevent StatusDropdown Menu from being positioned outside the boundary.
+   * More detail in @ids-ts/position preventOverflow API document.
+   */
+  preventMenuOverflow?: PreventOverflow;
+  /** Function which will be called when a menu item is selected */
+  onSelect?: (event: ReactStatusDropdownEvent) => void;
+  /** The optional styles applied to the position node wrapped around the root node. */
+  menuPositionStyle?: React.CSSProperties;
+  /**
+   * variation in size: standard or mini
+   *
+   * @default 'standard'
+   */
+  size?: StatusDropdownSize;
+  /** warning message to be rendered. */
+  warningText?: string;
+  /** validation warning displays only warning styles without text */
+  validationWarning?: boolean;
+  /** whether the component should be disabled or not */
+  disabled?: boolean;
+}
+
+export enum Status {
+  toDo = 'toDo',
+  inProgress = 'inProgress',
+  waiting = 'waiting',
+  error = 'error',
+  success = 'success',
+  warning = 'warning'
+}
+
+export type ReactStatusDropdownEvent = React.KeyboardEvent | React.MouseEvent;
+
+export type StatusDropdownSize = 'mini' | 'standard';
+```
+
+</details>
+
+## Token Usage
+
+### Color
+
+**container** — Container background, border, and surface colors
+- `--color-container-background-accent`
+- `--color-container-background-accent-active`
+- `--color-container-background-accent-focus`
+
+**text** — Primary and secondary text colors
+- `--color-text-accent`
+- `--color-text-complementary`
+- `--color-text-disabled`
+
+### Space
+
+**container** — Container padding and internal spacing
+- `--space-container-padding-large`
+- `--space-container-padding-medium`
+- `--space-container-padding-small`
+
+### Radius
+
+**radius** — Border radius for container corners
+- `--radius-0`
+- `--radius-10`
+- `--radius-20`
+
+### Font
+
+**font** — Font family, size, weight, and line height
+- `--font-size-12`
+- `--font-size-14`
+- `--font-size-16`
+
+## Usage Patterns
+
+### Basic Usage
+
+```tsx
+() => {
+  const [status, setStatus] = useState(Status.toDo);
+  const [label, setLabel] = useState('To do');
+
+  useEffect(() => {
+    if (status) {
+      setStatus(status);
+    }
+  }, [status]);
+
+  const handleSelect = (event: ReactStatusDropdownEvent) => {
+    const { value } = event.target as HTMLInputElement;
+    const { label: selectedLabel, status: selectedStatus } = JSON.parse(value);
+    setLabel(selectedLabel);
+    setStatus(selectedStatus);
+    action(`firing from onSelect in playground: ${value}`)();
+  };
+
+  const options = [
+    { label: 'To do', status: Status.toDo },
+    { label: 'In progress', status: Status.inProgress },
+    { label: 'Waiting', status: Status.waiting },
+    { label: 'Blocked', status: Status.error },
+    { label: 'Done', status: Status.success },
+    { label: 'Overdue', status: Status.warning }
+  ];
+  const menuItems = getMenuItems(options, 6);
+
+  return (
+    <StatusDropdown label={label} status={status} onSelect={handleSelect}>
+      {menuItems}
+    </StatusDropdown>
+  );
+}
+```
+
+### Standard
+
+```tsx
+() => {
+  const [status, setStatus] = useState(Status.inProgress);
+  const [label, setLabel] = useState('In progress');
+
+  useEffect(() => {
+    if (status) {
+      setStatus(status);
+    }
+  }, [status]);
+
+  const handleSelect = (event: ReactStatusDropdownEvent) => {
+    const { value } = event.target as HTMLInputElement;
+    const { label: selectedLabel, status: selectedStatus } = JSON.parse(value);
+    setLabel(selectedLabel);
+    setStatus(selectedStatus);
+    action(`firing from onSelect in playground: ${value}`)();
+  };
+
+  const options = [
+    { label: 'To do', status: Status.toDo },
+    { label: 'In progress', status: Status.inProgress },
+    { label: 'Waiting', status: Status.waiting },
+    { label: 'Blocked', status: Status.error },
+    { label: 'Done', status: Status.success },
+    { label: 'Overdue', status: Status.warning }
+  ];
+  const menuItems = getMenuItems(options, 6);
+
+  return (
+    <StatusDropdown
+      size="standard"
+      label={label}
+      status={status}
+      onSelect={handleSelect}
+    >
+      {menuItems}
+    </StatusDropdown>
+  );
+}
+```
+
+### Mini
+
+```tsx
+() => {
+  const [status, setStatus] = useState(Status.error);
+  const [label, setLabel] = useState('Blocked');
+
+  useEffect(() => {
+    if (status) {
+      setStatus(status);
+    }
+  }, [status]);
+
+  const handleSelect = (event: ReactStatusDropdownEvent) => {
+    const { value } = event.target as HTMLInputElement;
+    const { label: selectedLabel, status: selectedStatus } = JSON.parse(value);
+    setLabel(selectedLabel);
+    setStatus(selectedStatus);
+    action(`firing from onSelect in playground: ${value}`)();
+  };
+
+  const options = [
+    { label: 'To do', status: Status.toDo },
+    { label: 'In progress', status: Status.inProgress },
+    { label: 'Waiting', status: Status.waiting },
+    { label: 'Blocked', status: Status.error },
+    { label: 'Done', status: Status.success },
+    { label: 'Overdue', status: Status.warning }
+  ];
+  const menuItems = getMenuItems(options, 6);
+
+  return (
+    <StatusDropdown
+      size="mini"
+      label={label}
+      status={status}
+      onSelect={handleSelect}
+    >
+      {menuItems}
+    </StatusDropdown>
+  );
+}
+```
+
+### Disabled
+
+```tsx
+() => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [status, setStatus] = useState(Status.inProgress);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [label, setLabel] = useState('In progress');
+
+  const options = [
+    { label: 'To do', status: Status.toDo },
+    { label: 'In progress', status: Status.inProgress },
+    { label: 'Waiting', status: Status.waiting },
+    { label: 'Blocked', status: Status.error },
+    { label: 'Done', status: Status.success },
+    { label: 'Overdue', status: Status.warning }
+  ];
+  const menuItems = getMenuItems(options, 6);
+
+  return (
+    <StatusDropdown disabled label={label} status={status}>
+      {menuItems}
+    </StatusDropdown>
+  );
+}
+```
+
+### With Warning Text
+
+```tsx
+() => {
+  const [status, setStatus] = useState(Status.error);
+  const [label, setLabel] = useState('Blocked');
+
+  useEffect(() => {
+    if (status) {
+      setStatus(status);
+    }
+  }, [status]);
+
+  const handleSelect = (event: ReactStatusDropdownEvent) => {
+    const { value } = event.target as HTMLInputElement;
+    const { label: selectedLabel, status: selectedStatus } = JSON.parse(value);
+    setLabel(selectedLabel);
+    setStatus(selectedStatus);
+    action(`firing from onSelect in playground: ${value}`)();
+  };
+
+  const options = [
+    { label: 'To do', status: Status.toDo },
+    { label: 'In progress', status: Status.inProgress },
+    { label: 'Waiting', status: Status.waiting },
+    { label: 'Blocked', status: Status.error },
+    { label: 'Done', status: Status.success },
+    { label: 'Overdue', status: Status.warning }
+  ];
+  const menuItems = getMenuItems(options, 6);
+
+  return (
+    <StatusDropdown
+      warningText="Couldn't update. Try again."
+      label={label}
+      status={status}
+      onSelect={handleSelect}
+    >
+      {menuItems}
+    </StatusDropdown>
+  );
+}
+```
+
+### With Warning State
+
+```tsx
+() => {
+  const [status, setStatus] = useState(Status.error);
+  const [label, setLabel] = useState('Blocked');
+
+  useEffect(() => {
+    if (status) {
+      setStatus(status);
+    }
+  }, [status]);
+
+  const handleSelect = (event: ReactStatusDropdownEvent) => {
+    const { value } = event.target as HTMLInputElement;
+    const { label: selectedLabel, status: selectedStatus } = JSON.parse(value);
+    setLabel(selectedLabel);
+    setStatus(selectedStatus);
+    action(`firing from onSelect in playground: ${value}`)();
+  };
+
+  const options = [
+    { label: 'To do', status: Status.toDo },
+    { label: 'In progress', status: Status.inProgress },
+    { label: 'Waiting', status: Status.waiting },
+    { label: 'Blocked', status: Status.error },
+    { label: 'Done', status: Status.success },
+    { label: 'Overdue', status: Status.warning }
+  ];
+  const menuItems = getMenuItems(options, 6);
+
+  return (
+    <StatusDropdown
+      validationWarning
+      size="standard"
+      label={label}
+      status={status}
+      onSelect={handleSelect}
+    >
+      {menuItems}
+    </StatusDropdown>
+  );
+}
+```
+
+### With Translations
+
+```tsx
+() => {
+  const [status, setStatus] = useState(Status.toDo);
+  const [label, setLabel] = useState('Faire');
+
+  useEffect(() => {
+    if (status) {
+      setStatus(status);
+    }
+  }, [status]);
+
+  const handleSelect = (event: ReactStatusDropdownEvent) => {
+    const { value } = event.target as HTMLInputElement;
+    const { label: selectedLabel, status: selectedStatus } = JSON.parse(value);
+    setLabel(selectedLabel);
+    setStatus(selectedStatus);
+    action(`firing from onSelect in playground: ${value}`)();
+  };
+
+  const options = [
+    { label: 'Faire', status: Status.toDo },
+    { label: 'En cours', status: Status.inProgress },
+    { label: 'En attendant', status: Status.waiting },
+    { label: 'Bloqué', status: Status.error },
+    { label: 'Fait', status: Status.success },
+    { label: 'En retard', status: Status.warning }
+  ];
+  const menuItems = getMenuItems(options, 6);
+
+  return (
+    <StatusDropdown label={label} status={status} onSelect={handleSelect}>
+      {menuItems}
+    </StatusDropdown>
+  );
+}
+```
+
+### Playground
+
+```tsx
+({ status, label, size }) => {
+  const [labelState, setLabelState] = useState('');
+  const [statusState, setStatusState] = useState(status);
+
+  useEffect(() => {
+    if (status) {
+      setStatusState(status);
+    }
+  }, [status]);
+
+  useEffect(() => {
+    if (label) {
+      setLabelState(label);
+    }
+  }, [label]);
+
+  const handleSelect = (event: ReactStatusDropdownEvent) => {
+    const { value } = event.target as HTMLInputElement;
+    const { label: selectedLabel, status: selectedStatus } = JSON.parse(value);
+    setLabelState(selectedLabel);
+    setStatusState(selectedStatus);
+    action(`firing from onSelect in playground: ${value}`)();
+  };
+
+  const options = [
+    { label: 'To do', status: Status.toDo },
+    { label: 'In progress', status: Status.inProgress },
+    { label: 'Waiting', status: Status.waiting },
+    { label: 'Blocked', status: Status.error },
+    { label: 'Done', status: Status.success },
+    { label: 'Overdue', status: Status.warning }
+  ];
+
+  const menuItems = getMenuItems(options, 5);
+
+  return (
+    <StatusDropdown
+      size={size}
+      label={labelState || label}
+      status={statusState || status}
+      onSelect={handleSelect}
+    >
+      {menuItems}
+    </StatusDropdown>
+  );
+}
+```
+
+---
+
+## References
+
+- [GitHub Source - StatusDropdown](https://github.intuit.com/design-systems/ids-web.git/tree/main/components/StatusDropdown)
+- [Component Documentation](https://devportal.intuit.com/app/dp/capability/332/capabilityDocs/main/docs/component-docs/status-dropdown.md)
+- [Component Storybook](https://uxfabric.intuitcdn.net/internal/design-systems/ids-web/main/latest/index.html?path=/docs/components-status-dropdown&theme=quickbooks&colorScheme=light)
