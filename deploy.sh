@@ -31,21 +31,31 @@ echo "==> Building with GitHub Pages base path"
 GITHUB_ACTIONS=true npx vite build
 
 echo "==> Publishing dist/ to gh-pages"
-git worktree add -f /tmp/gh-pages-deploy gh-pages 2>/dev/null || {
+REPO_ROOT="$(pwd)"
+WORKTREE_DIR="$(mktemp -d "${TMPDIR:-/tmp}/smartreview-protoc-gh-pages.XXXXXX")"
+cleanup() {
+  git worktree remove --force "$WORKTREE_DIR" 2>/dev/null || true
+  rm -rf "$WORKTREE_DIR"
+}
+trap cleanup EXIT
+
+# mktemp already created WORKTREE_DIR, but `git worktree add` requires the
+# target path not to exist yet.
+rmdir "$WORKTREE_DIR"
+
+git worktree add -f "$WORKTREE_DIR" gh-pages 2>/dev/null || {
   # gh-pages branch doesn't exist yet — create it as an orphan in the worktree
-  git worktree add -f --detach /tmp/gh-pages-deploy
-  (cd /tmp/gh-pages-deploy && git checkout --orphan gh-pages && git rm -rf . >/dev/null)
+  git worktree add -f --detach "$WORKTREE_DIR"
+  (cd "$WORKTREE_DIR" && git checkout --orphan gh-pages && git rm -rf . >/dev/null)
 }
 
-rm -rf /tmp/gh-pages-deploy/*
-cp -r dist/* /tmp/gh-pages-deploy/
-cd /tmp/gh-pages-deploy
+find "$WORKTREE_DIR" -mindepth 1 -maxdepth 1 -not -name '.git' -exec rm -rf {} +
+cp -r "$REPO_ROOT/dist/." "$WORKTREE_DIR/"
+cd "$WORKTREE_DIR"
 git add -A
 git commit -m "Deploy $(date -u +%Y-%m-%dT%H:%M:%SZ)" --allow-empty
 git push origin gh-pages --force
-cd -
-
-git worktree remove /tmp/gh-pages-deploy --force
+cd "$REPO_ROOT"
 
 echo "==> Done. Site will be live at https://jualzate87.github.io/SmartReview-AIc/"
 echo "    (first deploy: confirm Pages source = gh-pages branch in repo settings)"
