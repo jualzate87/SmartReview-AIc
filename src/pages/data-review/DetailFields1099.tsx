@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { CircleCheck, Comment } from '@design-systems/icons'
 import Tooltip from './Tooltip'
 import styles from '../../styles/data-review/DetailFields.module.css'
 
@@ -49,14 +51,20 @@ interface DetailFields1099Props {
   onMarkReviewed?: (field: string) => void
   onMarkReviewedBulk?: (fields: string[]) => void
   reviewedFields?: Map<string, { by: string; at: string }>
+  onAddFieldNote?: (text: string, context: string) => void
 }
 
-export default function DetailFields1099({ selectedField, highlightMode = 'blue', onFieldSelect, fieldValues, onFieldValueChange, onMarkReviewed, onMarkReviewedBulk, reviewedFields }: DetailFields1099Props) {
+export default function DetailFields1099({ selectedField, highlightMode = 'blue', fieldValues, onFieldValueChange, onMarkReviewed, reviewedFields, onAddFieldNote }: DetailFields1099Props) {
   const highlightedRef = useRef<HTMLDivElement>(null)
   const [editingField, setEditingField] = useState<string | null>(null)
   const [draftValue, setDraftValue] = useState('')
   const [savedField, setSavedField] = useState<string | null>(null)
   const [editedFields, setEditedFields] = useState<Set<string>>(new Set())
+  // Field key whose comment popover is currently open + its anchor position (fixed)
+  const [commentField, setCommentField] = useState<string | null>(null)
+  const [commentDraft, setCommentDraft] = useState('')
+  const [commentAnchor, setCommentAnchor] = useState<{ top: number; right: number } | null>(null)
+  const commentRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (selectedField && highlightedRef.current) {
@@ -64,13 +72,10 @@ export default function DetailFields1099({ selectedField, highlightMode = 'blue'
     }
   }, [selectedField])
 
-  const [originalValue, setOriginalValue] = useState('')
-
   const startEdit = (field: string, currentValue: string) => {
     const clean = currentValue.replace(/,/g, '')
     setEditingField(field)
     setDraftValue(clean)
-    setOriginalValue(clean)
   }
 
   const commitEdit = (field: 'taxableInterest') => {
@@ -82,7 +87,109 @@ export default function DetailFields1099({ selectedField, highlightMode = 'blue'
     setTimeout(() => setSavedField(null), 3500)
   }
 
-  const cancelEdit = () => { setEditingField(null); setDraftValue(''); setOriginalValue('') }
+  const cancelEdit = () => { setEditingField(null); setDraftValue('') }
+
+  // Close popover on outside click
+  useEffect(() => {
+    if (!commentField) return
+    const onDown = (e: MouseEvent) => {
+      if (commentRef.current && !commentRef.current.contains(e.target as Node)) {
+        setCommentField(null)
+        setCommentDraft('')
+        setCommentAnchor(null)
+      }
+    }
+    document.addEventListener('mousedown', onDown)
+    return () => document.removeEventListener('mousedown', onDown)
+  }, [commentField])
+
+  const openComment = (fieldKey: string, btn: HTMLElement) => {
+    const row = btn.closest('[class*="fieldRow"]') as HTMLElement | null
+    const target = row ?? btn
+    const rect = target.getBoundingClientRect()
+    setCommentAnchor({ top: rect.top, right: 8 })
+    setCommentField(fieldKey)
+    setCommentDraft('')
+  }
+
+  const postComment = (context: string) => {
+    if (!commentDraft.trim()) return
+    onAddFieldNote?.(commentDraft.trim(), context)
+    setCommentField(null)
+    setCommentDraft('')
+    setCommentAnchor(null)
+  }
+
+  const renderCommentBtn = (fieldKey: string, label: string) => {
+    const context = `1099-INT · ${label}`
+    const isOpen = commentField === fieldKey
+    return (
+      <>
+        <Tooltip text="Add a comment" placement="top"><button
+          className={`${styles.commentBtn} ${isOpen ? styles.commentBtnActive : ''}`}
+          aria-label={`Add comment for ${label}`}
+          onClick={e => { e.stopPropagation(); isOpen ? (setCommentField(null), setCommentDraft(''), setCommentAnchor(null)) : openComment(fieldKey, e.currentTarget) }}
+        >
+          <Comment size="small" />
+        </button></Tooltip>
+        {isOpen && commentAnchor && createPortal(
+          <div
+            className={styles.commentPopover}
+            style={{ top: commentAnchor.top - 4, right: commentAnchor.right, transform: 'translateY(-100%)' }}
+            ref={commentRef}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className={styles.commentPopoverContext}>
+              <span className={styles.commentPopoverChip}>{context}</span>
+            </div>
+            <textarea
+              autoFocus
+              className={styles.commentPopoverInput}
+              placeholder="Add a comment…"
+              value={commentDraft}
+              onChange={e => setCommentDraft(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) postComment(context) }}
+              rows={3}
+            />
+            <div className={styles.commentPopoverActions}>
+              <button className={styles.commentPopoverCancel} onClick={e => { e.stopPropagation(); setCommentField(null); setCommentDraft(''); setCommentAnchor(null) }}>Cancel</button>
+              <button
+                className={`${styles.commentPopoverPost} ${commentDraft.trim() ? styles.commentPopoverPostActive : ''}`}
+                disabled={!commentDraft.trim()}
+                onClick={e => { e.stopPropagation(); postComment(context) }}
+              >
+                Post
+              </button>
+            </div>
+          </div>,
+          document.body
+        )}
+      </>
+    )
+  }
+
+  // Read-only row with hover-revealed Mark as correct + Comment (no Edit — payer/recipient
+  // identity fields and most boxes here aren't calculated 1040 inputs)
+  const renderReadOnlyRow = (fieldKey: string, label: string, value: string, inputClass = styles.fieldInputSmall, placeholder?: string) => {
+    const isReviewed = reviewedFields?.has(fieldKey)
+    const isCommentOpen = commentField === fieldKey
+    return (
+      <div className={`${styles.fieldRow} ${isCommentOpen ? styles.fieldRowCommentOpen : ''}`}>
+        <span className={styles.fieldLabel}>{label}</span>
+        <input className={`${styles.fieldInput} ${inputClass}`} readOnly value={value} placeholder={placeholder} />
+        {isReviewed ? (
+          <Tooltip text="Click to unmark" placement="top">
+            <button className={styles.reviewedBadge} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'inline-flex', alignItems: 'center' }} onClick={e => { e.stopPropagation(); onMarkReviewed?.(fieldKey) }}><CircleCheck size="small" /></button>
+          </Tooltip>
+        ) : (
+          <div className={styles.fieldActions}>
+            <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.(fieldKey) }}><CircleCheck size="small" /></button></Tooltip>
+            {renderCommentBtn(fieldKey, label)}
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className={styles.container}>
@@ -98,18 +205,9 @@ export default function DetailFields1099({ selectedField, highlightMode = 'blue'
           Payer Information (MANDATORY for e-file)
         </div>
 
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldLabel}>(a) Payer's federal ID number (EIN)</span>
-          <input className={`${styles.fieldInput} ${styles.fieldInputSmall}`} readOnly value={PAYER_DATA.ein} />
-        </div>
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldLabel}>(b) Payer's name</span>
-          <input className={`${styles.fieldInput} ${styles.fieldInputWide}`} readOnly value={PAYER_DATA.name} />
-        </div>
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldLabel}>Street address</span>
-          <input className={`${styles.fieldInput} ${styles.fieldInputWide}`} readOnly value={PAYER_DATA.street} />
-        </div>
+        {renderReadOnlyRow('payerEin', "(a) Payer's federal ID number (EIN)", PAYER_DATA.ein)}
+        {renderReadOnlyRow('payerName', "(b) Payer's name", PAYER_DATA.name, styles.fieldInputWide)}
+        {renderReadOnlyRow('payerStreet', 'Street address', PAYER_DATA.street, styles.fieldInputWide)}
         <div className={styles.fieldRow}>
           <span className={styles.fieldLabel}>City / State / ZIP code</span>
           <div className={styles.addressRow}>
@@ -117,27 +215,25 @@ export default function DetailFields1099({ selectedField, highlightMode = 'blue'
             <input className={`${styles.fieldInput} ${styles.addressState}`} readOnly value={PAYER_DATA.state} />
             <input className={`${styles.fieldInput} ${styles.addressZip}`} readOnly value={PAYER_DATA.zip} />
           </div>
+          {reviewedFields?.has('payerAddress') ? (
+            <Tooltip text="Click to unmark" placement="top">
+              <button className={styles.reviewedBadge} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'inline-flex', alignItems: 'center' }} onClick={e => { e.stopPropagation(); onMarkReviewed?.('payerAddress') }}><CircleCheck size="small" /></button>
+            </Tooltip>
+          ) : (
+            <div className={styles.fieldActions}>
+              <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.('payerAddress') }}><CircleCheck size="small" /></button></Tooltip>
+              {renderCommentBtn('payerAddress', 'City / State / ZIP code')}
+            </div>
+          )}
         </div>
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldLabel}>Payer's telephone number</span>
-          <input className={`${styles.fieldInput} ${styles.fieldInputSmall}`} readOnly value={PAYER_DATA.payerPhone} />
-        </div>
+        {renderReadOnlyRow('payerPhone', "Payer's telephone number", PAYER_DATA.payerPhone)}
 
         {/* ── Recipient Information ── */}
         <div className={styles.sectionHeader}>Recipient Information</div>
 
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldLabel}>(c) Recipient's SSN or ITIN</span>
-          <input className={`${styles.fieldInput} ${styles.fieldInputSmall}`} readOnly value={RECIPIENT_DATA.ssn} />
-        </div>
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldLabel}>(d) Recipient's name</span>
-          <input className={`${styles.fieldInput} ${styles.fieldInputWide}`} readOnly value={RECIPIENT_DATA.name} />
-        </div>
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldLabel}>Street address</span>
-          <input className={`${styles.fieldInput} ${styles.fieldInputWide}`} readOnly value={RECIPIENT_DATA.street} />
-        </div>
+        {renderReadOnlyRow('recipientSsn', "(c) Recipient's SSN or ITIN", RECIPIENT_DATA.ssn)}
+        {renderReadOnlyRow('recipientName', "(d) Recipient's name", RECIPIENT_DATA.name, styles.fieldInputWide)}
+        {renderReadOnlyRow('recipientStreet', 'Street address', RECIPIENT_DATA.street, styles.fieldInputWide)}
         <div className={styles.fieldRow}>
           <span className={styles.fieldLabel}>City / State / ZIP code</span>
           <div className={styles.addressRow}>
@@ -145,6 +241,16 @@ export default function DetailFields1099({ selectedField, highlightMode = 'blue'
             <input className={`${styles.fieldInput} ${styles.addressState}`} readOnly value={RECIPIENT_DATA.state} />
             <input className={`${styles.fieldInput} ${styles.addressZip}`} readOnly value={RECIPIENT_DATA.zip} />
           </div>
+          {reviewedFields?.has('recipientAddress') ? (
+            <Tooltip text="Click to unmark" placement="top">
+              <button className={styles.reviewedBadge} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'inline-flex', alignItems: 'center' }} onClick={e => { e.stopPropagation(); onMarkReviewed?.('recipientAddress') }}><CircleCheck size="small" /></button>
+            </Tooltip>
+          ) : (
+            <div className={styles.fieldActions}>
+              <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.('recipientAddress') }}><CircleCheck size="small" /></button></Tooltip>
+              {renderCommentBtn('recipientAddress', 'City / State / ZIP code')}
+            </div>
+          )}
         </div>
 
         {/* ── Interest Income ── */}
@@ -152,9 +258,7 @@ export default function DetailFields1099({ selectedField, highlightMode = 'blue'
 
         <div
           ref={selectedField === 'taxableInterest' ? highlightedRef : undefined}
-          className={`${styles.fieldRow} ${selectedField === 'taxableInterest' ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''}`}
-          onClick={() => onFieldSelect?.('taxableInterest')}
-          style={{ cursor: 'pointer' }}
+          className={`${styles.fieldRow} ${selectedField === 'taxableInterest' ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''} ${commentField === 'taxableInterest' ? styles.fieldRowCommentOpen : ''}`}
         >
           <span className={styles.fieldLabel}>(1) Interest income</span>
           <input
@@ -164,82 +268,43 @@ export default function DetailFields1099({ selectedField, highlightMode = 'blue'
             onChange={e => setDraftValue(e.target.value)}
             autoFocus={editingField === 'taxableInterest'}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitEdit('taxableInterest') } if (e.key === 'Escape') cancelEdit() }}
-            onClick={e => e.stopPropagation()}
           />
-          {selectedField === 'taxableInterest' && editingField !== 'taxableInterest' && !reviewedFields?.has('taxableInterest') && (
-            <>
-              <button className={styles.editBtn} onClick={e => { e.stopPropagation(); startEdit('taxableInterest', fieldValues?.taxableInterest?.toString() ?? FORM_DATA.box1_interest) }}>Edit</button>
-              <button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.('taxableInterest'); onFieldSelect?.('taxableInterest') }}>Mark as correct</button>
-            </>
-          )}
-          {selectedField === 'taxableInterest' && editingField !== 'taxableInterest' && reviewedFields?.has('taxableInterest') && (
-            <span className={styles.reviewedBadge}>✓ Reviewed</span>
-          )}
-          {editingField === 'taxableInterest' && (
-            <div className={styles.editActions} onClick={e => e.stopPropagation()}>
+          {editingField === 'taxableInterest' ? (
+            <div className={styles.editActions}>
               <button className={styles.saveBtn} onClick={() => commitEdit('taxableInterest')}>Save</button>
               <button className={styles.undoBtn} onClick={cancelEdit}>Undo</button>
+            </div>
+          ) : reviewedFields?.has('taxableInterest') ? (
+            <Tooltip text="Click to unmark" placement="top">
+              <button className={styles.reviewedBadge} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'inline-flex', alignItems: 'center' }} onClick={e => { e.stopPropagation(); onMarkReviewed?.('taxableInterest') }}><CircleCheck size="small" /></button>
+            </Tooltip>
+          ) : (
+            <div className={styles.fieldActions}>
+              <Tooltip text="Edit value" placement="top"><button className={styles.editBtn} onClick={e => { e.stopPropagation(); startEdit('taxableInterest', fieldValues?.taxableInterest?.toString() ?? FORM_DATA.box1_interest) }}>Edit</button></Tooltip>
+              <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.('taxableInterest') }}><CircleCheck size="small" /></button></Tooltip>
+              {renderCommentBtn('taxableInterest', '(1) Interest income')}
             </div>
           )}
           {savedField === 'taxableInterest' && <span className={styles.recalcBadge}>1040 updated</span>}
           {editedFields.has('taxableInterest') && savedField !== 'taxableInterest' && <span className={styles.editedBadge}>Edited</span>}
         </div>
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldLabel}>(2) Early withdrawal penalty</span>
-          <input className={`${styles.fieldInput} ${styles.fieldInputSmall}`} readOnly value={FORM_DATA.box2_earlyPenalty} />
-        </div>
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldLabel}>(3) Interest on U.S. Savings Bonds &amp; T-bills</span>
-          <input className={`${styles.fieldInput} ${styles.fieldInputSmall}`} readOnly value={FORM_DATA.box3_usBonds} />
-        </div>
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldLabel}>(4) Federal income tax withheld</span>
-          <input className={`${styles.fieldInput} ${styles.fieldInputSmall}`} readOnly value={FORM_DATA.box4_fedTaxWithheld} />
-        </div>
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldLabel}>(5) Investment expenses</span>
-          <input className={`${styles.fieldInput} ${styles.fieldInputSmall}`} readOnly value={FORM_DATA.box5_investExpenses} />
-        </div>
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldLabel}>(6) Foreign tax paid</span>
-          <input className={`${styles.fieldInput} ${styles.fieldInputSmall}`} readOnly value={FORM_DATA.box6_foreignTax} />
-        </div>
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldLabel}>(7) Foreign country or U.S. possession</span>
-          <input className={`${styles.fieldInput} ${styles.fieldInputWide}`} readOnly value={FORM_DATA.box7_foreignCountry} placeholder="N/A" />
-        </div>
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldLabel}>(8) Tax-exempt interest</span>
-          <input className={`${styles.fieldInput} ${styles.fieldInputSmall}`} readOnly value={FORM_DATA.box8_taxExempt} />
-        </div>
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldLabel}>(9) Specified private activity bond interest</span>
-          <input className={`${styles.fieldInput} ${styles.fieldInputSmall}`} readOnly value={FORM_DATA.box9_specPrivActivity} />
-        </div>
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldLabel}>(10) Market discount</span>
-          <input className={`${styles.fieldInput} ${styles.fieldInputSmall}`} readOnly value={FORM_DATA.box10_marketDiscount} />
-        </div>
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldLabel}>(11) Bond premium</span>
-          <input className={`${styles.fieldInput} ${styles.fieldInputSmall}`} readOnly value={FORM_DATA.box11_bondPremium} />
-        </div>
+        {renderReadOnlyRow('earlyPenalty', '(2) Early withdrawal penalty', FORM_DATA.box2_earlyPenalty)}
+        {renderReadOnlyRow('usBonds', '(3) Interest on U.S. Savings Bonds & T-bills', FORM_DATA.box3_usBonds)}
+        {renderReadOnlyRow('fedTaxWithheld', '(4) Federal income tax withheld', FORM_DATA.box4_fedTaxWithheld)}
+        {renderReadOnlyRow('investExpenses', '(5) Investment expenses', FORM_DATA.box5_investExpenses)}
+        {renderReadOnlyRow('foreignTax', '(6) Foreign tax paid', FORM_DATA.box6_foreignTax)}
+        {renderReadOnlyRow('foreignCountry', '(7) Foreign country or U.S. possession', FORM_DATA.box7_foreignCountry, styles.fieldInputWide, 'N/A')}
+        {renderReadOnlyRow('taxExempt', '(8) Tax-exempt interest', FORM_DATA.box8_taxExempt)}
+        {renderReadOnlyRow('specPrivActivity', '(9) Specified private activity bond interest', FORM_DATA.box9_specPrivActivity)}
+        {renderReadOnlyRow('marketDiscount', '(10) Market discount', FORM_DATA.box10_marketDiscount)}
+        {renderReadOnlyRow('bondPremium', '(11) Bond premium', FORM_DATA.box11_bondPremium)}
 
         {/* ── State Tax Information ── */}
         <div className={styles.sectionHeader}>State Tax Information</div>
 
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldLabel}>(13) State / Payer's state ID number</span>
-          <input className={`${styles.fieldInput} ${styles.fieldInputSmall}`} readOnly value={FORM_DATA.box13_stateTaxId} />
-        </div>
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldLabel}>(14) State income tax withheld</span>
-          <input className={`${styles.fieldInput} ${styles.fieldInputSmall}`} readOnly value={FORM_DATA.box14_stateTax} />
-        </div>
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldLabel}>(15) State income</span>
-          <input className={`${styles.fieldInput} ${styles.fieldInputSmall}`} readOnly value={FORM_DATA.box15_stateIncome} />
-        </div>
+        {renderReadOnlyRow('stateTaxId', "(13) State / Payer's state ID number", FORM_DATA.box13_stateTaxId)}
+        {renderReadOnlyRow('stateTax', '(14) State income tax withheld', FORM_DATA.box14_stateTax)}
+        {renderReadOnlyRow('stateIncome', '(15) State income', FORM_DATA.box15_stateIncome)}
 
       </div>
     </div>

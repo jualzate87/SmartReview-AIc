@@ -85,12 +85,6 @@ export default function DataReviewPopout() {
     activeTopTab === '1099-divs'  ? '1099-DIV Unwavering Financial' :
     'W-2 Tech Circle'
 
-  const docType =
-    activeTopTab === 'prior-1040' ? '1040' :
-    activeTopTab === '1099-ints'  ? '1099-int' :
-    activeTopTab === '1099-divs'  ? '1099-div' :
-    'w2'
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
       <ReviewTab
@@ -108,9 +102,6 @@ export default function DataReviewPopout() {
             <DocumentPreview
               imageSrc={imageSrc}
               alt={imageAlt}
-              selectedField={selectedField}
-              highlightMode={highlightMode}
-              docType={docType}
             />
           </div>
 
@@ -176,7 +167,7 @@ export default function DataReviewPopout() {
                 reviewedFields={reviewedFields}
               />
             )}
-            {activeTopTab === 'prior-1040' && <PriorYear1040Fields />}
+            {activeTopTab === 'prior-1040' && <PriorYear1040Fields onMarkReviewed={handleMarkReviewed} reviewedFields={reviewedFields} />}
           </div>
         </div>
       )}

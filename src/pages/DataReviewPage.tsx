@@ -619,14 +619,6 @@ export default function DataReviewPage() {
                     activeTopTab === '1099-divs'  ? '1099-DIV Unwavering Financial' :
                     'W-2 Tech Circle'
                   }
-                  selectedField={selectedField}
-                  highlightMode={highlightMode}
-                  docType={
-                    activeTopTab === 'prior-1040' ? '1040' :
-                    activeTopTab === '1099-ints'  ? '1099-int' :
-                    activeTopTab === '1099-divs'  ? '1099-div' :
-                    'w2'
-                  }
                 />
               </div>
 
@@ -668,9 +660,9 @@ export default function DataReviewPage() {
                   }}
                 />
               )}
-              {activeTopTab === '1099-divs' && <DetailFieldsDiv selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} flaggedFields={{ 'divCollectibles': 'Collectibles (28%) gain not imported — review source document and enter if applicable.', 'divNonDiv': 'Nondividend distributions not imported — review source document and enter if applicable.' }} />}
-              {activeTopTab === '1099-ints' && <DetailFields1099 selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} />}
-              {activeTopTab === 'prior-1040' && <PriorYear1040Fields />}
+              {activeTopTab === '1099-divs' && <DetailFieldsDiv selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} flaggedFields={{ 'divCollectibles': 'Collectibles (28%) gain not imported — review source document and enter if applicable.', 'divNonDiv': 'Nondividend distributions not imported — review source document and enter if applicable.' }} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
+              {activeTopTab === '1099-ints' && <DetailFields1099 selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
+              {activeTopTab === 'prior-1040' && <PriorYear1040Fields onMarkReviewed={handleMarkReviewed} reviewedFields={reviewedFields} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
               </div>
               </div>
               )}
