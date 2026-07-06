@@ -158,9 +158,12 @@
   border-left: 1px solid #D5DEE3;
   min-height: 0;
   flex-shrink: 0;
-  /* Width transition: panel smoothly expands from 0 when appearing */
-  transition: width 350ms cubic-bezier(0.4, 0, 0.25, 1),
-              opacity 350ms cubic-bezier(0.4, 0, 0.25, 1);
+  /* Matches .leftPanel's 380ms timing so the two panels resize in lockstep
+     when the 1040 toggles — includes `flex` since collapsing the 1040 switches
+     this panel from a fixed pixel width to flex:1 to fill the freed space. */
+  transition: width 380ms cubic-bezier(0.4, 0, 0.25, 1),
+              flex 380ms cubic-bezier(0.4, 0, 0.25, 1),
+              opacity 380ms cubic-bezier(0.4, 0, 0.25, 1);
 }
 
 /* ── Slide in from right (agent close → doc panel appears) ── */

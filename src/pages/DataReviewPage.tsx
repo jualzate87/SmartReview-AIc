@@ -17,7 +17,6 @@ function VerticalGripIcon() {
 import intuitAssistIcon from '../assets/icons/intuit-assist.svg'
 import LeftPanel1040 from './data-review/LeftPanel1040'
 import ReviewTab from './data-review/ReviewTab'
-import type { TopTab } from './data-review/ReviewTab'
 import DocumentPreview from './data-review/DocumentPreview'
 import DetailFields from './data-review/DetailFields'
 import DetailFields1099 from './data-review/DetailFields1099'
@@ -30,6 +29,7 @@ import Phase1Banner from './data-review/Phase1Banner'
 import Phase2Banner from './data-review/Phase2Banner'
 import QuestionnairePane from './data-review/QuestionnairePane'
 import { GUIDED_ORDER, TOTAL_REVIEW_ITEMS } from './data-review/AgentReportPane'
+import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
 import w2TechCircle from '../assets/jessica-w2-tech-circle.png'
 import img1040Prior from '../assets/jessica-1040-2024.png'
 import img1099Int from '../assets/jessica-1099-int.jpg'
@@ -38,26 +38,23 @@ import styles from '../styles/data-review/DataReviewPage.module.css'
 import dragStyles from '../styles/data-review/DragHandle.module.css'
 
 export default function DataReviewPage() {
-  // Selected field for cross-document highlighting
-  const [selectedField, setSelectedField] = useState<string | null>(null)
-  // Active top tab — ProtoC Phase 1 starts on the first import doc (W-2);
-  // Prior Year 1040 is moved to the LAST tab position (least relevant during import review)
-  const [activeTopTab, setActiveTopTab] = useState<TopTab>('w2s')
-  // Active W-2 sub-tab: only techCircle for Jessica Drake
-  const [activeSubTab, setActiveSubTab] = useState<'techCircle'>('techCircle')
-  // W-2 wages — drives 1040 line 1a dynamically (Jessica Drake: Tech Circle only)
-  const [wages, setWages] = useState({ techCircle: 118940 })
+  // Source-doc review state — flags, reviewed fields, active tab, editable field
+  // values — is shared live with the pop-out window via BroadcastChannel so the
+  // two views never drift apart. See useSyncedReviewState for the sync mechanism.
+  const {
+    activeTopTab, setActiveTopTab,
+    activeSubTab, setActiveSubTab,
+    selectedField, setSelectedField,
+    wages, setWages,
+    fieldValues, updateFieldValue,
+    reviewedFields,
+    markReviewed: handleMarkReviewed,
+    markReviewedBulk: handleMarkReviewedBulk,
+  } = useSyncedReviewState()
   const total1a = wages.techCircle
-  // Editable source-doc field values — drive downstream 1040 recalculation
-  const [fieldValues, setFieldValues] = useState({
-    withholding:     { techCircle: 15840 },  // Box 2; → 1040 line 25a
-    box12:           0,       // Tech Circle Box 12 (not imported)
-    taxableInterest: 1986,    // 1099-INT Box 1
-    qualifiedDivs:   187500,  // 1099-DIV Box 1b
-  })
   const totalWithholding = fieldValues.withholding.techCircle
   const updateField = (key: keyof typeof fieldValues, value: number | { techCircle: number }) =>
-    setFieldValues(prev => ({ ...prev, [key]: value }))
+    updateFieldValue(key, value)
   // Left panel width in px when idle (950px default); as % when agent open
   const [leftWidth, setLeftWidth] = useState(50)
   // Agent panel width in px when open (default 588px, user-resizable)
@@ -83,8 +80,6 @@ export default function DataReviewPage() {
   // Which agent subview to restore when going back to agent insights
   // 'overview' = report overview, 'yoyDetail' = YoY detail pane open
   const [agentSubView, setAgentSubView] = useState<'overview' | 'yoyDetail'>('overview')
-  // Map of reviewed field keys → sign-off metadata { by, at }
-  const [reviewedFields, setReviewedFields] = useState<Map<string, { by: string; at: string }>>(new Map())
   // Set of 1040 field names manually checked off by the preparer (independent of AI review)
   const [checkedFields, setCheckedFields] = useState<Set<string>>(new Set())
   // Notes / comments
@@ -227,26 +222,6 @@ export default function DataReviewPage() {
     const at = now.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })
     setNotes(prev => [...prev, { id: `note-${Date.now()}`, text, author: PREPARER_NAME, at, context }])
     setNotesOpen(true)
-  }
-
-  const handleMarkReviewed = (fieldName: string) => {
-    const now = new Date()
-    const at = now.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })
-    setReviewedFields(prev => {
-      const next = new Map(prev)
-      next.set(fieldName, { by: PREPARER_NAME, at })
-      return next
-    })
-  }
-
-  const handleMarkReviewedBulk = (fieldNames: string[]) => {
-    const now = new Date()
-    const at = now.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })
-    setReviewedFields(prev => {
-      const next = new Map(prev)
-      fieldNames.forEach(f => { if (!next.has(f)) next.set(f, { by: PREPARER_NAME, at }) })
-      return next
-    })
   }
 
   const bodyRef = useRef<HTMLDivElement>(null)
@@ -569,9 +544,8 @@ export default function DataReviewPage() {
                 width: (agentView === 'loading' || agentView === 'report' || agentView === 'closing' || (!rightPanelVisible && !rightPanelExiting))
                   ? 0
                   : (inImportPhase && !show1040) ? undefined : rightPanelWidth,
-                flex: (inImportPhase && !show1040 && rightPanelVisible) ? 1 : undefined,
+                flex: (inImportPhase && !show1040 && rightPanelVisible) ? '1 1 0%' : '0 0 auto',
                 overflow: 'hidden',
-                flexShrink: 0,
                 opacity: (agentView === 'loading' || agentView === 'report' || agentView === 'closing' || (!rightPanelVisible && !rightPanelExiting)) ? 0 : 1,
               }}
             >
@@ -675,7 +649,7 @@ export default function DataReviewPage() {
                   activeSubTab={activeSubTab}
                   onSubTabChange={(tab) => setActiveSubTab(tab as 'techCircle')}
                   wages={{ techCircle: wages.techCircle }}
-                  onWageChange={(employer, value) => setWages(prev => ({ ...prev, [employer]: value }))}
+                  onWageChange={(employer, value) => setWages({ ...wages, [employer]: value })}
                   fieldValues={{ ...fieldValues, withholding: fieldValues.withholding[activeSubTab] }}
                   onFieldValueChange={(key, value) => {
                     if (key === 'withholding' && typeof value === 'number') {
