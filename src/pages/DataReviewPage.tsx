@@ -331,20 +331,21 @@ export default function DataReviewPage() {
     document.addEventListener('mouseup', onMouseUp)
   }, [rightPanelWidth])
 
-  // Vertical drag (up/down resize within right panel)
-  const handleVerticalDrag = useCallback((e: React.MouseEvent) => {
+  // Horizontal drag (left/right resize between the document preview and detail
+  // fields, now that they sit side by side like the pop-out window)
+  const handlePreviewDrag = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
     const right = rightRef.current
     if (!right) return
 
-    const startY = e.clientY
-    const startHeight = previewHeight
+    const startX = e.clientX
+    const startWidth = previewHeight
 
     const onMouseMove = (moveEvent: MouseEvent) => {
-      const delta = moveEvent.clientY - startY
-      const rightHeight = right.getBoundingClientRect().height
-      const newHeight = startHeight + (delta / rightHeight) * 100
-      setPreviewHeight(Math.max(15, Math.min(75, newHeight)))
+      const delta = moveEvent.clientX - startX
+      const rightWidth = right.getBoundingClientRect().width
+      const newWidth = startWidth + (delta / rightWidth) * 100
+      setPreviewHeight(Math.max(20, Math.min(75, newWidth)))
     }
 
     const onMouseUp = () => {
@@ -354,7 +355,7 @@ export default function DataReviewPage() {
       document.body.style.userSelect = ''
     }
 
-    document.body.style.cursor = 'row-resize'
+    document.body.style.cursor = 'col-resize'
     document.body.style.userSelect = 'none'
     document.addEventListener('mousemove', onMouseMove)
     document.addEventListener('mouseup', onMouseUp)
@@ -626,9 +627,11 @@ export default function DataReviewPage() {
               {activeTopTab === 'questionnaire' ? (
                 <QuestionnairePane variant="tab" />
               ) : (
-              <>
-              {/* Document preview */}
-              <div style={{ height: `${previewHeight}%`, flexShrink: 0, overflow: 'hidden' }}>
+              /* Document preview (left) + detail fields (right) — same side-by-side
+                 layout as the pop-out window, so docking back and forth doesn't
+                 reflow the content the CPA is looking at. */
+              <div style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+              <div style={{ width: `${previewHeight}%`, flexShrink: 0, overflow: 'hidden', borderRight: '1px solid #D5DEE3' }}>
                 <DocumentPreview
                   imageSrc={
                     activeTopTab === 'prior-1040' ? img1040Prior :
@@ -653,12 +656,13 @@ export default function DataReviewPage() {
                 />
               </div>
 
-              {/* Up/down drag handle */}
-              <div className={dragStyles.handleHorizontal} onMouseDown={handleVerticalDrag}>
-                <DotsSix size="small" className={`${dragStyles.handleIcon} ${dragStyles.rotated90}`} />
+              {/* Left/right drag handle */}
+              <div className={dragStyles.handleVertical} onMouseDown={handlePreviewDrag}>
+                <DotsSix size="small" className={dragStyles.handleIcon} />
               </div>
 
               {/* Detail fields — switches based on active tab */}
+              <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
               {activeTopTab === 'w2s' && (
                 <DetailFields
                   formTitle="Details: Wages, Salaries, Tips (W-2)"
@@ -693,7 +697,8 @@ export default function DataReviewPage() {
               {activeTopTab === '1099-divs' && <DetailFieldsDiv selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} flaggedFields={{ 'divCollectibles': 'Collectibles (28%) gain not imported — review source document and enter if applicable.', 'divNonDiv': 'Nondividend distributions not imported — review source document and enter if applicable.' }} />}
               {activeTopTab === '1099-ints' && <DetailFields1099 selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} />}
               {activeTopTab === 'prior-1040' && <PriorYear1040Fields />}
-              </>
+              </div>
+              </div>
               )}
             </div>
 
