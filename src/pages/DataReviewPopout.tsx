@@ -109,7 +109,7 @@ export default function DataReviewPopout() {
             <DotsSix size="small" className={dragStyles.handleIcon} />
           </div>
 
-          <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+          <div style={{ flex: 1, minWidth: 0, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             {activeTopTab === 'w2s' && (
               <DetailFields
                 formTitle="Details: Wages, Salaries, Tips (W-2)"
