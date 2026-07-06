@@ -8,17 +8,28 @@
   border-bottom: 1px solid #adbac2;
 }
 
-/* Scrollable image area */
+/* Scrollable image area — plain block layout, not flex. A flex row with
+   justify-content:center clips a child wider than the container instead of
+   making it scrollable (centering wins over overflow), which broke panning
+   at higher zoom levels. The zoomed content's width:N% is computed against
+   .imageArea's own content box (the stable 100% reference); .imageAreaInner
+   only handles vertical centering and never constrains width, so it can grow
+   past 100% and the browser's native scrollbars take over correctly. */
 .imageArea {
   flex: 1;
   overflow: auto;
+  padding: 20px 10px;
+  min-height: 0;
+  background: #ffffff;
+  position: relative;
+}
+
+.imageAreaInner {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 20px 10px;
-  min-height: 0;
-  background: #ffffff;
+  min-height: 100%;
 }
 
 .documentImage {

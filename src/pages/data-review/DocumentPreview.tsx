@@ -117,40 +117,42 @@ export default function DocumentPreview({ imageSrc, alt, selectedField, highligh
         style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
         onMouseDown={onMouseDown}
       >
-        <div style={{ position: 'relative', width: `${zoom}%`, lineHeight: 0, flexShrink: 0 }}>
-          <img
-            src={imageSrc}
-            alt={alt}
-            className={styles.documentImage}
-            draggable={false}
-          />
-
-          {/* Field highlight overlay — marker-pen style highlight over the field */}
-          {overlay && (
-            <div
-              style={{
-                position: 'absolute',
-                left:   overlay.left,
-                top:    overlay.top,
-                width:  overlay.width,
-                height: overlay.height,
-                background: highlightMode === 'orange'
-                  ? 'rgba(201, 80, 15, 0.22)'
-                  : 'rgba(32, 94, 163, 0.18)',
-                outline: highlightMode === 'orange'
-                  ? '3px solid rgba(201, 80, 15, 0.7)'
-                  : '3px solid rgba(32, 94, 163, 0.7)',
-                outlineOffset: '1px',
-                borderRadius: '2px',
-                pointerEvents: 'none',
-                zIndex: 3,
-                transition: 'opacity 200ms ease',
-                boxShadow: highlightMode === 'orange'
-                  ? '0 0 0 4px rgba(201, 80, 15, 0.08)'
-                  : '0 0 0 4px rgba(32, 94, 163, 0.08)',
-              }}
+        <div className={styles.imageAreaInner}>
+          <div style={{ position: 'relative', width: `${zoom}%`, lineHeight: 0, flexShrink: 0 }}>
+            <img
+              src={imageSrc}
+              alt={alt}
+              className={styles.documentImage}
+              draggable={false}
             />
-          )}
+
+            {/* Field highlight overlay — marker-pen style highlight over the field */}
+            {overlay && (
+              <div
+                style={{
+                  position: 'absolute',
+                  left:   overlay.left,
+                  top:    overlay.top,
+                  width:  overlay.width,
+                  height: overlay.height,
+                  background: highlightMode === 'orange'
+                    ? 'rgba(201, 80, 15, 0.22)'
+                    : 'rgba(32, 94, 163, 0.18)',
+                  outline: highlightMode === 'orange'
+                    ? '3px solid rgba(201, 80, 15, 0.7)'
+                    : '3px solid rgba(32, 94, 163, 0.7)',
+                  outlineOffset: '1px',
+                  borderRadius: '2px',
+                  pointerEvents: 'none',
+                  zIndex: 3,
+                  transition: 'opacity 200ms ease',
+                  boxShadow: highlightMode === 'orange'
+                    ? '0 0 0 4px rgba(201, 80, 15, 0.08)'
+                    : '0 0 0 4px rgba(32, 94, 163, 0.08)',
+                }}
+              />
+            )}
+          </div>
         </div>
       </div>
 
