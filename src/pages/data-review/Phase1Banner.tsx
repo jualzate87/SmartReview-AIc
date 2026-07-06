@@ -1,4 +1,6 @@
 import { ArrowRight, CircleCheck, Lock } from '@design-systems/icons'
+import { Button } from '@ids-ts/button'
+import '@ids-ts/button/dist/main.css'
 import intuitAssistIcon from '../../assets/icons/intuit-assist.svg'
 import styles from '../../styles/data-review/Phase1Banner.module.css'
 
@@ -47,16 +49,16 @@ export default function Phase1Banner({ resolved, total, remaining, complete, onC
         )}
 
         {complete ? (
-          <button className={styles.continueBtn} onClick={onContinue}>
-            Continue to AI Diagnostics <ArrowRight size="small" />
-          </button>
+          <Button priority="primary" size="medium" onClick={onContinue}>
+            Continue to AI diagnostics <ArrowRight size="small" />
+          </Button>
         ) : (
           <div className={styles.lockedWrap}>
-            <button className={styles.continueBtnLocked} disabled>
-              <Lock size="small" /> AI Diagnostics
-            </button>
+            <Button priority="secondary" size="medium" disabled>
+              <Lock size="small" /> AI diagnostics locked
+            </Button>
             <span className={styles.lockNote}>
-              {remaining} {remaining === 1 ? 'flag' : 'flags'} remaining — diagnostics unlock once import is confirmed. This keeps flags accurate.
+              {remaining} {remaining === 1 ? 'flag' : 'flags'} remaining — diagnostics unlock once import is confirmed.
             </span>
           </div>
         )}

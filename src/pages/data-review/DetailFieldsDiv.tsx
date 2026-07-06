@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { CircleCheck } from '@design-systems/icons'
+import Tooltip from './Tooltip'
 import styles from '../../styles/data-review/DetailFields.module.css'
 
 // 1099-DIV — Unwavering Financial
@@ -71,22 +72,31 @@ export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue',
 
   // ProtoC: resolve control for "not imported" flagged DIV fields (collectibles, nondividend).
   // Marking as correct confirms nothing needs to be entered from the source doc.
+  // Matches the always-visible fieldActions pattern used in DetailFields.tsx (W-2) / DetailFields1099.tsx.
   const renderFlagActions = (fieldKey: string) => {
     if (!flaggedFields[fieldKey]) return null
     const resolved = reviewedFields?.has(fieldKey)
     if (resolved) {
       return (
-        <button
-          className={styles.markCorrectBtn}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#1a8254', display: 'inline-flex', alignItems: 'center', gap: 4 }}
-          onClick={e => { e.stopPropagation(); onMarkReviewed?.(fieldKey) }}
-        >
-          <CircleCheck size="small" /> Reviewed
-        </button>
+        <Tooltip text="Click to unmark" placement="top">
+          <button
+            className={styles.reviewedBadge}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'inline-flex', alignItems: 'center' }}
+            onClick={e => { e.stopPropagation(); onMarkReviewed?.(fieldKey) }}
+          >
+            <CircleCheck size="small" />
+          </button>
+        </Tooltip>
       )
     }
     return (
-      <button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.(fieldKey) }}>Mark as correct</button>
+      <div className={styles.fieldActions}>
+        <Tooltip text="Mark as correct" placement="top">
+          <button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.(fieldKey) }}>
+            <CircleCheck size="small" />
+          </button>
+        </Tooltip>
+      </div>
     )
   }
 

@@ -555,6 +555,42 @@
   gap: 10px;
 }
 
+/* Icon-only "Mark as reviewed" checkmark — matches the DetailFields markCorrectBtn
+   visual language so the reviewed action reads the same way across both phases. */
+.findingMarkReviewedBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin-left: auto;
+  background: none;
+  border: 1px solid #c3ced5;
+  border-radius: 5px;
+  color: #5d686f;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+  transition: color 120ms, background 120ms, border-color 120ms;
+}
+
+.findingMarkReviewedBtn:hover {
+  color: #0f766e;
+  background: rgba(15, 118, 110, 0.08);
+  border-color: #0f766e;
+}
+
+.findingMarkReviewedBtnActive {
+  color: #ffffff;
+  background: #1a8254;
+  border-color: #1a8254;
+}
+
+.findingMarkReviewedBtnActive:hover {
+  background: #146c45;
+  border-color: #146c45;
+}
+
 /* Reviewed state — keep original card color, just badge + checkmark signal it */
 .findingInnerReviewed {}
 

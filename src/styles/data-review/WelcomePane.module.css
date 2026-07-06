@@ -13,46 +13,42 @@
   width: 100%;
   max-width: 620px;
   background: var(--color-container-background-primary, #ffffff);
-  border: 1px solid #e0e7ec;
-  border-radius: 16px;
+  border: 1px solid var(--color-border-primary, #e0e7ec);
+  border-radius: var(--radius-large, 16px);
   box-shadow: 0 8px 32px rgba(33, 38, 42, 0.08);
-  padding: 40px;
+  padding: var(--space-container-padding-large, 40px);
 }
 
-.assistHeader {
+/* Lockup — Intuit Assist icon + heading + subheading, centered (IDS GenUX Welcome pattern) */
+.lockup {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 20px;
+  text-align: center;
+  gap: var(--space-x-small, 8px);
+  margin-bottom: 28px;
 }
 
 .assistIcon {
-  width: 28px;
-  height: 28px;
-}
-
-.assistLabel {
-  font-family: var(--font-family-component, sans-serif);
-  font-size: 14px;
-  font-weight: 600;
-  color: #6b21a8;
-  letter-spacing: 0.01em;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 4px;
 }
 
 .title {
-  font-family: var(--font-family-component, sans-serif);
-  font-size: 26px;
-  font-weight: 600;
-  line-height: 1.25;
-  color: #21262a;
-  margin: 0 0 8px;
+  font-family: var(--font-name-heading, var(--font-family-heading));
+  font-size: var(--font-size-heading-4, 28px);
+  font-weight: var(--font-weight-heading, 600);
+  line-height: 1.3;
+  color: var(--color-text-primary, #393a3d);
+  margin: 0;
 }
 
 .lede {
   font-family: var(--font-family-component, sans-serif);
-  font-size: 16px;
-  color: #5d686f;
-  margin: 0 0 28px;
+  font-size: var(--font-size-body-2, 16px);
+  color: var(--color-text-secondary, #6b6c72);
+  margin: 0;
 }
 
 .steps {
@@ -69,9 +65,9 @@
   align-items: flex-start;
   gap: 14px;
   padding: 18px;
-  background: #f7f9fb;
-  border: 1px solid #e8edf0;
-  border-radius: 12px;
+  background: var(--color-container-background-secondary, #f7f9fb);
+  border: 1px solid var(--color-border-secondary, #e8edf0);
+  border-radius: var(--radius-medium, 12px);
 }
 
 .stepNum {
@@ -79,8 +75,8 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #205ea3;
-  color: #ffffff;
+  background: var(--color-action-info, #205ea3);
+  color: var(--color-text-inverse, #ffffff);
   font-family: var(--font-family-component, sans-serif);
   font-size: 14px;
   font-weight: 600;
@@ -99,32 +95,12 @@
   font-family: var(--font-family-component, sans-serif);
   font-size: 16px;
   font-weight: 600;
-  color: #21262a;
+  color: var(--color-text-primary, #21262a);
 }
 
 .stepDesc {
   font-family: var(--font-family-component, sans-serif);
   font-size: 14px;
   line-height: 1.5;
-  color: #5d686f;
-}
-
-.beginBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 22px;
-  background: #2ca01c;
-  color: #ffffff;
-  border: none;
-  border-radius: 8px;
-  font-family: var(--font-family-component, sans-serif);
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.beginBtn:hover {
-  background: #248016;
+  color: var(--color-text-secondary, #5d686f);
 }

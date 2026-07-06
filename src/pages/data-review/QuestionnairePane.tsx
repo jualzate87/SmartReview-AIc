@@ -5,8 +5,14 @@ import qStyles from '../../styles/data-review/QuestionnairePane.module.css'
 interface QuestionnairePaneProps {
   onBack?: () => void
   closing?: boolean
+  /** 'overlay' (default): slides in over the agent panel, with a back link.
+   *  'tab': renders inline as a Phase 1 source-doc tab — no overlay, no back link. */
+  variant?: 'overlay' | 'tab'
 }
 
+// ProtoC: answers only confirm documents Jessica actually sent — the imported set is
+// W-2 (Tech Circle), 1099-INT (Unwavering Financial), 1099-DIV (Unwavering Financial),
+// and her Prior Year 1040. No 1098, 1099-R, or other document exists for this return.
 const QA_ITEMS = [
   // ── Employment & wages ──
   {
@@ -16,7 +22,6 @@ const QA_ITEMS = [
     question: 'Did your employment situation change in 2024? Please list all employers, whether you started or left any jobs, and upload your W-2(s).',
     answer: 'I worked at Tech Circle all year. I\'ve uploaded my W-2.',
     date: 'Mar 15, 2025',
-    relatedFinding: 'Significant income drop',
   },
   {
     id: 'side-income',
@@ -25,7 +30,6 @@ const QA_ITEMS = [
     question: 'Did you receive any freelance, consulting, or self-employment income in 2024? If so, please provide a summary of income and related business expenses.',
     answer: 'No, nothing on the side this year. All income was from Tech Circle.',
     date: 'Mar 15, 2025',
-    relatedFinding: null,
   },
   // ── Interest & dividends ──
   {
@@ -35,7 +39,6 @@ const QA_ITEMS = [
     question: 'Did you open any new bank or savings accounts in 2024? Please upload all 1099-INT forms for interest income earned during the year.',
     answer: 'Yes, I have interest income from Unwavering Financial. I\'ve uploaded the 1099-INT.',
     date: 'Mar 15, 2025',
-    relatedFinding: 'Taxable interest up 42%',
   },
   {
     id: 'dividends',
@@ -44,7 +47,6 @@ const QA_ITEMS = [
     question: 'Did you sell, transfer, or close any investment or brokerage accounts in 2024? Please upload all 1099-DIV and 1099-B forms.',
     answer: 'Yes, I have dividend and capital gain activity through Unwavering Financial. I\'ve uploaded the 1099-DIV.',
     date: 'Mar 16, 2025',
-    relatedFinding: 'Qualified dividends review',
   },
   // ── Real estate & deductions ──
   {
@@ -52,9 +54,8 @@ const QA_ITEMS = [
     number: 5,
     section: 'Real estate & deductions',
     question: 'Do you own a home? If yes, please upload your Form 1098 (mortgage interest statement) and any property tax bills paid in 2024.',
-    answer: 'Yes, I own my home at 333 Easy Street. I\'ve uploaded the 1098 from First National. I paid $4,200 in property taxes — the county sent a statement.',
+    answer: 'No, I rent — no mortgage or property tax documents to send.',
     date: 'Mar 15, 2025',
-    relatedFinding: null,
   },
   {
     id: 'charitable',
@@ -63,7 +64,6 @@ const QA_ITEMS = [
     question: 'Did you make any charitable contributions in 2024? Please provide a total amount and upload receipts for donations over $250.',
     answer: 'I donated $600 to the Red Cross and $200 to my church. Both were cash, so I don\'t have receipts above $250. That\'s it for the year.',
     date: 'Mar 15, 2025',
-    relatedFinding: null,
   },
   // ── Retirement accounts ──
   {
@@ -73,16 +73,14 @@ const QA_ITEMS = [
     question: 'Did you contribute to a traditional IRA, Roth IRA, or HSA in 2024? If yes, please provide the amounts and account type.',
     answer: 'I contributed $2,000 to my Roth IRA at Fidelity. Nothing to an HSA — my employer covers health insurance.',
     date: 'Mar 16, 2025',
-    relatedFinding: null,
   },
   {
-    id: 'ira',
+    id: 'ira-distribution',
     number: 8,
     section: 'Retirement accounts',
     question: 'Did you take any distributions from an IRA, 401(k), or other retirement account in 2024? If yes, please describe the reason and upload your 1099-R.',
-    answer: 'Yes, I withdrew $8,500 from my IRA in August for a medical expense. I was told the 10% early withdrawal penalty might be waived. I\'ll upload the 1099-R.',
+    answer: 'No, I didn\'t take any distributions this year — nothing to send there.',
     date: 'Mar 16, 2025',
-    relatedFinding: 'Early withdrawal penalty',
   },
   // ── Life changes ──
   {
@@ -92,7 +90,6 @@ const QA_ITEMS = [
     question: 'Did your filing status change in 2024? (e.g., marriage, divorce, spouse\'s death, or a new dependent)',
     answer: 'No changes. Still filing single, no dependents.',
     date: 'Mar 14, 2025',
-    relatedFinding: null,
   },
   {
     id: 'health-coverage',
@@ -101,26 +98,26 @@ const QA_ITEMS = [
     question: 'Were you covered by health insurance for all 12 months of 2024? If you purchased coverage through a marketplace, please upload Form 1095-A.',
     answer: 'Yes, covered the whole year through my employer at Tech Circle. No marketplace plan.',
     date: 'Mar 14, 2025',
-    relatedFinding: null,
   },
 ]
 
 // Group items by section
 const SECTIONS = Array.from(new Set(QA_ITEMS.map(i => i.section)))
 
-export default function QuestionnairePane({ onBack, closing = false }: QuestionnairePaneProps) {
-  return (
-    <div className={`${styles.panel} ${closing ? styles.panelClosing : ''}`}>
-      <div className={styles.pane}>
-        <div className={styles.chat}>
+export default function QuestionnairePane({ onBack, closing = false, variant = 'overlay' }: QuestionnairePaneProps) {
+  const isTab = variant === 'tab'
+  const content = (
+    <div className={isTab ? qStyles.tabChat : styles.chat}>
 
-          {/* Back link */}
-          <div className={styles.navRow}>
-            <button className={styles.backLink} onClick={onBack}>
-              <ChevronLeft size="small" />
-              <span>Back to overview</span>
-            </button>
-          </div>
+          {/* Back link — overlay variant only; a tab has its own top-level tab nav */}
+          {!isTab && (
+            <div className={styles.navRow}>
+              <button className={styles.backLink} onClick={onBack}>
+                <ChevronLeft size="small" />
+                <span>Back to overview</span>
+              </button>
+            </div>
+          )}
 
           {/* Product header */}
           <div className={qStyles.productHeader}>
@@ -184,21 +181,22 @@ export default function QuestionnairePane({ onBack, closing = false }: Questionn
                     </div>
                     <p className={qStyles.answerText}>{item.answer}</p>
                   </div>
-
-                  {/* Related finding tag — only shown when there's a match */}
-                  {item.relatedFinding && (
-                    <div className={qStyles.relatedRow}>
-                      <span className={qStyles.relatedDot} />
-                      <span className={qStyles.relatedLabel}>Related finding:</span>
-                      <span className={qStyles.relatedValue}>{item.relatedFinding}</span>
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
           ))}
 
-        </div>
+    </div>
+  )
+
+  if (isTab) {
+    return <div className={qStyles.tabContainer}>{content}</div>
+  }
+
+  return (
+    <div className={`${styles.panel} ${closing ? styles.panelClosing : ''}`}>
+      <div className={styles.pane}>
+        {content}
       </div>
     </div>
   )

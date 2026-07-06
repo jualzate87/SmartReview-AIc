@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { ArrowLeft, DotsSix, Panel, ChevronLeft, Comment, PopOut } from '@design-systems/icons'
+import { ArrowLeft, DotsSix, Panel, ChevronLeft, ChevronRight, Comment, PopOut } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import NotesPane from './data-review/NotesPane'
@@ -27,7 +27,9 @@ import AgentReportPane from './data-review/AgentReportPane'
 import AgentLoadingPane from './data-review/AgentLoadingPane'
 import WelcomePane from './data-review/WelcomePane'
 import Phase1Banner from './data-review/Phase1Banner'
-import { ChevronDown, ChevronUp } from '@design-systems/icons'
+import Phase2Banner from './data-review/Phase2Banner'
+import QuestionnairePane from './data-review/QuestionnairePane'
+import { GUIDED_ORDER, TOTAL_REVIEW_ITEMS } from './data-review/AgentReportPane'
 import w2TechCircle from '../assets/jessica-w2-tech-circle.png'
 import img1040Prior from '../assets/jessica-1040-2024.png'
 import img1099Int from '../assets/jessica-1099-int.jpg'
@@ -101,7 +103,9 @@ export default function DataReviewPage() {
 
   // The import/OCR flags owned by Phase 1. Each key matches the reviewed-field key
   // emitted by the DetailFields "Edit+Save" / "Mark as correct" controls.
-  const PHASE1_FLAG_KEYS = ['wages-techCircle', 'withholding', 'box12', 'ein-techCircle', 'divCollectibles', 'divNonDiv'] as const
+  // Federal withholding ($15,840 on $118,940 wages, ~13.3%) is not actually low —
+  // it is not flagged.
+  const PHASE1_FLAG_KEYS = ['wages-techCircle', 'box12', 'ein-techCircle', 'divCollectibles', 'divNonDiv'] as const
   const phase1Total = PHASE1_FLAG_KEYS.length
   const phase1Resolved = PHASE1_FLAG_KEYS.filter(k => reviewedFields.has(k)).length
   // Counter of unresolved import flags — never below 0
@@ -109,11 +113,15 @@ export default function DataReviewPage() {
   const phase1Complete = phase1Remaining === 0
   // Per-document unresolved counts for dynamic tab badges
   const tabFlagCounts: Record<string, number> = {
-    w2s:          ['wages-techCircle', 'withholding', 'box12', 'ein-techCircle'].filter(k => !reviewedFields.has(k)).length,
+    w2s:          ['wages-techCircle', 'box12', 'ein-techCircle'].filter(k => !reviewedFields.has(k)).length,
     '1099-divs':  ['divCollectibles', 'divNonDiv'].filter(k => !reviewedFields.has(k)).length,
     '1099-ints':  0,
     'prior-1040': 0,
   }
+  // Phase 2 diagnostics progress — same GUIDED_ORDER/TOTAL_REVIEW_ITEMS AgentReportPane uses,
+  // imported rather than duplicated so the two banners can't drift out of sync.
+  const phase2Reviewed = GUIDED_ORDER.filter(k => reviewedFields.has(k)).length
+  const phase2Complete = phase2Reviewed >= TOTAL_REVIEW_ITEMS
   // ---------------------------------------------------------------------------
 
   const handleToggleChecked = (fieldName: string) => {
@@ -444,18 +452,51 @@ export default function DataReviewPage() {
         />
       )}
 
+      {/* ProtoC Phase 2 — AI Diagnostics banner. Shares Phase1Banner's visual language
+          (Intuit Assist icon, title/subtitle, progress) so both phases feel like one
+          continuous guided experience rather than two disconnected screens. */}
+      {!inImportPhase && (
+        <Phase2Banner
+          reviewed={phase2Reviewed}
+          total={TOTAL_REVIEW_ITEMS}
+          complete={phase2Complete}
+        />
+      )}
+
       {/* Body — left panel + drag handle + right panel + agent panel */}
       <div className={styles.body} ref={bodyRef}>
-        {/* ProtoC Phase 1: 1040 is minimized by default — collapse to a toggle strip */}
-        {inImportPhase && !show1040 ? (
-          <button className={styles.show1040Strip} onClick={() => setShow1040(true)} aria-label="Show 1040">
-            <ChevronDown size="small" /> <span>Show 1040</span>
-          </button>
-        ) : (
-        <div className={styles.leftPanel} style={{ flex: 1, minWidth: 0 }}>
+        {/* ProtoC Phase 1: 1040 is minimized by default — collapsed to a compact button
+            pinned near the top of the column. Expanding grows the panel horizontally, so
+            the chevron points right (expand) / left (collapse) rather than up/down. Left
+            panel stays mounted and animates width/opacity (same pattern as .rightPanel)
+            so the transition is smooth. */}
+        {inImportPhase && (
+          <div
+            className={styles.form1040HandleWrap}
+            style={{ width: show1040 ? 0 : 44, opacity: show1040 ? 0 : 1, pointerEvents: show1040 ? 'none' : 'auto' }}
+          >
+            <button
+              className={styles.form1040Handle}
+              onClick={() => setShow1040(true)}
+              aria-label="Show 1040"
+            >
+              <ChevronRight size="small" className={styles.form1040HandleIcon} />
+              <span className={styles.form1040HandleLabel}>Show 1040</span>
+            </button>
+          </div>
+        )}
+        <div
+          className={styles.leftPanel}
+          style={{
+            flex: (inImportPhase && !show1040) ? '0 0 0px' : 1,
+            width: (inImportPhase && !show1040) ? 0 : undefined,
+            opacity: (inImportPhase && !show1040) ? 0 : 1,
+            minWidth: 0,
+          }}
+        >
           {inImportPhase && (
-            <button className={styles.hide1040Btn} onClick={() => setShow1040(false)} aria-label="Hide 1040">
-              <ChevronUp size="small" /> <span>Hide 1040</span>
+            <button className={styles.form1040HideBtn} onClick={() => setShow1040(false)} aria-label="Hide 1040">
+              <ChevronLeft size="small" /> <span>Hide 1040</span>
             </button>
           )}
           <LeftPanel1040
@@ -506,25 +547,28 @@ export default function DataReviewPage() {
             }}
           />
         </div>
-        )}
 
         {!poppedOut && (
           <>
-            {/* Left/right drag handle — only when right panel visible and agent idle */}
-            {agentView === 'idle' && rightPanelVisible && !rightPanelExiting && (
+            {/* Left/right drag handle — hidden when the 1040 is collapsed (nothing to drag
+                against) or when the right panel/agent isn't visible */}
+            {agentView === 'idle' && rightPanelVisible && !rightPanelExiting && !(inImportPhase && !show1040) && (
               <div className={dragStyles.handleVertical} onMouseDown={handleRightPanelDrag}>
                 <VerticalGripIcon />
               </div>
             )}
 
-            {/* Right panel — always in DOM, width animates to 0 when hidden */}
+            {/* Right panel — always in DOM, width animates to 0 when hidden. When the 1040
+                is collapsed in Phase 1, it switches from a fixed pixel width to flex:1 so it
+                fills the space the 1040 gave up instead of leaving a dead gap on wide screens. */}
             <div
               className={`${styles.rightPanel} ${rightPanelAnimating ? styles.rightPanelEntering : ''} ${rightPanelExiting ? styles.rightPanelExiting : ''}`}
               ref={rightRef}
               style={{
                 width: (agentView === 'loading' || agentView === 'report' || agentView === 'closing' || (!rightPanelVisible && !rightPanelExiting))
                   ? 0
-                  : rightPanelWidth,
+                  : (inImportPhase && !show1040) ? undefined : rightPanelWidth,
+                flex: (inImportPhase && !show1040 && rightPanelVisible) ? 1 : undefined,
                 overflow: 'hidden',
                 flexShrink: 0,
                 opacity: (agentView === 'loading' || agentView === 'report' || agentView === 'closing' || (!rightPanelVisible && !rightPanelExiting)) ? 0 : 1,
@@ -577,6 +621,12 @@ export default function DataReviewPage() {
                 }}
               />
 
+              {/* Questionnaire — Q&A organizer, no scanned document to preview.
+                  Occupies the full right-panel body instead of the preview/detail-fields split. */}
+              {activeTopTab === 'questionnaire' ? (
+                <QuestionnairePane variant="tab" />
+              ) : (
+              <>
               {/* Document preview */}
               <div style={{ height: `${previewHeight}%`, flexShrink: 0, overflow: 'hidden' }}>
                 <DocumentPreview
@@ -604,7 +654,6 @@ export default function DataReviewPage() {
               </div>
 
               {/* Up/down drag handle */}
-              <>
               <div className={dragStyles.handleHorizontal} onMouseDown={handleVerticalDrag}>
                 <DotsSix size="small" className={`${dragStyles.handleIcon} ${dragStyles.rotated90}`} />
               </div>
@@ -635,10 +684,9 @@ export default function DataReviewPage() {
                   onMarkReviewedBulk={handleMarkReviewedBulk}
                   reviewedFields={reviewedFields}
                   flaggedFields={{
-                    wages:       'Wages may have been misread — verify Box 1 against the source W-2.',
-                    withholding: 'Federal withholding looks lower than expected — verify Box 2 against the source W-2.',
-                    box12:       'Box 12 was not imported — enter the code and amount manually from the source W-2.',
-                    ein:         'Employer EIN was not found in the document — required for e-filing. Enter it manually.',
+                    wages: 'Wages may have been misread — verify Box 1 against the source W-2.',
+                    box12: 'Box 12 was not imported — enter the code and amount manually from the source W-2.',
+                    ein:   'Employer EIN was not found in the document — required for e-filing. Enter it manually.',
                   }}
                 />
               )}
@@ -646,6 +694,7 @@ export default function DataReviewPage() {
               {activeTopTab === '1099-ints' && <DetailFields1099 selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} />}
               {activeTopTab === 'prior-1040' && <PriorYear1040Fields />}
               </>
+              )}
             </div>
 
             {/* Drag handle between left panel and agent panel — only when agent open */}

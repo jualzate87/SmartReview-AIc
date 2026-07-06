@@ -527,6 +527,7 @@
 .deltaBadgeOrange { background: #E5A14E; }
 .deltaBadgeGrey   { background: #8a9299; }
 .deltaBadgeGreen  { background: var(--color-ui-positive, #108000); }
+.deltaBadgeBlue   { background: #205ea3; }
 
 /* ── Suggested action list ── */
 .actionList {

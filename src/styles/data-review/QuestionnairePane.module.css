@@ -1,3 +1,22 @@
+/* ── Phase 1 tab variant — inline flow, no overlay ── */
+.tabContainer {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px 20px 32px;
+  background: #ffffff;
+}
+
+.tabChat {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+  min-width: 0;
+}
+
 /* ── Product header ── */
 .productHeader {
   display: flex;
@@ -213,33 +232,3 @@
   padding-left: 31px;
 }
 
-/* ── Related finding tag ── */
-.relatedRow {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 7px 14px 8px;
-  border-top: 1px solid #f0f1f3;
-  background: #fafbfc;
-}
-
-.relatedDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #205ea3;
-  flex-shrink: 0;
-}
-
-.relatedLabel {
-  font-family: var(--font-family-component) !important;
-  font-size: 12px;
-  color: #8a9299;
-}
-
-.relatedValue {
-  font-family: var(--font-family-component) !important;
-  font-size: 12px;
-  font-weight: 600;
-  color: #205ea3;
-}

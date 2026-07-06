@@ -7,12 +7,12 @@ import Tooltip from './Tooltip'
 import styles from '../../styles/data-review/YoYDetailPane.module.css'
 interface IssueDetailPaneProps {
   issueKey: string
-  dotColor: 'red' | 'blue'
+  dotColor: 'red' | 'blue' | 'orange'
   title: string
   summary: string
   taxImpact: string
   rootCause: string
-  tableRows: { label: string; cols: string[]; total?: boolean; badge?: 'red' | 'orange' | 'grey' | 'green' }[]
+  tableRows: { label: string; cols: string[]; total?: boolean; badge?: 'red' | 'orange' | 'grey' | 'green' | 'blue' }[]
   tableHeaders: string[]
   suggestedActions: string[]
   viewSourceLabel: string
@@ -29,41 +29,6 @@ interface IssueDetailPaneProps {
   onPrev?: () => void
   onNext?: () => void
   totalIssues?: number
-  onOpenQuestionnaire?: () => void
-}
-
-// Mock client Q&A keyed by issueKey
-const CLIENT_QA: Record<string, { question: string; answer: string; date: string }> = {
-  w2Box12: {
-    question: 'Box 12 on your Tech Circle W-2 was not captured during import. Do you recall the code and amount?',
-    answer: 'I believe it was a 401k deferral, code D. I can check my year-end pay stub for the exact amount.',
-    date: 'Mar 15, 2025',
-  },
-  w2Ein: {
-    question: 'The Employer Identification Number (EIN) on your Tech Circle W-2 was not found. Can you locate it on your physical W-2?',
-    answer: 'Sure — it\'s printed in Box b on the form. I\'ll send you a clearer scan.',
-    date: 'Mar 15, 2025',
-  },
-  divCollectibles: {
-    question: 'Box 2d (collectibles gain) on your Unwavering Financial 1099-DIV appears blank. Did you sell any collectibles in 2024?',
-    answer: 'No, I don\'t believe so. That box should be zero.',
-    date: 'Mar 16, 2025',
-  },
-  divNonDiv: {
-    question: 'Box 3 (nondividend distributions) on your Unwavering Financial 1099-DIV was not imported. Do you have the source document handy?',
-    answer: 'I can pull it up. Give me a moment to check the original statement.',
-    date: 'Mar 16, 2025',
-  },
-  wagesConfidence: {
-    question: 'The scan of your Tech Circle W-2 Box 1 returned a lower-than-normal confidence score. Can you confirm your wages were $118,940?',
-    answer: 'Yes, that\'s correct — $118,940 matches my final pay stub for the year.',
-    date: 'Mar 15, 2025',
-  },
-  capitalGainNew: {
-    question: 'You have a $194,600 capital gain this year that didn\'t appear on your prior-year return. Can you describe the asset sale?',
-    answer: 'I sold some stock I\'d held for several years. Most should be long-term. I have the 1099-B from my brokerage.',
-    date: 'Mar 16, 2025',
-  },
 }
 
 export default function IssueDetailPane({
@@ -90,7 +55,6 @@ export default function IssueDetailPane({
   onPrev,
   onNext,
   totalIssues = 6,
-  onOpenQuestionnaire,
 }: IssueDetailPaneProps) {
   const [inputValue, setInputValue] = useState('')
   const signOff = reviewedFields?.get(issueKey)
@@ -107,7 +71,7 @@ export default function IssueDetailPane({
     )
   }, [])
 
-  const dotStyle = dotColor === 'blue' ? { background: '#205ea3' } : {}
+  const dotStyle = dotColor === 'blue' ? { background: '#205ea3' } : dotColor === 'orange' ? { background: '#d68000' } : {}
 
   return (
     <div className={`${styles.panel} ${closing ? styles.panelClosing : ''}`}>
@@ -170,29 +134,6 @@ export default function IssueDetailPane({
             <p className={styles.sectionTitle}>Root cause</p>
             <p className={styles.sectionBody}>{rootCause}</p>
           </div>
-
-          {/* Client response */}
-          {CLIENT_QA[issueKey] && (
-            <div className={styles.section}>
-              <p className={styles.sectionTitle}>Client response</p>
-              <div className={styles.qaBlock}>
-                <p className={styles.qaQuestion}>
-                  <strong>Preparer asked</strong>
-                  {CLIENT_QA[issueKey].question}
-                </p>
-                <div className={styles.qaBubble}>
-                  <span className={styles.qaAvatar}>JD</span>
-                  <div className={styles.qaText}>
-                    <span className={styles.qaName}>Jessica Drake · {CLIENT_QA[issueKey].date}</span>
-                    <p className={styles.qaAnswer}>{CLIENT_QA[issueKey].answer}</p>
-                  </div>
-                </div>
-                <button className={styles.qaSourceLink} onClick={onOpenQuestionnaire}>
-                  From Tax Organizer · <span>View all responses</span>
-                </button>
-              </div>
-            </div>
-          )}
 
           {/* Calculations */}
           <div className={styles.section}>

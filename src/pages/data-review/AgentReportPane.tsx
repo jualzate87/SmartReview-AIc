@@ -1,29 +1,26 @@
 import { useState, useEffect, useRef } from 'react'
-import { Close, Plus, ChevronDown, ChevronRight, ChevronLeft, CircleCheck, Document, Panel } from '@design-systems/icons'
-import importedDocsIcon from '../../assets/icons/imported-docs.svg'
+import { Close, Plus, ChevronDown, ChevronRight, CircleCheck, Panel } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
-import { Badge } from '@cgds/badge'
-import '@cgds/badge/dist/index.css'
 import intuitAssistIcon from '../../assets/icons/intuit-assist.svg'
 import brandBallsIcon from '../../assets/icons/brand-balls.svg'
 import compareOthersIcon from '../../assets/icons/compare-others.svg'
 import federalTaxesIcon from '../../assets/icons/federal-taxes.svg'
 import scannerIcon from '../../assets/icons/scanner.svg'
 import taxesAndCreditsIcon from '../../assets/icons/taxes-and-credits.svg'
-import YoYDetailPane from './YoYDetailPane'
 import IssueDetailPane from './IssueDetailPane'
-import QuestionnairePane from './QuestionnairePane'
 import Tooltip from './Tooltip'
 import styles from '../../styles/data-review/AgentReportPane.module.css'
 
 // ProtoC Phase 2 — AI diagnostics ONLY. Import/OCR flags (w2Box12, w2Ein,
 // wagesConfidence, divCollectibles, divNonDiv) are owned by Phase 1 and removed here,
 // so there is zero redundancy between the two phases.
-const TOTAL_REVIEW_ITEMS = 10
+export const TOTAL_REVIEW_ITEMS = 10
 
-// Ordered list of issue keys for guided "Next" navigation (Phase 2 diagnostics only)
-const GUIDED_ORDER = ['capitalGainNew', 'irsEstPenalty', 'irsAmt', 'irsCapGainWithholding', 'missingPriorAgi', 'missingStateReturn', 'missingEstPayments', 'optW4Adjustment', 'optQbi', 'optIra'] as const
+// Ordered list of issue keys for guided "Next" navigation (Phase 2 diagnostics only).
+// Exported so DataReviewPage can compute the Phase 2 banner's progress from the same
+// source of truth instead of duplicating the list.
+export const GUIDED_ORDER = ['capitalGainNew', 'irsEstPenalty', 'irsAmt', 'irsCapGainWithholding', 'missingPriorAgi', 'missingStateReturn', 'missingEstPayments', 'optW4Adjustment', 'optQbi', 'optIra'] as const
 type IssueKey = typeof GUIDED_ORDER[number]
 
 interface AgentReportPaneProps {
@@ -39,7 +36,7 @@ interface AgentReportPaneProps {
   embedded?: boolean
   total1a?: number
   wages?: { techCircle: number }
-  onNavigateToTab?: (tab: 'w2s' | '1099-divs' | '1099-ints' | 'k1' | 'prior-1040', subTab?: 'techCircle', field?: string) => void
+  onNavigateToTab?: (tab: 'w2s' | '1099-divs' | '1099-ints' | 'questionnaire' | 'prior-1040', subTab?: 'techCircle', field?: string) => void
   /** Highlight a 1040 field without leaving the agent panel */
   onHighlightField?: (field: string | null) => void
   /** Live field values for inline editing */
@@ -50,7 +47,7 @@ interface AgentReportPaneProps {
 // ProtoC Phase 2 — diagnostics only. Import/OCR keys removed (owned by Phase 1).
 const REPORT_CARDS = [
   { label: 'Critical',        keys: ['irsEstPenalty', 'irsAmt', 'missingPriorAgi'],                                          badgeColor: 'red'    as const, position: 'first' },
-  { label: 'Review required', keys: ['irsCapGainWithholding', 'missingStateReturn', 'missingEstPayments', 'capitalGainNew'], badgeColor: 'orange' as const, position: 'middle' },
+  { label: 'Review required', keys: ['capitalGainNew', 'irsCapGainWithholding', 'missingStateReturn', 'missingEstPayments'], badgeColor: 'orange' as const, position: 'middle' },
   { label: 'Opportunities',   keys: ['optW4Adjustment', 'optQbi', 'optIra'],                                                 badgeColor: 'blue'   as const, position: 'last' },
 ]
 
@@ -61,122 +58,7 @@ const CARD_ICONS = [
   <img src={taxesAndCreditsIcon} alt="" width={20} height={20} />,
 ]
 
-// ── Jessica Drake Issues ──────────────────────────────────────────────────
-
-const W2_BOX12_ISSUE = {
-  issueKey: 'w2Box12',
-  dotColor: 'red' as const,
-  title: 'W-2 Box 12 not imported',
-  category: 'Scan quality & inputs',
-  summary: 'Box 12 was not captured during import. Code and amount must be entered manually.',
-  taxImpact: 'Box 12 codes can affect pre-tax deductions (e.g., 401k, HSA). If Box 12 contains a deferral amount, taxable income may be overstated until the field is populated.',
-  rootCause: 'The Box 12 section on the Tech Circle W-2 was not recognized during OCR. The field was left blank in the imported data.',
-  tableRows: [
-    { label: 'Box 12 (Code)', cols: ['—', 'Required', '—'], badge: 'red' as const, total: false },
-  ],
-  tableHeaders: ['Field', 'Imported', 'Status', ''],
-  suggestedActions: [
-    'Open the Tech Circle W-2 in the source document panel.',
-    'Locate Box 12 and enter the Code and Amount manually.',
-    'Save the value — it flows automatically to the return.',
-  ],
-  viewSourceLabel: 'View Tech Circle W-2',
-  viewSourceTab: 'w2s' as const,
-  viewSourceSubTab: 'techCircle' as const,
-  viewSourceField: 'box12',
-}
-
-const W2_EIN_ISSUE = {
-  issueKey: 'w2Ein',
-  dotColor: 'red' as const, // Critical
-  title: 'W-2 EIN not found',
-  category: 'Scan quality & inputs',
-  summary: 'Employer EIN not found in the document. Required for e-filing — enter manually.',
-  taxImpact: 'A missing EIN will prevent e-filing. The return cannot be submitted electronically until this field is populated.',
-  rootCause: 'The EIN field on the Tech Circle W-2 was not captured during import. This may be due to scan quality or document formatting.',
-  tableRows: [
-    { label: 'Employer EIN (Box b)', cols: ['—', 'Required', '—'], badge: 'red' as const, total: false },
-  ],
-  tableHeaders: ['Field', 'Imported', 'Status', ''],
-  suggestedActions: [
-    'Open the Tech Circle W-2 and locate Box b (Employer identification number).',
-    'Enter the EIN manually in the Employer Information section.',
-    'Verify it matches the printed value on the source document.',
-  ],
-  viewSourceLabel: 'View Tech Circle W-2',
-  viewSourceTab: 'w2s' as const,
-  viewSourceSubTab: 'techCircle' as const,
-  viewSourceField: 'wages',
-}
-
-const DIV_COLLECTIBLES_ISSUE = {
-  issueKey: 'divCollectibles',
-  dotColor: 'red' as const,
-  title: '1099-DIV Box 2d empty',
-  category: 'Scan quality & inputs',
-  summary: 'Collectibles (28%) gain not imported — verify source document.',
-  taxImpact: 'If collectibles gain exists and was not captured, income may be understated. Collectibles gains are taxed at a maximum 28% rate.',
-  rootCause: 'Box 2d on the Unwavering Financial 1099-DIV was blank or not recognized during import.',
-  tableRows: [
-    { label: 'Box 2d (Collectibles 28% gain)', cols: ['—', 'Verify', '?'], badge: 'orange' as const, total: false },
-  ],
-  tableHeaders: ['Field', 'Imported', 'Status', ''],
-  suggestedActions: [
-    'Open the Unwavering Financial 1099-DIV and check Box 2d.',
-    'If a value exists, enter it manually.',
-    'If blank on the source document, no action needed.',
-  ],
-  viewSourceLabel: 'View 1099-DIV',
-  viewSourceTab: '1099-divs' as const,
-  viewSourceSubTab: undefined,
-  viewSourceField: 'qualifiedDivs',
-}
-
-const DIV_NONDIV_ISSUE = {
-  issueKey: 'divNonDiv',
-  dotColor: 'red' as const,
-  title: '1099-DIV Box 3 empty',
-  category: 'Scan quality & inputs',
-  summary: 'Nondividend distributions not imported — verify source document.',
-  taxImpact: 'Nondividend distributions (Box 3) are a return of capital — generally not taxable but reduce cost basis. If present and not captured, basis calculations may be affected.',
-  rootCause: 'Box 3 on the Unwavering Financial 1099-DIV was not captured during import.',
-  tableRows: [
-    { label: 'Box 3 (Nondividend distributions)', cols: ['—', 'Verify', '?'], badge: 'orange' as const, total: false },
-  ],
-  tableHeaders: ['Field', 'Imported', 'Status', ''],
-  suggestedActions: [
-    'Open the Unwavering Financial 1099-DIV and check Box 3.',
-    'If a value exists, enter it and note the basis impact.',
-    'If blank on the source document, no action needed.',
-  ],
-  viewSourceLabel: 'View 1099-DIV',
-  viewSourceTab: '1099-divs' as const,
-  viewSourceSubTab: undefined,
-  viewSourceField: 'ordinaryDivs',
-}
-
-const WAGES_CONFIDENCE_ISSUE = {
-  issueKey: 'wagesConfidence',
-  dotColor: 'red' as const,
-  title: 'Wages low confidence',
-  category: 'Scan quality',
-  summary: 'W-2 wages read at 72% confidence. Verify Box 1 matches source document ($118,940).',
-  taxImpact: 'If wages are misread, taxable income will be incorrect. At Jessica\'s marginal rate, each $1,000 error changes tax liability by approximately $240.',
-  rootCause: 'The scan of the Tech Circle W-2 returned a lower-than-normal confidence score for Box 1. The printed digits may be partially obscured or low contrast.',
-  tableRows: [
-    { label: 'Box 1 (Wages)', cols: ['$118,940', '72%', 'Verify'], badge: 'red' as const, total: false },
-  ],
-  tableHeaders: ['Field', 'Scanned value', 'Confidence', 'Action'],
-  suggestedActions: [
-    'Open the Tech Circle W-2 and confirm Box 1 shows $118,940.',
-    'If the printed value differs, correct it in the Wages field.',
-    'Mark as reviewed once confirmed.',
-  ],
-  viewSourceLabel: 'View Tech Circle W-2',
-  viewSourceTab: 'w2s' as const,
-  viewSourceSubTab: 'techCircle' as const,
-  viewSourceField: 'wages',
-}
+// ── Jessica Drake Issues (Phase 2 diagnostics only) ────────────────────────
 
 const CAPITAL_GAIN_NEW_ISSUE = {
   issueKey: 'capitalGainNew',
@@ -199,7 +81,9 @@ const CAPITAL_GAIN_NEW_ISSUE = {
   viewSourceLabel: 'View 1040',
   viewSourceTab: 'prior-1040' as const,
   viewSourceSubTab: undefined,
-  viewSourceField: 'capitalGain',
+  // No field-level highlight — PriorYear1040Fields is a static display with no
+  // overlay system, so pointing at a specific field here would be misleading.
+  viewSourceField: undefined,
 }
 
 // ── IRS Compliance Issues ─────────────────────────────────────────────────
@@ -226,7 +110,9 @@ const IRS_EST_PENALTY_ISSUE = {
   viewSourceLabel: 'View Prior Year 1040',
   viewSourceTab: 'prior-1040' as const,
   viewSourceSubTab: undefined,
-  viewSourceField: 'totalTax',
+  // No field-level highlight — PriorYear1040Fields is a static display with no
+  // overlay system, so pointing at a specific field here would be misleading.
+  viewSourceField: undefined,
 }
 
 const IRS_AMT_ISSUE = {
@@ -251,7 +137,9 @@ const IRS_AMT_ISSUE = {
   viewSourceLabel: 'View Prior Year 1040',
   viewSourceTab: 'prior-1040' as const,
   viewSourceSubTab: undefined,
-  viewSourceField: 'agi',
+  // No field-level highlight — PriorYear1040Fields is a static display with no
+  // overlay system, so pointing at a specific field here would be misleading.
+  viewSourceField: undefined,
 }
 
 const IRS_CAP_GAIN_WITHHOLDING_ISSUE = {
@@ -276,7 +164,9 @@ const IRS_CAP_GAIN_WITHHOLDING_ISSUE = {
   viewSourceLabel: 'View Prior Year 1040',
   viewSourceTab: 'prior-1040' as const,
   viewSourceSubTab: undefined,
-  viewSourceField: 'capitalGain',
+  // No field-level highlight — PriorYear1040Fields is a static display with no
+  // overlay system, so pointing at a specific field here would be misleading.
+  viewSourceField: undefined,
 }
 
 // ── Missing Information Issues ────────────────────────────────────────────
@@ -348,7 +238,9 @@ const MISSING_EST_PAYMENTS_ISSUE = {
   viewSourceLabel: 'View Prior Year 1040',
   viewSourceTab: 'prior-1040' as const,
   viewSourceSubTab: undefined,
-  viewSourceField: 'totalPayments',
+  // No field-level highlight — PriorYear1040Fields is a static display with no
+  // overlay system, so pointing at a specific field here would be misleading.
+  viewSourceField: undefined,
 }
 
 // ── Optimization Suggestions ──────────────────────────────────────────────
@@ -398,7 +290,9 @@ const OPT_QBI_ISSUE = {
   viewSourceLabel: 'View Prior Year 1040',
   viewSourceTab: 'prior-1040' as const,
   viewSourceSubTab: undefined,
-  viewSourceField: 'taxableIncome',
+  // No field-level highlight — PriorYear1040Fields is a static display with no
+  // overlay system, so pointing at a specific field here would be misleading.
+  viewSourceField: undefined,
 }
 
 const OPT_IRA_ISSUE = {
@@ -426,20 +320,15 @@ const OPT_IRA_ISSUE = {
   viewSourceField: 'wages',
 }
 
-// Maps each issue key to the 1040 field it should highlight
+// Maps each issue key to the 1040 field it should highlight — only fields with a
+// real, highlightable row on LeftPanel1040 (see the `field=` prop on each <Row>).
+// "Total tax" (line 24) and "Total payments" (line 33) have no field key there,
+// so those issues intentionally highlight nothing rather than fabricate a pointer.
 const ISSUE_FIELD: Partial<Record<IssueKey, string>> = {
-  w2Box12:               'wages',
-  w2Ein:                 'wages',
-  divCollectibles:       'qualifiedDivs',
-  divNonDiv:             'ordinaryDivs',
-  wagesConfidence:       'wages',
   capitalGainNew:        'capitalGain',
-  irsEstPenalty:         'totalTax',
   irsAmt:                'agi',
   irsCapGainWithholding: 'capitalGain',
-  missingPriorAgi:       undefined,
   missingStateReturn:    'wages',
-  missingEstPayments:    'totalPayments',
   optW4Adjustment:       'withholding',
   optQbi:                'taxableIncome',
   optIra:                'wages',
@@ -447,7 +336,7 @@ const ISSUE_FIELD: Partial<Record<IssueKey, string>> = {
 
 // All issues as a flat list for getIssueConfig lookup
 const ALL_ISSUES = [
-  W2_BOX12_ISSUE, W2_EIN_ISSUE, DIV_COLLECTIBLES_ISSUE, DIV_NONDIV_ISSUE, WAGES_CONFIDENCE_ISSUE, CAPITAL_GAIN_NEW_ISSUE,
+  CAPITAL_GAIN_NEW_ISSUE,
   IRS_EST_PENALTY_ISSUE, IRS_AMT_ISSUE, IRS_CAP_GAIN_WITHHOLDING_ISSUE,
   MISSING_PRIOR_AGI_ISSUE, MISSING_STATE_RETURN_ISSUE, MISSING_EST_PAYMENTS_ISSUE,
   OPT_W4_ISSUE, OPT_QBI_ISSUE, OPT_IRA_ISSUE,
@@ -484,7 +373,6 @@ export default function AgentReportPane({
     if (allReviewed && !prevAllReviewed.current) {
       // Brief delay so the "Reviewed" button state renders first
       const t = setTimeout(() => {
-        setYoyDetailOpen(false)
         setIssueDetailOpen(null)
         setShowCompletion(true)
       }, 600)
@@ -494,19 +382,8 @@ export default function AgentReportPane({
   }, [allReviewed])
   const [inputValue, setInputValue] = useState('')
   const [expandedCard, setExpandedCard] = useState<string | null>(null)
-  const [importedDocsExpanded, setImportedDocsExpanded] = useState(false)
-  const [yoyDetailOpen, setYoyDetailOpen] = useState(initialSubView === 'yoyDetail')
-  const [yoyDetailClosing, setYoyDetailClosing] = useState(false)
   const [issueDetailOpen, setIssueDetailOpen] = useState<string | null>(null)
   const [issueDetailClosing, setIssueDetailClosing] = useState(false)
-  const [questionnaireOpen, setQuestionnaireOpen] = useState(false)
-  const [questionnaireClosing, setQuestionnaireClosing] = useState(false)
-
-  const handleOpenQuestionnaire = () => setQuestionnaireOpen(true)
-  const handleCloseQuestionnaire = () => {
-    setQuestionnaireClosing(true)
-    setTimeout(() => { setQuestionnaireOpen(false); setQuestionnaireClosing(false) }, 220)
-  }
 
   // ── Detail pane navigation ─────────────────────────────────
   const openDetail = (key: string) => {
@@ -514,13 +391,6 @@ export default function AgentReportPane({
     const field = ISSUE_FIELD[key as IssueKey] ?? null
     onHighlightField?.(field)
     setIssueDetailOpen(key)
-  }
-
-  const handleCloseYoyDetail = () => {
-    setYoyDetailClosing(true)
-    onSubViewChange?.('overview')
-    onHighlightField?.(null)  // clear 1040 highlight when closing
-    setTimeout(() => { setYoyDetailOpen(false); setYoyDetailClosing(false) }, 200)
   }
 
   const handleCloseIssueDetail = () => {
@@ -534,17 +404,11 @@ export default function AgentReportPane({
     const idx = GUIDED_ORDER.indexOf(currentKey as IssueKey)
     const nextKey = idx >= 0 && idx < GUIDED_ORDER.length - 1 ? GUIDED_ORDER[idx + 1] : null
     if (nextKey) {
-      if (currentKey === 'wages') {
-        handleCloseYoyDetail()
-        setTimeout(() => openDetail(nextKey), 220)
-      } else {
-        handleCloseIssueDetail()
-        setTimeout(() => openDetail(nextKey), 220)
-      }
+      handleCloseIssueDetail()
+      setTimeout(() => openDetail(nextKey), 220)
     } else {
       // All done — close detail and show completion screen if all reviewed
-      if (currentKey === 'wages') handleCloseYoyDetail()
-      else handleCloseIssueDetail()
+      handleCloseIssueDetail()
       setTimeout(() => setShowCompletion(true), 220)
     }
   }
@@ -554,13 +418,8 @@ export default function AgentReportPane({
     const idx = GUIDED_ORDER.indexOf(currentKey as IssueKey)
     const prevKey = idx > 0 ? GUIDED_ORDER[idx - 1] : null
     if (!prevKey) return
-    if (currentKey === 'wages') {
-      handleCloseYoyDetail()
-      setTimeout(() => openDetail(prevKey), 220)
-    } else {
-      handleCloseIssueDetail()
-      setTimeout(() => openDetail(prevKey), 220)
-    }
+    handleCloseIssueDetail()
+    setTimeout(() => openDetail(prevKey), 220)
   }
 
   const isLastIssue  = (key: string) => GUIDED_ORDER.indexOf(key as IssueKey) === GUIDED_ORDER.length - 1
@@ -606,84 +465,6 @@ export default function AgentReportPane({
           <p className={styles.agentMessage}>
             Here's what we found. Review the issues below to complete your return.
           </p>
-
-          {/* Imported Documents card */}
-          <div className={styles.importedDocsCard}>
-            <button
-              className={styles.importedDocsHeader}
-              onClick={() => setImportedDocsExpanded(v => !v)}
-              aria-expanded={importedDocsExpanded}
-            >
-              <img src={importedDocsIcon} alt="" width={20} height={20} />
-              <div className={styles.importedDocsContent}>
-                <span className={styles.importedDocsLabel}>Imported documents</span>
-                <Badge status="info" shape="rect">5</Badge>
-              </div>
-              <ChevronDown size="small" className={importedDocsExpanded ? styles.chevronUp : styles.chevron} />
-            </button>
-
-            {importedDocsExpanded && (
-              <div className={styles.docList}>
-                <div className={styles.docTableHeader}>
-                  <span className={styles.docColDocument}>Document</span>
-                  <span className={styles.docColConfidence}>
-                    Confidence
-                    <span className={styles.docConfidenceInfo} title="Scan confidence score">ⓘ</span>
-                  </span>
-                </div>
-                <button className={styles.docRow} onClick={() => onNavigateToTab?.('prior-1040')}>
-                  <div className={styles.docRowLeft}>
-                    <div className={styles.docFileIcon}><Document size="medium" /></div>
-                    <div className={styles.docMeta}>
-                      <span className={styles.docName}>1040-PriorYear-2024.pdf</span>
-                      <span className={styles.docSub}>Form 1040 · 2 pages</span>
-                    </div>
-                  </div>
-                  <span className={styles.confidenceBadge} data-level="high">100%</span>
-                </button>
-                <button className={styles.docRow} onClick={() => onNavigateToTab?.('w2s', 'techCircle')}>
-                  <div className={styles.docRowLeft}>
-                    <div className={styles.docFileIcon}><Document size="medium" /></div>
-                    <div className={styles.docMeta}>
-                      <span className={styles.docName}>W2-TechCircle.pdf</span>
-                      <span className={styles.docSub}>W-2 · 1 page</span>
-                    </div>
-                  </div>
-                  <span className={styles.confidenceBadge} data-level="low">72%</span>
-                </button>
-                <button className={styles.docRow} onClick={() => onNavigateToTab?.('1099-ints')}>
-                  <div className={styles.docRowLeft}>
-                    <div className={styles.docFileIcon}><Document size="medium" /></div>
-                    <div className={styles.docMeta}>
-                      <span className={styles.docName}>1099-INT-UnwaveringFinancial.pdf</span>
-                      <span className={styles.docSub}>1099-INT · 1 page</span>
-                    </div>
-                  </div>
-                  <span className={styles.confidenceBadge} data-level="high">91%</span>
-                </button>
-                <button className={styles.docRow} onClick={() => onNavigateToTab?.('1099-divs')}>
-                  <div className={styles.docRowLeft}>
-                    <div className={styles.docFileIcon}><Document size="medium" /></div>
-                    <div className={styles.docMeta}>
-                      <span className={styles.docName}>1099-DIV-UnwaveringFinancial.pdf</span>
-                      <span className={styles.docSub}>1099-DIV · 1 page</span>
-                    </div>
-                  </div>
-                  <span className={styles.confidenceBadge} data-level="high">94%</span>
-                </button>
-                <button className={styles.docRow} onClick={handleOpenQuestionnaire}>
-                  <div className={styles.docRowLeft}>
-                    <div className={styles.docFileIcon} style={{ color: '#205ea3' }}><Document size="medium" /></div>
-                    <div className={styles.docMeta}>
-                      <span className={styles.docName}>Client-Questionnaire.pdf</span>
-                      <span className={styles.docSub}>Organizer · 10 responses</span>
-                    </div>
-                  </div>
-                  <span className={styles.confidenceBadge} data-level="high">100%</span>
-                </button>
-              </div>
-            )}
-          </div>
 
           {/* Diagnostics review scorecard */}
           <div className={styles.scoreCard}>
@@ -755,7 +536,14 @@ export default function AgentReportPane({
                       const isReviewed = !!signOff
                       const issueNum = GUIDED_ORDER.indexOf(key as IssueKey) + 1
                       return (
-                        <button key={key} className={`${styles.findingInner} ${isReviewed ? styles.findingInnerReviewed : ''}`} onClick={() => onHighlightField?.(ISSUE_FIELD[key as IssueKey] ?? null)}>
+                        <div
+                          key={key}
+                          role="button"
+                          tabIndex={0}
+                          className={`${styles.findingInner} ${isReviewed ? styles.findingInnerReviewed : ''}`}
+                          onClick={() => onHighlightField?.(ISSUE_FIELD[key as IssueKey] ?? null)}
+                          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onHighlightField?.(ISSUE_FIELD[key as IssueKey] ?? null) } }}
+                        >
                           <div className={styles.findingTitleRow}>
                             {isReviewed ? <span className={styles.findingCheckIcon}><CircleCheck size="small" /></span> : <span className={styles.findingDot} style={{ background: issue.dotColor === 'blue' ? '#0077c5' : issue.dotColor === 'orange' ? '#d68000' : '#c22929' }} />}
                             <span className={styles.findingTitle}>{issue.title}</span>
@@ -773,8 +561,17 @@ export default function AgentReportPane({
                             <Tooltip text="See the root cause, tax impact, and suggested next steps for this finding">
                               <Button priority="primary" size="small" onClick={() => openDetail(key)}>See details <ChevronRight size="small" /></Button>
                             </Tooltip>
+                            <Tooltip text={isReviewed ? 'Click to unmark' : 'Mark as reviewed'}>
+                              <button
+                                className={`${styles.findingMarkReviewedBtn} ${isReviewed ? styles.findingMarkReviewedBtnActive : ''}`}
+                                aria-label={isReviewed ? `Unmark ${issue.title} as reviewed` : `Mark ${issue.title} as reviewed`}
+                                onClick={() => onMarkReviewed?.(key)}
+                              >
+                                <CircleCheck size="small" />
+                              </button>
+                            </Tooltip>
                           </div>
-                        </button>
+                        </div>
                       )
                     })}
                   </div>
@@ -814,29 +611,6 @@ export default function AgentReportPane({
         <span className={styles.legal}>Important information about how we use generative AI</span>
       </div>
 
-      {/* ── YoY detail pane ── */}
-      {(yoyDetailOpen || yoyDetailClosing) && (
-        <YoYDetailPane
-          closing={yoyDetailClosing}
-          onClose={() => { handleCloseYoyDetail(); onClose?.() }}
-          onBack={handleCloseYoyDetail}
-          onViewW2={() => onViewW2?.('yoyDetail')}
-          onReviewSource={onReviewSource ? () => { onReviewSource() } : undefined}
-          onMarkReviewed={onMarkReviewed}
-          reviewedCount={reviewedCount}
-          totalItems={TOTAL_REVIEW_ITEMS}
-          reviewedFields={reviewedFields}
-          total1a={total1a}
-          wages={wages}
-          issueNumber={GUIDED_ORDER.indexOf('wages') + 1}
-          category="YoY analysis"
-          totalIssues={GUIDED_ORDER.length}
-          onPrev={isFirstIssue('wages') ? undefined : () => handlePrev('wages')}
-          onNext={isLastIssue('wages') ? undefined : () => handleNext('wages')}
-          onOpenQuestionnaire={handleOpenQuestionnaire}
-        />
-      )}
-
       {/* ── Issue detail pane ── */}
       {(!!issueDetailOpen || issueDetailClosing) && activeIssue && (() => {
         return (
@@ -858,13 +632,7 @@ export default function AgentReportPane({
             onBack={handleCloseIssueDetail}
             onClose={() => { handleCloseIssueDetail(); onClose?.() }}
             onViewSource={() => {
-              const field = (activeIssue as typeof TAXABLE_INTEREST_ISSUE).viewSourceField
-              onNavigateToTab?.(
-                activeIssue.viewSourceTab as 'w2s' | '1099-divs' | '1099-ints' | 'k1',
-                (activeIssue as typeof SCAN_QUALITY_ISSUE).viewSourceSubTab,
-                field ?? undefined
-              )
-              if (!field) onViewW2?.('overview')
+              onNavigateToTab?.(activeIssue.viewSourceTab, activeIssue.viewSourceSubTab, activeIssue.viewSourceField)
             }}
             onMarkReviewed={onMarkReviewed}
             issueNumber={GUIDED_ORDER.indexOf(activeIssue.issueKey as IssueKey) + 1}
@@ -872,18 +640,9 @@ export default function AgentReportPane({
             totalIssues={GUIDED_ORDER.length}
             onPrev={isFirstIssue(activeIssue.issueKey) ? undefined : () => handlePrev(activeIssue.issueKey)}
             onNext={isLastIssue(activeIssue.issueKey) ? undefined : () => handleNext(activeIssue.issueKey)}
-            onOpenQuestionnaire={handleOpenQuestionnaire}
           />
         )
       })()}
-
-      {/* ── Questionnaire pane ── */}
-      {(questionnaireOpen || questionnaireClosing) && (
-        <QuestionnairePane
-          closing={questionnaireClosing}
-          onBack={handleCloseQuestionnaire}
-        />
-      )}
 
     </div>
   )
