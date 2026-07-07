@@ -54,13 +54,13 @@ const EMPLOYER_DATA = {
     box12Code: '' as string, box12Amount: '' as string,
   },
   techCircle: {
-    id: '98-7654321',
+    id: '',
     name: 'Tech Circle Inc',
     street: '321 Main Orchard Dr',
     city: 'Reno', state: 'NV', zip: '89501',
-    federalTax: '15,840',
-    socialSecurityWages: '118,940', ssTax: '7,374',
-    medicareWages: '118,940', medicareTax: '1,724',
+    federalTax: '',
+    socialSecurityWages: '125,548', ssTax: '6,890',
+    medicareWages: '125,548', medicareTax: '1,820',
     ssTips: '0', allocatedTips: '0',
     dependentCare: '0', nonqualified: '0',
     box12Code: '' as string, box12Amount: '' as string,
@@ -81,7 +81,7 @@ export default function DetailFields({
   onFieldSelect,
   activeSubTab = 'techCircle',
   onSubTabChange,
-  wages = { techCircle: 118940 },
+  wages = { techCircle: 125548 },
   onWageChange,
   fieldValues,
   onFieldValueChange,
@@ -393,7 +393,7 @@ export default function DetailFields({
           Employer Information (MANDATORY for e-file)
         </div>
 
-        {renderStaticRow('ein', '(b) Employer identification number', employer.id)}
+        {renderStaticRow('ein', '(b) Employer identification number', employer.id || 'Not found')}
         {renderStaticRow('employerName', '(c) Name of employer', employer.name, styles.fieldInputWide)}
         {renderStaticRow('street', 'Street address', employer.street, styles.fieldInputWide)}
         {renderStaticRow('cityStateZip', 'City / State / ZIP code', `${employer.city}, ${employer.state} ${employer.zip}`, styles.fieldInputWide)}

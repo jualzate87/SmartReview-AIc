@@ -37,12 +37,12 @@ const DEFAULT_STATE: SyncedState = {
   activeTopTab: 'w2s',
   activeSubTab: 'techCircle',
   selectedField: null,
-  wages: { techCircle: 118940 },
+  wages: { techCircle: 125548 },
   fieldValues: {
-    withholding: { techCircle: 15840 },
+    withholding: { techCircle: 0 },
     box12: 0,
-    taxableInterest: 1986,
-    qualifiedDivs: 187500,
+    taxableInterest: 2409,
+    qualifiedDivs: 200000,
   },
   reviewedFieldsList: [],
 }

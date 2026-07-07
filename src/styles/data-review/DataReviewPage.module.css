@@ -316,16 +316,16 @@
 /* ProtoC — Phase 1: minimized 1040 — slim edge handle, matches the panel drag-handle
    language since expanding grows the layout horizontally (not vertically). */
 /* Wrapper occupies the collapsed column and animates width; the button itself is a
-   self-contained pill (border, padding, radius) pinned near the top, not a flush strip. */
+   flush-edge tab (like a bookmark ribbon), not a floating pill — same treatment as a
+   docked side-panel launcher, pinned to the top of the column with no gap or border
+   of its own (the tab's rounded corners + shadow do that work). */
 .form1040HandleWrap {
   display: flex;
   align-items: flex-start;
-  justify-content: center;
+  justify-content: flex-start;
   flex-shrink: 0;
   align-self: stretch;
   overflow: hidden;
-  border-right: 1px solid #D5DEE3;
-  padding-top: 10px;
   transition: width 380ms cubic-bezier(0.4, 0, 0.25, 1), opacity 280ms ease;
 }
 
@@ -340,19 +340,19 @@
   justify-content: center;
   gap: 8px;
   flex-shrink: 0;
-  background: var(--color-container-background-primary, #ffffff);
-  border: 1px solid #C3CED5;
-  border-radius: 8px;
-  color: #5D686F;
+  background: var(--color-action-standard, #0077C5);
+  border: none;
+  border-radius: 0 8px 8px 0;
+  color: var(--color-white, #ffffff);
   cursor: pointer;
-  padding: 12px 8px;
-  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+  padding: 16px 10px;
+  margin-top: 24px;
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.12);
+  transition: background 120ms ease;
 }
 
 .form1040Handle:hover {
-  background: #f0f4f6;
-  border-color: #93a3ab;
-  color: #21262a;
+  background: var(--color-action-standard-active, #055393);
 }
 
 .form1040HandleIcon {
@@ -363,7 +363,7 @@
   writing-mode: vertical-rl;
   transform: rotate(180deg);
   font-family: var(--font-family-component, sans-serif);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.02em;
   white-space: nowrap;

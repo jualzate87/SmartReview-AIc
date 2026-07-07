@@ -6,34 +6,34 @@ import styles from '../../styles/data-review/DetailFields.module.css'
 
 // 1099-DIV — Unwavering Financial
 const PAYER_DATA = {
-  ein: '11-2418191',
-  name: 'UNWAVERING FINANCIAL INC.',
-  street: '388 Greenwich Street',
-  city: 'New York',
-  state: 'NY',
-  zip: '10013',
-  payerPhone: '818-993-1214',
+  ein: '47-8821034',
+  name: 'Unwavering Financial LLC',
+  street: '800 Capital Way, Suite 1100',
+  city: 'Denver',
+  state: 'CO',
+  zip: '80202',
+  payerPhone: '(720) 555-0188',
 }
 
 const RECIPIENT_DATA = {
-  ssn: 'XXX-XX-8209',
+  ssn: 'XXX-XX-4699',
   name: 'Jessica Drake',
   street: '333 Easy Street',
-  city: 'San Francisco',
+  city: 'Middlefield',
   state: 'CA',
-  zip: '94133-4263',
+  zip: '98756',
 }
 
 // Form 1099-DIV boxes — Jessica Drake / Unwavering Financial
 const FORM_DATA = {
-  box1a_totalOrdinary:     '331,250',  // Box 1a — Total ordinary dividends
-  box1b_qualifiedDivs:     '187,500',  // Box 1b — Qualified dividends
-  box2a_totalCapGain:      '',       // Box 2a — Total capital gain distr.
+  box1a_totalOrdinary:     '353,000',  // Box 1a — Total ordinary dividends
+  box1b_qualifiedDivs:     '200,000',  // Box 1b — Qualified dividends
+  box2a_totalCapGain:      '203,000', // Box 2a — Total capital gain distr.
   box2b_unrecap1250:       '',       // Box 2b — Unrecap. Sec. 1250 gain
   box2c_sec1202:           '',       // Box 2c — Section 1202 gain
   box2d_collectibles:      '',       // Box 2d — Collectibles (28%) gain
   box3_nonDivDistrib:      '',       // Box 3 — Nondividend distributions
-  box4_fedTaxWithheld:     '',       // Box 4 — Federal income tax withheld
+  box4_fedTaxWithheld:     '26,363', // Box 4 — Federal income tax withheld
   box5_investExpenses:     '',       // Box 5 — Investment expenses
   box6_foreignTaxPaid:     '',       // Box 6 — Foreign tax paid
   box7_foreignCountry:     '',       // Box 7 — Foreign country or U.S. possession
@@ -285,11 +285,14 @@ export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue',
 
         <div
           ref={selectedField === 'qualifiedDivs' ? highlightedRef : undefined}
-          className={`${styles.fieldRow} ${selectedField === 'qualifiedDivs' ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''} ${commentField === 'qualifiedDivs' ? styles.fieldRowCommentOpen : ''}`}
+          className={`${styles.fieldRow} ${flaggedFields['qualifiedDivs'] && !reviewedFields?.has('qualifiedDivs') ? styles.fieldRowHasNote : ''} ${selectedField === 'qualifiedDivs' ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''} ${commentField === 'qualifiedDivs' ? styles.fieldRowCommentOpen : ''}`}
         >
-          <span className={styles.fieldLabel}>(1b) Qualified dividends</span>
+          <span className={`${styles.fieldLabel} ${flaggedFields['qualifiedDivs'] && !reviewedFields?.has('qualifiedDivs') ? styles.fieldLabelFlagged : ''}`}>
+            {flaggedFields['qualifiedDivs'] && !reviewedFields?.has('qualifiedDivs') && <span className={styles.issueIndicator} />}
+            (1b) Qualified dividends
+          </span>
           <input
-            className={`${styles.fieldInput} ${styles.fieldInputSmall} ${editingField === 'qualifiedDivs' ? styles.fieldInputEditing : selectedField === 'qualifiedDivs' ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`}
+            className={`${styles.fieldInput} ${styles.fieldInputSmall} ${editingField === 'qualifiedDivs' ? styles.fieldInputEditing : flaggedFields['qualifiedDivs'] && !reviewedFields?.has('qualifiedDivs') ? styles.fieldInputHighlightedOrange : selectedField === 'qualifiedDivs' ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`}
             readOnly={editingField !== 'qualifiedDivs'}
             value={editingField === 'qualifiedDivs' ? draftValue : (fieldValues?.qualifiedDivs !== undefined ? fieldValues.qualifiedDivs.toLocaleString() : FORM_DATA.box1b_qualifiedDivs)}
             onChange={e => setDraftValue(e.target.value)}
@@ -315,6 +318,7 @@ export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue',
           {savedField === 'qualifiedDivs' && <span className={styles.recalcBadge}>1040 updated</span>}
           {editedFields.has('qualifiedDivs') && savedField !== 'qualifiedDivs' && <span className={styles.editedBadge}>Edited</span>}
         </div>
+        <ValidationNote fieldKey="qualifiedDivs" />
 
         {renderReadOnlyRow('totalCapGain', '(2a) Total capital gain distributions', FORM_DATA.box2a_totalCapGain)}
         {renderReadOnlyRow('unrecap1250', '(2b) Unrecaptured Sec. 1250 gain', FORM_DATA.box2b_unrecap1250)}

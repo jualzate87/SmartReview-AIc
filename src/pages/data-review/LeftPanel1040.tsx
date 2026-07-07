@@ -44,31 +44,44 @@ const PRIOR_YEAR: Record<string, number> = {
   withholding:      15987,
 }
 
-// YOY % — derived from document values vs current year (for badge/tint logic only)
-// wages: (124304−105000)/105000 = +18%; totalIncome: (134476−109400)/109400 = +23%
-const YOY: Record<string, number> = {
-  wages:           Math.round((124304 - 105000) / 105000 * 100),  // +18
-  taxableInterest: Math.round((4535   - 1400)   / 1400   * 100),  // +224
-  qualifiedDivs:   0,
-  ordinaryDivs:    Math.round((531    - 500)     / 500    * 100),  // +6
-  capitalGain:     Math.round((602    - 2500)    / 2500   * 100),  // −76
-  totalIncome:     Math.round((134476 - 109400)  / 109400 * 100),  // +23
-  agi:             Math.round((134476 - 109400)  / 109400 * 100),  // +23
-  stdDeduction:    Math.round((14600  - 13850)   / 13850  * 100),  // +5
-  taxableIncome:   Math.round((119876 - 95550)   / 95550  * 100),  // +25
+// Current-year values used for YoY comparison (must match the live figures below)
+const CURR_YEAR = {
+  wages:           125548,
+  taxableInterest:   2409,
+  qualifiedDivs:   200000,
+  ordinaryDivs:    353000,
+  capitalGain:     203000,
+  totalIncome:     683957,
+  agi:             683957,
+  stdDeduction:     15750,
+  taxableIncome:   668207,
 }
 
-// Dollar tax impact = change in field value × marginal rate
-const YOY_TAX_IMPACT: Record<string, number> = {
-  wages:           Math.abs(124304 - 105000) * 0.22,
-  taxableInterest: Math.abs(4535   - 1400)   * 0.22,
+// YOY % — derived from document values vs current year (for badge/tint logic only)
+const YOY: Record<string, number> = {
+  wages:           Math.round((CURR_YEAR.wages           - PRIOR_YEAR.wages)           / PRIOR_YEAR.wages           * 100),
+  taxableInterest: Math.round((CURR_YEAR.taxableInterest - PRIOR_YEAR.taxableInterest) / PRIOR_YEAR.taxableInterest * 100),
   qualifiedDivs:   0,
-  ordinaryDivs:    Math.abs(531    - 500)     * 0.22,
-  capitalGain:     Math.abs(602    - 2500)    * 0.15,
-  totalIncome:     Math.abs(134476 - 109400)  * 0.22,
-  agi:             Math.abs(134476 - 109400)  * 0.22,
-  stdDeduction:    Math.abs(14600  - 13850)   * 0.22,
-  taxableIncome:   Math.abs(119876 - 95550)   * 0.22,
+  ordinaryDivs:    Math.round((CURR_YEAR.ordinaryDivs    - PRIOR_YEAR.ordinaryDivs)    / PRIOR_YEAR.ordinaryDivs    * 100),
+  capitalGain:     Math.round((CURR_YEAR.capitalGain     - PRIOR_YEAR.capitalGain)     / PRIOR_YEAR.capitalGain     * 100),
+  totalIncome:     Math.round((CURR_YEAR.totalIncome      - PRIOR_YEAR.totalIncome)     / PRIOR_YEAR.totalIncome     * 100),
+  agi:             Math.round((CURR_YEAR.agi              - PRIOR_YEAR.agi)             / PRIOR_YEAR.agi             * 100),
+  stdDeduction:    Math.round((CURR_YEAR.stdDeduction     - PRIOR_YEAR.stdDeduction)    / PRIOR_YEAR.stdDeduction    * 100),
+  taxableIncome:   Math.round((CURR_YEAR.taxableIncome    - PRIOR_YEAR.taxableIncome)   / PRIOR_YEAR.taxableIncome   * 100),
+}
+
+// Dollar tax impact = change in field value × marginal rate (qualified divs/cap gain use the
+// 15% preferential rate; everything else uses Jessica's ordinary marginal rate)
+const YOY_TAX_IMPACT: Record<string, number> = {
+  wages:           Math.abs(CURR_YEAR.wages           - PRIOR_YEAR.wages)           * 0.24,
+  taxableInterest: Math.abs(CURR_YEAR.taxableInterest - PRIOR_YEAR.taxableInterest) * 0.24,
+  qualifiedDivs:   0,
+  ordinaryDivs:    Math.abs(CURR_YEAR.ordinaryDivs    - PRIOR_YEAR.ordinaryDivs)    * 0.15,
+  capitalGain:     Math.abs(CURR_YEAR.capitalGain     - PRIOR_YEAR.capitalGain)     * 0.15,
+  totalIncome:     Math.abs(CURR_YEAR.totalIncome      - PRIOR_YEAR.totalIncome)     * 0.24,
+  agi:             Math.abs(CURR_YEAR.agi              - PRIOR_YEAR.agi)             * 0.24,
+  stdDeduction:    Math.abs(CURR_YEAR.stdDeduction     - PRIOR_YEAR.stdDeduction)    * 0.24,
+  taxableIncome:   Math.abs(CURR_YEAR.taxableIncome    - PRIOR_YEAR.taxableIncome)   * 0.24,
 }
 
 // Threshold: >=15% change AND >$300 estimated tax impact
@@ -99,10 +112,39 @@ function fmt(n: number) {
   return n.toLocaleString()
 }
 
+// 2025 single-filer ordinary brackets and long-term cap gain / qualified dividend brackets —
+// used to compute real tax on a return this large, where $403K of income (qualified divs +
+// capital gain distributions) is taxed at preferential rates instead of ordinary rates.
+const ORDINARY_BRACKETS: [number, number, number][] = [
+  [0, 11925, 0.10], [11925, 48475, 0.12], [48475, 103350, 0.22],
+  [103350, 197300, 0.24], [197300, 250525, 0.32], [250525, 626350, 0.35],
+  [626350, Infinity, 0.37],
+]
+const LTCG_BRACKETS: [number, number, number][] = [
+  [0, 48350, 0.0], [48350, 533400, 0.15], [533400, Infinity, 0.20],
+]
+function taxOnOrdinary(amount: number): number {
+  let tax = 0
+  for (const [lo, hi, rate] of ORDINARY_BRACKETS) {
+    if (amount <= lo) break
+    tax += (Math.min(amount, hi) - lo) * rate
+  }
+  return tax
+}
+function taxOnStacked(start: number, end: number): number {
+  let tax = 0
+  for (const [lo, hi, rate] of LTCG_BRACKETS) {
+    const segLo = Math.max(start, lo)
+    const segHi = Math.min(end, hi)
+    if (segHi > segLo) tax += (segHi - segLo) * rate
+  }
+  return tax
+}
+
 export default function LeftPanel1040({
   selectedField,
   onFieldClick,
-  total1a = 124265,
+  total1a = 125548,
   yoyExpanded = false,
   reviewedFields = new Set(),
   checkedFields = new Set(),
@@ -113,12 +155,31 @@ export default function LeftPanel1040({
   onAddFieldNote,
 }: LeftPanel1040Props) {
   // Derived 1040 values — Jessica Drake's return (TY 2025)
-  const taxableInterest = fieldValues?.taxableInterest ?? 4535
-  const qualifiedDivs   = fieldValues?.qualifiedDivs   ?? 45
-  const withholding1040 = fieldValues?.withholding      ?? 19800
-  // totalIncome & AGI recalculate from live taxableInterest (other lines are static)
-  const totalIncome     = total1a + taxableInterest + 531 + 602 + 4539  // wages + interest + ordDivs + capGain + other
-  const taxableIncome   = totalIncome - 14600  // minus standard deduction
+  const taxableInterest = fieldValues?.taxableInterest ?? 2409
+  const qualifiedDivs   = fieldValues?.qualifiedDivs   ?? 200000
+  const withholding1040 = fieldValues?.withholding      ?? 26363
+  const ordinaryDivs    = 353000  // Box 1a — includes the qualifiedDivs portion above
+  const capitalGain     = 203000  // 1099-DIV Box 2a — capital gain distributions
+  // totalIncome & AGI recalculate from live taxableInterest/qualifiedDivs (other lines are static)
+  const totalIncome     = total1a + taxableInterest + ordinaryDivs + capitalGain
+  const stdDeduction    = 15750
+  const taxableIncome   = totalIncome - stdDeduction
+  // Qualified dividends + capital gain distributions are taxed at preferential rates, stacked
+  // on top of ordinary taxable income — not at Jessica's ordinary marginal rate.
+  const nonqualifiedOrdinaryDivs = ordinaryDivs - qualifiedDivs
+  const ordinaryTaxableIncome    = Math.max(0, total1a + taxableInterest + nonqualifiedOrdinaryDivs - stdDeduction)
+  const preferentialIncome       = qualifiedDivs + capitalGain
+  const incomeTax = Math.round(
+    taxOnOrdinary(ordinaryTaxableIncome) +
+    taxOnStacked(ordinaryTaxableIncome, ordinaryTaxableIncome + preferentialIncome)
+  )
+  // Net Investment Income Tax (IRC §1411) — 3.8% on the lesser of net investment
+  // income or the amount MAGI exceeds $200,000 (single filer). At this AGI, all of
+  // Jessica's interest/dividend/capital-gain income counts as net investment income.
+  const NIIT_THRESHOLD = 200000
+  const netInvestmentIncome = taxableInterest + ordinaryDivs + capitalGain
+  const niit = Math.round(Math.min(netInvestmentIncome, Math.max(0, totalIncome - NIIT_THRESHOLD)) * 0.038)
+  const totalTax = incomeTax + niit
 
   // View toggle: 'form' | 'table'
   const [view, setView] = useState<'form' | 'table'>('form')
@@ -402,13 +463,11 @@ export default function LeftPanel1040({
       totalField: 'totalIncome', totalCurr: totalIncome,
       rows: [
         { line: '1a',  label: 'W-2 wages',              sub: 'Form W-2 · Box 1',              field: 'wages',            curr: total1a,         kind: 'source' as const },
-        { line: '1d',  label: 'Medicaid waiver',         sub: 'Not on Form W-2',               field: null,               curr: 45,              kind: 'source' as const },
         { line: '2a',  label: 'Tax-exempt interest',     sub: 'Line 2a',                       field: 'taxExemptInterest', curr: 234,             kind: 'source' as const },
         { line: '2b',  label: 'Taxable interest',        sub: 'Line 2b',                       field: 'taxableInterest',  curr: taxableInterest, kind: 'source' as const },
         { line: '3a',  label: 'Qualified dividends',     sub: 'Line 3a',                       field: 'qualifiedDivs',    curr: qualifiedDivs,   kind: 'source' as const },
-        { line: '3b',  label: 'Ordinary dividends',      sub: 'Line 3b',                       field: 'ordinaryDivs',     curr: 531,             kind: 'source' as const },
-        { line: '7',   label: 'Capital gain or (loss)',  sub: 'Line 7',                        field: 'capitalGain',      curr: 602,             kind: 'source' as const },
-        { line: '8',   label: 'Additional income',       sub: 'Schedule 1 · Line 10',          field: 'additionalIncome', curr: 4539,            kind: 'source' as const },
+        { line: '3b',  label: 'Ordinary dividends',      sub: 'Line 3b',                       field: 'ordinaryDivs',     curr: ordinaryDivs,    kind: 'source' as const },
+        { line: '7',   label: 'Capital gain or (loss)',  sub: 'Line 7',                        field: 'capitalGain',      curr: capitalGain,     kind: 'source' as const },
         // 'Total income' (Line 9) omitted — same value as section header total
       ],
     },
@@ -417,15 +476,16 @@ export default function LeftPanel1040({
       totalField: 'taxableIncome', totalCurr: taxableIncome,
       rows: [
         // AGI (Line 11) omitted — equals Income total shown in section header above
-        { line: '12', label: 'Standard deduction',  sub: 'From Schedule A', field: 'stdDeduction', curr: 14600,         kind: 'source' as const },
+        { line: '12', label: 'Standard deduction',  sub: 'From Schedule A', field: 'stdDeduction', curr: stdDeduction,  kind: 'source' as const },
         // Taxable income (Line 15) omitted — same value as this section header total
       ],
     },
     {
       key: 'tax', label: 'Tax & Credits', icon: '🧾',
-      totalField: null, totalCurr: 24191,
+      totalField: null, totalCurr: totalTax,
       rows: [
-        { line: '16', label: 'Tax', sub: 'See instructions', field: null, curr: 24191, kind: 'calc' as const },
+        { line: '16', label: 'Tax', sub: 'See instructions', field: null, curr: incomeTax, kind: 'calc' as const },
+        { line: '23', label: 'Other taxes', sub: 'Schedule 2 — Net Investment Income Tax', field: null, curr: niit, kind: 'calc' as const },
         // Total tax (Line 24) omitted — same value as section header
       ],
     },
@@ -433,12 +493,12 @@ export default function LeftPanel1040({
       key: 'payments', label: 'Payments', icon: '💳',
       totalField: null, totalCurr: withholding1040,
       rows: [
-        { line: '25a', label: 'Federal tax withheld', sub: 'Form W-2 · Box 2', field: 'withholding', curr: withholding1040, kind: 'source' as const },
+        { line: '25b', label: 'Federal tax withheld', sub: '1099-DIV · Box 4', field: 'withholding', curr: withholding1040, kind: 'source' as const },
         // Total payments (Line 33) omitted — same value as section header
       ],
     },
   ]
-  const oweAmount = Math.max(0, 24191 - withholding1040)
+  const oweAmount = Math.max(0, totalTax - withholding1040)
 
   return (
     <div className={styles.leftPanel}>
@@ -739,15 +799,13 @@ export default function LeftPanel1040({
               <Row field="wages"           line="1a" label="Total amount from Form(s) W-2, box 1"              kind="source" value={total1a} />
               <Row                         line="1b" label="Household employee wages not on Form(s) W-2"      subdued />
               <Row                         line="1c" label="Tip income not reported on line 1a"                subdued />
-              <Row                         line="1d" label="Medicaid waiver payments not on Form(s) W-2"       kind="source" value={45} />
               <Row                         line="1z" label="Add lines 1a through 1h"                           kind="calc"   value={total1a} bold />
 
               <Row field="taxExemptInterest" line="2a" label="Tax-exempt interest"                             kind="source" value={234} />
               <Row field="taxableInterest"  line="2b" label="Taxable interest"                                 kind="source" value={taxableInterest} />
               <Row field="qualifiedDivs"   line="3a" label="Qualified dividends"                               kind="source" value={qualifiedDivs} />
-              <Row field="ordinaryDivs"    line="3b" label="Ordinary dividends"                                kind="source" value={531} />
-              <Row field="capitalGain"     line="7"  label="Capital gain or (loss)"                            kind="source" value={602} />
-              <Row field="additionalIncome" line="8" label="Additional income from Schedule 1, line 10"        kind="source" value={4539} />
+              <Row field="ordinaryDivs"    line="3b" label="Ordinary dividends"                                kind="source" value={ordinaryDivs} />
+              <Row field="capitalGain"     line="7"  label="Capital gain or (loss)"                            kind="source" value={capitalGain} />
 
               <Divider />
               <Row field="totalIncome"     line="9"  label="Total income. Add lines 1z, 2b, 3b, 4b, 5b, 6b, 7, and 8" kind="calc" value={totalIncome} bold />
@@ -756,24 +814,25 @@ export default function LeftPanel1040({
               <Row field="agi"             line="11" label="Adjusted gross income"                                         kind="calc"   value={totalIncome} bold shaded />
 
               <Section title="Deductions" />
-              <Row field="stdDeduction"    line="12" label="Standard deduction or itemized deductions (from Schedule A)"  kind="source" value={14600} />
-              <Row                         line="14" label="Add lines 12 and 13"                                           kind="calc"   value={14600} />
+              <Row field="stdDeduction"    line="12" label="Standard deduction or itemized deductions (from Schedule A)"  kind="source" value={stdDeduction} />
+              <Row                         line="14" label="Add lines 12 and 13"                                           kind="calc"   value={stdDeduction} />
 
               <Divider />
               <Row field="taxableIncome"   line="15" label="Taxable income"                                                kind="calc"   value={taxableIncome} bold shaded />
 
               <Section title="Tax and Credits" />
-              <Row                         line="16" label="Tax (see instructions)"                                        kind="calc"   value={24191} bold />
-              <Row                         line="24" label="Total tax"                                                     kind="calc"   value={24191} bold />
+              <Row                         line="16" label="Tax (see instructions)"                                        kind="calc"   value={incomeTax} />
+              <Row                         line="23" label="Other taxes, including self-employment tax (Schedule 2, line 21)" kind="calc" value={niit} />
+              <Row                         line="24" label="Total tax"                                                     kind="calc"   value={totalTax} bold />
 
               <Section title="Payments" />
-              <Row field="withholding"     line="25a" label="Federal income tax withheld from Form(s) W-2"                kind="source" value={withholding1040} />
+              <Row field="withholding"     line="25b" label="Federal income tax withheld from Form(s) 1099"               kind="source" value={withholding1040} />
               <Row                         line="33"  label="Total payments"                                               kind="calc"   value={withholding1040} bold />
 
               <tr className={styles.oweDividerRow}>
                 <td colSpan={4} />
               </tr>
-              <Row                         line="37" label="Amount you owe. Subtract line 33 from line 24"                kind="calc"   value={Math.max(0, 24191 - withholding1040)} bold owe />
+              <Row                         line="37" label="Amount you owe. Subtract line 33 from line 24"                kind="calc"   value={oweAmount} bold owe />
             </tbody>
           </table>
 

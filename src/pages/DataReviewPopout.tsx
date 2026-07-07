@@ -31,7 +31,10 @@ export default function DataReviewPopout() {
     markReviewedBulk: handleMarkReviewedBulk,
   } = useSyncedReviewState()
 
-  const totalWithholding = fieldValues.withholding.techCircle
+  // W-2 Box 2 is blank for Tech Circle — all federal withholding on this return
+  // comes from the 1099-DIV (Box 4), which flows to 1040 line 25b.
+  const DIV_WITHHOLDING = 26363
+  const totalWithholding = fieldValues.withholding.techCircle + DIV_WITHHOLDING
   const updateField = (key: keyof typeof fieldValues, value: number | { techCircle: number }) =>
     updateFieldValue(key, value)
 
@@ -41,9 +44,9 @@ export default function DataReviewPopout() {
   const highlightMode: 'orange' | 'blue' = 'blue'
 
   const tabFlagCounts: Record<string, number> = {
-    w2s:          ['wages-techCircle', 'box12', 'ein-techCircle'].filter(k => !reviewedFields.has(k)).length,
-    '1099-divs':  ['divCollectibles', 'divNonDiv'].filter(k => !reviewedFields.has(k)).length,
-    '1099-ints':  0,
+    w2s:          ['wages-techCircle', 'sswages-techCircle', 'box12', 'ein-techCircle'].filter(k => !reviewedFields.has(k)).length,
+    '1099-divs':  ['qualifiedDivs', 'divCollectibles', 'divNonDiv'].filter(k => !reviewedFields.has(k)).length,
+    '1099-ints':  ['taxableInterest'].filter(k => !reviewedFields.has(k)).length,
     'prior-1040': 0,
   }
 
@@ -133,7 +136,8 @@ export default function DataReviewPopout() {
                 onMarkReviewedBulk={handleMarkReviewedBulk}
                 reviewedFields={reviewedFields}
                 flaggedFields={{
-                  wages: 'Wages may have been misread — verify Box 1 against the source W-2.',
+                  wages: 'Low confidence (72%) — wages may be misread. Verify Box 1 against source W-2.',
+                  sswages: 'Medium confidence (82%) — social security wages differ from Box 1 wages. Verify Box 3 against source W-2.',
                   box12: 'Box 12 was not imported — enter the code and amount manually from the source W-2.',
                   ein:   'Employer EIN was not found in the document — required for e-filing. Enter it manually.',
                 }}
@@ -150,6 +154,7 @@ export default function DataReviewPopout() {
                 onMarkReviewedBulk={handleMarkReviewedBulk}
                 reviewedFields={reviewedFields}
                 flaggedFields={{
+                  qualifiedDivs: 'Large dividend amount — $353,000 ordinary dividends. Verify Box 1a and 1b against source document.',
                   divCollectibles: 'Collectibles (28%) gain not imported — review source document and enter if applicable.',
                   divNonDiv: 'Nondividend distributions not imported — review source document and enter if applicable.',
                 }}
@@ -165,6 +170,9 @@ export default function DataReviewPopout() {
                 onMarkReviewed={handleMarkReviewed}
                 onMarkReviewedBulk={handleMarkReviewedBulk}
                 reviewedFields={reviewedFields}
+                flaggedFields={{
+                  taxableInterest: 'Low confidence (68%) — interest income may be misread. Verify Box 1 against source 1099-INT.',
+                }}
               />
             )}
             {activeTopTab === 'prior-1040' && <PriorYear1040Fields onMarkReviewed={handleMarkReviewed} reviewedFields={reviewedFields} />}

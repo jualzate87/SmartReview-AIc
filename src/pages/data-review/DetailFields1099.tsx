@@ -6,13 +6,13 @@ import styles from '../../styles/data-review/DetailFields.module.css'
 
 // Realistic 1099-INT data for Unwavering Financial
 const PAYER_DATA = {
-  ein: '94-1234567',
-  name: 'Unwavering Financial, N.A.',
-  street: '1 Financial Plaza, Suite 400',
-  city: 'San Francisco',
-  state: 'CA',
-  zip: '94104',
-  payerPhone: '(800) 555-0100',
+  ein: '47-8821034',
+  name: 'Unwavering Financial LLC',
+  street: '800 Capital Way, Suite 1100',
+  city: 'Denver',
+  state: 'CO',
+  zip: '80202',
+  payerPhone: '(720) 555-0188',
 }
 
 const RECIPIENT_DATA = {
@@ -26,20 +26,20 @@ const RECIPIENT_DATA = {
 
 // Form 1099-INT boxes — Jessica Drake values
 const FORM_DATA = {
-  box1_interest:        '3,486',   // Box 1 — deliberately $1,500 more than 1040 line 2b ($1,986) — unflagged discrepancy
+  box1_interest:        '2,409',   // Box 1 — Interest income
   box2_earlyPenalty:    '0',       // Box 2 — Early withdrawal penalty
-  box3_usBonds:         '35',      // Box 3 — Interest on U.S. Savings Bonds & T-bills
+  box3_usBonds:         '0',       // Box 3 — Interest on U.S. Savings Bonds & T-bills
   box4_fedTaxWithheld:  '0',       // Box 4 — Federal income tax withheld
   box5_investExpenses:  '0',       // Box 5 — Investment expenses
   box6_foreignTax:      '0',       // Box 6 — Foreign tax paid
   box7_foreignCountry:  '',        // Box 7 — Foreign country or U.S. possession
-  box8_taxExempt:       '0',       // Box 8 — Tax-exempt interest
+  box8_taxExempt:       '234',     // Box 8 — Tax-exempt interest
   box9_specPrivActivity:'0',       // Box 9 — Specified private activity bond interest
   box10_marketDiscount: '0',       // Box 10 — Market discount
   box11_bondPremium:    '0',       // Box 11 — Bond premium
-  box13_stateTaxId:     'CA-87654321',
+  box13_stateTaxId:     'CA-47882103',
   box14_stateTax:       '0',
-  box15_stateIncome:    '1,986',
+  box15_stateIncome:    '2,409',
 }
 
 interface DetailFields1099Props {
@@ -51,10 +51,11 @@ interface DetailFields1099Props {
   onMarkReviewed?: (field: string) => void
   onMarkReviewedBulk?: (fields: string[]) => void
   reviewedFields?: Map<string, { by: string; at: string }>
+  flaggedFields?: Record<string, string>
   onAddFieldNote?: (text: string, context: string) => void
 }
 
-export default function DetailFields1099({ selectedField, highlightMode = 'blue', fieldValues, onFieldValueChange, onMarkReviewed, reviewedFields, onAddFieldNote }: DetailFields1099Props) {
+export default function DetailFields1099({ selectedField, highlightMode = 'blue', fieldValues, onFieldValueChange, onMarkReviewed, reviewedFields, flaggedFields = {}, onAddFieldNote }: DetailFields1099Props) {
   const highlightedRef = useRef<HTMLDivElement>(null)
   const [editingField, setEditingField] = useState<string | null>(null)
   const [draftValue, setDraftValue] = useState('')
@@ -168,6 +169,26 @@ export default function DetailFields1099({ selectedField, highlightMode = 'blue'
     )
   }
 
+  const ValidationNote = ({ fieldKey }: { fieldKey: string }) => {
+    const issue = flaggedFields[fieldKey]
+    if (!issue) return null
+    const isReviewed = reviewedFields?.has(fieldKey)
+    return (
+      <div className={styles.validationNote} style={isReviewed ? { color: '#1a6b35', borderBottomColor: '#e8edf0' } : {}}>
+        {isReviewed ? (
+          <CircleCheck size="small" style={{ flexShrink: 0 }} />
+        ) : (
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, marginTop: 1 }}>
+            <circle cx="6" cy="6" r="5.5" fill="#c9500f"/>
+            <path d="M6 3.5V6.5" stroke="white" strokeWidth="1.2" strokeLinecap="round"/>
+            <circle cx="6" cy="8.5" r="0.6" fill="white"/>
+          </svg>
+        )}
+        <span style={isReviewed ? { textDecoration: 'line-through', opacity: 0.7 } : {}}>{issue}</span>
+      </div>
+    )
+  }
+
   // Read-only row with hover-revealed Mark as correct + Comment (no Edit — payer/recipient
   // identity fields and most boxes here aren't calculated 1040 inputs)
   const renderReadOnlyRow = (fieldKey: string, label: string, value: string, inputClass = styles.fieldInputSmall, placeholder?: string) => {
@@ -258,11 +279,14 @@ export default function DetailFields1099({ selectedField, highlightMode = 'blue'
 
         <div
           ref={selectedField === 'taxableInterest' ? highlightedRef : undefined}
-          className={`${styles.fieldRow} ${selectedField === 'taxableInterest' ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''} ${commentField === 'taxableInterest' ? styles.fieldRowCommentOpen : ''}`}
+          className={`${styles.fieldRow} ${flaggedFields['taxableInterest'] && !reviewedFields?.has('taxableInterest') ? styles.fieldRowHasNote : ''} ${selectedField === 'taxableInterest' ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''} ${commentField === 'taxableInterest' ? styles.fieldRowCommentOpen : ''}`}
         >
-          <span className={styles.fieldLabel}>(1) Interest income</span>
+          <span className={`${styles.fieldLabel} ${flaggedFields['taxableInterest'] && !reviewedFields?.has('taxableInterest') ? styles.fieldLabelFlagged : ''}`}>
+            {flaggedFields['taxableInterest'] && !reviewedFields?.has('taxableInterest') && <span className={styles.issueIndicator} />}
+            (1) Interest income
+          </span>
           <input
-            className={`${styles.fieldInput} ${styles.fieldInputSmall} ${editingField === 'taxableInterest' ? styles.fieldInputEditing : selectedField === 'taxableInterest' ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`}
+            className={`${styles.fieldInput} ${styles.fieldInputSmall} ${editingField === 'taxableInterest' ? styles.fieldInputEditing : flaggedFields['taxableInterest'] && !reviewedFields?.has('taxableInterest') ? styles.fieldInputHighlightedOrange : selectedField === 'taxableInterest' ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`}
             readOnly={editingField !== 'taxableInterest'}
             value={editingField === 'taxableInterest' ? draftValue : (fieldValues?.taxableInterest !== undefined ? fieldValues.taxableInterest.toLocaleString() : FORM_DATA.box1_interest)}
             onChange={e => setDraftValue(e.target.value)}
@@ -288,6 +312,7 @@ export default function DetailFields1099({ selectedField, highlightMode = 'blue'
           {savedField === 'taxableInterest' && <span className={styles.recalcBadge}>1040 updated</span>}
           {editedFields.has('taxableInterest') && savedField !== 'taxableInterest' && <span className={styles.editedBadge}>Edited</span>}
         </div>
+        <ValidationNote fieldKey="taxableInterest" />
         {renderReadOnlyRow('earlyPenalty', '(2) Early withdrawal penalty', FORM_DATA.box2_earlyPenalty)}
         {renderReadOnlyRow('usBonds', '(3) Interest on U.S. Savings Bonds & T-bills', FORM_DATA.box3_usBonds)}
         {renderReadOnlyRow('fedTaxWithheld', '(4) Federal income tax withheld', FORM_DATA.box4_fedTaxWithheld)}

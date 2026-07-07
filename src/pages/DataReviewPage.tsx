@@ -52,7 +52,10 @@ export default function DataReviewPage() {
     markReviewedBulk: handleMarkReviewedBulk,
   } = useSyncedReviewState()
   const total1a = wages.techCircle
-  const totalWithholding = fieldValues.withholding.techCircle
+  // W-2 Box 2 is blank for Tech Circle — all federal withholding on this return
+  // comes from the 1099-DIV (Box 4), which flows to 1040 line 25b.
+  const DIV_WITHHOLDING = 26363
+  const totalWithholding = fieldValues.withholding.techCircle + DIV_WITHHOLDING
   const updateField = (key: keyof typeof fieldValues, value: number | { techCircle: number }) =>
     updateFieldValue(key, value)
   // Left panel width in px when idle (950px default); as % when agent open
@@ -100,7 +103,7 @@ export default function DataReviewPage() {
   // emitted by the DetailFields "Edit+Save" / "Mark as correct" controls.
   // Federal withholding ($15,840 on $118,940 wages, ~13.3%) is not actually low —
   // it is not flagged.
-  const PHASE1_FLAG_KEYS = ['wages-techCircle', 'box12', 'ein-techCircle', 'divCollectibles', 'divNonDiv'] as const
+  const PHASE1_FLAG_KEYS = ['wages-techCircle', 'sswages-techCircle', 'box12', 'ein-techCircle', 'qualifiedDivs', 'divCollectibles', 'divNonDiv', 'taxableInterest'] as const
   const phase1Total = PHASE1_FLAG_KEYS.length
   const phase1Resolved = PHASE1_FLAG_KEYS.filter(k => reviewedFields.has(k)).length
   // Counter of unresolved import flags — never below 0
@@ -108,9 +111,9 @@ export default function DataReviewPage() {
   const phase1Complete = phase1Remaining === 0
   // Per-document unresolved counts for dynamic tab badges
   const tabFlagCounts: Record<string, number> = {
-    w2s:          ['wages-techCircle', 'box12', 'ein-techCircle'].filter(k => !reviewedFields.has(k)).length,
-    '1099-divs':  ['divCollectibles', 'divNonDiv'].filter(k => !reviewedFields.has(k)).length,
-    '1099-ints':  0,
+    w2s:          ['wages-techCircle', 'sswages-techCircle', 'box12', 'ein-techCircle'].filter(k => !reviewedFields.has(k)).length,
+    '1099-divs':  ['qualifiedDivs', 'divCollectibles', 'divNonDiv'].filter(k => !reviewedFields.has(k)).length,
+    '1099-ints':  ['taxableInterest'].filter(k => !reviewedFields.has(k)).length,
     'prior-1040': 0,
   }
   // Phase 2 diagnostics progress — same GUIDED_ORDER/TOTAL_REVIEW_ITEMS AgentReportPane uses,
@@ -306,21 +309,27 @@ export default function DataReviewPage() {
     document.addEventListener('mouseup', onMouseUp)
   }, [rightPanelWidth])
 
-  // Horizontal drag (left/right resize between the document preview and detail
-  // fields, now that they sit side by side like the pop-out window)
+  // Resize drag between the document preview and detail fields. Side by side
+  // (like the pop-out window) when the 1040 is collapsed and there's room; when
+  // the 1040 is expanded, the pair stacks vertically instead so the source
+  // document isn't squeezed into a narrow column — same drag handle, same
+  // previewHeight value, just measuring along the other axis.
   const handlePreviewDrag = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
     const right = rightRef.current
     if (!right) return
 
-    const startX = e.clientX
-    const startWidth = previewHeight
+    const stacked = show1040
+    const startPos = stacked ? e.clientY : e.clientX
+    const startSize = previewHeight
 
     const onMouseMove = (moveEvent: MouseEvent) => {
-      const delta = moveEvent.clientX - startX
-      const rightWidth = right.getBoundingClientRect().width
-      const newWidth = startWidth + (delta / rightWidth) * 100
-      setPreviewHeight(Math.max(20, Math.min(75, newWidth)))
+      const pos = stacked ? moveEvent.clientY : moveEvent.clientX
+      const delta = pos - startPos
+      const rect = right.getBoundingClientRect()
+      const rightSize = stacked ? rect.height : rect.width
+      const newSize = startSize + (delta / rightSize) * 100
+      setPreviewHeight(Math.max(20, Math.min(75, newSize)))
     }
 
     const onMouseUp = () => {
@@ -330,11 +339,11 @@ export default function DataReviewPage() {
       document.body.style.userSelect = ''
     }
 
-    document.body.style.cursor = 'col-resize'
+    document.body.style.cursor = stacked ? 'row-resize' : 'col-resize'
     document.body.style.userSelect = 'none'
     document.addEventListener('mousemove', onMouseMove)
     document.addEventListener('mouseup', onMouseUp)
-  }, [previewHeight])
+  }, [previewHeight, show1040])
 
   // ProtoC: welcome/orientation screen is the entry point (no header chrome)
   if (phase === 'welcome') {
@@ -604,8 +613,11 @@ export default function DataReviewPage() {
               /* Document preview (left) + detail fields (right) — same side-by-side
                  layout as the pop-out window, so docking back and forth doesn't
                  reflow the content the CPA is looking at. */
-              <div style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
-              <div style={{ width: `${previewHeight}%`, flexShrink: 0, overflow: 'hidden', borderRight: '1px solid #D5DEE3' }}>
+              <div style={{ display: 'flex', flexDirection: show1040 ? 'column' : 'row', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+              <div style={show1040
+                ? { height: `${previewHeight}%`, flexShrink: 0, overflow: 'hidden', borderBottom: '1px solid #D5DEE3' }
+                : { width: `${previewHeight}%`, flexShrink: 0, overflow: 'hidden', borderRight: '1px solid #D5DEE3' }
+              }>
                 <DocumentPreview
                   imageSrc={
                     activeTopTab === 'prior-1040' ? img1040Prior :
@@ -622,9 +634,9 @@ export default function DataReviewPage() {
                 />
               </div>
 
-              {/* Left/right drag handle */}
-              <div className={dragStyles.handleVertical} onMouseDown={handlePreviewDrag}>
-                <DotsSix size="small" className={dragStyles.handleIcon} />
+              {/* Drag handle — vertical (col-resize) side by side, horizontal (row-resize) stacked */}
+              <div className={show1040 ? dragStyles.handleHorizontal : dragStyles.handleVertical} onMouseDown={handlePreviewDrag}>
+                <DotsSix size="small" className={`${dragStyles.handleIcon} ${show1040 ? dragStyles.rotated90 : ''}`} />
               </div>
 
               {/* Detail fields — switches based on active tab */}
@@ -654,14 +666,15 @@ export default function DataReviewPage() {
                   onMarkReviewedBulk={handleMarkReviewedBulk}
                   reviewedFields={reviewedFields}
                   flaggedFields={{
-                    wages: 'Wages may have been misread — verify Box 1 against the source W-2.',
+                    wages: 'Low confidence (72%) — wages may be misread. Verify Box 1 against source W-2.',
+                    sswages: 'Medium confidence (82%) — social security wages differ from Box 1 wages. Verify Box 3 against source W-2.',
                     box12: 'Box 12 was not imported — enter the code and amount manually from the source W-2.',
                     ein:   'Employer EIN was not found in the document — required for e-filing. Enter it manually.',
                   }}
                 />
               )}
-              {activeTopTab === '1099-divs' && <DetailFieldsDiv selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} flaggedFields={{ 'divCollectibles': 'Collectibles (28%) gain not imported — review source document and enter if applicable.', 'divNonDiv': 'Nondividend distributions not imported — review source document and enter if applicable.' }} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
-              {activeTopTab === '1099-ints' && <DetailFields1099 selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
+              {activeTopTab === '1099-divs' && <DetailFieldsDiv selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} flaggedFields={{ qualifiedDivs: 'Large dividend amount — $353,000 ordinary dividends. Verify Box 1a and 1b against source document.', divCollectibles: 'Collectibles (28%) gain not imported — review source document and enter if applicable.', divNonDiv: 'Nondividend distributions not imported — review source document and enter if applicable.' }} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
+              {activeTopTab === '1099-ints' && <DetailFields1099 selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} flaggedFields={{ taxableInterest: 'Low confidence (68%) — interest income may be misread. Verify Box 1 against source 1099-INT.' }} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
               {activeTopTab === 'prior-1040' && <PriorYear1040Fields onMarkReviewed={handleMarkReviewed} reviewedFields={reviewedFields} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
               </div>
               </div>
