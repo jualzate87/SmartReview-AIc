@@ -642,9 +642,8 @@
 .fieldActions {
   display: none;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   flex-shrink: 0;
-  margin-left: auto;
 }
 
 .fieldRow:hover .fieldActions {
