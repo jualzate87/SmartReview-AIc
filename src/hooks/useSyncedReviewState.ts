@@ -26,7 +26,12 @@ interface SyncedState {
 }
 
 const CHANNEL_NAME = 'protoc-data-review-sync'
-const STORAGE_KEY = 'protoc-data-review-state'
+// Bump this whenever DEFAULT_STATE's seed values change — a mismatched version
+// means the cached session predates the new numbers, so it's discarded instead
+// of silently mixing old field values with the new defaults (which caused the
+// 1040 to show stale withholding/amount-owed figures after a data fix).
+const STATE_VERSION = 2
+const STORAGE_KEY = 'protoc-data-review-state-v' + STATE_VERSION
 const PREPARER_NAME = 'Juan Alzate'
 
 function formatTimestamp(date: Date): string {
@@ -39,7 +44,7 @@ const DEFAULT_STATE: SyncedState = {
   selectedField: null,
   wages: { techCircle: 125548 },
   fieldValues: {
-    withholding: { techCircle: 0 },
+    withholding: { techCircle: 16798 },
     box12: 0,
     taxableInterest: 2409,
     qualifiedDivs: 200000,

@@ -61,6 +61,9 @@ export default function DetailFields1099({ selectedField, highlightMode = 'blue'
   const [draftValue, setDraftValue] = useState('')
   const [savedField, setSavedField] = useState<string | null>(null)
   const [editedFields, setEditedFields] = useState<Set<string>>(new Set())
+  // Local overrides for fields edited by the preparer (payer/recipient info, boxes 2-15) —
+  // these aren't part of shared fieldValues since only taxableInterest feeds the 1040
+  const [staticValues, setStaticValues] = useState<Record<string, string>>({})
   // Field key whose comment popover is currently open + its anchor position (fixed)
   const [commentField, setCommentField] = useState<string | null>(null)
   const [commentDraft, setCommentDraft] = useState('')
@@ -189,25 +192,51 @@ export default function DetailFields1099({ selectedField, highlightMode = 'blue'
     )
   }
 
-  // Read-only row with hover-revealed Mark as correct + Comment (no Edit — payer/recipient
-  // identity fields and most boxes here aren't calculated 1040 inputs)
-  const renderReadOnlyRow = (fieldKey: string, label: string, value: string, inputClass = styles.fieldInputSmall, placeholder?: string) => {
+  // Editable row with hover-revealed Edit + Mark as correct + Comment — same pattern as
+  // the W-2 panel's renderStaticRow. Edits are local (staticValues) since only
+  // taxableInterest feeds the live 1040 calculation.
+  const renderReadOnlyRow = (fieldKey: string, label: string, defaultValue: string, inputClass = styles.fieldInputSmall, placeholder?: string) => {
+    const currentVal = staticValues[fieldKey] ?? defaultValue
+    const isEditing = editingField === fieldKey
     const isReviewed = reviewedFields?.has(fieldKey)
     const isCommentOpen = commentField === fieldKey
+    const commitStatic = () => {
+      setStaticValues(prev => ({ ...prev, [fieldKey]: draftValue }))
+      setEditingField(null)
+      setEditedFields(prev => new Set(prev).add(fieldKey))
+      setSavedField(fieldKey)
+      setTimeout(() => setSavedField(null), 3500)
+    }
     return (
       <div className={`${styles.fieldRow} ${isCommentOpen ? styles.fieldRowCommentOpen : ''}`}>
         <span className={styles.fieldLabel}>{label}</span>
-        <input className={`${styles.fieldInput} ${inputClass}`} readOnly value={value} placeholder={placeholder} />
-        {isReviewed ? (
+        <input
+          className={`${styles.fieldInput} ${inputClass} ${isEditing ? styles.fieldInputEditing : ''}`}
+          readOnly={!isEditing}
+          value={isEditing ? draftValue : currentVal}
+          onChange={e => setDraftValue(e.target.value)}
+          placeholder={placeholder}
+          autoFocus={isEditing}
+          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitStatic() } if (e.key === 'Escape') cancelEdit() }}
+        />
+        {isEditing ? (
+          <div className={styles.editActions}>
+            <button className={styles.saveBtn} onClick={commitStatic}>Save</button>
+            <button className={styles.undoBtn} onClick={cancelEdit}>Undo</button>
+          </div>
+        ) : isReviewed ? (
           <Tooltip text="Click to unmark" placement="top">
             <button className={styles.reviewedBadge} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'inline-flex', alignItems: 'center' }} onClick={e => { e.stopPropagation(); onMarkReviewed?.(fieldKey) }}><CircleCheck size="small" /></button>
           </Tooltip>
         ) : (
           <div className={styles.fieldActions}>
+            <Tooltip text="Edit value" placement="top"><button className={styles.editBtn} onClick={e => { e.stopPropagation(); startEdit(fieldKey, currentVal) }}>Edit</button></Tooltip>
             <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.(fieldKey) }}><CircleCheck size="small" /></button></Tooltip>
             {renderCommentBtn(fieldKey, label)}
           </div>
         )}
+        {savedField === fieldKey && <span className={styles.recalcBadge}>Saved</span>}
+        {editedFields.has(fieldKey) && savedField !== fieldKey && <span className={styles.editedBadge}>Edited</span>}
       </div>
     )
   }
@@ -229,24 +258,7 @@ export default function DetailFields1099({ selectedField, highlightMode = 'blue'
         {renderReadOnlyRow('payerEin', "(a) Payer's federal ID number (EIN)", PAYER_DATA.ein)}
         {renderReadOnlyRow('payerName', "(b) Payer's name", PAYER_DATA.name, styles.fieldInputWide)}
         {renderReadOnlyRow('payerStreet', 'Street address', PAYER_DATA.street, styles.fieldInputWide)}
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldLabel}>City / State / ZIP code</span>
-          <div className={styles.addressRow}>
-            <input className={`${styles.fieldInput} ${styles.addressCity}`} readOnly value={PAYER_DATA.city} />
-            <input className={`${styles.fieldInput} ${styles.addressState}`} readOnly value={PAYER_DATA.state} />
-            <input className={`${styles.fieldInput} ${styles.addressZip}`} readOnly value={PAYER_DATA.zip} />
-          </div>
-          {reviewedFields?.has('payerAddress') ? (
-            <Tooltip text="Click to unmark" placement="top">
-              <button className={styles.reviewedBadge} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'inline-flex', alignItems: 'center' }} onClick={e => { e.stopPropagation(); onMarkReviewed?.('payerAddress') }}><CircleCheck size="small" /></button>
-            </Tooltip>
-          ) : (
-            <div className={styles.fieldActions}>
-              <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.('payerAddress') }}><CircleCheck size="small" /></button></Tooltip>
-              {renderCommentBtn('payerAddress', 'City / State / ZIP code')}
-            </div>
-          )}
-        </div>
+        {renderReadOnlyRow('payerCityStateZip', 'City / State / ZIP code', `${PAYER_DATA.city}, ${PAYER_DATA.state} ${PAYER_DATA.zip}`, styles.fieldInputWide)}
         {renderReadOnlyRow('payerPhone', "Payer's telephone number", PAYER_DATA.payerPhone)}
 
         {/* ── Recipient Information ── */}
@@ -255,24 +267,7 @@ export default function DetailFields1099({ selectedField, highlightMode = 'blue'
         {renderReadOnlyRow('recipientSsn', "(c) Recipient's SSN or ITIN", RECIPIENT_DATA.ssn)}
         {renderReadOnlyRow('recipientName', "(d) Recipient's name", RECIPIENT_DATA.name, styles.fieldInputWide)}
         {renderReadOnlyRow('recipientStreet', 'Street address', RECIPIENT_DATA.street, styles.fieldInputWide)}
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldLabel}>City / State / ZIP code</span>
-          <div className={styles.addressRow}>
-            <input className={`${styles.fieldInput} ${styles.addressCity}`} readOnly value={RECIPIENT_DATA.city} />
-            <input className={`${styles.fieldInput} ${styles.addressState}`} readOnly value={RECIPIENT_DATA.state} />
-            <input className={`${styles.fieldInput} ${styles.addressZip}`} readOnly value={RECIPIENT_DATA.zip} />
-          </div>
-          {reviewedFields?.has('recipientAddress') ? (
-            <Tooltip text="Click to unmark" placement="top">
-              <button className={styles.reviewedBadge} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'inline-flex', alignItems: 'center' }} onClick={e => { e.stopPropagation(); onMarkReviewed?.('recipientAddress') }}><CircleCheck size="small" /></button>
-            </Tooltip>
-          ) : (
-            <div className={styles.fieldActions}>
-              <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.('recipientAddress') }}><CircleCheck size="small" /></button></Tooltip>
-              {renderCommentBtn('recipientAddress', 'City / State / ZIP code')}
-            </div>
-          )}
-        </div>
+        {renderReadOnlyRow('recipientCityStateZip', 'City / State / ZIP code', `${RECIPIENT_DATA.city}, ${RECIPIENT_DATA.state} ${RECIPIENT_DATA.zip}`, styles.fieldInputWide)}
 
         {/* ── Interest Income ── */}
         <div className={styles.sectionHeader}>Interest Income</div>

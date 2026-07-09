@@ -58,8 +58,8 @@ const EMPLOYER_DATA = {
     name: 'Tech Circle Inc',
     street: '321 Main Orchard Dr',
     city: 'Reno', state: 'NV', zip: '89501',
-    federalTax: '',
-    socialSecurityWages: '125,548', ssTax: '6,890',
+    federalTax: '16,798',
+    socialSecurityWages: '125,548', ssTax: '7,784',
     medicareWages: '125,548', medicareTax: '1,820',
     ssTips: '0', allocatedTips: '0',
     dependentCare: '0', nonqualified: '0',
@@ -358,6 +358,7 @@ export default function DetailFields({
                 onVerifyDoc?.(activeSubTab)
                 const fieldKeys = [
                   `wages-${activeSubTab}`, 'withholding', 'box12',
+                  `box12a-${activeSubTab}`, `box12b-${activeSubTab}`, `box12c-${activeSubTab}`, `box12d-${activeSubTab}`,
                   `ein-${activeSubTab}`, `employerName-${activeSubTab}`,
                   `street-${activeSubTab}`, `cityStateZip-${activeSubTab}`,
                   `sswages-${activeSubTab}`, `sstax-${activeSubTab}`,
@@ -488,22 +489,27 @@ export default function DetailFields({
               <span style={{ flex: 1 }} />
               <span style={{ fontFamily: 'var(--font-family-component)', fontSize: 11, fontWeight: 500, color: '#859299', width: 64, flexShrink: 0, textAlign: 'center' }}>Code</span>
               <span style={{ fontFamily: 'var(--font-family-component)', fontSize: 11, fontWeight: 500, color: '#859299', width: 120, flexShrink: 0 }}>Amount</span>
-              <span style={{ width: 72, flexShrink: 0 }} />
             </div>
             {(employer.box12Entries as { sub: string; code: string; amount: string }[]).map((entry, i) => {
               const isLast = i === (employer.box12Entries as unknown[]).length - 1
               const codeKey = `box12${entry.sub}-code-${activeSubTab}`
               const amtKey = `box12${entry.sub}-amt-${activeSubTab}`
+              const rowKey = `box12${entry.sub}-${activeSubTab}`
               const isFlagged = !!(flaggedFields['box12'] && !reviewedFields?.has('box12'))
               const isEditingAmt = editingField === amtKey
+              const isRowReviewed = reviewedFields?.has(rowKey)
               const codeVal = staticValues[codeKey] ?? entry.code
               const amtVal = staticValues[amtKey] ?? (entry.sub === 'a' && fieldValues?.box12 !== undefined ? fieldValues.box12.toLocaleString() : entry.amount)
               const BOX12_CODES = ['', 'A','B','C','D','E','F','G','H','J','K','L','M','N','P','Q','R','S','T','V','W','AA','BB','DD','EE','FF','GG','HH']
+              const commitAmt = () => {
+                if (entry.sub === 'a') { setStaticValues(prev => ({ ...prev, [amtKey]: draftValue })); commitEdit('box12') }
+                else { setStaticValues(prev => ({ ...prev, [amtKey]: draftValue })); setEditingField(null); setEditedFields(prev => new Set(prev).add(amtKey)); setSavedField(amtKey); setTimeout(() => setSavedField(null), 3500) }
+              }
               return (
                 <div key={entry.sub}>
                   <div
                     ref={i === 0 ? box12Ref : undefined}
-                    className={`${styles.fieldRow} ${isLast && flaggedFields['box12'] ? styles.fieldRowHasNote : ''} ${commentField === `box12-${activeSubTab}` ? styles.fieldRowCommentOpen : ''}`}
+                    className={`${styles.fieldRow} ${isFlagged ? styles.fieldRowHasNote : ''} ${commentField === rowKey ? styles.fieldRowCommentOpen : ''}`}
                     style={isLast ? { borderBottom: 'none' } : {}}
                   >
                     {/* Sub-label */}
@@ -528,7 +534,7 @@ export default function DetailFields({
                       onChange={e => setDraftValue(e.target.value)}
                       autoFocus={isEditingAmt}
                       onKeyDown={e => {
-                        if (e.key === 'Enter') { e.preventDefault(); if (entry.sub === 'a') { setStaticValues(prev => ({ ...prev, [amtKey]: draftValue })); commitEdit('box12') } else { setStaticValues(prev => ({ ...prev, [amtKey]: draftValue })); setEditingField(null); setEditedFields(prev => new Set(prev).add(amtKey)); setSavedField(amtKey); setTimeout(() => setSavedField(null), 3500) } }
+                        if (e.key === 'Enter') { e.preventDefault(); commitAmt() }
                         if (e.key === 'Escape') cancelEdit()
                       }}
                       style={{ width: 120, fontSize: 13, height: 32, padding: '5px 8px', boxSizing: 'border-box', border: `${isEditingAmt ? '2px' : '1px'} solid ${isEditingAmt ? '#205ea3' : isFlagged ? '#ff6a00' : '#c3ced5'}`, borderRadius: 4, background: isEditingAmt ? '#fff' : isFlagged ? 'rgba(255,187,0,0.25)' : '#fff', color: '#21262a', fontFamily: 'var(--font-family-component)', outline: 'none', flexShrink: 0, cursor: 'text' }}
@@ -537,21 +543,21 @@ export default function DetailFields({
                     {/* Save/Undo when editing amount */}
                     {isEditingAmt ? (
                       <div className={styles.editActions}>
-                        <button className={styles.saveBtn} onClick={() => { if (entry.sub === 'a') { setStaticValues(prev => ({ ...prev, [amtKey]: draftValue })); commitEdit('box12') } else { setStaticValues(prev => ({ ...prev, [amtKey]: draftValue })); setEditingField(null); setEditedFields(prev => new Set(prev).add(amtKey)); setSavedField(amtKey); setTimeout(() => setSavedField(null), 3500) } }}>Save</button>
+                        <button className={styles.saveBtn} onClick={commitAmt}>Save</button>
                         <button className={styles.undoBtn} onClick={cancelEdit}>Undo</button>
                       </div>
-                    ) : isLast && reviewedFields?.has('box12') ? (
+                    ) : isRowReviewed ? (
                       <Tooltip text="Click to unmark" placement="top">
-                        <button className={styles.reviewedBadge} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'inline-flex', alignItems: 'center', width: 72, justifyContent: 'center' }} onClick={e => { e.stopPropagation(); onMarkReviewed?.('box12') }}><CircleCheck size="small" /></button>
+                        <button className={styles.reviewedBadge} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'inline-flex', alignItems: 'center' }} onClick={e => { e.stopPropagation(); onMarkReviewed?.(rowKey) }}><CircleCheck size="small" /></button>
                       </Tooltip>
-                    ) : isLast ? (
-                      <div className={styles.fieldActions} style={{ display: 'flex', width: 72 }}>
-                        <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.('box12') }}><CircleCheck size="small" /></button></Tooltip>
-                        {renderCommentBtn(`box12-${activeSubTab}`, `(12) Box 12 codes`, employer.name)}
+                    ) : (
+                      <div className={styles.fieldActions}>
+                        <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.(rowKey) }}><CircleCheck size="small" /></button></Tooltip>
+                        {renderCommentBtn(rowKey, `(12${entry.sub}) Box 12 code`, employer.name)}
                       </div>
-                    ) : <span style={{ width: 72, flexShrink: 0 }} />}
-                    {isLast && savedField === amtKey && <span className={styles.recalcBadge}>Saved</span>}
-                    {isLast && savedField === 'box12' && <span className={styles.recalcBadge}>1040 updated</span>}
+                    )}
+                    {savedField === amtKey && <span className={styles.recalcBadge}>{entry.sub === 'a' ? '1040 updated' : 'Saved'}</span>}
+                    {editedFields.has(amtKey) && savedField !== amtKey && <span className={styles.editedBadge}>Edited</span>}
                   </div>
                   {isLast && <ValidationNote fieldKey="box12" />}
                 </div>

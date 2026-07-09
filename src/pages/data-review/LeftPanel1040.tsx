@@ -157,7 +157,12 @@ export default function LeftPanel1040({
   // Derived 1040 values — Jessica Drake's return (TY 2025)
   const taxableInterest = fieldValues?.taxableInterest ?? 2409
   const qualifiedDivs   = fieldValues?.qualifiedDivs   ?? 200000
-  const withholding1040 = fieldValues?.withholding      ?? 26363
+  const withholding1040 = fieldValues?.withholding      ?? 43161
+  // 1099-DIV Box 4 withholding is a fixed $26,363; the rest of the combined total
+  // (edited via the W-2 Box 2 field) is the W-2 portion — lines 25a and 25b are
+  // both real, separate source lines on Jessica's return, not one merged figure.
+  const DIV_WITHHOLDING  = 26363
+  const w2Withholding    = Math.max(0, withholding1040 - DIV_WITHHOLDING)
   const ordinaryDivs    = 353000  // Box 1a — includes the qualifiedDivs portion above
   const capitalGain     = 203000  // 1099-DIV Box 2a — capital gain distributions
   // totalIncome & AGI recalculate from live taxableInterest/qualifiedDivs (other lines are static)
@@ -493,7 +498,8 @@ export default function LeftPanel1040({
       key: 'payments', label: 'Payments', icon: '💳',
       totalField: null, totalCurr: withholding1040,
       rows: [
-        { line: '25b', label: 'Federal tax withheld', sub: '1099-DIV · Box 4', field: 'withholding', curr: withholding1040, kind: 'source' as const },
+        { line: '25a', label: 'Federal tax withheld', sub: 'Form W-2 · Box 2',    field: null,           curr: w2Withholding,  kind: 'source' as const },
+        { line: '25b', label: 'Federal tax withheld', sub: '1099-DIV · Box 4',    field: 'withholding',  curr: DIV_WITHHOLDING, kind: 'source' as const },
         // Total payments (Line 33) omitted — same value as section header
       ],
     },
@@ -826,7 +832,9 @@ export default function LeftPanel1040({
               <Row                         line="24" label="Total tax"                                                     kind="calc"   value={totalTax} bold />
 
               <Section title="Payments" />
-              <Row field="withholding"     line="25b" label="Federal income tax withheld from Form(s) 1099"               kind="source" value={withholding1040} />
+              <Row                         line="25a" label="Federal income tax withheld from Form(s) W-2"                 kind="source" value={w2Withholding} />
+              <Row field="withholding"     line="25b" label="Federal income tax withheld from Form(s) 1099"               kind="source" value={DIV_WITHHOLDING} />
+              <Row                         line="25d" label="Add lines 25a through 25c"                                    kind="calc"   value={withholding1040} />
               <Row                         line="33"  label="Total payments"                                               kind="calc"   value={withholding1040} bold />
 
               <tr className={styles.oweDividerRow}>

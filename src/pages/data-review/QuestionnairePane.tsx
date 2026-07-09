@@ -122,9 +122,9 @@ export default function QuestionnairePane({ onBack, closing = false, variant = '
           {/* Product header */}
           <div className={qStyles.productHeader}>
             <div className={qStyles.productBrand}>
-              <span className={qStyles.productLogo}>TaxCaddy</span>
+              <span className={qStyles.productLogo}>Intuit Link</span>
               <span className={qStyles.productSeparator}>·</span>
-              <span className={qStyles.productSub}>Tax Organizer · 2024</span>
+              <span className={qStyles.productSub}>Tax Organizer · 2025</span>
             </div>
             <div className={qStyles.completionBadge}>
               <CircleCheck size="small" />

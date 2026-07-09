@@ -67,35 +67,35 @@ const CARD_ICONS = [
 // (wages $125,548, taxable interest $2,409, qualified divs $200,000, ordinary
 // divs $353,000, capital gain distributions $203,000, total income/AGI $683,957,
 // taxable income $668,207, income tax $129,560, NIIT $18,390, total tax
-// $147,950, withholding $26,363, amount owed $121,587) or the real prior-year
-// figures in PRIOR_YEAR. At this income level NIIT and the 110% (not 100%)
-// safe-harbor threshold both genuinely apply; QBI does not (no pass-through
-// business, and the income cap zeroes out SSTB income even if she had one),
-// so it isn't included as a finding.
+// $147,950, withholding $43,161 [$16,798 W-2 + $26,363 1099-DIV], amount owed
+// $104,789) or the real prior-year figures in PRIOR_YEAR. At this income level
+// NIIT and the 110% (not 100%) safe-harbor threshold both genuinely apply; QBI
+// does not (no pass-through business, and the income cap zeroes out SSTB
+// income even if she had one), so it isn't included as a finding.
 
 const BALANCE_DUE_ISSUE = {
   issueKey: 'balanceDue',
   dotColor: 'red' as const,
-  title: 'Balance due: $121,587',
+  title: 'Balance due: $104,789',
   category: 'IRS compliance',
-  summary: 'Jessica owes $121,587 (line 37). Withholding of $26,363 covered only 17.8% of her $147,950 total tax — but no underpayment penalty applies, because her 2024 AGI ($109,400) was under $150,000, so her safe harbor is 100% of her 2024 tax ($20,638), which her withholding already exceeds.',
+  summary: 'Jessica owes $104,789 (line 37). Withholding of $43,161 covered only 29.2% of her $147,950 total tax — but no underpayment penalty applies, because her 2024 AGI ($109,400) was under $150,000, so her safe harbor is 100% of her 2024 tax ($20,638), which her withholding already exceeds.',
   taxImpact: 'No Form 2210 penalty is owed this year. But this is a one-time reprieve — the 100%-of-prior-year safe harbor only worked because 2024 was a normal-income year. With 2025 income this much larger, next year\'s safe harbor will be based on a much bigger number (see the W-4/estimated-payments finding), and this same withholding level would trigger a real penalty in 2026.',
-  rootCause: 'Withholding from Tech Circle wages ($0 on the W-2) and the 1099-DIV ($26,363) together cover only a small fraction of the $558,409 in dividend, interest, and capital gain income that has no automatic wage-style withholding — the shortfall happens to still clear the (much lower) prior-year safe harbor.',
+  rootCause: 'Withholding from Tech Circle wages ($16,798 on the W-2) and the 1099-DIV ($26,363) together cover only a small fraction of the $558,409 in dividend, interest, and capital gain income that has no automatic wage-style withholding — the shortfall happens to still clear the (much lower) prior-year safe harbor.',
   tableRows: [
     { label: 'Total tax (line 24)',              cols: ['$147,950', '—', '—'],       badge: undefined,         total: false },
-    { label: 'Federal withholding (25b)',        cols: ['$26,363', '17.8%', '—'],   badge: 'orange' as const, total: false },
+    { label: 'Federal withholding (25a + 25b)',  cols: ['$43,161', '29.2%', '—'],   badge: 'orange' as const, total: false },
     { label: 'Safe harbor (100% of 2024 tax)',   cols: ['$20,638', 'Met', '✓'],      badge: undefined,         total: false },
-    { label: 'Amount you owe (line 37)',         cols: ['$121,587',  'Due', '!'],     badge: 'red' as const,    total: true },
+    { label: 'Amount you owe (line 37)',         cols: ['$104,789',  'Due', '!'],     badge: 'red' as const,    total: true },
   ],
   tableHeaders: ['Item', 'Amount', 'Status', ''],
   suggestedActions: [
-    'Let Jessica know no penalty applies this year, but confirm she has the cash on hand to cover $121,587 by the filing deadline.',
+    'Let Jessica know no penalty applies this year, but confirm she has the cash on hand to cover $104,789 by the filing deadline.',
     'Confirm whether Jessica made any 2025 estimated payments not yet reflected on the return, which would lower this amount.',
     'Flag that this safe harbor won\'t protect her next year at this income level — see the withholding/estimated-payments recommendation.',
   ],
   viewSourceLabel: 'View Form 1040',
-  viewSourceTab: '1099-divs' as const,
-  viewSourceSubTab: undefined,
+  viewSourceTab: 'w2s' as const,
+  viewSourceSubTab: 'techCircle' as const,
   viewSourceField: 'withholding',
 }
 
@@ -205,11 +205,11 @@ const MISSING_EST_PAYMENTS_ISSUE = {
   title: 'No estimated tax payments recorded',
   category: 'Missing information',
   summary: 'Line 26 shows $0 in 2025 estimated payments. Given the size of this return\'s investment income, confirm with Jessica whether any quarterly payments were made.',
-  taxImpact: 'If estimated payments were made but not recorded, the $121,587 balance due (line 37) would decrease accordingly — this is too large a gap to leave unconfirmed.',
+  taxImpact: 'If estimated payments were made but not recorded, the $104,789 balance due (line 37) would decrease accordingly — this is too large a gap to leave unconfirmed.',
   rootCause: 'No 1040-ES payment records were imported. Either no payments were made, or they were made but not captured during document import.',
   tableRows: [
     { label: '2025 estimated payments (line 26)', cols: ['$0', 'Unconfirmed', '?'], badge: 'orange' as const, total: false },
-    { label: 'Amount you owe (line 37)',          cols: ['$121,587', 'Due', '!'], badge: 'orange' as const, total: false },
+    { label: 'Amount you owe (line 37)',          cols: ['$104,789', 'Due', '!'], badge: 'orange' as const, total: false },
   ],
   tableHeaders: ['Field', 'Recorded', 'Status', ''],
   suggestedActions: [
@@ -218,8 +218,8 @@ const MISSING_EST_PAYMENTS_ISSUE = {
     'IRS account transcript can confirm payments if Jessica is unsure.',
   ],
   viewSourceLabel: 'View Form 1040',
-  viewSourceTab: '1099-divs' as const,
-  viewSourceSubTab: undefined,
+  viewSourceTab: 'w2s' as const,
+  viewSourceSubTab: 'techCircle' as const,
   viewSourceField: 'withholding',
 }
 
@@ -230,13 +230,13 @@ const OPT_W4_ISSUE = {
   dotColor: 'blue' as const,
   title: 'Plan ahead: 2026 safe harbor will require much higher withholding',
   category: 'Optimization',
-  summary: 'This year\'s $26,363 withholding cleared the safe harbor only because 2024 was a normal-income year. Since 2025 AGI ($683,957) exceeds $150,000, the 2026 safe harbor becomes 110% of this year\'s $147,950 total tax — $162,745. A W-4 update alone can\'t close a gap this size; quarterly estimated payments are the realistic fix.',
+  summary: 'This year\'s $43,161 combined withholding cleared the safe harbor only because 2024 was a normal-income year. Since 2025 AGI ($683,957) exceeds $150,000, the 2026 safe harbor becomes 110% of this year\'s $147,950 total tax — $162,745. A W-4 update alone can\'t close a gap this size; quarterly estimated payments are the realistic fix.',
   taxImpact: 'Reaching $162,745 in withholding or estimated payments next year would avoid both a large balance due and an underpayment penalty, assuming similar income. Without action, 2026 will not have this year\'s low-prior-year-tax safe harbor to fall back on.',
-  rootCause: 'All of Jessica\'s current withholding comes from the 1099-DIV backup withholding; her Tech Circle W-2 has no federal withholding at all, and neither source is calibrated to the scale of her dividend and capital gain income.',
+  rootCause: 'Jessica\'s withholding comes from her Tech Circle W-2 ($16,798) and 1099-DIV backup withholding ($26,363) — neither source is calibrated to the scale of her dividend and capital gain income.',
   tableRows: [
-    { label: 'Current annual withholding', cols: ['$26,363', '—', '—'],           badge: undefined,       total: false },
+    { label: 'Current annual withholding', cols: ['$43,161', '—', '—'],           badge: undefined,       total: false },
     { label: '2026 safe-harbor target (110% of 2025 tax)', cols: ['$162,745', 'Gap', '—'],         badge: 'blue' as const, total: false },
-    { label: 'Additional needed/year',     cols: ['$136,382', 'Suggestion', '→'],  badge: 'blue' as const, total: true },
+    { label: 'Additional needed/year',     cols: ['$119,584', 'Suggestion', '→'],  badge: 'blue' as const, total: true },
   ],
   tableHeaders: ['Item', 'Amount', 'Status', ''],
   suggestedActions: [
@@ -244,9 +244,9 @@ const OPT_W4_ISSUE = {
     'Alternatively, request additional flat-dollar withholding on the W-2 via Form W-4 Step 4(c), sized to the investment income.',
     'Target at least 110% of this year\'s total tax ($162,745) given AGI now exceeds the $150,000 threshold for the higher safe-harbor percentage.',
   ],
-  viewSourceLabel: 'View 1099-DIV',
-  viewSourceTab: '1099-divs' as const,
-  viewSourceSubTab: undefined,
+  viewSourceLabel: 'View W-2',
+  viewSourceTab: 'w2s' as const,
+  viewSourceSubTab: 'techCircle' as const,
   viewSourceField: 'withholding',
 }
 
