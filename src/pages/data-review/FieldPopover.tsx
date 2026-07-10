@@ -16,13 +16,15 @@ export interface FieldMeta {
   currentYear?: string
   // Source document links
   sources?: { label: string; value: number }[]
+  // Optional explanatory note (e.g. why a deduction or figure was chosen)
+  note?: string
 }
 
 // Static metadata for each 1040 field — Jessica Drake 2025 return
 export const FIELD_META: Record<string, FieldMeta> = {
   wages: {
     label: 'Wages',
-    prior: 0,
+    prior: 118940,
     current: 118940,
     sources: [
       { label: 'Tech Circle (W-2)', value: 118940 },
@@ -30,7 +32,7 @@ export const FIELD_META: Record<string, FieldMeta> = {
   },
   taxableInterest: {
     label: 'Taxable interest',
-    prior: 0,
+    prior: 1986,
     current: 1986,
     sources: [
       { label: 'Unwavering Financial (1099-INT)', value: 1986 },
@@ -38,12 +40,12 @@ export const FIELD_META: Record<string, FieldMeta> = {
   },
   taxExemptInterest: {
     label: 'Tax-exempt interest',
-    prior: 0,
+    prior: 180,
     current: 180,
   },
   qualifiedDivs: {
     label: 'Qualified dividends',
-    prior: 0,
+    prior: 187500,
     current: 187500,
     sources: [
       { label: 'Unwavering Financial (1099-DIV)', value: 187500 },
@@ -51,7 +53,7 @@ export const FIELD_META: Record<string, FieldMeta> = {
   },
   ordinaryDivs: {
     label: 'Ordinary dividends',
-    prior: 0,
+    prior: 331250,
     current: 331250,
     sources: [
       { label: 'Unwavering Financial (1099-DIV)', value: 331250 },
@@ -59,57 +61,55 @@ export const FIELD_META: Record<string, FieldMeta> = {
   },
   capitalGain: {
     label: 'Capital gain / (loss)',
-    prior: 0,
-    current: 194600,
-    sources: [
-      { label: 'Schedule D', value: 194600 },
-    ],
+    prior: 194600,
+    current: 0,
   },
   totalIncome: {
     label: 'Total income',
-    prior: 0,
-    current: 646776,
+    prior: 646776,
+    current: 452176,
   },
   agi: {
     label: 'Adjusted gross income',
-    prior: 0,
-    current: 646776,
+    prior: 646776,
+    current: 452176,
   },
   stdDeduction: {
     label: 'Standard deduction',
-    prior: 13850,
-    current: 14600,
+    prior: 14600,
+    current: 15750,
     sources: [
-      { label: 'Standard deduction (single)', value: 14600 },
+      { label: 'Standard deduction (single)', value: 15750 },
     ],
+    note: 'Jessica qualifies for the standard deduction because her itemizable expenses (mortgage interest, state and local taxes, charitable gifts) don\'t exceed the standard deduction amount for her filing status.',
   },
   taxableIncome: {
     label: 'Taxable income',
-    prior: 0,
-    current: 632176,
+    prior: 632176,
+    current: 436426,
   },
   withholding: {
     label: 'Federal income tax withheld',
-    prior: 0,
-    current: 15840,
+    prior: 40765,
+    current: 24925,
     sources: [
-      { label: 'Tech Circle (W-2)', value: 15840 },
+      { label: 'Unwavering Financial (1099-DIV)', value: 24925 },
     ],
   },
   totalPayments: {
     label: 'Total payments',
-    prior: 0,
-    current: 40765,
+    prior: 40765,
+    current: 24925,
   },
   totalTax: {
     label: 'Total tax',
-    prior: 0,
-    current: 138120,
+    prior: 138120,
+    current: 149830,
   },
   amountOwed: {
     label: 'Amount you owe',
-    prior: 0,
-    current: 97355,
+    prior: 97355,
+    current: 124905,
   },
   box12: {
     label: 'Box 12 — Codes',
@@ -235,6 +235,14 @@ export default function FieldPopover({
           </div>
         </div>
       </div>
+
+      {/* Explanatory note section — only if field has one */}
+      {meta.note && (
+        <div className={styles.sourcesSection}>
+          <div className={styles.sourcesSectionLabel}>Why this deduction?</div>
+          <p style={{ margin: 0, fontFamily: 'var(--font-family-component)', fontSize: 12, lineHeight: 1.4, color: '#495a63' }}>{meta.note}</p>
+        </div>
+      )}
 
       {/* Sources section — only if field has sources */}
       {meta.sources && meta.sources.length > 0 && (

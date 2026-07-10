@@ -26,15 +26,15 @@ const RECIPIENT_DATA = {
 
 // Form 1099-DIV boxes — Jessica Drake / Unwavering Financial
 const FORM_DATA = {
-  box1a_totalOrdinary:     '353,000',  // Box 1a — Total ordinary dividends
-  box1b_qualifiedDivs:     '200,000',  // Box 1b — Qualified dividends
-  box2a_totalCapGain:      '203,000', // Box 2a — Total capital gain distr.
+  box1a_totalOrdinary:     '331,250', // Box 1a — Total ordinary dividends
+  box1b_qualifiedDivs:     '187,500', // Box 1b — Qualified dividends
+  box2a_totalCapGain:      '',       // Box 2a — Total capital gain distr.
   box2b_unrecap1250:       '',       // Box 2b — Unrecap. Sec. 1250 gain
   box2c_sec1202:           '',       // Box 2c — Section 1202 gain
   box2d_collectibles:      '',       // Box 2d — Collectibles (28%) gain
   box3_nonDivDistrib:      '',       // Box 3 — Nondividend distributions
-  box4_fedTaxWithheld:     '26,363', // Box 4 — Federal income tax withheld
-  box5_investExpenses:     '',       // Box 5 — Investment expenses
+  box4_fedTaxWithheld:     '24,925', // Box 4 — Federal income tax withheld
+  box5_investExpenses:     '1,200',  // Box 5 — Investment expenses
   box6_foreignTaxPaid:     '',       // Box 6 — Foreign tax paid
   box7_foreignCountry:     '',       // Box 7 — Foreign country or U.S. possession
   box8_cashLiquidation:    '',       // Box 8 — Cash liquidation distributions
@@ -54,7 +54,7 @@ interface DetailFieldsDivProps {
   onAddFieldNote?: (text: string, context: string) => void
 }
 
-export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue', fieldValues, onFieldValueChange, onMarkReviewed, reviewedFields, flaggedFields = {}, onAddFieldNote }: DetailFieldsDivProps) {
+export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue', onFieldSelect, fieldValues, onFieldValueChange, onMarkReviewed, reviewedFields, flaggedFields = {}, onAddFieldNote }: DetailFieldsDivProps) {
 
   const highlightedRef = useRef<HTMLDivElement>(null)
   const [editingField, setEditingField] = useState<string | null>(null)
@@ -68,7 +68,7 @@ export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue',
   // Field key whose comment popover is currently open + its anchor position (fixed)
   const [commentField, setCommentField] = useState<string | null>(null)
   const [commentDraft, setCommentDraft] = useState('')
-  const [commentAnchor, setCommentAnchor] = useState<{ top: number; right: number } | null>(null)
+  const [commentAnchor, setCommentAnchor] = useState<{ top: number; left: number } | null>(null)
   const commentRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -90,6 +90,7 @@ export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue',
     setEditedFields(prev => new Set(prev).add(field))
     setSavedField(field)
     setTimeout(() => setSavedField(null), 3500)
+    onMarkReviewed?.(field)
   }
 
   const cancelEdit = () => { setEditingField(null); setDraftValue('') }
@@ -109,10 +110,11 @@ export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue',
   }, [commentField])
 
   const openComment = (fieldKey: string, btn: HTMLElement) => {
-    const row = btn.closest('[class*="fieldRow"]') as HTMLElement | null
-    const target = row ?? btn
-    const rect = target.getBoundingClientRect()
-    setCommentAnchor({ top: rect.top, right: 8 })
+    const rect = btn.getBoundingClientRect()
+    const popoverWidth = 280
+    let left = rect.left - popoverWidth - 8
+    if (left < 8) left = rect.right + 8
+    setCommentAnchor({ top: rect.bottom, left })
     setCommentField(fieldKey)
     setCommentDraft('')
   }
@@ -140,7 +142,7 @@ export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue',
         {isOpen && commentAnchor && createPortal(
           <div
             className={styles.commentPopover}
-            style={{ top: commentAnchor.top - 4, right: commentAnchor.right, transform: 'translateY(-100%)' }}
+            style={{ top: commentAnchor.top + 4, left: commentAnchor.left }}
             ref={commentRef}
             onClick={e => e.stopPropagation()}
           >
@@ -206,10 +208,15 @@ export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue',
       setEditedFields(prev => new Set(prev).add(fieldKey))
       setSavedField(fieldKey)
       setTimeout(() => setSavedField(null), 3500)
+      if (draftValue.trim()) onMarkReviewed?.(fieldKey)
     }
     return (
       <>
-        <div className={`${styles.fieldRow} ${isFlagged ? styles.fieldRowHasNote : ''} ${isCommentOpen ? styles.fieldRowCommentOpen : ''}`}>
+        <div
+          className={`${styles.fieldRow} ${isFlagged ? styles.fieldRowHasNote : ''} ${isCommentOpen ? styles.fieldRowCommentOpen : ''}`}
+          onClick={() => onFieldSelect?.(fieldKey)}
+          style={{ cursor: 'pointer' }}
+        >
           <span className={`${styles.fieldLabel} ${isFlagged ? styles.fieldLabelFlagged : ''}`}>
             {isFlagged && <span className={styles.issueIndicator} />}
             {label}
@@ -221,6 +228,7 @@ export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue',
             onChange={e => setDraftValue(e.target.value)}
             placeholder={!isEditing && flaggedFields[fieldKey] ? 'Not imported' : placeholder}
             autoFocus={isEditing}
+            onClick={e => { e.stopPropagation(); if (!isEditing) startEdit(fieldKey, currentVal) }}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitStatic() } if (e.key === 'Escape') cancelEdit() }}
           />
           {isEditing ? (
@@ -234,7 +242,6 @@ export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue',
             </Tooltip>
           ) : (
             <div className={styles.fieldActions}>
-              <Tooltip text="Edit value" placement="top"><button className={styles.editBtn} onClick={e => { e.stopPropagation(); startEdit(fieldKey, currentVal) }}>Edit</button></Tooltip>
               <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.(fieldKey) }}><CircleCheck size="small" /></button></Tooltip>
               {renderCommentBtn(fieldKey, label)}
             </div>
@@ -283,6 +290,8 @@ export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue',
         <div
           ref={selectedField === 'qualifiedDivs' ? highlightedRef : undefined}
           className={`${styles.fieldRow} ${flaggedFields['qualifiedDivs'] && !reviewedFields?.has('qualifiedDivs') ? styles.fieldRowHasNote : ''} ${selectedField === 'qualifiedDivs' ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''} ${commentField === 'qualifiedDivs' ? styles.fieldRowCommentOpen : ''}`}
+          onClick={() => onFieldSelect?.('qualifiedDivs')}
+          style={{ cursor: 'pointer' }}
         >
           <span className={`${styles.fieldLabel} ${flaggedFields['qualifiedDivs'] && !reviewedFields?.has('qualifiedDivs') ? styles.fieldLabelFlagged : ''}`}>
             {flaggedFields['qualifiedDivs'] && !reviewedFields?.has('qualifiedDivs') && <span className={styles.issueIndicator} />}
@@ -294,6 +303,7 @@ export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue',
             value={editingField === 'qualifiedDivs' ? draftValue : (fieldValues?.qualifiedDivs !== undefined ? fieldValues.qualifiedDivs.toLocaleString() : FORM_DATA.box1b_qualifiedDivs)}
             onChange={e => setDraftValue(e.target.value)}
             autoFocus={editingField === 'qualifiedDivs'}
+            onClick={e => { e.stopPropagation(); if (editingField !== 'qualifiedDivs') startEdit('qualifiedDivs', fieldValues?.qualifiedDivs?.toString() ?? FORM_DATA.box1b_qualifiedDivs) }}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitEdit('qualifiedDivs') } if (e.key === 'Escape') cancelEdit() }}
           />
           {editingField === 'qualifiedDivs' ? (
@@ -307,7 +317,6 @@ export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue',
             </Tooltip>
           ) : (
             <div className={styles.fieldActions}>
-              <Tooltip text="Edit value" placement="top"><button className={styles.editBtn} onClick={e => { e.stopPropagation(); startEdit('qualifiedDivs', fieldValues?.qualifiedDivs?.toString() ?? FORM_DATA.box1b_qualifiedDivs) }}>Edit</button></Tooltip>
               <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.('qualifiedDivs') }}><CircleCheck size="small" /></button></Tooltip>
               {renderCommentBtn('qualifiedDivs', '(1b) Qualified dividends')}
             </div>

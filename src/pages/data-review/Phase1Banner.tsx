@@ -7,7 +7,6 @@ import styles from '../../styles/data-review/Phase1Banner.module.css'
 interface Phase1BannerProps {
   resolved: number
   total: number
-  remaining: number
   complete: boolean
   /** Continue to Phase 2 — AI Diagnostics (only enabled when complete) */
   onContinue: () => void
@@ -19,7 +18,7 @@ interface Phase1BannerProps {
  * hard-locked (visible + explained) until the counter reaches 0 — this keeps the
  * diagnostics accurate rather than hand-holding.
  */
-export default function Phase1Banner({ resolved, total, remaining, complete, onContinue }: Phase1BannerProps) {
+export default function Phase1Banner({ resolved, total, complete, onContinue }: Phase1BannerProps) {
   return (
     <div className={`${styles.banner} ${complete ? styles.bannerComplete : ''}`}>
       <div className={styles.left}>
@@ -58,7 +57,7 @@ export default function Phase1Banner({ resolved, total, remaining, complete, onC
               <Lock size="small" /> AI diagnostics locked
             </Button>
             <span className={styles.lockNote}>
-              {remaining} {remaining === 1 ? 'flag' : 'flags'} remaining — diagnostics unlock once import is confirmed.
+              Diagnostics unlock once import is confirmed.
             </span>
           </div>
         )}

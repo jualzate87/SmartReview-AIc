@@ -29,41 +29,41 @@ interface LeftPanel1040Props {
 }
 
 // YoY % changes — absolute value drives color, sign drives label
-// Actual prior-year (2024) values from the source document
-// These are the values shown in the 1040 document image — single source of truth
+// Prior-year (2024) values — sourced from PriorYear1040Panel.tsx, the actual prior-year
+// document/panel, which is the single source of truth for these figures.
 const PRIOR_YEAR: Record<string, number> = {
-  wages:           105000,
-  taxableInterest:   1400,
-  qualifiedDivs:        0,
-  ordinaryDivs:       500,
-  capitalGain:       2500,
-  totalIncome:     109400,
-  agi:             109400,
-  stdDeduction:     13850,
-  taxableIncome:    95550,
-  withholding:      15987,
+  wages:           118940,
+  taxableInterest:   1986,
+  qualifiedDivs:   187500,
+  ordinaryDivs:    331250,
+  capitalGain:     194600,
+  totalIncome:     646776,
+  agi:             646776,
+  stdDeduction:     14600,
+  taxableIncome:   632176,
+  withholding:      40765,
 }
 
 // Current-year values used for YoY comparison (must match the live figures below)
 const CURR_YEAR = {
-  wages:           125548,
-  taxableInterest:   2409,
-  qualifiedDivs:   200000,
-  ordinaryDivs:    353000,
-  capitalGain:     203000,
-  totalIncome:     683957,
-  agi:             683957,
+  wages:           118940,
+  taxableInterest:   1986,
+  qualifiedDivs:   187500,
+  ordinaryDivs:    331250,
+  capitalGain:          0,
+  totalIncome:     452176,
+  agi:             452176,
   stdDeduction:     15750,
-  taxableIncome:   668207,
+  taxableIncome:   436426,
 }
 
 // YOY % — derived from document values vs current year (for badge/tint logic only)
 const YOY: Record<string, number> = {
   wages:           Math.round((CURR_YEAR.wages           - PRIOR_YEAR.wages)           / PRIOR_YEAR.wages           * 100),
   taxableInterest: Math.round((CURR_YEAR.taxableInterest - PRIOR_YEAR.taxableInterest) / PRIOR_YEAR.taxableInterest * 100),
-  qualifiedDivs:   0,
+  qualifiedDivs:   Math.round((CURR_YEAR.qualifiedDivs    - PRIOR_YEAR.qualifiedDivs)   / PRIOR_YEAR.qualifiedDivs   * 100),
   ordinaryDivs:    Math.round((CURR_YEAR.ordinaryDivs    - PRIOR_YEAR.ordinaryDivs)    / PRIOR_YEAR.ordinaryDivs    * 100),
-  capitalGain:     Math.round((CURR_YEAR.capitalGain     - PRIOR_YEAR.capitalGain)     / PRIOR_YEAR.capitalGain     * 100),
+  capitalGain:     PRIOR_YEAR.capitalGain !== 0 ? Math.round((CURR_YEAR.capitalGain - PRIOR_YEAR.capitalGain) / PRIOR_YEAR.capitalGain * 100) : 0,
   totalIncome:     Math.round((CURR_YEAR.totalIncome      - PRIOR_YEAR.totalIncome)     / PRIOR_YEAR.totalIncome     * 100),
   agi:             Math.round((CURR_YEAR.agi              - PRIOR_YEAR.agi)             / PRIOR_YEAR.agi             * 100),
   stdDeduction:    Math.round((CURR_YEAR.stdDeduction     - PRIOR_YEAR.stdDeduction)    / PRIOR_YEAR.stdDeduction    * 100),
@@ -75,7 +75,7 @@ const YOY: Record<string, number> = {
 const YOY_TAX_IMPACT: Record<string, number> = {
   wages:           Math.abs(CURR_YEAR.wages           - PRIOR_YEAR.wages)           * 0.24,
   taxableInterest: Math.abs(CURR_YEAR.taxableInterest - PRIOR_YEAR.taxableInterest) * 0.24,
-  qualifiedDivs:   0,
+  qualifiedDivs:   Math.abs(CURR_YEAR.qualifiedDivs   - PRIOR_YEAR.qualifiedDivs)   * 0.15,
   ordinaryDivs:    Math.abs(CURR_YEAR.ordinaryDivs    - PRIOR_YEAR.ordinaryDivs)    * 0.15,
   capitalGain:     Math.abs(CURR_YEAR.capitalGain     - PRIOR_YEAR.capitalGain)     * 0.15,
   totalIncome:     Math.abs(CURR_YEAR.totalIncome      - PRIOR_YEAR.totalIncome)     * 0.24,
@@ -112,39 +112,14 @@ function fmt(n: number) {
   return n.toLocaleString()
 }
 
-// 2025 single-filer ordinary brackets and long-term cap gain / qualified dividend brackets —
-// used to compute real tax on a return this large, where $403K of income (qualified divs +
-// capital gain distributions) is taxed at preferential rates instead of ordinary rates.
-const ORDINARY_BRACKETS: [number, number, number][] = [
-  [0, 11925, 0.10], [11925, 48475, 0.12], [48475, 103350, 0.22],
-  [103350, 197300, 0.24], [197300, 250525, 0.32], [250525, 626350, 0.35],
-  [626350, Infinity, 0.37],
-]
-const LTCG_BRACKETS: [number, number, number][] = [
-  [0, 48350, 0.0], [48350, 533400, 0.15], [533400, Infinity, 0.20],
-]
-function taxOnOrdinary(amount: number): number {
-  let tax = 0
-  for (const [lo, hi, rate] of ORDINARY_BRACKETS) {
-    if (amount <= lo) break
-    tax += (Math.min(amount, hi) - lo) * rate
-  }
-  return tax
-}
-function taxOnStacked(start: number, end: number): number {
-  let tax = 0
-  for (const [lo, hi, rate] of LTCG_BRACKETS) {
-    const segLo = Math.max(start, lo)
-    const segHi = Math.min(end, hi)
-    if (segHi > segLo) tax += (segHi - segLo) * rate
-  }
-  return tax
-}
+// 1099-DIV Box 4 withholding is a fixed $24,925; the W-2 Box 2 (federal withholding) is
+// blank on Jessica's W-2, so the W-2 portion is whatever the preparer edits it to be.
+const DIV_WITHHOLDING = 24925
 
 export default function LeftPanel1040({
   selectedField,
   onFieldClick,
-  total1a = 125548,
+  total1a = 118940,
   yoyExpanded = false,
   reviewedFields = new Set(),
   checkedFields = new Set(),
@@ -155,36 +130,19 @@ export default function LeftPanel1040({
   onAddFieldNote,
 }: LeftPanel1040Props) {
   // Derived 1040 values — Jessica Drake's return (TY 2025)
-  const taxableInterest = fieldValues?.taxableInterest ?? 2409
-  const qualifiedDivs   = fieldValues?.qualifiedDivs   ?? 200000
-  const withholding1040 = fieldValues?.withholding      ?? 43161
-  // 1099-DIV Box 4 withholding is a fixed $26,363; the rest of the combined total
-  // (edited via the W-2 Box 2 field) is the W-2 portion — lines 25a and 25b are
-  // both real, separate source lines on Jessica's return, not one merged figure.
-  const DIV_WITHHOLDING  = 26363
+  const taxableInterest = fieldValues?.taxableInterest ?? 1986
+  const qualifiedDivs   = fieldValues?.qualifiedDivs   ?? 187500
+  const withholding1040 = fieldValues?.withholding      ?? DIV_WITHHOLDING
   const w2Withholding    = Math.max(0, withholding1040 - DIV_WITHHOLDING)
-  const ordinaryDivs    = 353000  // Box 1a — includes the qualifiedDivs portion above
-  const capitalGain     = 203000  // 1099-DIV Box 2a — capital gain distributions
+  const ordinaryDivs    = 331250  // Box 1a — includes the qualifiedDivs portion above
+  const capitalGain     = 0       // 1099-DIV Box 2a — not present on this year's 1099-DIV
   // totalIncome & AGI recalculate from live taxableInterest/qualifiedDivs (other lines are static)
   const totalIncome     = total1a + taxableInterest + ordinaryDivs + capitalGain
   const stdDeduction    = 15750
   const taxableIncome   = totalIncome - stdDeduction
-  // Qualified dividends + capital gain distributions are taxed at preferential rates, stacked
-  // on top of ordinary taxable income — not at Jessica's ordinary marginal rate.
-  const nonqualifiedOrdinaryDivs = ordinaryDivs - qualifiedDivs
-  const ordinaryTaxableIncome    = Math.max(0, total1a + taxableInterest + nonqualifiedOrdinaryDivs - stdDeduction)
-  const preferentialIncome       = qualifiedDivs + capitalGain
-  const incomeTax = Math.round(
-    taxOnOrdinary(ordinaryTaxableIncome) +
-    taxOnStacked(ordinaryTaxableIncome, ordinaryTaxableIncome + preferentialIncome)
-  )
-  // Net Investment Income Tax (IRC §1411) — 3.8% on the lesser of net investment
-  // income or the amount MAGI exceeds $200,000 (single filer). At this AGI, all of
-  // Jessica's interest/dividend/capital-gain income counts as net investment income.
-  const NIIT_THRESHOLD = 200000
-  const netInvestmentIncome = taxableInterest + ordinaryDivs + capitalGain
-  const niit = Math.round(Math.min(netInvestmentIncome, Math.max(0, totalIncome - NIIT_THRESHOLD)) * 0.038)
-  const totalTax = incomeTax + niit
+  // Flat, hardcoded total tax — matches ProtoA (no bracket computation, no NIIT breakout).
+  const totalTax = 149830
+  const incomeTax = totalTax
 
   // View toggle: 'form' | 'table'
   const [view, setView] = useState<'form' | 'table'>('form')
@@ -490,7 +448,6 @@ export default function LeftPanel1040({
       totalField: null, totalCurr: totalTax,
       rows: [
         { line: '16', label: 'Tax', sub: 'See instructions', field: null, curr: incomeTax, kind: 'calc' as const },
-        { line: '23', label: 'Other taxes', sub: 'Schedule 2 — Net Investment Income Tax', field: null, curr: niit, kind: 'calc' as const },
         // Total tax (Line 24) omitted — same value as section header
       ],
     },
@@ -807,7 +764,7 @@ export default function LeftPanel1040({
               <Row                         line="1c" label="Tip income not reported on line 1a"                subdued />
               <Row                         line="1z" label="Add lines 1a through 1h"                           kind="calc"   value={total1a} bold />
 
-              <Row field="taxExemptInterest" line="2a" label="Tax-exempt interest"                             kind="source" value={234} />
+              <Row field="taxExemptInterest" line="2a" label="Tax-exempt interest"                             kind="source" value={180} />
               <Row field="taxableInterest"  line="2b" label="Taxable interest"                                 kind="source" value={taxableInterest} />
               <Row field="qualifiedDivs"   line="3a" label="Qualified dividends"                               kind="source" value={qualifiedDivs} />
               <Row field="ordinaryDivs"    line="3b" label="Ordinary dividends"                                kind="source" value={ordinaryDivs} />
@@ -828,7 +785,6 @@ export default function LeftPanel1040({
 
               <Section title="Tax and Credits" />
               <Row                         line="16" label="Tax (see instructions)"                                        kind="calc"   value={incomeTax} />
-              <Row                         line="23" label="Other taxes, including self-employment tax (Schedule 2, line 21)" kind="calc" value={niit} />
               <Row                         line="24" label="Total tax"                                                     kind="calc"   value={totalTax} bold />
 
               <Section title="Payments" />

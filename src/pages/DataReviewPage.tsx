@@ -3,6 +3,7 @@ import { ArrowLeft, DotsSix, Panel, ChevronLeft, ChevronRight, Comment, PopOut }
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import NotesPane from './data-review/NotesPane'
+import Tooltip from './data-review/Tooltip'
 import type { Note } from './data-review/NotesPane'
 
 function VerticalGripIcon() {
@@ -21,6 +22,7 @@ import DocumentPreview from './data-review/DocumentPreview'
 import DetailFields from './data-review/DetailFields'
 import DetailFields1099 from './data-review/DetailFields1099'
 import DetailFieldsDiv from './data-review/DetailFieldsDiv'
+import DetailFields1099R from './data-review/DetailFields1099R'
 import PriorYear1040Fields from './data-review/PriorYear1040Fields'
 import AgentReportPane from './data-review/AgentReportPane'
 import AgentLoadingPane from './data-review/AgentLoadingPane'
@@ -34,6 +36,7 @@ import w2TechCircle from '../assets/jessica-w2-tech-circle.png'
 import img1040Prior from '../assets/jessica-1040-2024.png'
 import img1099Int from '../assets/jessica-1099-int.jpg'
 import img1099Div from '../assets/jessica-1099-div.jpg'
+import img1099R from '../assets/jessica-1099-r.png'
 import styles from '../styles/data-review/DataReviewPage.module.css'
 import dragStyles from '../styles/data-review/DragHandle.module.css'
 
@@ -54,7 +57,7 @@ export default function DataReviewPage() {
   const total1a = wages.techCircle
   // W-2 Box 2 is blank for Tech Circle — all federal withholding on this return
   // comes from the 1099-DIV (Box 4), which flows to 1040 line 25b.
-  const DIV_WITHHOLDING = 26363
+  const DIV_WITHHOLDING = 24925
   const totalWithholding = fieldValues.withholding.techCircle + DIV_WITHHOLDING
   const updateField = (key: keyof typeof fieldValues, value: number | { techCircle: number }) =>
     updateFieldValue(key, value)
@@ -101,9 +104,7 @@ export default function DataReviewPage() {
 
   // The import/OCR flags owned by Phase 1. Each key matches the reviewed-field key
   // emitted by the DetailFields "Edit+Save" / "Mark as correct" controls.
-  // Federal withholding ($15,840 on $118,940 wages, ~13.3%) is not actually low —
-  // it is not flagged.
-  const PHASE1_FLAG_KEYS = ['wages-techCircle', 'sswages-techCircle', 'box12', 'ein-techCircle', 'qualifiedDivs', 'divCollectibles', 'divNonDiv', 'taxableInterest'] as const
+  const PHASE1_FLAG_KEYS = ['ssn-techCircle', 'wages-techCircle', 'sswages-techCircle', 'box12', 'ein-techCircle', 'qualifiedDivs', 'divCollectibles', 'divNonDiv', 'fedTaxWithheld', 'taxableInterest'] as const
   const phase1Total = PHASE1_FLAG_KEYS.length
   const phase1Resolved = PHASE1_FLAG_KEYS.filter(k => reviewedFields.has(k)).length
   // Counter of unresolved import flags — never below 0
@@ -111,9 +112,10 @@ export default function DataReviewPage() {
   const phase1Complete = phase1Remaining === 0
   // Per-document unresolved counts for dynamic tab badges
   const tabFlagCounts: Record<string, number> = {
-    w2s:          ['wages-techCircle', 'sswages-techCircle', 'box12', 'ein-techCircle'].filter(k => !reviewedFields.has(k)).length,
-    '1099-divs':  ['qualifiedDivs', 'divCollectibles', 'divNonDiv'].filter(k => !reviewedFields.has(k)).length,
+    w2s:          ['ssn-techCircle', 'wages-techCircle', 'sswages-techCircle', 'box12', 'ein-techCircle'].filter(k => !reviewedFields.has(k)).length,
+    '1099-divs':  ['qualifiedDivs', 'divCollectibles', 'divNonDiv', 'fedTaxWithheld'].filter(k => !reviewedFields.has(k)).length,
     '1099-ints':  ['taxableInterest'].filter(k => !reviewedFields.has(k)).length,
+    '1099-rs':    0,
     'prior-1040': 0,
   }
   // Phase 2 diagnostics progress — same GUIDED_ORDER/TOTAL_REVIEW_ITEMS AgentReportPane uses,
@@ -431,7 +433,6 @@ export default function DataReviewPage() {
         <Phase1Banner
           resolved={phase1Resolved}
           total={phase1Total}
-          remaining={phase1Remaining}
           complete={phase1Complete}
           onContinue={handleBeginDiagnostics}
         />
@@ -571,28 +572,30 @@ export default function DataReviewPage() {
                 ) : (
                   <span className={styles.sourcePanelTitle}>Imported documents</span>
                 )}
-                <button
-                  className={styles.agentPopOutBtn}
-                  aria-label="Pop out to new window"
-                  onClick={() => {
-                    setPoppedOut(true)
-                    const popoutWindow = window.open(
-                      `${window.location.origin}${window.location.pathname}#/data-review-popout`,
-                      '_blank',
-                      'width=800,height=900'
-                    )
-                    if (popoutWindow) {
-                      const checkClosed = setInterval(() => {
-                        if (popoutWindow.closed) {
-                          clearInterval(checkClosed)
-                          setPoppedOut(false)
-                        }
-                      }, 500)
-                    }
-                  }}
-                >
-                  <PopOut size="medium" />
-                </button>
+                <Tooltip text="Open in new window" placement="bottom">
+                  <button
+                    className={styles.agentPopOutBtn}
+                    aria-label="Open in new window"
+                    onClick={() => {
+                      setPoppedOut(true)
+                      const popoutWindow = window.open(
+                        `${window.location.origin}${window.location.pathname}#/data-review-popout`,
+                        '_blank',
+                        'width=800,height=900'
+                      )
+                      if (popoutWindow) {
+                        const checkClosed = setInterval(() => {
+                          if (popoutWindow.closed) {
+                            clearInterval(checkClosed)
+                            setPoppedOut(false)
+                          }
+                        }, 500)
+                      }
+                    }}
+                  >
+                    <PopOut size="medium" />
+                  </button>
+                </Tooltip>
               </div>
               <ReviewTab
                 activeTopTab={activeTopTab}
@@ -623,12 +626,14 @@ export default function DataReviewPage() {
                     activeTopTab === 'prior-1040' ? img1040Prior :
                     activeTopTab === '1099-ints'  ? img1099Int :
                     activeTopTab === '1099-divs'  ? img1099Div :
+                    activeTopTab === '1099-rs'    ? img1099R :
                     w2TechCircle
                   }
                   alt={
                     activeTopTab === 'prior-1040' ? 'Form 1040 (2024) — Jessica Drake' :
                     activeTopTab === '1099-ints'  ? '1099-INT Unwavering Financial' :
                     activeTopTab === '1099-divs'  ? '1099-DIV Unwavering Financial' :
+                    activeTopTab === '1099-rs'    ? '1099-R Meridian Retirement Trust' :
                     'W-2 Tech Circle'
                   }
                 />
@@ -652,7 +657,7 @@ export default function DataReviewPage() {
                   onFieldSelect={setSelectedField}
                   activeSubTab={activeSubTab}
                   onSubTabChange={(tab) => setActiveSubTab(tab as 'techCircle')}
-                  wages={{ techCircle: wages.techCircle }}
+                  wages={{ bingEquipment: 0, techCircle: wages.techCircle }}
                   onWageChange={(employer, value) => setWages({ ...wages, [employer]: value })}
                   fieldValues={{ ...fieldValues, withholding: fieldValues.withholding[activeSubTab] }}
                   onFieldValueChange={(key, value) => {
@@ -666,15 +671,17 @@ export default function DataReviewPage() {
                   onMarkReviewedBulk={handleMarkReviewedBulk}
                   reviewedFields={reviewedFields}
                   flaggedFields={{
+                    ssn: 'Employee SSN not imported — required for e-filing. Enter manually.',
                     wages: 'Low confidence (72%) — wages may be misread. Verify Box 1 against source W-2.',
                     sswages: 'Medium confidence (82%) — social security wages differ from Box 1 wages. Verify Box 3 against source W-2.',
-                    box12: 'Box 12 was not imported — enter the code and amount manually from the source W-2.',
-                    ein:   'Employer EIN was not found in the document — required for e-filing. Enter it manually.',
+                    box12: 'Box 12 not imported — enter code and amount manually from source W-2.',
+                    ein:   'Employer EIN not found in document — required for e-filing. Enter manually.',
                   }}
                 />
               )}
-              {activeTopTab === '1099-divs' && <DetailFieldsDiv selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} flaggedFields={{ qualifiedDivs: 'Large dividend amount — $353,000 ordinary dividends. Verify Box 1a and 1b against source document.', divCollectibles: 'Collectibles (28%) gain not imported — review source document and enter if applicable.', divNonDiv: 'Nondividend distributions not imported — review source document and enter if applicable.' }} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
-              {activeTopTab === '1099-ints' && <DetailFields1099 selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} flaggedFields={{ taxableInterest: 'Low confidence (68%) — interest income may be misread. Verify Box 1 against source 1099-INT.' }} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
+              {activeTopTab === '1099-divs' && <DetailFieldsDiv selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} flaggedFields={{ qualifiedDivs: 'Large dividend amount — $331,250 ordinary dividends. Verify Box 1a and 1b against source document.', divCollectibles: 'Collectibles (28%) gain not imported — review source document and enter if applicable.', divNonDiv: 'Nondividend distributions not imported — review source document and enter if applicable.', fedTaxWithheld: 'Low confidence (68%) — federal withholding may be misread. Verify Box 4 against source 1099-DIV.' }} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
+              {activeTopTab === '1099-ints' && <DetailFields1099 selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} flaggedFields={{ taxableInterest: 'Low confidence (72%) — interest income may be misread. Verify Box 1 against source 1099-INT.' }} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
+              {activeTopTab === '1099-rs' && <DetailFields1099R selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
               {activeTopTab === 'prior-1040' && <PriorYear1040Fields onMarkReviewed={handleMarkReviewed} reviewedFields={reviewedFields} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
               </div>
               </div>

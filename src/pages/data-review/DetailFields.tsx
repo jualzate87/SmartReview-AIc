@@ -22,9 +22,9 @@ interface DetailFieldsProps {
   selectedField?: string | null
   highlightMode?: 'orange' | 'blue'
   onFieldSelect?: (field: string | null) => void
-  activeSubTab?: 'techCircle'
+  activeSubTab?: 'bingEquipment' | 'techCircle'
   onSubTabChange?: (tab: string) => void
-  wages?: { techCircle: number }
+  wages?: { bingEquipment: number; techCircle: number }
   onWageChange?: (employer: string, value: number) => void
   fieldValues?: { withholding: number; box12: number; taxableInterest: number; qualifiedDivs: number }
   onFieldValueChange?: (key: FieldValuesKey, value: number) => void
@@ -39,35 +39,35 @@ interface DetailFieldsProps {
   onAddFieldNote?: (text: string, context: string) => void
 }
 
-// Static non-wages fields per employer (Jessica Drake — Tech Circle only)
+// Static non-wages fields per employer
 const EMPLOYER_DATA = {
   bingEquipment: {
-    id: '',
-    name: '',
-    street: '',
-    city: '', state: '', zip: '',
-    federalTax: '0',
-    socialSecurityWages: '0', ssTax: '0',
-    medicareWages: '0', medicareTax: '0',
-    ssTips: '0', allocatedTips: '0',
-    dependentCare: '0', nonqualified: '0',
+    id: '12-3456789',
+    name: 'Bing Equipment',
+    street: '3833 Soundtech Ct SE',
+    city: 'Kentwood', state: 'CA', zip: '93004',
+    federalTax: '10,000',
+    socialSecurityWages: '60,000', ssTax: '3,720',
+    medicareWages: '60,000', medicareTax: '870',
+    ssTips: '25', allocatedTips: '0',
+    dependentCare: '25', nonqualified: '39',
     box12Code: '' as string, box12Amount: '' as string,
   },
   techCircle: {
-    id: '',
+    id: '94-1234567',
     name: 'Tech Circle Inc',
     street: '321 Main Orchard Dr',
     city: 'Reno', state: 'NV', zip: '89501',
-    federalTax: '16,798',
-    socialSecurityWages: '125,548', ssTax: '7,784',
-    medicareWages: '125,548', medicareTax: '1,820',
+    federalTax: '',
+    socialSecurityWages: '118,940', ssTax: '7,374',
+    medicareWages: '118,940', medicareTax: '1,725',
     ssTips: '0', allocatedTips: '0',
     dependentCare: '0', nonqualified: '0',
     box12Code: '' as string, box12Amount: '' as string,
     box12Entries: [
-      { sub: 'a', code: '', amount: '' },
-      { sub: 'b', code: '', amount: '' },
-      { sub: 'c', code: '', amount: '' },
+      { sub: 'a', code: 'C', amount: '' },
+      { sub: 'b', code: 'AA', amount: '' },
+      { sub: 'c', code: 'DD', amount: '' },
       { sub: 'd', code: '', amount: '' },
     ],
   },
@@ -81,7 +81,7 @@ export default function DetailFields({
   onFieldSelect,
   activeSubTab = 'techCircle',
   onSubTabChange,
-  wages = { techCircle: 125548 },
+  wages = { bingEquipment: 0, techCircle: 118940 },
   onWageChange,
   fieldValues,
   onFieldValueChange,
@@ -111,7 +111,7 @@ export default function DetailFields({
   // Field key whose comment popover is currently open + its anchor position (fixed)
   const [commentField, setCommentField] = useState<string | null>(null)
   const [commentDraft, setCommentDraft] = useState('')
-  const [commentAnchor, setCommentAnchor] = useState<{ top: number; right: number } | null>(null)
+  const [commentAnchor, setCommentAnchor] = useState<{ top: number; left: number } | null>(null)
   const commentRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -138,6 +138,7 @@ export default function DetailFields({
     setEditedFields(prev => new Set(prev).add(field))
     setSavedField(field)
     setTimeout(() => setSavedField(null), 3500)
+    onMarkReviewed?.(field)
   }
 
   const commitWagesEdit = () => {
@@ -147,6 +148,7 @@ export default function DetailFields({
     setEditedFields(prev => new Set(prev).add(`wages-${activeSubTab}`))
     setSavedField('wages')
     setTimeout(() => setSavedField(null), 3500)
+    onMarkReviewed?.(`wages-${activeSubTab}`)
   }
 
   const cancelEdit = () => {
@@ -206,11 +208,11 @@ export default function DetailFields({
   }, [commentField])
 
   const openComment = (fieldKey: string, btn: HTMLElement) => {
-    // Walk up to the fieldRow to get a stable, full-width position
-    const row = btn.closest('[class*="fieldRow"]') as HTMLElement | null
-    const target = row ?? btn
-    const rect = target.getBoundingClientRect()
-    setCommentAnchor({ top: rect.top, right: 8 })
+    const rect = btn.getBoundingClientRect()
+    const popoverWidth = 280
+    let left = rect.left - popoverWidth - 8
+    if (left < 8) left = rect.right + 8
+    setCommentAnchor({ top: rect.bottom, left })
     setCommentField(fieldKey)
     setCommentDraft('')
   }
@@ -239,7 +241,7 @@ export default function DetailFields({
         {isOpen && commentAnchor && createPortal(
           <div
             className={styles.commentPopover}
-            style={{ top: commentAnchor.top - 4, right: commentAnchor.right, transform: 'translateY(-100%)' }}
+            style={{ top: commentAnchor.top + 4, left: commentAnchor.left }}
             ref={commentRef}
             onClick={e => e.stopPropagation()}
           >
@@ -281,9 +283,21 @@ export default function DetailFields({
     const isCommentOpen = commentField === key
     // A flagged static row (e.g. missing EIN) shows the same orange dot + validation note as other import flags
     const isFlagged = !!flaggedFields[fieldKey] && !isReviewed
+    const commitStatic = () => {
+      setStaticValues(prev => ({ ...prev, [key]: draftValue }))
+      setEditingField(null)
+      setEditedFields(prev => new Set(prev).add(key))
+      setSavedField(key)
+      setTimeout(() => setSavedField(null), 3500)
+      if (draftValue.trim()) onMarkReviewed?.(key)
+    }
     return (
       <>
-      <div className={`${styles.fieldRow} ${isFlagged ? styles.fieldRowHasNote : ''} ${isCommentOpen ? styles.fieldRowCommentOpen : ''}`}>
+      <div
+        className={`${styles.fieldRow} ${isFlagged ? styles.fieldRowHasNote : ''} ${isCommentOpen ? styles.fieldRowCommentOpen : ''}`}
+        onClick={() => onFieldSelect?.(key)}
+        style={{ cursor: 'pointer' }}
+      >
         {flaggedFields[fieldKey] ? (
           <span className={`${styles.fieldLabel} ${isFlagged ? styles.fieldLabelFlagged : ''}`}>
             {isFlagged && <span className={styles.issueIndicator} />}
@@ -298,14 +312,15 @@ export default function DetailFields({
           value={isEditing ? draftValue : currentVal}
           onChange={e => setDraftValue(e.target.value)}
           autoFocus={isEditing}
+          onClick={e => { e.stopPropagation(); if (!isEditing) startEdit(key, currentVal) }}
           onKeyDown={e => {
-            if (e.key === 'Enter') { e.preventDefault(); setStaticValues(prev => ({ ...prev, [key]: draftValue })); setEditingField(null); setEditedFields(prev => new Set(prev).add(key)); setSavedField(key); setTimeout(() => setSavedField(null), 3500) }
+            if (e.key === 'Enter') { e.preventDefault(); commitStatic() }
             if (e.key === 'Escape') cancelEdit()
           }}
         />
         {isEditing ? (
           <div className={styles.editActions}>
-            <button className={styles.saveBtn} onClick={() => { setStaticValues(prev => ({ ...prev, [key]: draftValue })); setEditingField(null); setEditedFields(prev => new Set(prev).add(key)); setSavedField(key); setTimeout(() => setSavedField(null), 3500) }}>Save</button>
+            <button className={styles.saveBtn} onClick={commitStatic}>Save</button>
             <button className={styles.undoBtn} onClick={cancelEdit}>Undo</button>
           </div>
         ) : isReviewed ? (
@@ -314,7 +329,6 @@ export default function DetailFields({
           </Tooltip>
         ) : (
           <div className={styles.fieldActions}>
-            <Tooltip text="Edit value" placement="top"><button className={styles.editBtn} onClick={e => { e.stopPropagation(); startEdit(key, currentVal) }}>Edit</button></Tooltip>
             <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.(key) }}><CircleCheck size="small" /></button></Tooltip>
             {renderCommentBtn(key, label, employer.name)}
           </div>
@@ -394,6 +408,7 @@ export default function DetailFields({
           Employer Information (MANDATORY for e-file)
         </div>
 
+        {renderStaticRow('ssn', '(a) Employee social security number', 'Not found')}
         {renderStaticRow('ein', '(b) Employer identification number', employer.id || 'Not found')}
         {renderStaticRow('employerName', '(c) Name of employer', employer.name, styles.fieldInputWide)}
         {renderStaticRow('street', 'Street address', employer.street, styles.fieldInputWide)}
@@ -406,6 +421,8 @@ export default function DetailFields({
         <div
           ref={selectedField === 'wages' ? highlightedRef : undefined}
           className={`${styles.fieldRow} ${flaggedFields['wages'] ? styles.fieldRowHasNote : ''} ${selectedField === 'wages' ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''} ${commentField === `wages-${activeSubTab}` ? styles.fieldRowCommentOpen : ''}`}
+          onClick={() => onFieldSelect?.('wages')}
+          style={{ cursor: 'pointer' }}
         >
           <FlaggedLabel fieldKey="wages">(1) Wages, tips, etc.</FlaggedLabel>
           <input
@@ -414,6 +431,7 @@ export default function DetailFields({
             value={editingField === 'wages' ? draftValue : currentWages.toLocaleString()}
             onChange={e => setDraftValue(e.target.value)}
             autoFocus={editingField === 'wages'}
+            onClick={e => { e.stopPropagation(); if (editingField !== 'wages') startEdit('wages', currentWages.toString()) }}
             onKeyDown={e => {
               if (e.key === 'Enter') { e.preventDefault(); commitWagesEdit() }
               if (e.key === 'Escape') cancelEdit()
@@ -430,7 +448,6 @@ export default function DetailFields({
             </Tooltip>
           ) : (
             <div className={styles.fieldActions}>
-              <Tooltip text="Edit value" placement="top"><button className={styles.editBtn} onClick={e => { e.stopPropagation(); startEdit('wages', currentWages.toString()) }}>Edit</button></Tooltip>
               <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.(`wages-${activeSubTab}`) }}><CircleCheck size="small" /></button></Tooltip>
               {renderCommentBtn(`wages-${activeSubTab}`, '(1) Wages, tips, etc.', employer.name)}
             </div>
@@ -443,6 +460,8 @@ export default function DetailFields({
         <div
           ref={withholdingRef}
           className={`${styles.fieldRow} ${selectedField === 'withholding' ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''} ${commentField === `withholding-${activeSubTab}` ? styles.fieldRowCommentOpen : ''}`}
+          onClick={() => onFieldSelect?.('withholding')}
+          style={{ cursor: 'pointer' }}
         >
           <FlaggedLabel fieldKey="withholding">(2) Federal income tax withheld</FlaggedLabel>
           <input
@@ -451,6 +470,7 @@ export default function DetailFields({
             value={editingField === 'withholding' ? draftValue : (fieldValues?.withholding !== undefined ? fieldValues.withholding.toLocaleString() : employer.federalTax)}
             onChange={e => setDraftValue(e.target.value)}
             autoFocus={editingField === 'withholding'}
+            onClick={e => { e.stopPropagation(); if (editingField !== 'withholding') startEdit('withholding', fieldValues?.withholding?.toString() ?? employer.federalTax) }}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitEdit('withholding') } if (e.key === 'Escape') cancelEdit() }}
           />
           {editingField === 'withholding' ? (
@@ -462,7 +482,6 @@ export default function DetailFields({
             <span className={styles.reviewedBadge}><CircleCheck size="small" /></span>
           ) : (
             <div className={styles.fieldActions}>
-              <Tooltip text="Edit value" placement="top"><button className={styles.editBtn} onClick={e => { e.stopPropagation(); startEdit('withholding', fieldValues?.withholding?.toString() ?? employer.federalTax) }}>Edit</button></Tooltip>
               <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.('withholding') }}><CircleCheck size="small" /></button></Tooltip>
               {renderCommentBtn(`withholding-${activeSubTab}`, '(2) Federal income tax withheld', employer.name)}
             </div>
@@ -502,15 +521,30 @@ export default function DetailFields({
               const amtVal = staticValues[amtKey] ?? (entry.sub === 'a' && fieldValues?.box12 !== undefined ? fieldValues.box12.toLocaleString() : entry.amount)
               const BOX12_CODES = ['', 'A','B','C','D','E','F','G','H','J','K','L','M','N','P','Q','R','S','T','V','W','AA','BB','DD','EE','FF','GG','HH']
               const commitAmt = () => {
-                if (entry.sub === 'a') { setStaticValues(prev => ({ ...prev, [amtKey]: draftValue })); commitEdit('box12') }
-                else { setStaticValues(prev => ({ ...prev, [amtKey]: draftValue })); setEditingField(null); setEditedFields(prev => new Set(prev).add(amtKey)); setSavedField(amtKey); setTimeout(() => setSavedField(null), 3500) }
+                if (entry.sub === 'a') {
+                  const num = parseFloat(draftValue.replace(/,/g, '')) || 0
+                  onFieldValueChange?.('box12', num)
+                  setStaticValues(prev => ({ ...prev, [amtKey]: draftValue }))
+                  setEditingField(null)
+                  setEditedFields(prev => new Set(prev).add('box12'))
+                  setSavedField('box12')
+                  setTimeout(() => setSavedField(null), 3500)
+                } else {
+                  setStaticValues(prev => ({ ...prev, [amtKey]: draftValue }))
+                  setEditingField(null)
+                  setEditedFields(prev => new Set(prev).add(amtKey))
+                  setSavedField(amtKey)
+                  setTimeout(() => setSavedField(null), 3500)
+                }
+                onMarkReviewed?.(rowKey)
               }
               return (
                 <div key={entry.sub}>
                   <div
                     ref={i === 0 ? box12Ref : undefined}
                     className={`${styles.fieldRow} ${isFlagged ? styles.fieldRowHasNote : ''} ${commentField === rowKey ? styles.fieldRowCommentOpen : ''}`}
-                    style={isLast ? { borderBottom: 'none' } : {}}
+                    style={isLast ? { borderBottom: 'none', cursor: 'pointer' } : { cursor: 'pointer' }}
+                    onClick={() => onFieldSelect?.(rowKey)}
                   >
                     {/* Sub-label */}
                     <span style={{ color: '#859299', fontSize: 12, fontWeight: 500, width: 32, flexShrink: 0 }}>12{entry.sub}</span>
@@ -569,6 +603,8 @@ export default function DetailFields({
             <div
               ref={box12Ref}
               className={`${styles.fieldRow} ${selectedField === 'box12' ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''} ${commentField === `box12-${activeSubTab}` ? styles.fieldRowCommentOpen : ''}`}
+              onClick={() => onFieldSelect?.('box12')}
+              style={{ cursor: 'pointer' }}
             >
               <FlaggedLabel fieldKey="box12">(12) Code {employer.box12Code || '—'} — 401(k) deferral</FlaggedLabel>
               <input
@@ -577,6 +613,7 @@ export default function DetailFields({
                 value={editingField === 'box12' ? draftValue : (fieldValues?.box12 !== undefined && employer.box12Amount ? fieldValues.box12.toLocaleString() : (employer.box12Amount || '—'))}
                 onChange={e => setDraftValue(e.target.value)}
                 autoFocus={editingField === 'box12'}
+                onClick={e => { e.stopPropagation(); if (editingField !== 'box12') startEdit('box12', fieldValues?.box12?.toString() ?? employer.box12Amount ?? '') }}
                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitEdit('box12') } if (e.key === 'Escape') cancelEdit() }}
               />
               {editingField === 'box12' ? (
@@ -584,15 +621,14 @@ export default function DetailFields({
                   <button className={styles.saveBtn} onClick={() => commitEdit('box12')}>Save</button>
                   <button className={styles.undoBtn} onClick={cancelEdit}>Undo</button>
                 </div>
-              ) : employer.box12Amount && reviewedFields?.has('box12') ? (
+              ) : reviewedFields?.has('box12') ? (
                 <span className={styles.reviewedBadge}><CircleCheck size="small" /></span>
-              ) : employer.box12Amount ? (
+              ) : (
                 <div className={styles.fieldActions}>
-                  <Tooltip text="Edit value" placement="top"><button className={styles.editBtn} onClick={e => { e.stopPropagation(); startEdit('box12', fieldValues?.box12?.toString() ?? employer.box12Amount) }}>Edit</button></Tooltip>
                   <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.('box12') }}><CircleCheck size="small" /></button></Tooltip>
                   {renderCommentBtn(`box12-${activeSubTab}`, `(12) Code ${employer.box12Code || '—'} — 401(k) deferral`, employer.name)}
                 </div>
-              ) : null}
+              )}
               {savedField === 'box12' && <span className={styles.recalcBadge}>1040 updated</span>}
               {editedFields.has('box12') && savedField !== 'box12' && <span className={styles.editedBadge}>Edited</span>}
             </div>

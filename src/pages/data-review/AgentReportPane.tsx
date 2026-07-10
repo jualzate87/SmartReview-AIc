@@ -15,14 +15,14 @@ import styles from '../../styles/data-review/AgentReportPane.module.css'
 // ProtoC Phase 2 — AI diagnostics ONLY. Import/OCR flags (w2Box12, w2Ein,
 // wagesConfidence, divCollectibles, divNonDiv) are owned by Phase 1 and removed here,
 // so there is zero redundancy between the two phases.
-export const TOTAL_REVIEW_ITEMS = 8
+export const TOTAL_REVIEW_ITEMS = 7
 
 // Ordered list of issue keys for guided "Next" navigation (Phase 2 diagnostics only).
 // Exported so DataReviewPage can compute the Phase 2 banner's progress from the same
 // source of truth instead of duplicating the list. Ordered to match REPORT_CARDS
 // grouping (Critical, then Review required, then Opportunities) so each card's
-// "N of 8" badges read as a consecutive local sequence instead of jumping around.
-export const GUIDED_ORDER = ['balanceDue', 'niit', 'verifyQualifiedDivs', 'missingPriorAgi', 'missingStateReturn', 'missingEstPayments', 'optW4Adjustment', 'optIra'] as const
+// "N of 7" badges read as a consecutive local sequence instead of jumping around.
+export const GUIDED_ORDER = ['balanceDue', 'verifyQualifiedDivs', 'missingPriorAgi', 'missingStateReturn', 'missingEstPayments', 'optW4Adjustment', 'optIra'] as const
 type IssueKey = typeof GUIDED_ORDER[number]
 
 interface AgentReportPaneProps {
@@ -47,10 +47,10 @@ interface AgentReportPaneProps {
 }
 
 // ProtoC Phase 2 — diagnostics only. Import/OCR keys removed (owned by Phase 1).
-// Key order within each card matches GUIDED_ORDER so the "N of 8" badges are
-// consecutive within the card (e.g. Critical always reads 1, 2, 3 — never 2, 3, 5).
+// Key order within each card matches GUIDED_ORDER so the "N of 7" badges are
+// consecutive within the card (e.g. Critical always reads 1, 2 — never 2, 5).
 const REPORT_CARDS = [
-  { label: 'Critical',        keys: ['balanceDue', 'niit', 'verifyQualifiedDivs'],               badgeColor: 'red'    as const, position: 'first' },
+  { label: 'Critical',        keys: ['balanceDue', 'verifyQualifiedDivs'],               badgeColor: 'red'    as const, position: 'first' },
   { label: 'Review required', keys: ['missingPriorAgi', 'missingStateReturn', 'missingEstPayments'], badgeColor: 'orange' as const, position: 'middle' },
   { label: 'Opportunities',   keys: ['optW4Adjustment', 'optIra'],                                badgeColor: 'blue'   as const, position: 'last' },
 ]
@@ -64,34 +64,36 @@ const CARD_ICONS = [
 
 // ── Jessica Drake Issues (Phase 2 diagnostics only) ────────────────────────
 // Every figure below is pulled directly from LeftPanel1040's live values
-// (wages $125,548, taxable interest $2,409, qualified divs $200,000, ordinary
-// divs $353,000, capital gain distributions $203,000, total income/AGI $683,957,
-// taxable income $668,207, income tax $129,560, NIIT $18,390, total tax
-// $147,950, withholding $43,161 [$16,798 W-2 + $26,363 1099-DIV], amount owed
-// $104,789) or the real prior-year figures in PRIOR_YEAR. At this income level
-// NIIT and the 110% (not 100%) safe-harbor threshold both genuinely apply; QBI
-// does not (no pass-through business, and the income cap zeroes out SSTB
-// income even if she had one), so it isn't included as a finding.
+// (wages $118,940, taxable interest $1,986, qualified divs $187,500, ordinary
+// divs $331,250, total income/AGI $452,176, taxable income $436,426, total tax
+// $149,830 flat, withholding $24,925 default [$0 W-2 + $24,925 1099-DIV,
+// editable], amount owed $124,905) or the real prior-year figures from
+// PriorYear1040Panel.tsx (AGI $646,776, total tax $138,120). Prior-year AGI is
+// well above the $150,000 threshold, so the 2025 safe harbor is 110% of 2024's
+// total tax ($151,932) — this year's $149,830 total tax clears that bar, so no
+// underpayment penalty applies. NIIT and QBI are not included as findings: NIIT
+// doesn't apply at this (lower) current-year AGI, and QBI doesn't apply (no
+// pass-through business).
 
 const BALANCE_DUE_ISSUE = {
   issueKey: 'balanceDue',
   dotColor: 'red' as const,
-  title: 'Balance due: $104,789',
+  title: 'Balance due: $124,905',
   category: 'IRS compliance',
-  summary: 'Jessica owes $104,789 (line 37). Withholding of $43,161 covered only 29.2% of her $147,950 total tax — but no underpayment penalty applies, because her 2024 AGI ($109,400) was under $150,000, so her safe harbor is 100% of her 2024 tax ($20,638), which her withholding already exceeds.',
-  taxImpact: 'No Form 2210 penalty is owed this year. But this is a one-time reprieve — the 100%-of-prior-year safe harbor only worked because 2024 was a normal-income year. With 2025 income this much larger, next year\'s safe harbor will be based on a much bigger number (see the W-4/estimated-payments finding), and this same withholding level would trigger a real penalty in 2026.',
-  rootCause: 'Withholding from Tech Circle wages ($16,798 on the W-2) and the 1099-DIV ($26,363) together cover only a small fraction of the $558,409 in dividend, interest, and capital gain income that has no automatic wage-style withholding — the shortfall happens to still clear the (much lower) prior-year safe harbor.',
+  summary: 'Jessica owes $124,905 (line 37). Default withholding of $24,925 covers only 16.6% of her $149,830 total tax — but no underpayment penalty applies, because her 2024 total tax was $138,120 and her 2024 AGI ($646,776) exceeded $150,000, so her safe harbor is 110% of that ($151,932), which this year\'s $149,830 total tax already clears.',
+  taxImpact: 'No Form 2210 penalty is owed this year, since $149,830 in total tax is below the $151,932 safe-harbor threshold. But the margin is thin — a similar-size return next year, combined with any increase in prior-year tax, could push the safe-harbor target above what gets covered by withholding alone.',
+  rootCause: 'Withholding is entirely from the 1099-DIV Box 4 ($24,925) — the W-2 has no federal withholding (Box 2 is blank) — leaving a large gap against the $149,830 total tax that happens to still clear the (higher, 110%) prior-year safe harbor.',
   tableRows: [
-    { label: 'Total tax (line 24)',              cols: ['$147,950', '—', '—'],       badge: undefined,         total: false },
-    { label: 'Federal withholding (25a + 25b)',  cols: ['$43,161', '29.2%', '—'],   badge: 'orange' as const, total: false },
-    { label: 'Safe harbor (100% of 2024 tax)',   cols: ['$20,638', 'Met', '✓'],      badge: undefined,         total: false },
-    { label: 'Amount you owe (line 37)',         cols: ['$104,789',  'Due', '!'],     badge: 'red' as const,    total: true },
+    { label: 'Total tax (line 24)',              cols: ['$149,830', '—', '—'],       badge: undefined,         total: false },
+    { label: 'Federal withholding (25a + 25b)',  cols: ['$24,925', '16.6%', '—'],   badge: 'orange' as const, total: false },
+    { label: 'Safe harbor (110% of 2024 tax)',   cols: ['$151,932', 'Met', '✓'],      badge: undefined,         total: false },
+    { label: 'Amount you owe (line 37)',         cols: ['$124,905',  'Due', '!'],     badge: 'red' as const,    total: true },
   ],
   tableHeaders: ['Item', 'Amount', 'Status', ''],
   suggestedActions: [
-    'Let Jessica know no penalty applies this year, but confirm she has the cash on hand to cover $104,789 by the filing deadline.',
+    'Let Jessica know no penalty applies this year, but confirm she has the cash on hand to cover $124,905 by the filing deadline.',
     'Confirm whether Jessica made any 2025 estimated payments not yet reflected on the return, which would lower this amount.',
-    'Flag that this safe harbor won\'t protect her next year at this income level — see the withholding/estimated-payments recommendation.',
+    'Flag that the safe-harbor margin is thin — see the withholding/estimated-payments recommendation for next year.',
   ],
   viewSourceLabel: 'View Form 1040',
   viewSourceTab: 'w2s' as const,
@@ -99,48 +101,22 @@ const BALANCE_DUE_ISSUE = {
   viewSourceField: 'withholding',
 }
 
-const NIIT_ISSUE = {
-  issueKey: 'niit',
-  dotColor: 'red' as const,
-  title: 'Net Investment Income Tax applies: $18,390',
-  category: 'IRS compliance',
-  summary: 'AGI of $683,957 exceeds the $200,000 single-filer NIIT threshold by $483,957. The 3.8% surtax applies to the lesser of net investment income ($558,409) or that excess — landing on $483,957 × 3.8% = $18,390.',
-  taxImpact: 'NIIT (IRC §1411) is calculated on Form 8960 and reported as an "other tax" on Schedule 2, flowing to line 23. It has already been added to line 24 total tax below, but confirm Form 8960 is attached before filing — a missing form is a common e-file rejection reason at this income level.',
-  rootCause: 'Net investment income = taxable interest ($2,409) + ordinary dividends ($353,000) + capital gain distributions ($203,000) = $558,409. Since this exceeds the $483,957 MAGI-over-threshold amount, the smaller figure ($483,957) is the NIIT base.',
-  tableRows: [
-    { label: 'Net investment income',            cols: ['$558,409', '—', '—'], badge: undefined, total: false },
-    { label: 'AGI over $200,000 threshold',       cols: ['$483,957', 'Lesser of', '—'], badge: 'orange' as const, total: false },
-    { label: 'NIIT (3.8% of $483,957)',           cols: ['$18,390', 'Owed', '!'], badge: 'red' as const, total: true },
-  ],
-  tableHeaders: ['Item', 'Amount', 'Status', ''],
-  suggestedActions: [
-    'Attach Form 8960 (Net Investment Income Tax) to the return.',
-    'Confirm the $18,390 NIIT is included in the Schedule 2 total flowing to line 23.',
-    'For future years, discuss whether any of the investment income could be sheltered (e.g., municipal bonds are NIIT-exempt).',
-  ],
-  viewSourceLabel: 'View Form 1040',
-  viewSourceTab: '1099-divs' as const,
-  viewSourceSubTab: undefined,
-  viewSourceField: undefined,
-}
-
 const VERIFY_QUALIFIED_DIVS_ISSUE = {
   issueKey: 'verifyQualifiedDivs',
   dotColor: 'red' as const,
   title: 'Verify qualified dividend classification',
   category: 'IRS compliance',
-  summary: '$200,000 in qualified dividends (line 3a) is new this year (prior year: $0) and is the single largest driver of the return. Confirm the holding-period requirement was met.',
-  taxImpact: 'Qualified dividends are taxed at preferential rates (15%/20% here, roughly $34,940 combined with the capital gain distributions) instead of ordinary rates. If any portion doesn\'t meet the holding-period requirement, it must be reported as ordinary income instead — at Jessica\'s 35% marginal rate, that would add a substantial amount to tax owed.',
-  rootCause: 'Unwavering Financial\'s 1099-DIV reports $200,000 as qualified (Box 1b) out of $353,000 total ordinary dividends (Box 1a). No qualified dividends were reported on the prior-year return.',
+  summary: '$187,500 in qualified dividends (line 3a) is the single largest driver of the return\'s preferential-rate income. Confirm the holding-period requirement was met.',
+  taxImpact: 'Qualified dividends are taxed at preferential rates (15%/20%) instead of ordinary rates. If any portion doesn\'t meet the holding-period requirement, it must be reported as ordinary income instead — increasing tax owed at Jessica\'s ordinary marginal rate.',
+  rootCause: 'Unwavering Financial\'s 1099-DIV reports $187,500 as qualified (Box 1b) out of $331,250 total ordinary dividends (Box 1a).',
   tableRows: [
-    { label: 'Qualified dividends (line 3a)', cols: ['$200,000', 'New', '—'], badge: 'orange' as const, total: false },
-    { label: 'Qualified dividends (2024)',    cols: ['$0', 'Prior year', '—'], badge: undefined, total: false },
-    { label: 'Total ordinary dividends (1099-DIV Box 1a)', cols: ['$353,000', '—', '—'], badge: undefined, total: false },
+    { label: 'Qualified dividends (line 3a)', cols: ['$187,500', 'Verify', '?'], badge: 'orange' as const, total: false },
+    { label: 'Total ordinary dividends (1099-DIV Box 1a)', cols: ['$331,250', '—', '—'], badge: undefined, total: false },
   ],
   tableHeaders: ['Field', 'Amount', 'Status', ''],
   suggestedActions: [
     'Confirm with Jessica or the brokerage that the underlying shares were held for the required period (typically 61+ days).',
-    'Cross-check the $200,000 qualified figure against the 1099-DIV Box 1b amount.',
+    'Cross-check the $187,500 qualified figure against the 1099-DIV Box 1b amount.',
     'If any amount doesn\'t qualify, move it to ordinary dividend treatment before filing.',
   ],
   viewSourceLabel: 'View 1099-DIV',
@@ -158,13 +134,13 @@ const MISSING_PRIOR_AGI_ISSUE = {
   category: 'Missing information',
   summary: 'Prior-year (2024) AGI is required for e-file PIN validation. Not found in any imported document.',
   taxImpact: 'Without the correct prior-year AGI, the IRS cannot validate the e-file PIN. The return cannot be submitted electronically until this is confirmed.',
-  rootCause: 'The 2024 return was not imported as a document and no prior-year AGI was recorded during client onboarding — the $109,400 figure shown on the Prior Year 1040 tab has not been confirmed against an IRS transcript.',
+  rootCause: 'The 2024 return was not imported as a document and no prior-year AGI was recorded during client onboarding — the $646,776 figure shown on the Prior Year 1040 tab has not been confirmed against an IRS transcript.',
   tableRows: [
-    { label: '2024 AGI (e-file PIN)', cols: ['$109,400', 'Unconfirmed', '?'], badge: 'orange' as const, total: false },
+    { label: '2024 AGI (e-file PIN)', cols: ['$646,776', 'Unconfirmed', '?'], badge: 'orange' as const, total: false },
   ],
   tableHeaders: ['Field', 'Value', 'Status', ''],
   suggestedActions: [
-    'Confirm the $109,400 prior-year AGI with Jessica or her 2024 return.',
+    'Confirm the $646,776 prior-year AGI with Jessica or her 2024 return.',
     'Enter it in the e-file section of the return.',
     'Alternatively, use the IRS Get Transcript tool to verify it.',
   ],
@@ -180,12 +156,12 @@ const MISSING_STATE_RETURN_ISSUE = {
   title: 'CA state filing likely required',
   category: 'Missing information',
   summary: 'Jessica\'s address is Middlefield, CA. No California state return information was found in any imported document.',
-  taxImpact: 'California taxes capital gains and dividends at ordinary rates, reaching 11.3%–12.3% in this income range (plus a 1% Mental Health Services surtax above $1M, which doesn\'t apply here). Estimated CA liability on this return is roughly $67,000–$74,000, based on taxable income of $668,207.',
+  taxImpact: 'California taxes capital gains and dividends at ordinary rates, reaching 10.3%–11.3% in this income range. Estimated CA liability on this return is roughly $40,000–$45,000, based on taxable income of $436,426.',
   rootCause: 'No CA state documents (CA W-2 withholding, CA 540 prior return) were imported. State filing requirement is inferred from the address on Form 1040.',
   tableRows: [
     { label: 'CA state return (CA 540)', cols: ['—', 'Not started', '!'], badge: 'orange' as const, total: false },
     { label: 'CA withholding on W-2',    cols: ['—', 'Verify', '?'],      badge: 'orange' as const, total: false },
-    { label: 'Estimated CA liability',   cols: ['~$67,000–$74,000', 'Estimate', '—'], badge: 'orange' as const, total: false },
+    { label: 'Estimated CA liability',   cols: ['~$40,000–$45,000', 'Estimate', '—'], badge: 'orange' as const, total: false },
   ],
   tableHeaders: ['Item', 'Value', 'Status', ''],
   suggestedActions: [
@@ -205,11 +181,11 @@ const MISSING_EST_PAYMENTS_ISSUE = {
   title: 'No estimated tax payments recorded',
   category: 'Missing information',
   summary: 'Line 26 shows $0 in 2025 estimated payments. Given the size of this return\'s investment income, confirm with Jessica whether any quarterly payments were made.',
-  taxImpact: 'If estimated payments were made but not recorded, the $104,789 balance due (line 37) would decrease accordingly — this is too large a gap to leave unconfirmed.',
+  taxImpact: 'If estimated payments were made but not recorded, the $124,905 balance due (line 37) would decrease accordingly — this is too large a gap to leave unconfirmed.',
   rootCause: 'No 1040-ES payment records were imported. Either no payments were made, or they were made but not captured during document import.',
   tableRows: [
     { label: '2025 estimated payments (line 26)', cols: ['$0', 'Unconfirmed', '?'], badge: 'orange' as const, total: false },
-    { label: 'Amount you owe (line 37)',          cols: ['$104,789', 'Due', '!'], badge: 'orange' as const, total: false },
+    { label: 'Amount you owe (line 37)',          cols: ['$124,905', 'Due', '!'], badge: 'orange' as const, total: false },
   ],
   tableHeaders: ['Field', 'Recorded', 'Status', ''],
   suggestedActions: [
@@ -228,21 +204,21 @@ const MISSING_EST_PAYMENTS_ISSUE = {
 const OPT_W4_ISSUE = {
   issueKey: 'optW4Adjustment',
   dotColor: 'blue' as const,
-  title: 'Plan ahead: 2026 safe harbor will require much higher withholding',
+  title: 'Plan ahead: increase withholding to build a larger safe-harbor cushion',
   category: 'Optimization',
-  summary: 'This year\'s $43,161 combined withholding cleared the safe harbor only because 2024 was a normal-income year. Since 2025 AGI ($683,957) exceeds $150,000, the 2026 safe harbor becomes 110% of this year\'s $147,950 total tax — $162,745. A W-4 update alone can\'t close a gap this size; quarterly estimated payments are the realistic fix.',
-  taxImpact: 'Reaching $162,745 in withholding or estimated payments next year would avoid both a large balance due and an underpayment penalty, assuming similar income. Without action, 2026 will not have this year\'s low-prior-year-tax safe harbor to fall back on.',
-  rootCause: 'Jessica\'s withholding comes from her Tech Circle W-2 ($16,798) and 1099-DIV backup withholding ($26,363) — neither source is calibrated to the scale of her dividend and capital gain income.',
+  summary: 'This year\'s $24,925 default withholding cleared the 110% safe harbor ($151,932 vs. $149,830 total tax) by a narrow margin. Since AGI is again likely to exceed $150,000, the 2026 safe harbor will be 110% of this year\'s $149,830 total tax — $164,813. Increasing withholding now builds in a buffer against next year\'s higher target.',
+  taxImpact: 'Reaching $164,813 in withholding or estimated payments next year would avoid both a large balance due and an underpayment penalty, assuming similar income. Without action, the thin 2025 margin could easily flip negative next year.',
+  rootCause: 'All of Jessica\'s withholding comes from 1099-DIV backup withholding ($24,925) — her W-2 has no federal withholding at all (Box 2 is blank), leaving nothing to adjust via a simple W-4 percentage change.',
   tableRows: [
-    { label: 'Current annual withholding', cols: ['$43,161', '—', '—'],           badge: undefined,       total: false },
-    { label: '2026 safe-harbor target (110% of 2025 tax)', cols: ['$162,745', 'Gap', '—'],         badge: 'blue' as const, total: false },
-    { label: 'Additional needed/year',     cols: ['$119,584', 'Suggestion', '→'],  badge: 'blue' as const, total: true },
+    { label: 'Current annual withholding', cols: ['$24,925', '—', '—'],           badge: undefined,       total: false },
+    { label: '2026 safe-harbor target (110% of 2025 tax)', cols: ['$164,813', 'Gap', '—'],         badge: 'blue' as const, total: false },
+    { label: 'Additional needed/year',     cols: ['$139,888', 'Suggestion', '→'],  badge: 'blue' as const, total: true },
   ],
   tableHeaders: ['Item', 'Amount', 'Status', ''],
   suggestedActions: [
-    'Set up quarterly 1040-ES estimated payments for 2026 — a W-4 change on wage income alone can\'t realistically cover a gap this large.',
-    'Alternatively, request additional flat-dollar withholding on the W-2 via Form W-4 Step 4(c), sized to the investment income.',
-    'Target at least 110% of this year\'s total tax ($162,745) given AGI now exceeds the $150,000 threshold for the higher safe-harbor percentage.',
+    'Set up quarterly 1040-ES estimated payments for 2026 — the W-2 currently has no withholding to adjust.',
+    'Alternatively, request flat-dollar withholding on the W-2 via Form W-4 Step 4(c), sized to the investment income.',
+    'Target at least 110% of this year\'s total tax ($164,813) given AGI is likely to exceed the $150,000 threshold again next year.',
   ],
   viewSourceLabel: 'View W-2',
   viewSourceTab: 'w2s' as const,
@@ -255,8 +231,8 @@ const OPT_IRA_ISSUE = {
   dotColor: 'blue' as const,
   title: 'IRA deduction — confirm workplace plan coverage',
   category: 'Optimization',
-  summary: 'No IRA deduction was claimed. At this AGI ($683,957), a traditional IRA contribution is only deductible if Jessica is NOT covered by a workplace retirement plan — the 2025 phase-out for covered single filers tops out around $89,000 MAGI, far below her income.',
-  taxImpact: 'If Jessica is not covered by a workplace plan (check W-2 Box 13), a full $7,000 traditional IRA deduction would reduce taxable income by $7,000 — saving approximately $2,450 at her 35% marginal rate. If she is covered, the contribution would need to go to a Roth or be nondeductible instead.',
+  summary: 'No IRA deduction was claimed. At this AGI ($452,176), a traditional IRA contribution is only deductible if Jessica is NOT covered by a workplace retirement plan — the 2025 phase-out for covered single filers tops out around $89,000 MAGI, far below her income.',
+  taxImpact: 'If Jessica is not covered by a workplace plan (check W-2 Box 13), a full $7,000 traditional IRA deduction would reduce taxable income by $7,000 — saving approximately $2,450 at her marginal rate. If she is covered, the contribution would need to go to a Roth or be nondeductible instead.',
   rootCause: 'No IRA contribution deduction appears on the return, and the mock W-2 doesn\'t indicate whether Box 13 "Retirement plan" is checked.',
   tableRows: [
     { label: 'W-2 Box 13 — Retirement plan', cols: ['Unconfirmed', 'Check first', '?'], badge: 'orange' as const, total: false },
@@ -289,7 +265,7 @@ const ISSUE_FIELD: Partial<Record<IssueKey, string>> = {
 
 // All issues as a flat list for getIssueConfig lookup
 const ALL_ISSUES = [
-  BALANCE_DUE_ISSUE, NIIT_ISSUE, VERIFY_QUALIFIED_DIVS_ISSUE, MISSING_PRIOR_AGI_ISSUE,
+  BALANCE_DUE_ISSUE, VERIFY_QUALIFIED_DIVS_ISSUE, MISSING_PRIOR_AGI_ISSUE,
   MISSING_STATE_RETURN_ISSUE, MISSING_EST_PAYMENTS_ISSUE,
   OPT_W4_ISSUE, OPT_IRA_ISSUE,
 ]
@@ -305,7 +281,7 @@ export default function AgentReportPane({
   initialSubView,
   onSubViewChange,
   embedded = false,
-  total1a = 125548,
+  total1a = 118940,
   wages,
   onNavigateToTab,
   onHighlightField,

@@ -30,7 +30,7 @@ const CHANNEL_NAME = 'protoc-data-review-sync'
 // means the cached session predates the new numbers, so it's discarded instead
 // of silently mixing old field values with the new defaults (which caused the
 // 1040 to show stale withholding/amount-owed figures after a data fix).
-const STATE_VERSION = 2
+const STATE_VERSION = 3
 const STORAGE_KEY = 'protoc-data-review-state-v' + STATE_VERSION
 const PREPARER_NAME = 'Juan Alzate'
 
@@ -42,12 +42,12 @@ const DEFAULT_STATE: SyncedState = {
   activeTopTab: 'w2s',
   activeSubTab: 'techCircle',
   selectedField: null,
-  wages: { techCircle: 125548 },
+  wages: { techCircle: 118940 },
   fieldValues: {
-    withholding: { techCircle: 16798 },
+    withholding: { techCircle: 0 },
     box12: 0,
-    taxableInterest: 2409,
-    qualifiedDivs: 200000,
+    taxableInterest: 1986,
+    qualifiedDivs: 187500,
   },
   reviewedFieldsList: [],
 }

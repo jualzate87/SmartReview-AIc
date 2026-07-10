@@ -16,7 +16,7 @@ const PAYER_DATA = {
 }
 
 const RECIPIENT_DATA = {
-  ssn: '111-11-1111',
+  ssn: 'XXX-XX-4699',
   name: 'Jessica Drake',
   street: '333 Easy Street',
   city: 'Middlefield',
@@ -26,20 +26,20 @@ const RECIPIENT_DATA = {
 
 // Form 1099-INT boxes — Jessica Drake values
 const FORM_DATA = {
-  box1_interest:        '2,409',   // Box 1 — Interest income
-  box2_earlyPenalty:    '0',       // Box 2 — Early withdrawal penalty
-  box3_usBonds:         '0',       // Box 3 — Interest on U.S. Savings Bonds & T-bills
-  box4_fedTaxWithheld:  '0',       // Box 4 — Federal income tax withheld
-  box5_investExpenses:  '0',       // Box 5 — Investment expenses
-  box6_foreignTax:      '0',       // Box 6 — Foreign tax paid
+  box1_interest:        '1,986',   // Box 1 — Interest income
+  box2_earlyPenalty:    '',        // Box 2 — Early withdrawal penalty
+  box3_usBonds:         '',        // Box 3 — Interest on U.S. Savings Bonds & T-bills
+  box4_fedTaxWithheld:  '',        // Box 4 — Federal income tax withheld
+  box5_investExpenses:  '',        // Box 5 — Investment expenses
+  box6_foreignTax:      '',        // Box 6 — Foreign tax paid
   box7_foreignCountry:  '',        // Box 7 — Foreign country or U.S. possession
-  box8_taxExempt:       '234',     // Box 8 — Tax-exempt interest
-  box9_specPrivActivity:'0',       // Box 9 — Specified private activity bond interest
-  box10_marketDiscount: '0',       // Box 10 — Market discount
-  box11_bondPremium:    '0',       // Box 11 — Bond premium
+  box8_taxExempt:       '180',     // Box 8 — Tax-exempt interest
+  box9_specPrivActivity:'',        // Box 9 — Specified private activity bond interest
+  box10_marketDiscount: '',        // Box 10 — Market discount
+  box11_bondPremium:    '',        // Box 11 — Bond premium
   box13_stateTaxId:     'CA-47882103',
-  box14_stateTax:       '0',
-  box15_stateIncome:    '2,409',
+  box14_stateTax:       '',
+  box15_stateIncome:    '1,986',
 }
 
 interface DetailFields1099Props {
@@ -55,7 +55,7 @@ interface DetailFields1099Props {
   onAddFieldNote?: (text: string, context: string) => void
 }
 
-export default function DetailFields1099({ selectedField, highlightMode = 'blue', fieldValues, onFieldValueChange, onMarkReviewed, reviewedFields, flaggedFields = {}, onAddFieldNote }: DetailFields1099Props) {
+export default function DetailFields1099({ selectedField, highlightMode = 'blue', onFieldSelect, fieldValues, onFieldValueChange, onMarkReviewed, reviewedFields, flaggedFields = {}, onAddFieldNote }: DetailFields1099Props) {
   const highlightedRef = useRef<HTMLDivElement>(null)
   const [editingField, setEditingField] = useState<string | null>(null)
   const [draftValue, setDraftValue] = useState('')
@@ -67,7 +67,7 @@ export default function DetailFields1099({ selectedField, highlightMode = 'blue'
   // Field key whose comment popover is currently open + its anchor position (fixed)
   const [commentField, setCommentField] = useState<string | null>(null)
   const [commentDraft, setCommentDraft] = useState('')
-  const [commentAnchor, setCommentAnchor] = useState<{ top: number; right: number } | null>(null)
+  const [commentAnchor, setCommentAnchor] = useState<{ top: number; left: number } | null>(null)
   const commentRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -89,6 +89,7 @@ export default function DetailFields1099({ selectedField, highlightMode = 'blue'
     setEditedFields(prev => new Set(prev).add(field))
     setSavedField(field)
     setTimeout(() => setSavedField(null), 3500)
+    onMarkReviewed?.(field)
   }
 
   const cancelEdit = () => { setEditingField(null); setDraftValue('') }
@@ -108,10 +109,11 @@ export default function DetailFields1099({ selectedField, highlightMode = 'blue'
   }, [commentField])
 
   const openComment = (fieldKey: string, btn: HTMLElement) => {
-    const row = btn.closest('[class*="fieldRow"]') as HTMLElement | null
-    const target = row ?? btn
-    const rect = target.getBoundingClientRect()
-    setCommentAnchor({ top: rect.top, right: 8 })
+    const rect = btn.getBoundingClientRect()
+    const popoverWidth = 280
+    let left = rect.left - popoverWidth - 8
+    if (left < 8) left = rect.right + 8
+    setCommentAnchor({ top: rect.bottom, left })
     setCommentField(fieldKey)
     setCommentDraft('')
   }
@@ -139,7 +141,7 @@ export default function DetailFields1099({ selectedField, highlightMode = 'blue'
         {isOpen && commentAnchor && createPortal(
           <div
             className={styles.commentPopover}
-            style={{ top: commentAnchor.top - 4, right: commentAnchor.right, transform: 'translateY(-100%)' }}
+            style={{ top: commentAnchor.top + 4, left: commentAnchor.left }}
             ref={commentRef}
             onClick={e => e.stopPropagation()}
           >
@@ -206,9 +208,14 @@ export default function DetailFields1099({ selectedField, highlightMode = 'blue'
       setEditedFields(prev => new Set(prev).add(fieldKey))
       setSavedField(fieldKey)
       setTimeout(() => setSavedField(null), 3500)
+      if (draftValue.trim()) onMarkReviewed?.(fieldKey)
     }
     return (
-      <div className={`${styles.fieldRow} ${isCommentOpen ? styles.fieldRowCommentOpen : ''}`}>
+      <div
+        className={`${styles.fieldRow} ${isCommentOpen ? styles.fieldRowCommentOpen : ''}`}
+        onClick={() => onFieldSelect?.(fieldKey)}
+        style={{ cursor: 'pointer' }}
+      >
         <span className={styles.fieldLabel}>{label}</span>
         <input
           className={`${styles.fieldInput} ${inputClass} ${isEditing ? styles.fieldInputEditing : ''}`}
@@ -217,6 +224,7 @@ export default function DetailFields1099({ selectedField, highlightMode = 'blue'
           onChange={e => setDraftValue(e.target.value)}
           placeholder={placeholder}
           autoFocus={isEditing}
+          onClick={e => { e.stopPropagation(); if (!isEditing) startEdit(fieldKey, currentVal) }}
           onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitStatic() } if (e.key === 'Escape') cancelEdit() }}
         />
         {isEditing ? (
@@ -230,7 +238,6 @@ export default function DetailFields1099({ selectedField, highlightMode = 'blue'
           </Tooltip>
         ) : (
           <div className={styles.fieldActions}>
-            <Tooltip text="Edit value" placement="top"><button className={styles.editBtn} onClick={e => { e.stopPropagation(); startEdit(fieldKey, currentVal) }}>Edit</button></Tooltip>
             <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.(fieldKey) }}><CircleCheck size="small" /></button></Tooltip>
             {renderCommentBtn(fieldKey, label)}
           </div>
@@ -275,6 +282,8 @@ export default function DetailFields1099({ selectedField, highlightMode = 'blue'
         <div
           ref={selectedField === 'taxableInterest' ? highlightedRef : undefined}
           className={`${styles.fieldRow} ${flaggedFields['taxableInterest'] && !reviewedFields?.has('taxableInterest') ? styles.fieldRowHasNote : ''} ${selectedField === 'taxableInterest' ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''} ${commentField === 'taxableInterest' ? styles.fieldRowCommentOpen : ''}`}
+          onClick={() => onFieldSelect?.('taxableInterest')}
+          style={{ cursor: 'pointer' }}
         >
           <span className={`${styles.fieldLabel} ${flaggedFields['taxableInterest'] && !reviewedFields?.has('taxableInterest') ? styles.fieldLabelFlagged : ''}`}>
             {flaggedFields['taxableInterest'] && !reviewedFields?.has('taxableInterest') && <span className={styles.issueIndicator} />}
@@ -286,6 +295,7 @@ export default function DetailFields1099({ selectedField, highlightMode = 'blue'
             value={editingField === 'taxableInterest' ? draftValue : (fieldValues?.taxableInterest !== undefined ? fieldValues.taxableInterest.toLocaleString() : FORM_DATA.box1_interest)}
             onChange={e => setDraftValue(e.target.value)}
             autoFocus={editingField === 'taxableInterest'}
+            onClick={e => { e.stopPropagation(); if (editingField !== 'taxableInterest') startEdit('taxableInterest', fieldValues?.taxableInterest?.toString() ?? FORM_DATA.box1_interest) }}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitEdit('taxableInterest') } if (e.key === 'Escape') cancelEdit() }}
           />
           {editingField === 'taxableInterest' ? (
@@ -299,7 +309,6 @@ export default function DetailFields1099({ selectedField, highlightMode = 'blue'
             </Tooltip>
           ) : (
             <div className={styles.fieldActions}>
-              <Tooltip text="Edit value" placement="top"><button className={styles.editBtn} onClick={e => { e.stopPropagation(); startEdit('taxableInterest', fieldValues?.taxableInterest?.toString() ?? FORM_DATA.box1_interest) }}>Edit</button></Tooltip>
               <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.('taxableInterest') }}><CircleCheck size="small" /></button></Tooltip>
               {renderCommentBtn('taxableInterest', '(1) Interest income')}
             </div>

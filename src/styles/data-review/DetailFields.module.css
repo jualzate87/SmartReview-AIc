@@ -358,6 +358,11 @@
   width: 300px;
   box-sizing: border-box;
   outline: none;
+  cursor: pointer;
+}
+
+.fieldInput:read-write {
+  cursor: text;
 }
 
 .fieldInput:focus {

@@ -5,6 +5,7 @@ import DocumentPreview from './data-review/DocumentPreview'
 import DetailFields from './data-review/DetailFields'
 import DetailFields1099 from './data-review/DetailFields1099'
 import DetailFieldsDiv from './data-review/DetailFieldsDiv'
+import DetailFields1099R from './data-review/DetailFields1099R'
 import PriorYear1040Fields from './data-review/PriorYear1040Fields'
 import QuestionnairePane from './data-review/QuestionnairePane'
 import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
@@ -12,6 +13,7 @@ import w2TechCircle from '../assets/jessica-w2-tech-circle.png'
 import img1040Prior from '../assets/jessica-1040-2024.png'
 import img1099Int from '../assets/jessica-1099-int.jpg'
 import img1099Div from '../assets/jessica-1099-div.jpg'
+import img1099R from '../assets/jessica-1099-r.png'
 import dragStyles from '../styles/data-review/DragHandle.module.css'
 
 // ProtoC: the pop-out is the same view as the main window's right panel, not a
@@ -33,7 +35,7 @@ export default function DataReviewPopout() {
 
   // W-2 Box 2 is blank for Tech Circle — all federal withholding on this return
   // comes from the 1099-DIV (Box 4), which flows to 1040 line 25b.
-  const DIV_WITHHOLDING = 26363
+  const DIV_WITHHOLDING = 24925
   const totalWithholding = fieldValues.withholding.techCircle + DIV_WITHHOLDING
   const updateField = (key: keyof typeof fieldValues, value: number | { techCircle: number }) =>
     updateFieldValue(key, value)
@@ -44,9 +46,10 @@ export default function DataReviewPopout() {
   const highlightMode: 'orange' | 'blue' = 'blue'
 
   const tabFlagCounts: Record<string, number> = {
-    w2s:          ['wages-techCircle', 'sswages-techCircle', 'box12', 'ein-techCircle'].filter(k => !reviewedFields.has(k)).length,
-    '1099-divs':  ['qualifiedDivs', 'divCollectibles', 'divNonDiv'].filter(k => !reviewedFields.has(k)).length,
+    w2s:          ['ssn-techCircle', 'wages-techCircle', 'sswages-techCircle', 'box12', 'ein-techCircle'].filter(k => !reviewedFields.has(k)).length,
+    '1099-divs':  ['qualifiedDivs', 'divCollectibles', 'divNonDiv', 'fedTaxWithheld'].filter(k => !reviewedFields.has(k)).length,
     '1099-ints':  ['taxableInterest'].filter(k => !reviewedFields.has(k)).length,
+    '1099-rs':    0,
     'prior-1040': 0,
   }
 
@@ -80,12 +83,14 @@ export default function DataReviewPopout() {
     activeTopTab === 'prior-1040' ? img1040Prior :
     activeTopTab === '1099-ints'  ? img1099Int :
     activeTopTab === '1099-divs'  ? img1099Div :
+    activeTopTab === '1099-rs'    ? img1099R :
     w2TechCircle
 
   const imageAlt =
     activeTopTab === 'prior-1040' ? 'Form 1040 (2024) — Jessica Drake' :
     activeTopTab === '1099-ints'  ? '1099-INT Unwavering Financial' :
     activeTopTab === '1099-divs'  ? '1099-DIV Unwavering Financial' :
+    activeTopTab === '1099-rs'    ? '1099-R Meridian Retirement Trust' :
     'W-2 Tech Circle'
 
   return (
@@ -122,7 +127,7 @@ export default function DataReviewPopout() {
                 onFieldSelect={setSelectedField}
                 activeSubTab={activeSubTab}
                 onSubTabChange={(tab) => setActiveSubTab(tab as 'techCircle')}
-                wages={{ techCircle: wages.techCircle }}
+                wages={{ bingEquipment: 0, techCircle: wages.techCircle }}
                 onWageChange={(employer, value) => setWages({ ...wages, [employer]: value })}
                 fieldValues={{ ...fieldValues, withholding: fieldValues.withholding[activeSubTab] }}
                 onFieldValueChange={(key, value) => {
@@ -136,10 +141,11 @@ export default function DataReviewPopout() {
                 onMarkReviewedBulk={handleMarkReviewedBulk}
                 reviewedFields={reviewedFields}
                 flaggedFields={{
+                  ssn: 'Employee SSN not imported — required for e-filing. Enter manually.',
                   wages: 'Low confidence (72%) — wages may be misread. Verify Box 1 against source W-2.',
                   sswages: 'Medium confidence (82%) — social security wages differ from Box 1 wages. Verify Box 3 against source W-2.',
-                  box12: 'Box 12 was not imported — enter the code and amount manually from the source W-2.',
-                  ein:   'Employer EIN was not found in the document — required for e-filing. Enter it manually.',
+                  box12: 'Box 12 not imported — enter code and amount manually from source W-2.',
+                  ein:   'Employer EIN not found in document — required for e-filing. Enter manually.',
                 }}
               />
             )}
@@ -154,9 +160,10 @@ export default function DataReviewPopout() {
                 onMarkReviewedBulk={handleMarkReviewedBulk}
                 reviewedFields={reviewedFields}
                 flaggedFields={{
-                  qualifiedDivs: 'Large dividend amount — $353,000 ordinary dividends. Verify Box 1a and 1b against source document.',
+                  qualifiedDivs: 'Large dividend amount — $331,250 ordinary dividends. Verify Box 1a and 1b against source document.',
                   divCollectibles: 'Collectibles (28%) gain not imported — review source document and enter if applicable.',
                   divNonDiv: 'Nondividend distributions not imported — review source document and enter if applicable.',
+                  fedTaxWithheld: 'Low confidence (68%) — federal withholding may be misread. Verify Box 4 against source 1099-DIV.',
                 }}
               />
             )}
@@ -171,8 +178,18 @@ export default function DataReviewPopout() {
                 onMarkReviewedBulk={handleMarkReviewedBulk}
                 reviewedFields={reviewedFields}
                 flaggedFields={{
-                  taxableInterest: 'Low confidence (68%) — interest income may be misread. Verify Box 1 against source 1099-INT.',
+                  taxableInterest: 'Low confidence (72%) — interest income may be misread. Verify Box 1 against source 1099-INT.',
                 }}
+              />
+            )}
+            {activeTopTab === '1099-rs' && (
+              <DetailFields1099R
+                selectedField={selectedField}
+                highlightMode={highlightMode}
+                onFieldSelect={setSelectedField}
+                onMarkReviewed={handleMarkReviewed}
+                onMarkReviewedBulk={handleMarkReviewedBulk}
+                reviewedFields={reviewedFields}
               />
             )}
             {activeTopTab === 'prior-1040' && <PriorYear1040Fields onMarkReviewed={handleMarkReviewed} reviewedFields={reviewedFields} />}
