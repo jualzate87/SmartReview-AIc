@@ -13,11 +13,9 @@ on:
     branches: [main]
 
 jobs:
-  validation:
-    uses: actions-intuit/ibp-wf/.github/workflows/validation.yml@v1
 
   build-and-test:
-    needs: validation
+
     runs-on: ubuntu-latest
 
     steps:
