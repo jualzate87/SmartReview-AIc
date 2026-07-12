@@ -51,6 +51,7 @@ const CURR_YEAR = {
   agi:             452176,
   stdDeduction:     15750,
   taxableIncome:   436426,
+  withholding:      24925,  // 1099-DIV Box 4 (line 25b)
 }
 
 // YOY % — derived from document values vs current year (for badge/tint logic only)
@@ -64,6 +65,7 @@ const YOY: Record<string, number> = {
   agi:             Math.round((CURR_YEAR.agi              - PRIOR_YEAR.agi)             / PRIOR_YEAR.agi             * 100),
   stdDeduction:    Math.round((CURR_YEAR.stdDeduction     - PRIOR_YEAR.stdDeduction)    / PRIOR_YEAR.stdDeduction    * 100),
   taxableIncome:   Math.round((CURR_YEAR.taxableIncome    - PRIOR_YEAR.taxableIncome)   / PRIOR_YEAR.taxableIncome   * 100),
+  withholding:     Math.round((CURR_YEAR.withholding      - PRIOR_YEAR.withholding)     / PRIOR_YEAR.withholding     * 100),
 }
 
 // Dollar tax impact = change in field value × marginal rate (qualified divs/cap gain use the
@@ -78,6 +80,7 @@ const YOY_TAX_IMPACT: Record<string, number> = {
   agi:             Math.abs(CURR_YEAR.agi              - PRIOR_YEAR.agi)             * 0.24,
   stdDeduction:    Math.abs(CURR_YEAR.stdDeduction     - PRIOR_YEAR.stdDeduction)    * 0.24,
   taxableIncome:   Math.abs(CURR_YEAR.taxableIncome    - PRIOR_YEAR.taxableIncome)   * 0.24,
+  withholding:     Math.abs(CURR_YEAR.withholding      - PRIOR_YEAR.withholding)     * 0.24,
 }
 
 // Threshold: >=15% change AND >$300 estimated tax impact

@@ -26,8 +26,9 @@ interface YoYDetailPaneProps {
 }
 
 const TABLE_ROWS = [
-  { label: 'Tech Circle',    y2024: '$118,940', y2023: '$105,000', diff: '+$13,940', pct: '+13%', badge: 'orange' as const, total: false },
-  { label: 'Wages total',    y2024: '$118,940', y2023: '$105,000', diff: '+$13,940', pct: '+13%', badge: 'orange' as const, total: true  },
+  { label: 'Tech Circle (line 1a)', y2025: '$118,940', y2024: '$136,480', diff: '−$17,540', pct: '−13%', badge: 'orange' as const, total: false },
+  { label: 'W-2 withholding (line 25a)', y2025: '$0', y2024: '$22,360', diff: '−$22,360', pct: '−100%', badge: 'red' as const, total: false },
+  { label: 'Wages total',             y2025: '$118,940', y2024: '$136,480', diff: '−$17,540', pct: '−13%', badge: 'orange' as const, total: true  },
 ]
 
 // The 1040 field this finding maps to
@@ -35,8 +36,8 @@ const FINDING_FIELD = 'wages'
 
 // Client Q&A for the wages YoY finding
 const WAGES_QA = {
-  question: 'Your W-2 wages were $118,940 this year vs. $105,000 last year. Can you confirm this reflects a full year at Tech Circle?',
-  answer: 'Yes — I was at Tech Circle all year. The increase reflects my annual raise. I\'ve uploaded the W-2.',
+  question: 'Your W-2 wages dropped to $118,940 this year from $136,480 last year (−13%), and federal withholding on the W-2 went from $22,360 to $0. Can you confirm your Tech Circle compensation and why Box 2 is blank?',
+  answer: 'Yes — I had a compensation adjustment at Tech Circle this year. I\'m not sure why withholding stopped; I didn\'t file a new W-4 claiming exempt. I\'ve uploaded the W-2.',
   date: 'Mar 15, 2025',
 }
 
@@ -107,17 +108,17 @@ export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSourc
                 {issueNumber != null && (
                   <span className={styles.issueNum}>{String(issueNumber).padStart(2, '0')} </span>
                 )}
-                W-2 wages up 13% year-over-year
+                W-2 wages down 13% year-over-year
               </span>
             </div>
-            <p className={styles.summary}>Tech Circle wages are $118,940 — up $13,940 (+13%) vs. prior year ($105,000).</p>
+            <p className={styles.summary}>Tech Circle wages fell $17,540 (−13%) from $136,480 (2024) to $118,940 (2025). Federal W-2 withholding also dropped from $22,360 to $0 — Box 2 is blank on the imported W-2 despite $118,940 in wages on line 1a.</p>
           </div>
 
           {/* Root cause */}
           <div className={styles.section}>
             <p className={styles.sectionTitle}>Root cause</p>
             <p className={styles.sectionBody}>
-              Tech Circle wages increased by $13,940 (+13%) year-over-year, reflecting a full year of employment and an annual raise.
+              Wages decreased $17,540 (−13%) year-over-year while W-2 federal withholding was eliminated entirely ($22,360 → $0). This combination increases return integrity risk — compensation dropped but the employer stopped withholding, contributing to the $124,905 balance due (up from $22,790 prior year).
             </p>
           </div>
 
@@ -149,8 +150,8 @@ export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSourc
               {/* Header row */}
               <div className={`${styles.tableRow} ${styles.tableHeaderRow}`}>
                 <span className={styles.cellLabel} />
+                <span className={styles.cellValue}>2025</span>
                 <span className={styles.cellValue}>2024</span>
-                <span className={styles.cellValue}>2023</span>
                 <span className={styles.cellValue}>Change</span>
                 <span className={styles.cellValue} />
               </div>
@@ -158,8 +159,8 @@ export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSourc
               {TABLE_ROWS.map((row, i) => (
                 <div key={row.label} className={`${styles.tableRow} ${i < TABLE_ROWS.length - 1 ? styles.tableRowBorder : ''} ${row.total ? styles.tableRowTotal : ''}`}>
                   <span className={styles.cellLabel}>{row.label}</span>
+                  <span className={styles.cellValue}>{row.y2025}</span>
                   <span className={styles.cellValue}>{row.y2024}</span>
-                  <span className={styles.cellValue}>{row.y2023}</span>
                   <span className={styles.cellValue}>{row.diff}</span>
                   <span className={styles.cellValue}>
                     <span className={`${styles.deltaBadge} ${styles[`deltaBadge${row.badge.charAt(0).toUpperCase()}${row.badge.slice(1)}`]}`}>{row.pct}</span>
@@ -173,9 +174,9 @@ export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSourc
           <div className={styles.section}>
             <p className={styles.sectionTitle}>Suggested action</p>
             <ul className={styles.actionList}>
-              <li>Confirm Tech Circle W-2 Box 1 shows $118,940 against the source document.</li>
-              <li>Confirm with Jessica that the wage increase reflects her annual compensation.</li>
-              <li>Verify no additional W-2s are missing from the import.</li>
+              <li>Confirm Tech Circle W-2 Box 1 shows $118,940 and reconcile against line 1a ($136,480 prior year).</li>
+              <li>Investigate why W-2 Box 2 federal withholding is $0 — prior year was $22,360; blank Box 2 with wages present is a compliance red flag.</li>
+              <li>Ask Jessica whether she filed a new W-4 or claimed exempt status; if not, request corrected withholding for 2026.</li>
             </ul>
           </div>
 

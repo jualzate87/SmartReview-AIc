@@ -42,5 +42,10 @@ export const PRIOR_YEAR_1040_VALUES: Record<string, number> = {
   agi: 485820,
   stdDeduction: 31850,
   taxableIncome: 453970,
-  withholding: 76100,
+  w2Withholding: 22360,
+  withholding: 18740,   // line 25b — 1099 federal withholding
+  totalWithholding: 41100, // line 25d
+  totalPayments: 76100,    // line 33
+  totalTax: 98890,
+  amountOwed: 22790,
 }

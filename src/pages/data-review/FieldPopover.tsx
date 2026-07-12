@@ -21,10 +21,11 @@ export interface FieldMeta {
 }
 
 // Static metadata for each 1040 field — Jessica Drake 2025 return
+// Prior-year (2024) values sourced from priorYear1040Data.ts / sample_1040_2024_variant_amounts_no_ssn.pdf
 export const FIELD_META: Record<string, FieldMeta> = {
   wages: {
     label: 'Wages',
-    prior: 118940,
+    prior: 136480,
     current: 118940,
     sources: [
       { label: 'Tech Circle (W-2)', value: 118940 },
@@ -32,7 +33,7 @@ export const FIELD_META: Record<string, FieldMeta> = {
   },
   taxableInterest: {
     label: 'Taxable interest',
-    prior: 1986,
+    prior: 2740,
     current: 1986,
     sources: [
       { label: 'Unwavering Financial (1099-INT)', value: 1986 },
@@ -45,7 +46,7 @@ export const FIELD_META: Record<string, FieldMeta> = {
   },
   qualifiedDivs: {
     label: 'Qualified dividends',
-    prior: 187500,
+    prior: 219850,
     current: 187500,
     sources: [
       { label: 'Unwavering Financial (1099-DIV)', value: 187500 },
@@ -53,7 +54,7 @@ export const FIELD_META: Record<string, FieldMeta> = {
   },
   ordinaryDivs: {
     label: 'Ordinary dividends',
-    prior: 331250,
+    prior: 126750,
     current: 331250,
     sources: [
       { label: 'Unwavering Financial (1099-DIV)', value: 331250 },
@@ -61,22 +62,22 @@ export const FIELD_META: Record<string, FieldMeta> = {
   },
   capitalGain: {
     label: 'Capital gain / (loss)',
-    prior: 194600,
+    prior: 219850,
     current: 0,
   },
   totalIncome: {
     label: 'Total income',
-    prior: 646776,
+    prior: 485820,
     current: 452176,
   },
   agi: {
     label: 'Adjusted gross income',
-    prior: 646776,
+    prior: 485820,
     current: 452176,
   },
   stdDeduction: {
     label: 'Standard deduction',
-    prior: 14600,
+    prior: 31850,
     current: 15750,
     sources: [
       { label: 'Standard deduction (single)', value: 15750 },
@@ -85,12 +86,12 @@ export const FIELD_META: Record<string, FieldMeta> = {
   },
   taxableIncome: {
     label: 'Taxable income',
-    prior: 632176,
+    prior: 453970,
     current: 436426,
   },
   withholding: {
     label: 'Federal income tax withheld',
-    prior: 40765,
+    prior: 18740,
     current: 24925,
     sources: [
       { label: 'Unwavering Financial (1099-DIV)', value: 24925 },
@@ -98,17 +99,17 @@ export const FIELD_META: Record<string, FieldMeta> = {
   },
   totalPayments: {
     label: 'Total payments',
-    prior: 40765,
+    prior: 76100,
     current: 24925,
   },
   totalTax: {
     label: 'Total tax',
-    prior: 138120,
+    prior: 98890,
     current: 149830,
   },
   amountOwed: {
     label: 'Amount you owe',
-    prior: 97355,
+    prior: 22790,
     current: 124905,
   },
   box12: {
