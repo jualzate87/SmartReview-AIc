@@ -12,6 +12,8 @@ import styles from '../../styles/data-review/LeftPanel1040.module.css'
 
 interface LeftPanel1040Props {
   selectedField?: string | null
+  /** 1040 row highlight — may differ from selectedField when a detail key maps to a 1040 line */
+  highlightField?: string | null
   onFieldClick?: (fieldName: string | null) => void
   total1a?: number
   wages?: { techCircle: number }
@@ -125,6 +127,7 @@ const DIV_WITHHOLDING = 24925
 
 export default function LeftPanel1040({
   selectedField,
+  highlightField,
   onFieldClick,
   total1a = 118940,
   yoyExpanded = false,
@@ -137,6 +140,9 @@ export default function LeftPanel1040({
   onAddFieldNote,
   allFlagsCleared = false,
 }: LeftPanel1040Props) {
+  // Detail-field keys may differ from 1040 row keys (e.g. fedTaxWithheld ↔ withholding).
+  const activeHighlight = highlightField ?? selectedField
+
   // Derived 1040 values — Jessica Drake's return (TY 2025)
   const taxableInterest = fieldValues?.taxableInterest ?? 1986
   const qualifiedDivs   = fieldValues?.qualifiedDivs   ?? 187500
@@ -222,13 +228,13 @@ export default function LeftPanel1040({
   const handleRowClick = (field: string, e: React.MouseEvent<HTMLTableRowElement>) => {
     // If the field is the active issue field, just toggle selection (orange mode)
     if (field === issueField) {
-      onFieldClick?.(selectedField === field ? null : field)
+      onFieldClick?.(activeHighlight === field ? null : field)
       setPopoverField(null)
       return
     }
 
     // Toggle: clicking the same field closes the popover
-    if (field === selectedField) {
+    if (field === activeHighlight) {
       onFieldClick?.(null)
       setPopoverField(null)
       return
@@ -297,7 +303,7 @@ export default function LeftPanel1040({
   }) => {
     const commentable = !!field && !!onAddFieldNote
     const isIssueHighlight = !!field && field === issueField
-    const isSelected       = !!field && selectedField === field
+    const isSelected       = !!field && activeHighlight === field
     const isReviewed       = !!field && reviewedFields.has(field)
     const isChecked        = !!field && checkedFields.has(field)
     const isHovered        = !!field && hoveredField === field
@@ -614,7 +620,7 @@ export default function LeftPanel1040({
                       const pctChg = hasPrior && prior !== 0 ? Math.round((row.curr - prior!) / Math.abs(prior!) * 100) : null
                       const isReviewed = !!row.field && reviewedFields.has(row.field)
                       const isChecked  = !!row.field && checkedFields.has(row.field)
-                      const isSelected = !!row.field && selectedField === row.field
+                      const isSelected = !!row.field && activeHighlight === row.field
                       const isIssue    = !!row.field && row.field === issueField
                       const isHov      = !!row.field && hoveredField === row.field
                       const isBlue     = isSelected && !isIssue
@@ -655,7 +661,7 @@ export default function LeftPanel1040({
                                 onClick={clickable ? e => {
                                   e.stopPropagation()
                                   const el = e.currentTarget as HTMLElement
-                                  if (selectedField === row.field) {
+                                  if (activeHighlight === row.field) {
                                     onFieldClick?.(null)
                                     setPopoverField(null); setPopoverRect(null)
                                   } else {

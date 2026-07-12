@@ -32,7 +32,17 @@ import AgentReportPane from './data-review/AgentReportPane'
 import AgentLoadingPane from './data-review/AgentLoadingPane'
 import WelcomePane from './data-review/WelcomePane'
 import Phase1Banner from './data-review/Phase1Banner'
+import Phase1IssueBanner from './data-review/Phase1IssueBanner'
 import Phase2Banner from './data-review/Phase2Banner'
+import {
+  PHASE1_FLAG_KEYS,
+  countPhase1Remaining,
+  detailTo1040Field,
+  field1040ToDetail,
+  get1040HighlightField,
+  getNextVerifyItem,
+  navigationForDetailField,
+} from './data-review/phase1FieldSync'
 import QuestionnairePane from './data-review/QuestionnairePane'
 import { GUIDED_ORDER, TOTAL_REVIEW_ITEMS } from './data-review/AgentReportPane'
 import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
@@ -117,11 +127,10 @@ export default function DataReviewPage() {
 
   // The import/OCR flags owned by Phase 1. Each key matches the reviewed-field key
   // emitted by the DetailFields "Edit+Save" / "Mark as correct" controls.
-  const PHASE1_FLAG_KEYS = ['ssn-techCircle', 'wages-techCircle', 'sswages-techCircle', 'box12', 'ein-techCircle', 'qualifiedDivs', 'divCollectibles', 'divNonDiv', 'fedTaxWithheld', 'taxableInterest'] as const
   const phase1Total = PHASE1_FLAG_KEYS.length
   const phase1Resolved = PHASE1_FLAG_KEYS.filter(k => reviewedFields.has(k)).length
   // Counter of unresolved import flags — never below 0
-  const phase1Remaining = Math.max(0, phase1Total - phase1Resolved)
+  const phase1Remaining = countPhase1Remaining(reviewedFields)
   const phase1Complete = phase1Remaining === 0
   // Per-document unresolved counts for dynamic tab badges
   const tabFlagCounts: Record<string, number> = {
@@ -198,7 +207,48 @@ export default function DataReviewPage() {
     if (agentSubView === 'yoyDetail' && (agentView === 'report' || agentView === 'closing')) return 'wages'
     return null
   })()
-  const highlightMode: 'orange' | 'blue' = (selectedField && (selectedField === issueField || DOC_FIELD_TO_1040[selectedField] === issueField)) ? 'orange' : 'blue'
+  const highlightMode: 'orange' | 'blue' = phase === 'import'
+    ? 'blue'
+    : (selectedField && (selectedField === issueField || DOC_FIELD_TO_1040[selectedField] === issueField)) ? 'orange' : 'blue'
+
+  const applyVerifyNavigation = useCallback((field: string) => {
+    const nav = navigationForDetailField(field)
+    if (nav) {
+      setActiveTopTab(nav.tab)
+      if (nav.divPayer) setActiveDivPayer(nav.divPayer)
+      if (nav.intPayer) setActiveIntPayer(nav.intPayer)
+    }
+    setSelectedField(field)
+    if (detailTo1040Field(field)) setShow1040(true)
+  }, [setActiveTopTab, setActiveDivPayer, setActiveIntPayer, setSelectedField])
+
+  const handleVerifyNext = useCallback(() => {
+    const next = getNextVerifyItem(reviewedFields, selectedField)
+    if (!next) return
+    applyVerifyNavigation(next.field)
+  }, [reviewedFields, selectedField, applyVerifyNavigation])
+
+  const handleFieldSelect = useCallback((field: string | null) => {
+    setSelectedField(field)
+    if (phase === 'import' && field && detailTo1040Field(field)) {
+      setShow1040(true)
+    }
+  }, [phase, setSelectedField])
+
+  const handle1040FieldClick = useCallback((field1040: string | null) => {
+    if (!field1040) {
+      setSelectedField(null)
+      return
+    }
+    const mapped = field1040ToDetail(field1040)
+    if (mapped) {
+      applyVerifyNavigation(mapped.field)
+    } else {
+      setSelectedField(field1040)
+    }
+  }, [applyVerifyNavigation, setSelectedField])
+
+  const highlightField1040 = get1040HighlightField(selectedField)
 
   // Reset field selection on mount
   useEffect(() => {
@@ -533,7 +583,8 @@ export default function DataReviewPage() {
           )}
           <LeftPanel1040
             selectedField={selectedField}
-            onFieldClick={setSelectedField}
+            highlightField={highlightField1040}
+            onFieldClick={inImportPhase ? handle1040FieldClick : setSelectedField}
             total1a={total1a}
             wages={wages}
             yoyExpanded={yoyExpanded || agentSubView === 'yoyDetail' || activeTopTab === 'prior-1040'}
@@ -645,6 +696,9 @@ export default function DataReviewPage() {
                   </button>
                 </Tooltip>
               </div>
+              {inImportPhase && phase1Remaining > 0 && (
+                <Phase1IssueBanner unresolvedCount={phase1Remaining} onVerify={handleVerifyNext} />
+              )}
               <ReviewTab
                 activeTopTab={activeTopTab}
                 flagCounts={inImportPhase ? tabFlagCounts : undefined}
@@ -728,7 +782,7 @@ export default function DataReviewPage() {
                   ]}
                   selectedField={selectedField}
                   highlightMode={highlightMode}
-                  onFieldSelect={setSelectedField}
+                  onFieldSelect={handleFieldSelect}
                   activeSubTab={activeSubTab}
                   onSubTabChange={(tab) => setActiveSubTab(tab as 'techCircle')}
                   wages={{ bingEquipment: 0, techCircle: wages.techCircle }}
@@ -755,10 +809,10 @@ export default function DataReviewPage() {
                   }}
                 />
               )}
-              {activeTopTab === '1099-divs' && <DetailFieldsDiv activePayer={activeDivPayer} selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} verifiedDocs={verifiedDocs} onVerifyDoc={toggleVerifiedDoc} flaggedFields={{ qualifiedDivs: 'Large dividend amount — $331,250 ordinary dividends. Verify Box 1a and 1b against source document.', divCollectibles: 'Collectibles (28%) gain not imported — review source document and enter if applicable.', divNonDiv: 'Nondividend distributions not imported — review source document and enter if applicable.', fedTaxWithheld: 'Low confidence (68%) — federal withholding may be misread. Verify Box 4 against source 1099-DIV.' }} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
-              {activeTopTab === '1099-ints' && <DetailFields1099 activePayer={activeIntPayer} selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} verifiedDocs={verifiedDocs} onVerifyDoc={toggleVerifiedDoc} flaggedFields={{ taxableInterest: 'Low confidence (72%) — interest income may be misread. Verify Box 1 against source 1099-INT.' }} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
-              {activeTopTab === '1099-rs' && <DetailFields1099R selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} verifiedDocs={verifiedDocs} onVerifyDoc={toggleVerifiedDoc} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
-              {activeTopTab === '1099-necs' && <DetailFieldsNec selectedField={selectedField} onFieldSelect={setSelectedField} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} verifiedDocs={verifiedDocs} onVerifyDoc={toggleVerifiedDoc} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
+              {activeTopTab === '1099-divs' && <DetailFieldsDiv activePayer={activeDivPayer} selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={handleFieldSelect} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} verifiedDocs={verifiedDocs} onVerifyDoc={toggleVerifiedDoc} flaggedFields={{ qualifiedDivs: 'Large dividend amount — $331,250 ordinary dividends. Verify Box 1a and 1b against source document.', divCollectibles: 'Collectibles (28%) gain not imported — review source document and enter if applicable.', divNonDiv: 'Nondividend distributions not imported — review source document and enter if applicable.', fedTaxWithheld: 'Low confidence (68%) — federal withholding may be misread. Verify Box 4 against source 1099-DIV.' }} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
+              {activeTopTab === '1099-ints' && <DetailFields1099 activePayer={activeIntPayer} selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={handleFieldSelect} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} verifiedDocs={verifiedDocs} onVerifyDoc={toggleVerifiedDoc} flaggedFields={{ taxableInterest: 'Low confidence (72%) — interest income may be misread. Verify Box 1 against source 1099-INT.' }} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
+              {activeTopTab === '1099-rs' && <DetailFields1099R selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={handleFieldSelect} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} verifiedDocs={verifiedDocs} onVerifyDoc={toggleVerifiedDoc} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
+              {activeTopTab === '1099-necs' && <DetailFieldsNec selectedField={selectedField} onFieldSelect={handleFieldSelect} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} verifiedDocs={verifiedDocs} onVerifyDoc={toggleVerifiedDoc} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
               {activeTopTab === 'prior-1040' && <PriorYear1040Fields onMarkReviewed={handleMarkReviewed} reviewedFields={reviewedFields} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
               </div>
               </div>

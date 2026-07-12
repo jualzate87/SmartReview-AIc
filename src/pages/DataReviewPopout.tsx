@@ -1,6 +1,12 @@
 import { useCallback, useRef, useState } from 'react'
 import { DotsSix } from '@design-systems/icons'
 import ReviewTab from './data-review/ReviewTab'
+import Phase1IssueBanner from './data-review/Phase1IssueBanner'
+import {
+  countPhase1Remaining,
+  getNextVerifyItem,
+  navigationForDetailField,
+} from './data-review/phase1FieldSync'
 import DocumentPreview from './data-review/DocumentPreview'
 import DetailFields from './data-review/DetailFields'
 import DetailFields1099, { INT_PAYER_TABS } from './data-review/DetailFields1099'
@@ -57,6 +63,24 @@ export default function DataReviewPopout() {
   // "agent issue" highlight only applies to the Phase 2 AI panel, which never
   // pops out.
   const highlightMode: 'orange' | 'blue' = 'blue'
+
+  const phase1Remaining = countPhase1Remaining(reviewedFields)
+
+  const applyVerifyNavigation = useCallback((field: string) => {
+    const nav = navigationForDetailField(field)
+    if (nav) {
+      setActiveTopTab(nav.tab)
+      if (nav.divPayer) setActiveDivPayer(nav.divPayer)
+      if (nav.intPayer) setActiveIntPayer(nav.intPayer)
+    }
+    setSelectedField(field)
+  }, [setActiveTopTab, setActiveDivPayer, setActiveIntPayer, setSelectedField])
+
+  const handleVerifyNext = useCallback(() => {
+    const next = getNextVerifyItem(reviewedFields, selectedField)
+    if (!next) return
+    applyVerifyNavigation(next.field)
+  }, [reviewedFields, selectedField, applyVerifyNavigation])
 
   const tabFlagCounts: Record<string, number> = {
     w2s:          ['ssn-techCircle', 'wages-techCircle', 'sswages-techCircle', 'box12', 'ein-techCircle'].filter(k => !reviewedFields.has(k)).length,
@@ -153,6 +177,10 @@ export default function DataReviewPopout() {
         flagCounts={tabFlagCounts}
         onTopTabChange={(tab) => { setActiveTopTab(tab); setSelectedField(null) }}
       />
+
+      {phase1Remaining > 0 && (
+        <Phase1IssueBanner unresolvedCount={phase1Remaining} onVerify={handleVerifyNext} />
+      )}
 
       {/* Peel tabs — payer switcher for multi-payer doc types */}
       {activeTopTab === '1099-divs' && (
