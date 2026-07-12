@@ -2,35 +2,12 @@ import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { CircleCheck, Comment } from '@design-systems/icons'
 import Tooltip from './Tooltip'
+import { PRIOR_YEAR_1040_FIELDS } from './priorYear1040Data'
 import styles from '../../styles/data-review/DetailFields.module.css'
 
-// Real 2024 figures — matches PRIOR_YEAR in LeftPanel1040.tsx (the single
-// source of truth for YoY comparisons). Previously this tab showed a
-// different, much larger set of numbers left over from an earlier persona
-// (total income $646,776, amount owed $97,355) that never matched the
-// prior-year values used everywhere else in the app.
-const FIELDS: { section?: string; key?: string; line?: string; label?: string; amount?: string; bold?: boolean }[] = [
-  { section: 'INCOME' },
-  { key: '1a',  line: '1a',  label: 'Total wages, salaries, tips (W-2)',       amount: '105,000' },
-  { key: '1z',  line: '1z',  label: 'Add lines 1a–1h',                         amount: '105,000' },
-  { key: '2b',  line: '2b',  label: 'Taxable interest',                         amount: '1,400' },
-  { key: '3a',  line: '3a',  label: 'Qualified dividends',                      amount: '0' },
-  { key: '3b',  line: '3b',  label: 'Ordinary dividends',                       amount: '500' },
-  { key: '7',   line: '7',   label: 'Capital gain or (loss)',                   amount: '2,500' },
-  { key: '9',   line: '9',   label: 'Total income',                             amount: '109,400', bold: true },
-  { section: 'ADJUSTMENTS TO INCOME' },
-  { key: '11',  line: '11',  label: 'Adjusted gross income',                    amount: '109,400', bold: true },
-  { section: 'DEDUCTIONS' },
-  { key: '12',  line: '12',  label: 'Standard deduction',                       amount: '13,850' },
-  { key: '15',  line: '15',  label: 'Taxable income',                           amount: '95,550', bold: true },
-  { section: 'TAX AND CREDITS' },
-  { key: '16',  line: '16',  label: 'Tax (see instructions)',                   amount: '20,638' },
-  { key: '24',  line: '24',  label: 'Total tax',                                amount: '20,638', bold: true },
-  { section: 'PAYMENTS' },
-  { key: '25a', line: '25a', label: 'Federal income tax withheld (W-2)',        amount: '15,987' },
-  { key: '33',  line: '33',  label: 'Total payments',                           amount: '15,987', bold: true },
-  { key: '37',  line: '37',  label: 'Amount you owe',                           amount: '4,651' },
-]
+// Real 2024 figures — matches PRIOR_YEAR_1040_VALUES in priorYear1040Data.ts (the single
+// source of truth for YoY comparisons and the prior-year document preview).
+const FIELDS = PRIOR_YEAR_1040_FIELDS
 
 interface PriorYear1040FieldsProps {
   onMarkReviewed?: (field: string) => void

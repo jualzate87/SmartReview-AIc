@@ -3,7 +3,7 @@ import { ZoomOut, ZoomIn } from '@design-systems/icons'
 import styles from '../../styles/data-review/DocumentPreview.module.css'
 
 interface DocumentPreviewProps {
-  imageSrc: string
+  imageSrc: string | string[]
   alt: string
 }
 
@@ -12,6 +12,7 @@ const ZOOM_LEVELS = [50, 60, 65, 70, 75, 85, 100, 125, 150, 200]
 export default function DocumentPreview({ imageSrc, alt }: DocumentPreviewProps) {
   const [zoomIndex, setZoomIndex] = useState(5) // default 85%
   const zoom = ZOOM_LEVELS[zoomIndex]
+  const images = Array.isArray(imageSrc) ? imageSrc : [imageSrc]
 
   const zoomOut = () => setZoomIndex(i => Math.max(0, i - 1))
   const zoomIn  = () => setZoomIndex(i => Math.min(ZOOM_LEVELS.length - 1, i + 1))
@@ -78,12 +79,15 @@ export default function DocumentPreview({ imageSrc, alt }: DocumentPreviewProps)
       >
         <div className={styles.imageAreaInner}>
           <div style={{ position: 'relative', width: `${zoom}%`, lineHeight: 0, flexShrink: 0 }}>
-            <img
-              src={imageSrc}
-              alt={alt}
-              className={styles.documentImage}
-              draggable={false}
-            />
+            {images.map((src, i) => (
+              <img
+                key={src}
+                src={src}
+                alt={images.length > 1 ? `${alt} — page ${i + 1}` : alt}
+                className={styles.documentImage}
+                draggable={false}
+              />
+            ))}
           </div>
         </div>
       </div>

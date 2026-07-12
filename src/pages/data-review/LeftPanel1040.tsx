@@ -36,21 +36,9 @@ interface LeftPanel1040Props {
   allFlagsCleared?: boolean
 }
 
-// YoY % changes — absolute value drives color, sign drives label
-// Prior-year (2024) values — sourced from PriorYear1040Panel.tsx, the actual prior-year
-// document/panel, which is the single source of truth for these figures.
-const PRIOR_YEAR: Record<string, number> = {
-  wages:           118940,
-  taxableInterest:   1986,
-  qualifiedDivs:   187500,
-  ordinaryDivs:    331250,
-  capitalGain:     194600,
-  totalIncome:     646776,
-  agi:             646776,
-  stdDeduction:     14600,
-  taxableIncome:   632176,
-  withholding:      40765,
-}
+import { PRIOR_YEAR_1040_VALUES } from './priorYear1040Data'
+
+const PRIOR_YEAR = PRIOR_YEAR_1040_VALUES
 
 // Current-year values used for YoY comparison (must match the live figures below)
 const CURR_YEAR = {

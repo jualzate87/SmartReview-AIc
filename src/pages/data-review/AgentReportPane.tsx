@@ -38,7 +38,7 @@ interface AgentReportPaneProps {
   embedded?: boolean
   total1a?: number
   wages?: { techCircle: number }
-  onNavigateToTab?: (tab: 'w2s' | '1099-divs' | '1099-ints' | 'questionnaire' | 'prior-1040', subTab?: 'techCircle', field?: string) => void
+  onNavigateToTab?: (tab: 'w2s' | '1099-divs' | '1099-ints' | 'prior-1040', subTab?: 'techCircle', field?: string) => void
   /** Highlight a 1040 field without leaving the agent panel */
   onHighlightField?: (field: string | null) => void
   /** Live field values for inline editing */

@@ -4,6 +4,8 @@ import ReviewTab from './data-review/ReviewTab'
 import Phase1IssueBanner from './data-review/Phase1IssueBanner'
 import {
   countPhase1Remaining,
+  countPhase1FlagsForDivPayer,
+  countPhase1FlagsForIntPayer,
   getNextVerifyItem,
   navigationForDetailField,
 } from './data-review/phase1FieldSync'
@@ -17,10 +19,10 @@ import DetailFields1099R from './data-review/DetailFields1099R'
 import DetailFieldsNec from './data-review/DetailFieldsNec'
 import PeelTab from './data-review/PeelTab'
 import PriorYear1040Fields from './data-review/PriorYear1040Fields'
-import QuestionnairePane from './data-review/QuestionnairePane'
 import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
 import w2TechCircle from '../assets/jessica-w2-tech-circle.png'
-import img1040Prior from '../assets/jessica-1040-2024.png'
+import img1040PriorPage1 from '../assets/jessica-1040-2024-variant-1.png'
+import img1040PriorPage2 from '../assets/jessica-1040-2024-variant-2.png'
 import img1099Int from '../assets/jessica-1099-int.jpg'
 import img1099R from '../assets/jessica-1099-r.png'
 import img1099Nec from '../assets/jessica-1099-nec.png'
@@ -91,32 +93,10 @@ export default function DataReviewPopout() {
     'prior-1040': 0,
   }
   const divPayerFieldCounts: Record<DivPayer, number> = Object.fromEntries(
-    DIV_PAYER_TABS.map(({ key: p }) => {
-      const isPrimary = p === 'tokenFinancial'
-      const fields = [
-        `payerEin-${p}`, `payerName-${p}`, `payerStreet-${p}`, `payerCityStateZip-${p}`, `payerPhone-${p}`,
-        `recipientSsn-${p}`, `recipientName-${p}`, `recipientStreet-${p}`, `recipientCityStateZip-${p}`,
-        `ordinaryDivs-${p}`,
-        ...(isPrimary ? ['qualifiedDivs', 'divCollectibles', 'divNonDiv', 'fedTaxWithheld'] : [`qualifiedDivs-${p}`, `divCollectibles-${p}`, `divNonDiv-${p}`, `fedTaxWithheld-${p}`]),
-        `totalCapGain-${p}`, `unrecap1250-${p}`, `sec1202-${p}`, `investExpenses-${p}`,
-        `foreignTaxPaid-${p}`, `foreignCountry-${p}`, `cashLiquidation-${p}`, `nonCashLiquidation-${p}`,
-      ]
-      return [p, fields.filter(k => !reviewedFields.has(k)).length]
-    })
+    DIV_PAYER_TABS.map(({ key: p }) => [p, countPhase1FlagsForDivPayer(p, reviewedFields)])
   ) as Record<DivPayer, number>
   const intPayerFieldCounts: Record<IntPayer, number> = Object.fromEntries(
-    INT_PAYER_TABS.map(({ key: p }) => {
-      const isPrimary = p === 'unwaverIngFinancial'
-      const fields = [
-        `payerEin-${p}`, `payerName-${p}`, `payerStreet-${p}`, `payerCityStateZip-${p}`, `payerPhone-${p}`,
-        `recipientSsn-${p}`, `recipientName-${p}`, `recipientStreet-${p}`, `recipientCityStateZip-${p}`,
-        ...(isPrimary ? ['taxableInterest'] : [`taxableInterest-${p}`]),
-        `earlyPenalty-${p}`, `usBonds-${p}`, `fedTaxWithheld-${p}`, `investExpenses-${p}`,
-        `foreignTax-${p}`, `foreignCountry-${p}`, `taxExempt-${p}`, `specPrivActivity-${p}`,
-        `marketDiscount-${p}`, `bondPremium-${p}`, `stateTaxId-${p}`, `stateTax-${p}`, `stateIncome-${p}`,
-      ]
-      return [p, fields.filter(k => !reviewedFields.has(k)).length]
-    })
+    INT_PAYER_TABS.map(({ key: p }) => [p, countPhase1FlagsForIntPayer(p, reviewedFields)])
   ) as Record<IntPayer, number>
 
   const rightRef = useRef<HTMLDivElement>(null)
@@ -146,7 +126,7 @@ export default function DataReviewPopout() {
   }, [previewWidth])
 
   const imageSrc =
-    activeTopTab === 'prior-1040' ? img1040Prior :
+    activeTopTab === 'prior-1040' ? [img1040PriorPage1, img1040PriorPage2] :
     activeTopTab === '1099-ints'  ? (
       activeIntPayer === 'harborlineCredit' ? img1099IntHarborline :
       activeIntPayer === 'cascadeFederal'   ? img1099IntCascade :
@@ -198,10 +178,7 @@ export default function DataReviewPopout() {
         />
       )}
 
-      {activeTopTab === 'questionnaire' ? (
-        <QuestionnairePane variant="tab" />
-      ) : (
-        <div ref={rightRef} style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+      <div ref={rightRef} style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
           <div style={{ width: `${previewWidth}%`, flexShrink: 0, overflow: 'hidden', borderRight: '1px solid #d5dee3' }}>
             <DocumentPreview
               imageSrc={imageSrc}
@@ -312,7 +289,6 @@ export default function DataReviewPopout() {
             {activeTopTab === 'prior-1040' && <PriorYear1040Fields onMarkReviewed={handleMarkReviewed} reviewedFields={reviewedFields} />}
           </div>
         </div>
-      )}
     </div>
   )
 }

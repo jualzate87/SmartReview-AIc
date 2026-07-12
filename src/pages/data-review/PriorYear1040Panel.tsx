@@ -1,37 +1,15 @@
 import { ZoomOut, ZoomIn, DotsSix } from '@design-systems/icons'
 import { useState, useRef, useCallback, useEffect } from 'react'
-import img1040Prior from '../../assets/jessica-1040-2024.png'
+import img1040PriorPage1 from '../../assets/jessica-1040-2024-variant-1.png'
+import img1040PriorPage2 from '../../assets/jessica-1040-2024-variant-2.png'
+import { PRIOR_YEAR_1040_FIELDS } from './priorYear1040Data'
 import styles from '../../styles/data-review/PriorYear1040Panel.module.css'
 import docStyles from '../../styles/data-review/DocumentPreview.module.css'
 import dragStyles from '../../styles/data-review/DragHandle.module.css'
 
 const ZOOM_LEVELS = [50, 60, 65, 70, 75, 85, 100, 125, 150, 200]
 
-const PRIOR_YEAR_FIELDS: { line: string; label: string; amount: string; bold?: boolean; section?: string }[] = [
-  { section: 'INCOME' },
-  { line: '1a',  label: 'Total wages, salaries, tips (W-2)',        amount: '118,940' },
-  { line: '1z',  label: 'Add lines 1a–1h',                          amount: '118,940' },
-  { line: '2a',  label: 'Tax-exempt interest',                       amount: '180'     },
-  { line: '2b',  label: 'Taxable interest',                          amount: '1,986'   },
-  { line: '3a',  label: 'Qualified dividends',                       amount: '187,500' },
-  { line: '3b',  label: 'Ordinary dividends',                        amount: '331,250' },
-  { line: '7',   label: 'Capital gain or (loss)',                    amount: '194,600' },
-  { line: '9',   label: 'Total income',                              amount: '646,776', bold: true },
-  { section: 'ADJUSTMENTS TO INCOME' },
-  { line: '11',  label: 'Adjusted gross income',                     amount: '646,776', bold: true },
-  { section: 'DEDUCTIONS' },
-  { line: '12',  label: 'Standard deduction',                        amount: '14,600'  },
-  { line: '15',  label: 'Taxable income',                            amount: '632,176', bold: true },
-  { section: 'TAX AND CREDITS' },
-  { line: '16',  label: 'Tax (see instructions)',                    amount: '120,410' },
-  { line: '24',  label: 'Total tax',                                 amount: '138,120', bold: true },
-  { section: 'PAYMENTS' },
-  { line: '25a', label: 'Federal income tax withheld (W-2)',         amount: '15,840'  },
-  { line: '25b', label: 'Federal income tax withheld (1099s)',       amount: '24,925'  },
-  { line: '25d', label: 'Total withholding',                         amount: '40,765'  },
-  { line: '33',  label: 'Total payments',                            amount: '40,765',  bold: true },
-  { line: '37',  label: 'Amount you owe',                            amount: '97,355'  },
-]
+const PRIOR_YEAR_FIELDS = PRIOR_YEAR_1040_FIELDS
 
 export default function PriorYear1040Panel() {
   const [zoomIndex, setZoomIndex] = useState(5) // 85%
@@ -129,7 +107,8 @@ export default function PriorYear1040Panel() {
           onMouseDown={onMouseDown}
         >
           <div style={{ position: 'relative', width: `${zoom}%`, lineHeight: 0, flexShrink: 0 }}>
-            <img src={img1040Prior} alt="Form 1040 (2024) — E2E Testing" className={docStyles.documentImage} draggable={false} />
+            <img src={img1040PriorPage1} alt="Form 1040 (2024) page 1 — Jessica Drake" className={docStyles.documentImage} draggable={false} />
+            <img src={img1040PriorPage2} alt="Form 1040 (2024) page 2 — Jessica Drake" className={docStyles.documentImage} draggable={false} />
           </div>
         </div>
         <div className={docStyles.toolbar}>
@@ -154,7 +133,7 @@ export default function PriorYear1040Panel() {
         <div className={styles.titleRow}>
           <h2 className={styles.title}>Prior Year 1040 (2024)</h2>
         </div>
-        <div className={styles.subHeader}>E2E Testing · 987-65-4321</div>
+        <div className={styles.subHeader}>Jessica Drake · Middlefield, CA</div>
 
         <div className={styles.fieldsBody}>
           {PRIOR_YEAR_FIELDS.map((row, i) => {

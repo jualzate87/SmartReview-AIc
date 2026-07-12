@@ -2,19 +2,17 @@ import { PopOut, PopIn } from '@design-systems/icons'
 import sparklesIcon from '../../assets/icons/sparkles.svg'
 import styles from '../../styles/data-review/ReviewTab.module.css'
 
-// ProtoC: import docs first, Questionnaire alongside the source docs, Prior Year 1040
-// moved LAST (least relevant during import review)
+// ProtoC: import docs first; Prior Year 1040 moved LAST (least relevant during import review)
 const TABS = [
   { label: 'W-2s', key: 'w2s' as const },
   { label: '1099-DIVs', key: '1099-divs' as const },
   { label: '1099-INTs', key: '1099-ints' as const },
   { label: '1099-Rs', key: '1099-rs' as const },
   { label: '1099-NECs', key: '1099-necs' as const },
-  { label: 'Questionnaire', key: 'questionnaire' as const },
   { label: 'Prior Year 1040', key: 'prior-1040' as const },
 ]
 
-export type TopTab = 'w2s' | '1099-divs' | '1099-ints' | '1099-rs' | '1099-necs' | 'questionnaire' | 'prior-1040'
+export type TopTab = 'w2s' | '1099-divs' | '1099-ints' | '1099-rs' | '1099-necs' | 'prior-1040'
 
 interface ReviewTabProps {
   activeTopTab?: string
@@ -29,7 +27,7 @@ interface ReviewTabProps {
 export default function ReviewTab({ activeTopTab = 'w2s', onTopTabChange, onTabChange, onPopOut, isPopout = false, flagCounts }: ReviewTabProps) {
 
   const handleTabClick = (key: string, label: string) => {
-    if (key === 'w2s' || key === '1099-divs' || key === '1099-ints' || key === '1099-rs' || key === '1099-necs' || key === 'questionnaire' || key === 'prior-1040') {
+    if (key === 'w2s' || key === '1099-divs' || key === '1099-ints' || key === '1099-rs' || key === '1099-necs' || key === 'prior-1040') {
       onTopTabChange?.(key as TopTab)
     }
     onTabChange?.(label)

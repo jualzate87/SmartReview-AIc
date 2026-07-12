@@ -37,17 +37,19 @@ import Phase2Banner from './data-review/Phase2Banner'
 import {
   PHASE1_FLAG_KEYS,
   countPhase1Remaining,
+  countPhase1FlagsForDivPayer,
+  countPhase1FlagsForIntPayer,
   detailTo1040Field,
   field1040ToDetail,
   get1040HighlightField,
   getNextVerifyItem,
   navigationForDetailField,
 } from './data-review/phase1FieldSync'
-import QuestionnairePane from './data-review/QuestionnairePane'
 import { GUIDED_ORDER, TOTAL_REVIEW_ITEMS } from './data-review/AgentReportPane'
 import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
 import w2TechCircle from '../assets/jessica-w2-tech-circle.png'
-import img1040Prior from '../assets/jessica-1040-2024.png'
+import img1040PriorPage1 from '../assets/jessica-1040-2024-variant-1.png'
+import img1040PriorPage2 from '../assets/jessica-1040-2024-variant-2.png'
 import img1099Int from '../assets/jessica-1099-int.jpg'
 import img1099R from '../assets/jessica-1099-r.png'
 import img1099Nec from '../assets/jessica-1099-nec.png'
@@ -141,37 +143,12 @@ export default function DataReviewPage() {
     '1099-necs':  0,
     'prior-1040': 0,
   }
-  // PeelTab per-payer review-completeness badges — a SEPARATE concept from Phase 1 flag
-  // counts above. Shows how many of each payer's ~19 fields are still unreviewed, purely
-  // for review-completeness visibility. Only the primary payer in each type carries real
-  // compliance flags, so these counts are independent of phase1Total/phase1Resolved.
+  // PeelTab per-payer badges — unresolved Phase 1 import flags only (mirrors tabFlagCounts)
   const divPayerFieldCounts: Record<DivPayer, number> = Object.fromEntries(
-    DIV_PAYER_TABS.map(({ key: p }) => {
-      const isPrimary = p === 'tokenFinancial'
-      const fields = [
-        `payerEin-${p}`, `payerName-${p}`, `payerStreet-${p}`, `payerCityStateZip-${p}`, `payerPhone-${p}`,
-        `recipientSsn-${p}`, `recipientName-${p}`, `recipientStreet-${p}`, `recipientCityStateZip-${p}`,
-        `ordinaryDivs-${p}`,
-        ...(isPrimary ? ['qualifiedDivs', 'divCollectibles', 'divNonDiv', 'fedTaxWithheld'] : [`qualifiedDivs-${p}`, `divCollectibles-${p}`, `divNonDiv-${p}`, `fedTaxWithheld-${p}`]),
-        `totalCapGain-${p}`, `unrecap1250-${p}`, `sec1202-${p}`, `investExpenses-${p}`,
-        `foreignTaxPaid-${p}`, `foreignCountry-${p}`, `cashLiquidation-${p}`, `nonCashLiquidation-${p}`,
-      ]
-      return [p, fields.filter(k => !reviewedFields.has(k)).length]
-    })
+    DIV_PAYER_TABS.map(({ key: p }) => [p, countPhase1FlagsForDivPayer(p, reviewedFields)])
   ) as Record<DivPayer, number>
   const intPayerFieldCounts: Record<IntPayer, number> = Object.fromEntries(
-    INT_PAYER_TABS.map(({ key: p }) => {
-      const isPrimary = p === 'unwaverIngFinancial'
-      const fields = [
-        `payerEin-${p}`, `payerName-${p}`, `payerStreet-${p}`, `payerCityStateZip-${p}`, `payerPhone-${p}`,
-        `recipientSsn-${p}`, `recipientName-${p}`, `recipientStreet-${p}`, `recipientCityStateZip-${p}`,
-        ...(isPrimary ? ['taxableInterest'] : [`taxableInterest-${p}`]),
-        `earlyPenalty-${p}`, `usBonds-${p}`, `fedTaxWithheld-${p}`, `investExpenses-${p}`,
-        `foreignTax-${p}`, `foreignCountry-${p}`, `taxExempt-${p}`, `specPrivActivity-${p}`,
-        `marketDiscount-${p}`, `bondPremium-${p}`, `stateTaxId-${p}`, `stateTax-${p}`, `stateIncome-${p}`,
-      ]
-      return [p, fields.filter(k => !reviewedFields.has(k)).length]
-    })
+    INT_PAYER_TABS.map(({ key: p }) => [p, countPhase1FlagsForIntPayer(p, reviewedFields)])
   ) as Record<IntPayer, number>
   // Phase 2 diagnostics progress — same GUIDED_ORDER/TOTAL_REVIEW_ITEMS AgentReportPane uses,
   // imported rather than duplicated so the two banners can't drift out of sync.
@@ -726,14 +703,9 @@ export default function DataReviewPage() {
                 />
               )}
 
-              {/* Questionnaire — Q&A organizer, no scanned document to preview.
-                  Occupies the full right-panel body instead of the preview/detail-fields split. */}
-              {activeTopTab === 'questionnaire' ? (
-                <QuestionnairePane variant="tab" />
-              ) : (
-              /* Document preview (left) + detail fields (right) — same side-by-side
+              {/* Document preview (left) + detail fields (right) — same side-by-side
                  layout as the pop-out window, so docking back and forth doesn't
-                 reflow the content the CPA is looking at. */
+                 reflow the content the CPA is looking at. */}
               <div style={{ display: 'flex', flexDirection: show1040 ? 'column' : 'row', flex: 1, minHeight: 0, overflow: 'hidden' }}>
               <div style={show1040
                 ? { height: `${previewHeight}%`, flexShrink: 0, overflow: 'hidden', borderBottom: '1px solid #D5DEE3' }
@@ -741,7 +713,7 @@ export default function DataReviewPage() {
               }>
                 <DocumentPreview
                   imageSrc={
-                    activeTopTab === 'prior-1040' ? img1040Prior :
+                    activeTopTab === 'prior-1040' ? [img1040PriorPage1, img1040PriorPage2] :
                     activeTopTab === '1099-ints'  ? (
                       activeIntPayer === 'harborlineCredit' ? img1099IntHarborline :
                       activeIntPayer === 'cascadeFederal'   ? img1099IntCascade :
@@ -816,7 +788,6 @@ export default function DataReviewPage() {
               {activeTopTab === 'prior-1040' && <PriorYear1040Fields onMarkReviewed={handleMarkReviewed} reviewedFields={reviewedFields} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
               </div>
               </div>
-              )}
             </div>
 
             {/* Drag handle between left panel and agent panel — only when agent open */}

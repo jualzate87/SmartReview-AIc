@@ -99,3 +99,31 @@ export function navigationForDetailField(field: string): Pick<Phase1VerifyItem, 
   const from1040 = Object.values(FIELD_1040_TO_DETAIL).find(n => n.field === field)
   return from1040 ?? null
 }
+
+/** Phase 1 import flags per 1099-DIV payer — only primary payer carries flags. */
+const DIV_PAYER_FLAG_KEYS: Record<DivPayer, Phase1FlagKey[]> = {
+  tokenFinancial: ['qualifiedDivs', 'divCollectibles', 'divNonDiv', 'fedTaxWithheld'],
+  northmarkIndex: [],
+  beaconDividend: [],
+}
+
+/** Phase 1 import flags per 1099-INT payer — only primary payer carries flags. */
+const INT_PAYER_FLAG_KEYS: Record<IntPayer, Phase1FlagKey[]> = {
+  unwaverIngFinancial: ['taxableInterest'],
+  harborlineCredit: [],
+  cascadeFederal: [],
+}
+
+export function countPhase1FlagsForDivPayer(
+  payer: DivPayer,
+  reviewedFields: Map<string, unknown>,
+): number {
+  return DIV_PAYER_FLAG_KEYS[payer].filter(k => !reviewedFields.has(k)).length
+}
+
+export function countPhase1FlagsForIntPayer(
+  payer: IntPayer,
+  reviewedFields: Map<string, unknown>,
+): number {
+  return INT_PAYER_FLAG_KEYS[payer].filter(k => !reviewedFields.has(k)).length
+}
