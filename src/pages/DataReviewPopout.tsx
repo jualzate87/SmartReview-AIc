@@ -3,17 +3,26 @@ import { DotsSix } from '@design-systems/icons'
 import ReviewTab from './data-review/ReviewTab'
 import DocumentPreview from './data-review/DocumentPreview'
 import DetailFields from './data-review/DetailFields'
-import DetailFields1099 from './data-review/DetailFields1099'
-import DetailFieldsDiv from './data-review/DetailFieldsDiv'
+import DetailFields1099, { INT_PAYER_TABS } from './data-review/DetailFields1099'
+import type { IntPayer } from './data-review/DetailFields1099'
+import DetailFieldsDiv, { DIV_PAYER_TABS } from './data-review/DetailFieldsDiv'
+import type { DivPayer } from './data-review/DetailFieldsDiv'
 import DetailFields1099R from './data-review/DetailFields1099R'
+import DetailFieldsNec from './data-review/DetailFieldsNec'
+import PeelTab from './data-review/PeelTab'
 import PriorYear1040Fields from './data-review/PriorYear1040Fields'
 import QuestionnairePane from './data-review/QuestionnairePane'
 import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
 import w2TechCircle from '../assets/jessica-w2-tech-circle.png'
 import img1040Prior from '../assets/jessica-1040-2024.png'
 import img1099Int from '../assets/jessica-1099-int.jpg'
-import img1099Div from '../assets/jessica-1099-div.jpg'
 import img1099R from '../assets/jessica-1099-r.png'
+import img1099Nec from '../assets/jessica-1099-nec.png'
+import img1099DivToken from '../assets/jessica-1099-div-token.png'
+import img1099DivNorthmark from '../assets/jessica-1099-div-northmark.png'
+import img1099DivBeacon from '../assets/jessica-1099-div-beacon.png'
+import img1099IntHarborline from '../assets/jessica-1099-int-harborline.png'
+import img1099IntCascade from '../assets/jessica-1099-int-cascade.png'
 import dragStyles from '../styles/data-review/DragHandle.module.css'
 
 // ProtoC: the pop-out is the same view as the main window's right panel, not a
@@ -29,12 +38,16 @@ export default function DataReviewPopout() {
     wages, setWages,
     fieldValues, updateFieldValue,
     reviewedFields,
+    activeDivPayer, setActiveDivPayer,
+    activeIntPayer, setActiveIntPayer,
     markReviewed: handleMarkReviewed,
     markReviewedBulk: handleMarkReviewedBulk,
+    verifiedDocs,
+    toggleVerifiedDoc,
   } = useSyncedReviewState()
 
   // W-2 Box 2 is blank for Tech Circle — all federal withholding on this return
-  // comes from the 1099-DIV (Box 4), which flows to 1040 line 25b.
+  // comes from the 1099-DIV (Box 4, Token Financial), which flows to 1040 line 25b.
   const DIV_WITHHOLDING = 24925
   const totalWithholding = fieldValues.withholding.techCircle + DIV_WITHHOLDING
   const updateField = (key: keyof typeof fieldValues, value: number | { techCircle: number }) =>
@@ -50,8 +63,37 @@ export default function DataReviewPopout() {
     '1099-divs':  ['qualifiedDivs', 'divCollectibles', 'divNonDiv', 'fedTaxWithheld'].filter(k => !reviewedFields.has(k)).length,
     '1099-ints':  ['taxableInterest'].filter(k => !reviewedFields.has(k)).length,
     '1099-rs':    0,
+    '1099-necs':  0,
     'prior-1040': 0,
   }
+  const divPayerFieldCounts: Record<DivPayer, number> = Object.fromEntries(
+    DIV_PAYER_TABS.map(({ key: p }) => {
+      const isPrimary = p === 'tokenFinancial'
+      const fields = [
+        `payerEin-${p}`, `payerName-${p}`, `payerStreet-${p}`, `payerCityStateZip-${p}`, `payerPhone-${p}`,
+        `recipientSsn-${p}`, `recipientName-${p}`, `recipientStreet-${p}`, `recipientCityStateZip-${p}`,
+        `ordinaryDivs-${p}`,
+        ...(isPrimary ? ['qualifiedDivs', 'divCollectibles', 'divNonDiv', 'fedTaxWithheld'] : [`qualifiedDivs-${p}`, `divCollectibles-${p}`, `divNonDiv-${p}`, `fedTaxWithheld-${p}`]),
+        `totalCapGain-${p}`, `unrecap1250-${p}`, `sec1202-${p}`, `investExpenses-${p}`,
+        `foreignTaxPaid-${p}`, `foreignCountry-${p}`, `cashLiquidation-${p}`, `nonCashLiquidation-${p}`,
+      ]
+      return [p, fields.filter(k => !reviewedFields.has(k)).length]
+    })
+  ) as Record<DivPayer, number>
+  const intPayerFieldCounts: Record<IntPayer, number> = Object.fromEntries(
+    INT_PAYER_TABS.map(({ key: p }) => {
+      const isPrimary = p === 'unwaverIngFinancial'
+      const fields = [
+        `payerEin-${p}`, `payerName-${p}`, `payerStreet-${p}`, `payerCityStateZip-${p}`, `payerPhone-${p}`,
+        `recipientSsn-${p}`, `recipientName-${p}`, `recipientStreet-${p}`, `recipientCityStateZip-${p}`,
+        ...(isPrimary ? ['taxableInterest'] : [`taxableInterest-${p}`]),
+        `earlyPenalty-${p}`, `usBonds-${p}`, `fedTaxWithheld-${p}`, `investExpenses-${p}`,
+        `foreignTax-${p}`, `foreignCountry-${p}`, `taxExempt-${p}`, `specPrivActivity-${p}`,
+        `marketDiscount-${p}`, `bondPremium-${p}`, `stateTaxId-${p}`, `stateTax-${p}`, `stateIncome-${p}`,
+      ]
+      return [p, fields.filter(k => !reviewedFields.has(k)).length]
+    })
+  ) as Record<IntPayer, number>
 
   const rightRef = useRef<HTMLDivElement>(null)
   const [previewWidth, setPreviewWidth] = useState(40)
@@ -81,16 +123,26 @@ export default function DataReviewPopout() {
 
   const imageSrc =
     activeTopTab === 'prior-1040' ? img1040Prior :
-    activeTopTab === '1099-ints'  ? img1099Int :
-    activeTopTab === '1099-divs'  ? img1099Div :
+    activeTopTab === '1099-ints'  ? (
+      activeIntPayer === 'harborlineCredit' ? img1099IntHarborline :
+      activeIntPayer === 'cascadeFederal'   ? img1099IntCascade :
+      img1099Int
+    ) :
+    activeTopTab === '1099-divs'  ? (
+      activeDivPayer === 'northmarkIndex' ? img1099DivNorthmark :
+      activeDivPayer === 'beaconDividend' ? img1099DivBeacon :
+      img1099DivToken
+    ) :
     activeTopTab === '1099-rs'    ? img1099R :
+    activeTopTab === '1099-necs'  ? img1099Nec :
     w2TechCircle
 
   const imageAlt =
     activeTopTab === 'prior-1040' ? 'Form 1040 (2024) — Jessica Drake' :
-    activeTopTab === '1099-ints'  ? '1099-INT Unwavering Financial' :
-    activeTopTab === '1099-divs'  ? '1099-DIV Unwavering Financial' :
+    activeTopTab === '1099-ints'  ? `1099-INT ${activeIntPayer}` :
+    activeTopTab === '1099-divs'  ? `1099-DIV ${activeDivPayer}` :
     activeTopTab === '1099-rs'    ? '1099-R Meridian Retirement Trust' :
+    activeTopTab === '1099-necs'  ? '1099-NEC Summit Advisory Partners' :
     'W-2 Tech Circle'
 
   return (
@@ -101,6 +153,22 @@ export default function DataReviewPopout() {
         flagCounts={tabFlagCounts}
         onTopTabChange={(tab) => { setActiveTopTab(tab); setSelectedField(null) }}
       />
+
+      {/* Peel tabs — payer switcher for multi-payer doc types */}
+      {activeTopTab === '1099-divs' && (
+        <PeelTab
+          tabs={DIV_PAYER_TABS.map(t => ({ ...t, badge: divPayerFieldCounts[t.key] }))}
+          activeKey={activeDivPayer}
+          onChange={key => setActiveDivPayer(key as DivPayer)}
+        />
+      )}
+      {activeTopTab === '1099-ints' && (
+        <PeelTab
+          tabs={INT_PAYER_TABS.map(t => ({ ...t, badge: intPayerFieldCounts[t.key] }))}
+          activeKey={activeIntPayer}
+          onChange={key => setActiveIntPayer(key as IntPayer)}
+        />
+      )}
 
       {activeTopTab === 'questionnaire' ? (
         <QuestionnairePane variant="tab" />
@@ -140,6 +208,8 @@ export default function DataReviewPopout() {
                 onMarkReviewed={handleMarkReviewed}
                 onMarkReviewedBulk={handleMarkReviewedBulk}
                 reviewedFields={reviewedFields}
+                verifiedDocs={verifiedDocs}
+                onVerifyDoc={toggleVerifiedDoc}
                 flaggedFields={{
                   ssn: 'Employee SSN not imported — required for e-filing. Enter manually.',
                   wages: 'Low confidence (72%) — wages may be misread. Verify Box 1 against source W-2.',
@@ -151,6 +221,7 @@ export default function DataReviewPopout() {
             )}
             {activeTopTab === '1099-divs' && (
               <DetailFieldsDiv
+                activePayer={activeDivPayer}
                 selectedField={selectedField}
                 highlightMode={highlightMode}
                 onFieldSelect={setSelectedField}
@@ -159,6 +230,8 @@ export default function DataReviewPopout() {
                 onMarkReviewed={handleMarkReviewed}
                 onMarkReviewedBulk={handleMarkReviewedBulk}
                 reviewedFields={reviewedFields}
+                verifiedDocs={verifiedDocs}
+                onVerifyDoc={toggleVerifiedDoc}
                 flaggedFields={{
                   qualifiedDivs: 'Large dividend amount — $331,250 ordinary dividends. Verify Box 1a and 1b against source document.',
                   divCollectibles: 'Collectibles (28%) gain not imported — review source document and enter if applicable.',
@@ -169,6 +242,7 @@ export default function DataReviewPopout() {
             )}
             {activeTopTab === '1099-ints' && (
               <DetailFields1099
+                activePayer={activeIntPayer}
                 selectedField={selectedField}
                 highlightMode={highlightMode}
                 onFieldSelect={setSelectedField}
@@ -177,6 +251,8 @@ export default function DataReviewPopout() {
                 onMarkReviewed={handleMarkReviewed}
                 onMarkReviewedBulk={handleMarkReviewedBulk}
                 reviewedFields={reviewedFields}
+                verifiedDocs={verifiedDocs}
+                onVerifyDoc={toggleVerifiedDoc}
                 flaggedFields={{
                   taxableInterest: 'Low confidence (72%) — interest income may be misread. Verify Box 1 against source 1099-INT.',
                 }}
@@ -190,6 +266,19 @@ export default function DataReviewPopout() {
                 onMarkReviewed={handleMarkReviewed}
                 onMarkReviewedBulk={handleMarkReviewedBulk}
                 reviewedFields={reviewedFields}
+                verifiedDocs={verifiedDocs}
+                onVerifyDoc={toggleVerifiedDoc}
+              />
+            )}
+            {activeTopTab === '1099-necs' && (
+              <DetailFieldsNec
+                selectedField={selectedField}
+                onFieldSelect={setSelectedField}
+                onMarkReviewed={handleMarkReviewed}
+                onMarkReviewedBulk={handleMarkReviewedBulk}
+                reviewedFields={reviewedFields}
+                verifiedDocs={verifiedDocs}
+                onVerifyDoc={toggleVerifiedDoc}
               />
             )}
             {activeTopTab === 'prior-1040' && <PriorYear1040Fields onMarkReviewed={handleMarkReviewed} reviewedFields={reviewedFields} />}

@@ -694,6 +694,17 @@
   white-space: nowrap;
   transition: background 120ms ease, color 120ms ease, box-shadow 120ms ease;
   line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tabDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #0077c5;
+  flex-shrink: 0;
 }
 
 .viewToggleTab:hover {
@@ -723,6 +734,14 @@
   flex: 1;
   overflow-y: auto;
   padding: 40px 32px 32px;
+  background: #f4f6f8;
+}
+
+.controlWrapper {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 40px 32px 32px 60px;
   background: #f4f6f8;
 }
 
@@ -1043,6 +1062,299 @@
   padding-left: 32px;
 }
 .summaryOweRow:hover { background: #fff3ec; }
+
+/* ── Tax control view ── */
+
+/* Tax control unlock modal body */
+.controlModalBody {
+  margin: 0;
+  font-family: var(--font-family-component);
+  font-size: 16px;
+  color: var(--color-text-primary, #21262a);
+  line-height: 1.5;
+}
+
+/* Control view card — success state */
+.controlCardSuccess {
+  border-color: #00856d !important;
+  box-shadow: 0 0 0 2px rgba(0, 133, 109, 0.15);
+}
+
+/* Instruction callout — info page message */
+.controlInstruction {
+  margin: 0 16px 16px;
+  padding: 12px 14px;
+  background: #e6f4ff;
+  border: 1px solid #b3d9f7;
+  border-left: 3px solid #0077c5;
+  border-radius: 6px;
+  font-family: var(--font-family-component);
+  font-size: 13px;
+  color: #004a80;
+  line-height: 1.55;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.controlInstructionIcon {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.controlInstructionBody {
+  flex: 1;
+}
+.controlInstructionBody strong {
+  display: block;
+  color: #003d6b;
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+/* Column header row */
+.controlColHeaders {
+  display: flex;
+  align-items: center;
+  padding: 4px 16px 6px;
+  gap: 8px;
+  border-bottom: 1px solid #e8eff3;
+}
+.controlColLine {
+  width: 36px;
+  font-family: var(--font-family-component);
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7a82;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+.controlColItem {
+  flex: 1;
+  font-family: var(--font-family-component);
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7a82;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.controlColSystem {
+  width: 92px;
+  font-family: var(--font-family-component);
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7a82;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: right;
+  flex-shrink: 0;
+}
+.controlColSource {
+  width: 96px;
+  margin-left: 60px;
+  font-family: var(--font-family-component);
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7a82;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: right;
+  flex-shrink: 0;
+}
+.controlColMatch {
+  width: 28px;
+  flex-shrink: 0;
+}
+
+/* Each reconciliation row */
+.controlRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-bottom: 1px solid #f0f4f7;
+}
+.controlRow:last-child { border-bottom: none; }
+.controlRow:hover { background: #f8fbfc; }
+
+.controlLineNum {
+  width: 36px;
+  font-family: var(--font-family-component);
+  font-size: 12px;
+  color: #8fa3af;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+.controlLabel {
+  flex: 1;
+  font-family: var(--font-family-component);
+  font-size: 14px;
+  font-weight: 500;
+  color: #2d4a5e;
+}
+.controlSystemVal {
+  width: 92px;
+  font-family: var(--font-family-component);
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a3347;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* Source doc input */
+.controlInput {
+  width: 96px;
+  margin-left: 60px;
+  padding: 5px 8px;
+  border: 1.5px solid #c5d3db;
+  border-radius: 5px;
+  font-family: var(--font-family-component);
+  font-size: 14px;
+  text-align: right;
+  color: #1a3347;
+  background: #fff;
+  outline: none;
+  flex-shrink: 0;
+  transition: border-color 0.15s;
+}
+.controlInput:focus {
+  border-color: #0077c5;
+  box-shadow: 0 0 0 2px rgba(0,119,197,0.15);
+}
+.controlInputOk {
+  border-color: #00856d;
+  background: #f0fff8;
+}
+.controlInputFail {
+  border-color: #d92b2b;
+  background: #fff5f5;
+}
+
+/* Match indicator */
+.controlMatch {
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+  font-size: 16px;
+  line-height: 1;
+}
+.controlMatchOk {
+  color: #00856d;
+  font-weight: 700;
+}
+.controlMatchFail {
+  color: #d92b2b;
+  font-weight: 700;
+}
+
+/* Success footer */
+.controlFooter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #ecfff7;
+  border-top: 1px solid #b3ead8;
+  border-radius: 0 0 8px 8px;
+  font-family: var(--font-family-component);
+  font-size: 13px;
+  font-weight: 600;
+  color: #00614f;
+}
+
+/* ── Tax control — expanded rows ── */
+
+.controlSectionHeader {
+  padding: 8px 16px 4px;
+  font-family: var(--font-family-component);
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b7a82;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: #f5f8fa;
+  border-top: 1px solid #e8eff3;
+  border-bottom: 1px solid #e8eff3;
+}
+
+/* Label group: label + description stacked */
+.controlLabelGroup {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.controlLabelText {
+  font-family: var(--font-family-component);
+  font-size: 13px;
+  font-weight: 500;
+  color: #2d4a5e;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.controlDesc {
+  font-family: var(--font-family-component);
+  font-size: 12px;
+  color: #6b7a82;
+  line-height: 1.4;
+  white-space: normal;
+}
+
+/* Arrow icon inside clickable label */
+.controlNavIcon {
+  color: #0077c5;
+  opacity: 0;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+.controlRowClickable:hover .controlNavIcon {
+  opacity: 1;
+}
+
+/* Total rows — bold, neutral blue-tint to differentiate from regular rows */
+.controlRowTotal {
+  background: var(--color-page-background-secondary, #f4f5f8);
+  border-top: 1px solid var(--color-container-border-primary, #d4d7dc);
+}
+.controlRowTotal:hover {
+  background: #eceef1;
+}
+.controlRowTotal .controlLabelText {
+  font-weight: 700;
+  color: #1a3347;
+}
+.controlRowTotal .controlSystemVal {
+  font-weight: 700;
+}
+
+/* Clickable rows — show pointer + subtle hover */
+.controlRowClickable {
+  cursor: pointer;
+}
+.controlRowClickable:hover {
+  background: #f0f7ff;
+}
+.controlRowClickable:hover .controlLabelText {
+  color: #0077c5;
+}
+
+/* Blank rows (N/A — not on this return) */
+.controlRowBlank {
+  opacity: 0.5;
+  cursor: default;
+}
+.controlInputBlank {
+  width: 96px;
+  margin-left: 60px;
+  padding: 5px 8px;
+  font-family: var(--font-family-component);
+  font-size: 13px;
+  color: #8fa3af;
+  text-align: right;
+  flex-shrink: 0;
+}
 .summaryOweLabel {
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-small); /* 14px */

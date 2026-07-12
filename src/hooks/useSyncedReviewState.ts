@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { TopTab } from '../pages/data-review/ReviewTab'
+import type { DivPayer } from '../pages/data-review/DetailFieldsDiv'
+import type { IntPayer } from '../pages/data-review/DetailFields1099'
 
 // ProtoC: the source-doc review state (flags, reviewed fields, active tab, field
 // values) is shared live between the main window and the pop-out window via
@@ -23,6 +25,9 @@ interface SyncedState {
   wages: { techCircle: number }
   fieldValues: FieldValues
   reviewedFieldsList: [string, ReviewedEntry][]
+  verifiedDocsList: string[]
+  activeDivPayer: DivPayer
+  activeIntPayer: IntPayer
 }
 
 const CHANNEL_NAME = 'protoc-data-review-sync'
@@ -30,7 +35,7 @@ const CHANNEL_NAME = 'protoc-data-review-sync'
 // means the cached session predates the new numbers, so it's discarded instead
 // of silently mixing old field values with the new defaults (which caused the
 // 1040 to show stale withholding/amount-owed figures after a data fix).
-const STATE_VERSION = 3
+const STATE_VERSION = 5
 const STORAGE_KEY = 'protoc-data-review-state-v' + STATE_VERSION
 const PREPARER_NAME = 'Juan Alzate'
 
@@ -50,6 +55,9 @@ const DEFAULT_STATE: SyncedState = {
     qualifiedDivs: 187500,
   },
   reviewedFieldsList: [],
+  verifiedDocsList: [],
+  activeDivPayer: 'tokenFinancial',
+  activeIntPayer: 'unwaverIngFinancial',
 }
 
 function loadInitialState(): SyncedState {
@@ -114,6 +122,15 @@ export function useSyncedReviewState() {
     update({ reviewedFieldsList: Array.from(next.entries()) })
   }
 
+  const verifiedDocs = new Set(state.verifiedDocsList)
+
+  const toggleVerifiedDoc = (docKey: string) => {
+    const next = new Set(stateRef.current.verifiedDocsList)
+    if (next.has(docKey)) next.delete(docKey)
+    else next.add(docKey)
+    update({ verifiedDocsList: Array.from(next) })
+  }
+
   const updateFieldValue = (key: keyof FieldValues, value: number | { techCircle: number }) => {
     update({ fieldValues: { ...stateRef.current.fieldValues, [key]: value } as FieldValues })
   }
@@ -130,7 +147,13 @@ export function useSyncedReviewState() {
     fieldValues: state.fieldValues,
     updateFieldValue,
     reviewedFields,
+    activeDivPayer: state.activeDivPayer,
+    setActiveDivPayer: (payer: DivPayer) => update({ activeDivPayer: payer }),
+    activeIntPayer: state.activeIntPayer,
+    setActiveIntPayer: (payer: IntPayer) => update({ activeIntPayer: payer }),
     markReviewed,
     markReviewedBulk,
+    verifiedDocs,
+    toggleVerifiedDoc,
   }
 }

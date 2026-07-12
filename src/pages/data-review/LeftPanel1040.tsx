@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { CircleCheck, Comment } from '@design-systems/icons'
+import { Modal, ModalHeader, ModalTitle, ModalContent, ModalActions } from '@ids-ts/modal-dialog'
+import '@ids-ts/modal-dialog/dist/main.css'
+import { Button } from '@ids-ts/button'
+import '@ids-ts/button/dist/main.css'
 import FieldPopover, { FIELD_META } from './FieldPopover'
 import Tooltip from './Tooltip'
 import styles from '../../styles/data-review/LeftPanel1040.module.css'
@@ -26,6 +30,8 @@ interface LeftPanel1040Props {
   fieldValues?: { withholding: number; box12: number; taxableInterest: number; qualifiedDivs: number }
   /** Called when user posts a comment from a 1040 field */
   onAddFieldNote?: (text: string, context: string) => void
+  /** When true: all Phase 1 import flags have been reviewed — unlocks the Tax control tab's dot indicator */
+  allFlagsCleared?: boolean
 }
 
 // YoY % changes — absolute value drives color, sign drives label
@@ -112,8 +118,9 @@ function fmt(n: number) {
   return n.toLocaleString()
 }
 
-// 1099-DIV Box 4 withholding is a fixed $24,925; the W-2 Box 2 (federal withholding) is
-// blank on Jessica's W-2, so the W-2 portion is whatever the preparer edits it to be.
+// 1099-DIV Box 4 withholding is a fixed $26,363 (Token Financial); the W-2 Box 2 (federal
+// withholding) is blank on Jessica's W-2, so the W-2 portion is whatever the preparer edits
+// it to be.
 const DIV_WITHHOLDING = 24925
 
 export default function LeftPanel1040({
@@ -128,6 +135,7 @@ export default function LeftPanel1040({
   onViewSource,
   fieldValues,
   onAddFieldNote,
+  allFlagsCleared = false,
 }: LeftPanel1040Props) {
   // Derived 1040 values — Jessica Drake's return (TY 2025)
   const taxableInterest = fieldValues?.taxableInterest ?? 1986
@@ -144,10 +152,35 @@ export default function LeftPanel1040({
   const totalTax = 149830
   const incomeTax = totalTax
 
-  // View toggle: 'form' | 'table'
-  const [view, setView] = useState<'form' | 'table'>('form')
+  // View toggle: 'form' | 'table' | 'control'
+  const [view, setView] = useState<'form' | 'table' | 'control'>('form')
   // Table view: which categories are expanded
   const [expanded, setExpanded] = useState<Set<string>>(new Set(['income', 'deductions', 'tax', 'payments']))
+  // Control sheet: input values keyed by row id
+  const [controlInputs, setControlInputs] = useState<Record<string, string>>({})
+  // Control sheet modal: shown once when flags are first cleared
+  const [modalDismissed, setModalDismissed] = useState(() => {
+    try { return localStorage.getItem('taxControlModalDismissed') === '1' } catch { return false }
+  })
+  const [showModal, setShowModal] = useState(false)
+  const prevFlagsCleared = useRef(false)
+
+  useEffect(() => {
+    if (allFlagsCleared && !prevFlagsCleared.current && !modalDismissed) {
+      setShowModal(true)
+    }
+    prevFlagsCleared.current = !!allFlagsCleared
+  }, [allFlagsCleared, modalDismissed])
+
+  const dismissModal = () => {
+    setShowModal(false)
+    setModalDismissed(true)
+    try { localStorage.setItem('taxControlModalDismissed', '1') } catch { /* ignore */ }
+  }
+  const openControlFromModal = () => {
+    setView('control')
+    dismissModal()
+  }
   const toggleExpanded = (key: string) =>
     setExpanded(prev => { const s = new Set(prev); s.has(key) ? s.delete(key) : s.add(key); return s })
 
@@ -466,6 +499,22 @@ export default function LeftPanel1040({
   return (
     <div className={styles.leftPanel}>
 
+      {/* ── Tax control unlock modal ── */}
+      <Modal open={showModal} onClose={dismissModal} size="medium" dismissible>
+        <ModalHeader alignment="center" transparentBackground onClose={dismissModal}>
+          <ModalTitle title="Nice job! Want to check your totals?" />
+        </ModalHeader>
+        <ModalContent alignment="left">
+          <p className={styles.controlModalBody}>
+            Compare summary totals against the source documents to quickly see if everything aligns or if you need to look closer at the details.
+          </p>
+        </ModalContent>
+        <ModalActions alignment="right">
+          <Button priority="tertiary" onClick={dismissModal}>Not now</Button>
+          <Button priority="primary" onClick={openControlFromModal}>Check totals</Button>
+        </ModalActions>
+      </Modal>
+
       {/* ── View toggle ── */}
       <div className={styles.viewToggle}>
         <div className={styles.viewTogglePill} role="tablist">
@@ -481,6 +530,20 @@ export default function LeftPanel1040({
             className={`${styles.viewToggleTab} ${view === 'table' ? styles.viewToggleTabActive : ''}`}
             onClick={() => setView('table')}
           >Summary</button>
+          <button
+            role="tab"
+            aria-selected={view === 'control'}
+            className={[
+              styles.viewToggleTab,
+              view === 'control' ? styles.viewToggleTabActive : '',
+            ].filter(Boolean).join(' ')}
+            onClick={() => { setView('control'); dismissModal() }}
+          >
+            Tax control
+            {allFlagsCleared && view !== 'control' && (
+              <span className={styles.tabDot} aria-hidden="true" />
+            )}
+          </button>
         </div>
       </div>
 
@@ -674,7 +737,192 @@ export default function LeftPanel1040({
         </div>
       )}
 
-      <div className={styles.documentViewer} style={{ display: view === 'table' ? 'none' : undefined }}>
+      {/* ── TAX CONTROL VIEW ── */}
+      {view === 'control' && (() => {
+        type ControlRow = {
+          id: string
+          line: string
+          label: string
+          desc: string           // where the value comes from / what to add up
+          systemVal: number | null
+          sourceTab?: Parameters<NonNullable<typeof onViewSource>>[0]  // which doc tab to jump to
+          isTotalRow?: boolean   // bold total rows
+          isBlank?: boolean      // rows with no system value (not applicable to this return)
+        }
+        const controlSections: { key: string; label: string; rows: ControlRow[] }[] = [
+          {
+            key: 'income',
+            label: 'Income',
+            rows: [
+              { id: 'wages',       line: '1a', label: 'Wages',           desc: 'Sum of Box 1 from all W-2s',                              systemVal: total1a,        sourceTab: 'wages' },
+              { id: 'interest',    line: '2b', label: 'Interest',        desc: 'Box 1 (taxable interest) from all 1099-INTs',              systemVal: taxableInterest, sourceTab: 'taxableInterest' },
+              { id: 'dividends',   line: '3b', label: 'Dividends',       desc: 'Box 1a (ordinary dividends) from all 1099-DIVs',           systemVal: ordinaryDivs,   sourceTab: 'ordinaryDivs' },
+              { id: 'qualDivs',    line: '3a', label: 'Qualified divs',  desc: 'Box 1b (qualified dividends) from all 1099-DIVs',          systemVal: qualifiedDivs,  sourceTab: 'qualifiedDivs' },
+              { id: 'ira',         line: '4b', label: 'IRA / pension',   desc: 'Box 2a (taxable amount) from all 1099-Rs',                 systemVal: null,           isBlank: true },
+              { id: 'totalIncome', line: '9',  label: 'Total income',    desc: 'Lines 1z + 2b + 3b + 4b (sum of all income lines)',       systemVal: totalIncome,    isTotalRow: true },
+            ],
+          },
+          {
+            key: 'deductions',
+            label: 'Deductions',
+            rows: [
+              { id: 'stdDeduction',  line: '12', label: 'Standard deduction', desc: 'Deduction for filing status Single: $15,750 for 2025', systemVal: stdDeduction },
+              { id: 'taxableIncome', line: '15', label: 'Taxable income',      desc: 'Line 9 minus line 12 (Total income − Deductions)',      systemVal: taxableIncome, isTotalRow: true },
+            ],
+          },
+          {
+            key: 'payments',
+            label: 'Payments & tax owed',
+            rows: [
+              { id: 'totalTax',      line: '24', label: 'Total tax',           desc: 'Tax on taxable income per IRS tax tables',                              systemVal: totalTax,       isTotalRow: true },
+              { id: 'withholdingW2', line: '25a', label: 'W-2 withholding',   desc: 'Box 2 (federal income tax withheld) from all W-2s',                    systemVal: w2Withholding,  sourceTab: 'withholding' },
+              { id: 'withholding99', line: '25b', label: '1099 withholding',   desc: 'Box 4 (federal income tax withheld) from all 1099s',                   systemVal: DIV_WITHHOLDING, sourceTab: 'withholding1099' },
+              { id: 'totalPayments', line: '33', label: 'Total payments',      desc: 'Lines 25a + 25b (sum of all federal tax withheld)',                    systemVal: withholding1040, isTotalRow: true },
+              { id: 'amountOwed',    line: '37', label: 'Amount owed',         desc: 'Line 24 minus line 33 (Total tax − Total payments)',                   systemVal: oweAmount,      isTotalRow: true },
+            ],
+          },
+        ]
+
+        const allRows = controlSections.flatMap(s => s.rows).filter(r => !r.isBlank)
+        const inputRows = allRows.filter(r => r.systemVal !== null && !r.isBlank)
+        const matches = inputRows.map(r => {
+          const raw = controlInputs[r.id]
+          if (!raw || raw.trim() === '') return null
+          const parsed = parseFloat(raw.replace(/[,$]/g, ''))
+          if (isNaN(parsed)) return null
+          return Math.abs(parsed - r.systemVal!) <= 1
+        })
+        const allMatch = matches.length > 0 && matches.every(m => m === true)
+
+        const getMatch = (id: string) => {
+          const idx = inputRows.findIndex(r => r.id === id)
+          return idx >= 0 ? matches[idx] : null
+        }
+
+        return (
+          <div className={styles.controlWrapper}>
+            <div className={`${styles.summaryCard} ${allMatch ? styles.controlCardSuccess : ''}`}>
+              <div className={styles.summaryCardHeader}>
+                <span className={styles.summaryCardLabel}>TAX CONTROL</span>
+                <span className={styles.summaryCardSub}>Reconcile source totals · 2025 return</span>
+              </div>
+
+              <div className={styles.controlInstruction}>
+                <div className={styles.controlInstructionIcon}>
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <circle cx="10" cy="10" r="9" fill="#0077c5"/>
+                    <path d="M10 9v5" stroke="#fff" strokeWidth="1.8" strokeLinecap="round"/>
+                    <circle cx="10" cy="6.5" r="1" fill="#fff"/>
+                  </svg>
+                </div>
+                <div className={styles.controlInstructionBody}>
+                  <strong>Enter the totals from your source documents in the column on the right.</strong> The system total is shown for comparison. If both match, your extraction is confirmed correct. Small rounding differences (±$1) are normal.
+                </div>
+              </div>
+
+              {/* Column headers */}
+              <div className={styles.controlColHeaders}>
+                <div className={styles.controlColLine}>Line</div>
+                <div className={styles.controlColItem}>Item</div>
+                <div className={styles.controlColSystem}>System</div>
+                <div className={styles.controlColSource}>Source docs</div>
+                <div className={styles.controlColMatch}></div>
+              </div>
+
+              <div className={styles.summaryBody}>
+                {controlSections.map(section => (
+                  <div key={section.key}>
+                    <div className={styles.controlSectionHeader}>{section.label}</div>
+                    {section.rows.map(row => {
+                      if (row.isBlank) {
+                        return (
+                          <div key={row.id} className={`${styles.controlRow} ${styles.controlRowBlank}`}>
+                            <div className={styles.controlLineNum}>{row.line}</div>
+                            <div className={styles.controlLabelGroup}>
+                              <span className={styles.controlLabelText}>{row.label}</span>
+                              <span className={styles.controlDesc}>{row.desc}</span>
+                            </div>
+                            <div className={styles.controlSystemVal}>—</div>
+                            <div className={styles.controlInputBlank}>N/A</div>
+                            <div className={styles.controlMatch} />
+                          </div>
+                        )
+                      }
+
+                      const matchResult = getMatch(row.id)
+                      const hasInput = !!controlInputs[row.id]?.trim()
+                      const diff = hasInput ? parseFloat((controlInputs[row.id] ?? '').replace(/[,$]/g, '')) - (row.systemVal ?? 0) : null
+                      const clickable = !!row.sourceTab
+
+                      return (
+                        <div
+                          key={row.id}
+                          className={[
+                            styles.controlRow,
+                            row.isTotalRow ? styles.controlRowTotal : '',
+                            clickable ? styles.controlRowClickable : '',
+                          ].filter(Boolean).join(' ')}
+                          onClick={clickable ? () => onViewSource?.(row.sourceTab!) : undefined}
+                          title={clickable ? 'Click to view source document' : undefined}
+                        >
+                          <div className={styles.controlLineNum}>{row.line}</div>
+                          <div className={styles.controlLabelGroup}>
+                            <span className={styles.controlLabelText}>
+                              {row.label}
+                              {clickable && (
+                                <svg className={styles.controlNavIcon} width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                                  <path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                              )}
+                            </span>
+                            <span className={styles.controlDesc}>{row.desc}</span>
+                          </div>
+                          <div className={styles.controlSystemVal}>
+                            {row.systemVal !== null ? `$${fmt(row.systemVal)}` : '—'}
+                          </div>
+                          <input
+                            className={[
+                              styles.controlInput,
+                              hasInput && matchResult === true  ? styles.controlInputOk   : '',
+                              hasInput && matchResult === false ? styles.controlInputFail : '',
+                            ].filter(Boolean).join(' ')}
+                            type="text"
+                            inputMode="numeric"
+                            placeholder="$0"
+                            value={controlInputs[row.id] ?? ''}
+                            onChange={e => setControlInputs(prev => ({ ...prev, [row.id]: e.target.value }))}
+                            onClick={e => e.stopPropagation()}
+                            onFocus={() => row.sourceTab && onViewSource?.(row.sourceTab)}
+                            aria-label={`Source total for ${row.label}`}
+                          />
+                          <div className={styles.controlMatch}>
+                            {hasInput && matchResult === true  && <span className={styles.controlMatchOk}>✓</span>}
+                            {hasInput && matchResult === false && (
+                              <span className={styles.controlMatchFail} title={`Diff: ${diff !== null && diff >= 0 ? '+' : ''}${diff?.toFixed(2)}`}>✗</span>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ))}
+              </div>
+
+              {allMatch && (
+                <div className={styles.controlFooter}>
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <circle cx="10" cy="10" r="9" fill="#00856D"/>
+                    <path d="M6.5 10.5L8.5 12.5L13.5 7.5" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Totals reconciled — return is confirmed complete.
+                </div>
+              )}
+            </div>
+          </div>
+        )
+      })()}
+
+      <div className={styles.documentViewer} style={{ display: (view === 'table' || view === 'control') ? 'none' : undefined }}>
         <div className={styles.formDoc}>
 
           {/* ── IRS Header ── */}

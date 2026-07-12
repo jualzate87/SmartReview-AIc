@@ -4,15 +4,51 @@ import { CircleCheck, Comment } from '@design-systems/icons'
 import Tooltip from './Tooltip'
 import styles from '../../styles/data-review/DetailFields.module.css'
 
-// Realistic 1099-INT data for Unwavering Financial
-const PAYER_DATA = {
-  ein: '47-8821034',
-  name: 'Unwavering Financial LLC',
-  street: '800 Capital Way, Suite 1100',
-  city: 'Denver',
-  state: 'CO',
-  zip: '80202',
-  payerPhone: '(720) 555-0188',
+function CheckIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+      <path d="M19.0711 7.0506C18.8836 6.86313 18.6293 6.75781 18.3641 6.75781C18.099 6.75781 17.8447 6.86313 17.6571 7.0506L9.87916 14.8286L6.34316 11.2936C6.15456 11.1115 5.90195 11.0107 5.63976 11.0129C5.37756 11.0152 5.12675 11.1204 4.94134 11.3058C4.75593 11.4912 4.65076 11.742 4.64848 12.0042C4.6462 12.2664 4.747 12.519 4.92916 12.7076L9.17216 16.9506C9.35968 17.1381 9.61399 17.2434 9.87916 17.2434C10.1443 17.2434 10.3986 17.1381 10.5861 16.9506L19.0711 8.4646C19.2586 8.27707 19.3639 8.02276 19.3639 7.7576C19.3639 7.49244 19.2586 7.23813 19.0711 7.0506Z" fill="currentColor"/>
+    </svg>
+  )
+}
+
+export type IntPayer = 'unwaverIngFinancial' | 'harborlineCredit' | 'cascadeFederal'
+
+export const INT_PAYER_TABS: { key: IntPayer; label: string }[] = [
+  { key: 'unwaverIngFinancial', label: 'Unwavering Financial' },
+  { key: 'harborlineCredit',    label: 'Harborline Credit Union' },
+  { key: 'cascadeFederal',      label: 'Cascade Federal Savings' },
+]
+
+// 1099-INT payers — Jessica Drake TY 2025
+const PAYER_DATA: Record<IntPayer, { ein: string; name: string; street: string; city: string; state: string; zip: string; payerPhone: string }> = {
+  unwaverIngFinancial: {
+    ein: '47-8821034',
+    name: 'Unwavering Financial LLC',
+    street: '800 Capital Way, Suite 1100',
+    city: 'Denver',
+    state: 'CO',
+    zip: '80202',
+    payerPhone: '(720) 555-0188',
+  },
+  harborlineCredit: {
+    ein: '88-1122334',
+    name: 'Harborline Credit Union',
+    street: '100 Bank Plaza',
+    city: 'Denver',
+    state: 'CO',
+    zip: '80202',
+    payerPhone: '',
+  },
+  cascadeFederal: {
+    ein: '91-4455667',
+    name: 'Cascade Federal Savings',
+    street: '88 Riverside Ave',
+    city: 'Portland',
+    state: 'OR',
+    zip: '97204',
+    payerPhone: '',
+  },
 }
 
 const RECIPIENT_DATA = {
@@ -24,25 +60,66 @@ const RECIPIENT_DATA = {
   zip: '98756',
 }
 
-// Form 1099-INT boxes — Jessica Drake values
-const FORM_DATA = {
-  box1_interest:        '1,986',   // Box 1 — Interest income
-  box2_earlyPenalty:    '',        // Box 2 — Early withdrawal penalty
-  box3_usBonds:         '',        // Box 3 — Interest on U.S. Savings Bonds & T-bills
-  box4_fedTaxWithheld:  '',        // Box 4 — Federal income tax withheld
-  box5_investExpenses:  '',        // Box 5 — Investment expenses
-  box6_foreignTax:      '',        // Box 6 — Foreign tax paid
-  box7_foreignCountry:  '',        // Box 7 — Foreign country or U.S. possession
-  box8_taxExempt:       '180',     // Box 8 — Tax-exempt interest
-  box9_specPrivActivity:'',        // Box 9 — Specified private activity bond interest
-  box10_marketDiscount: '',        // Box 10 — Market discount
-  box11_bondPremium:    '',        // Box 11 — Bond premium
-  box13_stateTaxId:     'CA-47882103',
-  box14_stateTax:       '',
-  box15_stateIncome:    '1,986',
+// Form 1099-INT boxes per payer — Jessica Drake values
+const FORM_DATA: Record<IntPayer, {
+  box1_interest: string; box2_earlyPenalty: string; box3_usBonds: string;
+  box4_fedTaxWithheld: string; box5_investExpenses: string; box6_foreignTax: string;
+  box7_foreignCountry: string; box8_taxExempt: string; box9_specPrivActivity: string;
+  box10_marketDiscount: string; box11_bondPremium: string; box13_stateTaxId: string;
+  box14_stateTax: string; box15_stateIncome: string;
+}> = {
+  unwaverIngFinancial: {
+    box1_interest:        '1,986',   // Box 1 — Interest income
+    box2_earlyPenalty:    '',        // Box 2 — Early withdrawal penalty
+    box3_usBonds:         '',        // Box 3 — Interest on U.S. Savings Bonds & T-bills
+    box4_fedTaxWithheld:  '',        // Box 4 — Federal income tax withheld
+    box5_investExpenses:  '',        // Box 5 — Investment expenses
+    box6_foreignTax:      '',        // Box 6 — Foreign tax paid
+    box7_foreignCountry:  '',        // Box 7 — Foreign country or U.S. possession
+    box8_taxExempt:       '180',     // Box 8 — Tax-exempt interest
+    box9_specPrivActivity:'',        // Box 9 — Specified private activity bond interest
+    box10_marketDiscount: '',        // Box 10 — Market discount
+    box11_bondPremium:    '',        // Box 11 — Bond premium
+    box13_stateTaxId:     'CA-47882103',
+    box14_stateTax:       '',
+    box15_stateIncome:    '1,986',
+  },
+  harborlineCredit: {
+    box1_interest:        '3,200',
+    box2_earlyPenalty:    '',
+    box3_usBonds:         '',
+    box4_fedTaxWithheld:  '',
+    box5_investExpenses:  '',
+    box6_foreignTax:      '',
+    box7_foreignCountry:  '',
+    box8_taxExempt:       '',
+    box9_specPrivActivity:'',
+    box10_marketDiscount: '',
+    box11_bondPremium:    '',
+    box13_stateTaxId:     '',
+    box14_stateTax:       '',
+    box15_stateIncome:    '',
+  },
+  cascadeFederal: {
+    box1_interest:        '1,150',
+    box2_earlyPenalty:    '',
+    box3_usBonds:         '',
+    box4_fedTaxWithheld:  '',
+    box5_investExpenses:  '',
+    box6_foreignTax:      '',
+    box7_foreignCountry:  '',
+    box8_taxExempt:       '',
+    box9_specPrivActivity:'',
+    box10_marketDiscount: '',
+    box11_bondPremium:    '',
+    box13_stateTaxId:     '',
+    box14_stateTax:       '',
+    box15_stateIncome:    '',
+  },
 }
 
 interface DetailFields1099Props {
+  activePayer: IntPayer
   selectedField?: string | null
   highlightMode?: 'orange' | 'blue'
   onFieldSelect?: (field: string) => void
@@ -51,11 +128,13 @@ interface DetailFields1099Props {
   onMarkReviewed?: (field: string) => void
   onMarkReviewedBulk?: (fields: string[]) => void
   reviewedFields?: Map<string, { by: string; at: string }>
+  verifiedDocs?: Set<string>
+  onVerifyDoc?: (docKey: string) => void
   flaggedFields?: Record<string, string>
   onAddFieldNote?: (text: string, context: string) => void
 }
 
-export default function DetailFields1099({ selectedField, highlightMode = 'blue', onFieldSelect, fieldValues, onFieldValueChange, onMarkReviewed, reviewedFields, flaggedFields = {}, onAddFieldNote }: DetailFields1099Props) {
+export default function DetailFields1099({ activePayer, selectedField, highlightMode = 'blue', onFieldSelect, fieldValues, onFieldValueChange, onMarkReviewed, onMarkReviewedBulk, reviewedFields, verifiedDocs, onVerifyDoc, flaggedFields = {}, onAddFieldNote }: DetailFields1099Props) {
   const highlightedRef = useRef<HTMLDivElement>(null)
   const [editingField, setEditingField] = useState<string | null>(null)
   const [draftValue, setDraftValue] = useState('')
@@ -248,11 +327,36 @@ export default function DetailFields1099({ selectedField, highlightMode = 'blue'
     )
   }
 
+  const payer = PAYER_DATA[activePayer]
+  const form = FORM_DATA[activePayer]
+  const docKey = `1099-int-${activePayer}`
+  const intVerified = verifiedDocs?.has(docKey)
+  const isPrimary = activePayer === 'unwaverIngFinancial'
+
   return (
     <div className={styles.container}>
       {/* Page header */}
       <div className={styles.pageHeader}>
-        <h2 className={styles.title}>Details: Interest Income (1099-INT) — Unwavering Financial</h2>
+        <div className={styles.headerActions}>
+          <h2 style={{ fontFamily: 'var(--font-family-component)', fontSize: 18, fontWeight: 500, color: '#21262a', margin: 0, flex: 1, textAlign: 'left' }}>Details: Interest Income (1099-INT)</h2>
+          {intVerified ? (
+            <button className={styles.verifiedBadge} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, gap: 4, display: 'flex', alignItems: 'center' }} onClick={() => onVerifyDoc?.(docKey)}><CheckIcon /> Verified</button>
+          ) : (
+            <button className={styles.markVerifiedBtn} onClick={() => {
+              onVerifyDoc?.(docKey)
+              const p = activePayer
+              const docFieldKeys = [
+                `payerEin-${p}`, `payerName-${p}`, `payerStreet-${p}`, `payerCityStateZip-${p}`, `payerPhone-${p}`,
+                `recipientSsn-${p}`, `recipientName-${p}`, `recipientStreet-${p}`, `recipientCityStateZip-${p}`,
+                ...(isPrimary ? ['taxableInterest'] : [`taxableInterest-${p}`]),
+                `earlyPenalty-${p}`, `usBonds-${p}`, `fedTaxWithheld-${p}`, `investExpenses-${p}`,
+                `foreignTax-${p}`, `foreignCountry-${p}`, `taxExempt-${p}`, `specPrivActivity-${p}`,
+                `marketDiscount-${p}`, `bondPremium-${p}`, `stateTaxId-${p}`, `stateTax-${p}`, `stateIncome-${p}`,
+              ]
+              onMarkReviewedBulk?.(docFieldKeys)
+            }}>Mark as verified</button>
+          )}
+        </div>
       </div>
 
       <div className={styles.inputContainer}>
@@ -262,78 +366,84 @@ export default function DetailFields1099({ selectedField, highlightMode = 'blue'
           Payer Information (MANDATORY for e-file)
         </div>
 
-        {renderReadOnlyRow('payerEin', "(a) Payer's federal ID number (EIN)", PAYER_DATA.ein)}
-        {renderReadOnlyRow('payerName', "(b) Payer's name", PAYER_DATA.name, styles.fieldInputWide)}
-        {renderReadOnlyRow('payerStreet', 'Street address', PAYER_DATA.street, styles.fieldInputWide)}
-        {renderReadOnlyRow('payerCityStateZip', 'City / State / ZIP code', `${PAYER_DATA.city}, ${PAYER_DATA.state} ${PAYER_DATA.zip}`, styles.fieldInputWide)}
-        {renderReadOnlyRow('payerPhone', "Payer's telephone number", PAYER_DATA.payerPhone)}
+        {renderReadOnlyRow(`payerEin-${activePayer}`, "(a) Payer's federal ID number (EIN)", payer.ein)}
+        {renderReadOnlyRow(`payerName-${activePayer}`, "(b) Payer's name", payer.name, styles.fieldInputWide)}
+        {renderReadOnlyRow(`payerStreet-${activePayer}`, 'Street address', payer.street, styles.fieldInputWide)}
+        {renderReadOnlyRow(`payerCityStateZip-${activePayer}`, 'City / State / ZIP code', `${payer.city}, ${payer.state} ${payer.zip}`, styles.fieldInputWide)}
+        {renderReadOnlyRow(`payerPhone-${activePayer}`, "Payer's telephone number", payer.payerPhone)}
 
         {/* ── Recipient Information ── */}
         <div className={styles.sectionHeader}>Recipient Information</div>
 
-        {renderReadOnlyRow('recipientSsn', "(c) Recipient's SSN or ITIN", RECIPIENT_DATA.ssn)}
-        {renderReadOnlyRow('recipientName', "(d) Recipient's name", RECIPIENT_DATA.name, styles.fieldInputWide)}
-        {renderReadOnlyRow('recipientStreet', 'Street address', RECIPIENT_DATA.street, styles.fieldInputWide)}
-        {renderReadOnlyRow('recipientCityStateZip', 'City / State / ZIP code', `${RECIPIENT_DATA.city}, ${RECIPIENT_DATA.state} ${RECIPIENT_DATA.zip}`, styles.fieldInputWide)}
+        {renderReadOnlyRow(`recipientSsn-${activePayer}`, "(c) Recipient's SSN or ITIN", RECIPIENT_DATA.ssn)}
+        {renderReadOnlyRow(`recipientName-${activePayer}`, "(d) Recipient's name", RECIPIENT_DATA.name, styles.fieldInputWide)}
+        {renderReadOnlyRow(`recipientStreet-${activePayer}`, 'Street address', RECIPIENT_DATA.street, styles.fieldInputWide)}
+        {renderReadOnlyRow(`recipientCityStateZip-${activePayer}`, 'City / State / ZIP code', `${RECIPIENT_DATA.city}, ${RECIPIENT_DATA.state} ${RECIPIENT_DATA.zip}`, styles.fieldInputWide)}
 
         {/* ── Interest Income ── */}
         <div className={styles.sectionHeader}>Interest Income</div>
 
-        <div
-          ref={selectedField === 'taxableInterest' ? highlightedRef : undefined}
-          className={`${styles.fieldRow} ${flaggedFields['taxableInterest'] && !reviewedFields?.has('taxableInterest') ? styles.fieldRowHasNote : ''} ${selectedField === 'taxableInterest' ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''} ${commentField === 'taxableInterest' ? styles.fieldRowCommentOpen : ''}`}
-          onClick={() => onFieldSelect?.('taxableInterest')}
-          style={{ cursor: 'pointer' }}
-        >
-          <span className={`${styles.fieldLabel} ${flaggedFields['taxableInterest'] && !reviewedFields?.has('taxableInterest') ? styles.fieldLabelFlagged : ''}`}>
-            {flaggedFields['taxableInterest'] && !reviewedFields?.has('taxableInterest') && <span className={styles.issueIndicator} />}
-            (1) Interest income
-          </span>
-          <input
-            className={`${styles.fieldInput} ${styles.fieldInputSmall} ${editingField === 'taxableInterest' ? styles.fieldInputEditing : flaggedFields['taxableInterest'] && !reviewedFields?.has('taxableInterest') ? styles.fieldInputHighlightedOrange : selectedField === 'taxableInterest' ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`}
-            readOnly={editingField !== 'taxableInterest'}
-            value={editingField === 'taxableInterest' ? draftValue : (fieldValues?.taxableInterest !== undefined ? fieldValues.taxableInterest.toLocaleString() : FORM_DATA.box1_interest)}
-            onChange={e => setDraftValue(e.target.value)}
-            autoFocus={editingField === 'taxableInterest'}
-            onClick={e => { e.stopPropagation(); if (editingField !== 'taxableInterest') startEdit('taxableInterest', fieldValues?.taxableInterest?.toString() ?? FORM_DATA.box1_interest) }}
-            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitEdit('taxableInterest') } if (e.key === 'Escape') cancelEdit() }}
-          />
-          {editingField === 'taxableInterest' ? (
-            <div className={styles.editActions}>
-              <button className={styles.saveBtn} onClick={() => commitEdit('taxableInterest')}>Save</button>
-              <button className={styles.undoBtn} onClick={cancelEdit}>Undo</button>
+        {isPrimary ? (
+          <>
+            <div
+              ref={selectedField === 'taxableInterest' ? highlightedRef : undefined}
+              className={`${styles.fieldRow} ${flaggedFields['taxableInterest'] && !reviewedFields?.has('taxableInterest') ? styles.fieldRowHasNote : ''} ${selectedField === 'taxableInterest' ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''} ${commentField === 'taxableInterest' ? styles.fieldRowCommentOpen : ''}`}
+              onClick={() => onFieldSelect?.('taxableInterest')}
+              style={{ cursor: 'pointer' }}
+            >
+              <span className={`${styles.fieldLabel} ${flaggedFields['taxableInterest'] && !reviewedFields?.has('taxableInterest') ? styles.fieldLabelFlagged : ''}`}>
+                {flaggedFields['taxableInterest'] && !reviewedFields?.has('taxableInterest') && <span className={styles.issueIndicator} />}
+                (1) Interest income
+              </span>
+              <input
+                className={`${styles.fieldInput} ${styles.fieldInputSmall} ${editingField === 'taxableInterest' ? styles.fieldInputEditing : flaggedFields['taxableInterest'] && !reviewedFields?.has('taxableInterest') ? styles.fieldInputHighlightedOrange : selectedField === 'taxableInterest' ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`}
+                readOnly={editingField !== 'taxableInterest'}
+                value={editingField === 'taxableInterest' ? draftValue : (fieldValues?.taxableInterest !== undefined ? fieldValues.taxableInterest.toLocaleString() : form.box1_interest)}
+                onChange={e => setDraftValue(e.target.value)}
+                autoFocus={editingField === 'taxableInterest'}
+                onClick={e => { e.stopPropagation(); if (editingField !== 'taxableInterest') startEdit('taxableInterest', fieldValues?.taxableInterest?.toString() ?? form.box1_interest) }}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitEdit('taxableInterest') } if (e.key === 'Escape') cancelEdit() }}
+              />
+              {editingField === 'taxableInterest' ? (
+                <div className={styles.editActions}>
+                  <button className={styles.saveBtn} onClick={() => commitEdit('taxableInterest')}>Save</button>
+                  <button className={styles.undoBtn} onClick={cancelEdit}>Undo</button>
+                </div>
+              ) : reviewedFields?.has('taxableInterest') ? (
+                <Tooltip text="Click to unmark" placement="top">
+                  <button className={styles.reviewedBadge} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'inline-flex', alignItems: 'center' }} onClick={e => { e.stopPropagation(); onMarkReviewed?.('taxableInterest') }}><CircleCheck size="small" /></button>
+                </Tooltip>
+              ) : (
+                <div className={styles.fieldActions}>
+                  <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.('taxableInterest') }}><CircleCheck size="small" /></button></Tooltip>
+                  {renderCommentBtn('taxableInterest', '(1) Interest income')}
+                </div>
+              )}
+              {savedField === 'taxableInterest' && <span className={styles.recalcBadge}>1040 updated</span>}
+              {editedFields.has('taxableInterest') && savedField !== 'taxableInterest' && <span className={styles.editedBadge}>Edited</span>}
             </div>
-          ) : reviewedFields?.has('taxableInterest') ? (
-            <Tooltip text="Click to unmark" placement="top">
-              <button className={styles.reviewedBadge} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'inline-flex', alignItems: 'center' }} onClick={e => { e.stopPropagation(); onMarkReviewed?.('taxableInterest') }}><CircleCheck size="small" /></button>
-            </Tooltip>
-          ) : (
-            <div className={styles.fieldActions}>
-              <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.('taxableInterest') }}><CircleCheck size="small" /></button></Tooltip>
-              {renderCommentBtn('taxableInterest', '(1) Interest income')}
-            </div>
-          )}
-          {savedField === 'taxableInterest' && <span className={styles.recalcBadge}>1040 updated</span>}
-          {editedFields.has('taxableInterest') && savedField !== 'taxableInterest' && <span className={styles.editedBadge}>Edited</span>}
-        </div>
-        <ValidationNote fieldKey="taxableInterest" />
-        {renderReadOnlyRow('earlyPenalty', '(2) Early withdrawal penalty', FORM_DATA.box2_earlyPenalty)}
-        {renderReadOnlyRow('usBonds', '(3) Interest on U.S. Savings Bonds & T-bills', FORM_DATA.box3_usBonds)}
-        {renderReadOnlyRow('fedTaxWithheld', '(4) Federal income tax withheld', FORM_DATA.box4_fedTaxWithheld)}
-        {renderReadOnlyRow('investExpenses', '(5) Investment expenses', FORM_DATA.box5_investExpenses)}
-        {renderReadOnlyRow('foreignTax', '(6) Foreign tax paid', FORM_DATA.box6_foreignTax)}
-        {renderReadOnlyRow('foreignCountry', '(7) Foreign country or U.S. possession', FORM_DATA.box7_foreignCountry, styles.fieldInputWide, 'N/A')}
-        {renderReadOnlyRow('taxExempt', '(8) Tax-exempt interest', FORM_DATA.box8_taxExempt)}
-        {renderReadOnlyRow('specPrivActivity', '(9) Specified private activity bond interest', FORM_DATA.box9_specPrivActivity)}
-        {renderReadOnlyRow('marketDiscount', '(10) Market discount', FORM_DATA.box10_marketDiscount)}
-        {renderReadOnlyRow('bondPremium', '(11) Bond premium', FORM_DATA.box11_bondPremium)}
+            <ValidationNote fieldKey="taxableInterest" />
+          </>
+        ) : (
+          renderReadOnlyRow(`taxableInterest-${activePayer}`, '(1) Interest income', form.box1_interest)
+        )}
+        {renderReadOnlyRow(`earlyPenalty-${activePayer}`, '(2) Early withdrawal penalty', form.box2_earlyPenalty)}
+        {renderReadOnlyRow(`usBonds-${activePayer}`, '(3) Interest on U.S. Savings Bonds & T-bills', form.box3_usBonds)}
+        {renderReadOnlyRow(`fedTaxWithheld-${activePayer}`, '(4) Federal income tax withheld', form.box4_fedTaxWithheld)}
+        {renderReadOnlyRow(`investExpenses-${activePayer}`, '(5) Investment expenses', form.box5_investExpenses)}
+        {renderReadOnlyRow(`foreignTax-${activePayer}`, '(6) Foreign tax paid', form.box6_foreignTax)}
+        {renderReadOnlyRow(`foreignCountry-${activePayer}`, '(7) Foreign country or U.S. possession', form.box7_foreignCountry, styles.fieldInputWide, 'N/A')}
+        {renderReadOnlyRow(`taxExempt-${activePayer}`, '(8) Tax-exempt interest', form.box8_taxExempt)}
+        {renderReadOnlyRow(`specPrivActivity-${activePayer}`, '(9) Specified private activity bond interest', form.box9_specPrivActivity)}
+        {renderReadOnlyRow(`marketDiscount-${activePayer}`, '(10) Market discount', form.box10_marketDiscount)}
+        {renderReadOnlyRow(`bondPremium-${activePayer}`, '(11) Bond premium', form.box11_bondPremium)}
 
         {/* ── State Tax Information ── */}
         <div className={styles.sectionHeader}>State Tax Information</div>
 
-        {renderReadOnlyRow('stateTaxId', "(13) State / Payer's state ID number", FORM_DATA.box13_stateTaxId)}
-        {renderReadOnlyRow('stateTax', '(14) State income tax withheld', FORM_DATA.box14_stateTax)}
-        {renderReadOnlyRow('stateIncome', '(15) State income', FORM_DATA.box15_stateIncome)}
+        {renderReadOnlyRow(`stateTaxId-${activePayer}`, "(13) State / Payer's state ID number", form.box13_stateTaxId)}
+        {renderReadOnlyRow(`stateTax-${activePayer}`, '(14) State income tax withheld', form.box14_stateTax)}
+        {renderReadOnlyRow(`stateIncome-${activePayer}`, '(15) State income', form.box15_stateIncome)}
 
       </div>
     </div>
