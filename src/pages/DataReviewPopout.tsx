@@ -6,17 +6,19 @@ import {
   countPhase1Remaining,
   countPhase1FlagsForDivPayer,
   countPhase1FlagsForIntPayer,
+  countPhase1FlagsForW2Payer,
   getNextVerifyItem,
   navigationForDetailField,
 } from './data-review/phase1FieldSync'
 import DocumentPreview from './data-review/DocumentPreview'
-import DetailFields from './data-review/DetailFields'
+import DetailFields, { W2_PAYER_TABS } from './data-review/DetailFields'
+import type { W2Employer } from './data-review/DetailFields'
 import DetailFields1099, { INT_PAYER_TABS } from './data-review/DetailFields1099'
 import type { IntPayer } from './data-review/DetailFields1099'
 import DetailFieldsDiv, { DIV_PAYER_TABS } from './data-review/DetailFieldsDiv'
 import type { DivPayer } from './data-review/DetailFieldsDiv'
-import DetailFields1099R from './data-review/DetailFields1099R'
-import DetailFieldsNec from './data-review/DetailFieldsNec'
+import DetailFields1099R, { R_PAYER_TABS } from './data-review/DetailFields1099R'
+import DetailFieldsNec, { NEC_PAYER_TABS } from './data-review/DetailFieldsNec'
 import PeelTab from './data-review/PeelTab'
 import PriorYear1040Fields from './data-review/PriorYear1040Fields'
 import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
@@ -98,6 +100,9 @@ export default function DataReviewPopout() {
   const intPayerFieldCounts: Record<IntPayer, number> = Object.fromEntries(
     INT_PAYER_TABS.map(({ key: p }) => [p, countPhase1FlagsForIntPayer(p, reviewedFields)])
   ) as Record<IntPayer, number>
+  const w2PayerFieldCounts: Record<W2Employer, number> = Object.fromEntries(
+    W2_PAYER_TABS.map(({ key: p }) => [p, countPhase1FlagsForW2Payer(p, reviewedFields)])
+  ) as Record<W2Employer, number>
 
   const rightRef = useRef<HTMLDivElement>(null)
   const [previewWidth, setPreviewWidth] = useState(40)
@@ -139,6 +144,7 @@ export default function DataReviewPopout() {
     ) :
     activeTopTab === '1099-rs'    ? img1099R :
     activeTopTab === '1099-necs'  ? img1099Nec :
+    activeTopTab === 'w2s'        ? w2TechCircle :
     w2TechCircle
 
   const imageAlt =
@@ -147,6 +153,7 @@ export default function DataReviewPopout() {
     activeTopTab === '1099-divs'  ? `1099-DIV ${activeDivPayer}` :
     activeTopTab === '1099-rs'    ? '1099-R Meridian Retirement Trust' :
     activeTopTab === '1099-necs'  ? '1099-NEC Summit Advisory Partners' :
+    activeTopTab === 'w2s'        ? `W-2 ${W2_PAYER_TABS.find(t => t.key === activeSubTab)?.label ?? 'Tech Circle'}` :
     'W-2 Tech Circle'
 
   return (
@@ -177,6 +184,27 @@ export default function DataReviewPopout() {
           onChange={key => setActiveIntPayer(key as IntPayer)}
         />
       )}
+      {activeTopTab === 'w2s' && (
+        <PeelTab
+          tabs={W2_PAYER_TABS.map(t => ({ ...t, badge: w2PayerFieldCounts[t.key] }))}
+          activeKey={activeSubTab}
+          onChange={key => setActiveSubTab(key as W2Employer)}
+        />
+      )}
+      {activeTopTab === '1099-rs' && (
+        <PeelTab
+          tabs={R_PAYER_TABS.map(t => ({ ...t, badge: 0 }))}
+          activeKey="meridian"
+          onChange={() => {}}
+        />
+      )}
+      {activeTopTab === '1099-necs' && (
+        <PeelTab
+          tabs={NEC_PAYER_TABS.map(t => ({ ...t, badge: 0 }))}
+          activeKey="summit"
+          onChange={() => {}}
+        />
+      )}
 
       <div ref={rightRef} style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
           <div style={{ width: `${previewWidth}%`, flexShrink: 0, overflow: 'hidden', borderRight: '1px solid #d5dee3' }}>
@@ -194,12 +222,11 @@ export default function DataReviewPopout() {
             {activeTopTab === 'w2s' && (
               <DetailFields
                 formTitle="Details: Wages, Salaries, Tips (W-2)"
-                tabs={[{ label: 'Tech Circle', active: true }]}
                 selectedField={selectedField}
                 highlightMode={highlightMode}
                 onFieldSelect={setSelectedField}
                 activeSubTab={activeSubTab}
-                onSubTabChange={(tab) => setActiveSubTab(tab as 'techCircle')}
+                onSubTabChange={(tab) => setActiveSubTab(tab as W2Employer)}
                 wages={{ bingEquipment: 0, techCircle: wages.techCircle }}
                 onWageChange={(employer, value) => setWages({ ...wages, [employer]: value })}
                 fieldValues={{ ...fieldValues, withholding: fieldValues.withholding[activeSubTab] }}

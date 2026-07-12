@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { CircleCheck, Comment } from '@design-systems/icons'
-import SubTab from './SubTab'
 import Tooltip from './Tooltip'
 import styles from '../../styles/data-review/DetailFields.module.css'
 
@@ -14,15 +13,20 @@ function CheckIcon({ size = 14 }: { size?: number }) {
 }
 
 
+export type W2Employer = 'bingEquipment' | 'techCircle'
+
+export const W2_PAYER_TABS: { key: W2Employer; label: string }[] = [
+  { key: 'techCircle', label: 'Tech Circle' },
+]
+
 type FieldValuesKey = 'withholding' | 'box12' | 'taxableInterest' | 'qualifiedDivs'
 
 interface DetailFieldsProps {
   formTitle: string
-  tabs: { label: string; active: boolean }[]
   selectedField?: string | null
   highlightMode?: 'orange' | 'blue'
   onFieldSelect?: (field: string | null) => void
-  activeSubTab?: 'bingEquipment' | 'techCircle'
+  activeSubTab?: W2Employer
   onSubTabChange?: (tab: string) => void
   wages?: { bingEquipment: number; techCircle: number }
   onWageChange?: (employer: string, value: number) => void
@@ -75,7 +79,6 @@ const EMPLOYER_DATA = {
 
 export default function DetailFields({
   formTitle,
-  tabs,
   selectedField,
   highlightMode = 'blue',
   onFieldSelect,
@@ -354,7 +357,6 @@ export default function DetailFields({
     )
   }
 
-  const docKeys = ['techCircle']
   const isVerified = verifiedDocs?.has(activeSubTab) ?? false
 
   return (
@@ -386,19 +388,6 @@ export default function DetailFields({
             >Mark as verified</button>
           )}
         </div>
-        {tabs.length > 1 && (
-          <SubTab
-            tabs={tabs.map((t, i) => ({
-              label: t.label,
-              verified: verifiedDocs?.has(docKeys[i]),
-            }))}
-            activeIndex={tabs.findIndex(t => t.active)}
-            onTabChange={(i) => {
-              const tab = tabs[i]
-              if (tab) onSubTabChange?.('techCircle')
-            }}
-          />
-        )}
       </div>
 
       {/* Scrollable input fields */}

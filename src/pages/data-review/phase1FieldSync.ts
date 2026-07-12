@@ -1,6 +1,7 @@
 import type { TopTab } from './ReviewTab'
 import type { DivPayer } from './DetailFieldsDiv'
 import type { IntPayer } from './DetailFields1099'
+import type { W2Employer } from './DetailFields'
 
 /** Import-flag keys emitted by DetailFields mark-reviewed controls. */
 export const PHASE1_FLAG_KEYS = [
@@ -100,6 +101,12 @@ export function navigationForDetailField(field: string): Pick<Phase1VerifyItem, 
   return from1040 ?? null
 }
 
+/** Phase 1 import flags per W-2 employer — only Tech Circle carries flags. */
+const W2_PAYER_FLAG_KEYS: Record<W2Employer, Phase1FlagKey[]> = {
+  techCircle: ['ssn-techCircle', 'wages-techCircle', 'sswages-techCircle', 'box12', 'ein-techCircle'],
+  bingEquipment: [],
+}
+
 /** Phase 1 import flags per 1099-DIV payer — only primary payer carries flags. */
 const DIV_PAYER_FLAG_KEYS: Record<DivPayer, Phase1FlagKey[]> = {
   tokenFinancial: ['qualifiedDivs', 'divCollectibles', 'divNonDiv', 'fedTaxWithheld'],
@@ -112,6 +119,13 @@ const INT_PAYER_FLAG_KEYS: Record<IntPayer, Phase1FlagKey[]> = {
   unwaverIngFinancial: ['taxableInterest'],
   harborlineCredit: [],
   cascadeFederal: [],
+}
+
+export function countPhase1FlagsForW2Payer(
+  employer: W2Employer,
+  reviewedFields: Map<string, unknown>,
+): number {
+  return W2_PAYER_FLAG_KEYS[employer].filter(k => !reviewedFields.has(k)).length
 }
 
 export function countPhase1FlagsForDivPayer(

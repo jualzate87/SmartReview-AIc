@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import type { W2Employer } from '../pages/data-review/DetailFields'
 import type { TopTab } from '../pages/data-review/ReviewTab'
 import type { DivPayer } from '../pages/data-review/DetailFieldsDiv'
 import type { IntPayer } from '../pages/data-review/DetailFields1099'
@@ -20,7 +21,7 @@ export interface ReviewedEntry { by: string; at: string }
 
 interface SyncedState {
   activeTopTab: TopTab
-  activeSubTab: 'techCircle'
+  activeSubTab: W2Employer
   selectedField: string | null
   wages: { techCircle: number }
   fieldValues: FieldValues
@@ -139,7 +140,7 @@ export function useSyncedReviewState() {
     activeTopTab: state.activeTopTab,
     setActiveTopTab: (tab: TopTab) => update({ activeTopTab: tab }),
     activeSubTab: state.activeSubTab,
-    setActiveSubTab: (tab: 'techCircle') => update({ activeSubTab: tab }),
+    setActiveSubTab: (tab: W2Employer) => update({ activeSubTab: tab }),
     selectedField: state.selectedField,
     setSelectedField: (field: string | null) => update({ selectedField: field }),
     wages: state.wages,
