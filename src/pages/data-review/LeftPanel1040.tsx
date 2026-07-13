@@ -34,6 +34,8 @@ interface LeftPanel1040Props {
   onAddFieldNote?: (text: string, context: string) => void
   /** When true: all Phase 1 import flags have been reviewed — unlocks the Tax control tab's dot indicator */
   allFlagsCleared?: boolean
+  /** Expand the 1040 panel (e.g. when collapsed in Phase 1) and surface Tax control */
+  onOpenTaxControl?: () => void
 }
 
 import { PRIOR_YEAR_1040_VALUES, buildYoyMap, yoyPercent } from './priorYear1040Data'
@@ -93,6 +95,7 @@ export default function LeftPanel1040({
   fieldValues,
   onAddFieldNote,
   allFlagsCleared = false,
+  onOpenTaxControl,
 }: LeftPanel1040Props) {
   // Detail-field keys may differ from 1040 row keys (e.g. fedTaxWithheld ↔ withholding).
   const activeHighlight = highlightField ?? selectedField
@@ -178,6 +181,7 @@ export default function LeftPanel1040({
     try { sessionStorage.setItem(TAX_CONTROL_MODAL_KEY, '1') } catch { /* ignore */ }
   }
   const openControlFromModal = () => {
+    onOpenTaxControl?.()
     setView('control')
     dismissModalForSession()
   }

@@ -209,6 +209,10 @@ export default function DataReviewPage() {
     }
   }, [phase, setSelectedField])
 
+  const handleOpenTaxControl = useCallback(() => {
+    setShow1040(true)
+  }, [])
+
   const handle1040FieldClick = useCallback((field1040: string | null) => {
     if (!field1040) {
       setSelectedField(null)
@@ -568,6 +572,7 @@ export default function DataReviewPage() {
             issueField={issueField}
             fieldValues={{ ...fieldValues, withholding: totalWithholding }}
             allFlagsCleared={phase1Complete}
+            onOpenTaxControl={handleOpenTaxControl}
             onAddFieldNote={(text, context) => handleAddNote(text, context)}
             onViewSource={(fieldName, sourceLabel) => {
               // Map field → document tab
