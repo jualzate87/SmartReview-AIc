@@ -51,10 +51,60 @@ describe('computeLiveReturn — Build Spec seed anchors', () => {
     expect(live.oweAmount).toBe(FROZEN_RETURN.totalTax - live.totalWithholding)
   })
 
-  it('updates DIV withholding when corrected to source', () => {
-    const live = computeLiveReturn({ ...SEED_AMOUNTS, divWithholding: 26_363 })
-    expect(live.withholding1099).toBe(26_363)
-    expect(live.totalWithholding).toBe(FROZEN_RETURN.w2Withholding + 26_363)
+  it('sums interest across all payers into line 2b', () => {
+    const live = computeLiveReturn({
+      ...SEED_AMOUNTS,
+      interestUnwavering: 2_000,
+      interestHarborline: 4_000,
+      interestCascade: 1_500,
+    })
+    expect(live.taxableInterest).toBe(7_500)
+    expect(live.totalIncome).toBe(
+      SEED_AMOUNTS.wages +
+        7_500 +
+        FROZEN_RETURN.ordinaryDivs +
+        FROZEN_RETURN.taxablePension +
+        FROZEN_RETURN.capitalGain,
+    )
+  })
+
+  it('sums ordinary and qualified dividends across all payers', () => {
+    const live = computeLiveReturn({
+      ...SEED_AMOUNTS,
+      ordinaryDivsToken: 300_000,
+      ordinaryDivsNorthmark: 10_000,
+      ordinaryDivsBeacon: 5_000,
+      qualifiedDivsToken: 200_000,
+      qualifiedDivsNorthmark: 7_000,
+      qualifiedDivsBeacon: 3_000,
+    })
+    expect(live.ordinaryDivs).toBe(315_000)
+    expect(live.qualifiedDivs).toBe(210_000)
+    expect(live.totalIncome).toBe(
+      SEED_AMOUNTS.wages +
+        FROZEN_RETURN.taxableInterest +
+        315_000 +
+        FROZEN_RETURN.taxablePension +
+        FROZEN_RETURN.capitalGain,
+    )
+  })
+
+  it('recalculates when W-2 wages and withholding both change', () => {
+    const live = computeLiveReturn({
+      ...SEED_AMOUNTS,
+      wages: 148_940,
+      w2Withholding: 20_000,
+    })
+    expect(live.wages).toBe(148_940)
+    expect(live.w2Withholding).toBe(20_000)
+    expect(live.totalWithholding).toBe(20_000 + FROZEN_RETURN.divWithholding)
+    expect(live.oweAmount).toBe(FROZEN_RETURN.totalTax - live.totalWithholding)
+  })
+
+  it('recalculates IRA taxable amount into total income', () => {
+    const live = computeLiveReturn({ ...SEED_AMOUNTS, taxablePension: 150_000 })
+    expect(live.taxablePension).toBe(150_000)
+    expect(live.totalIncome).toBe(FROZEN_RETURN.totalIncome + 50_000)
   })
 })
 

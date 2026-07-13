@@ -148,9 +148,23 @@ export default function LeftPanel1040({
   /** Tax-control row ids that should show an Edited audit chip. */
   const CONTROL_EDITED_KEYS: Record<string, string[]> = {
     wages: ['wages', 'wages-techCircle'],
-    interest: ['taxableInterest'],
-    dividends: ['ordinaryDivs', 'ordinaryDivs-northmark'],
-    qualDivs: ['qualifiedDivs'],
+    interest: [
+      'taxableInterest',
+      'taxableInterest-harborlineCredit',
+      'taxableInterest-cascadeFederal',
+    ],
+    dividends: [
+      'ordinaryDivs',
+      'ordinaryDivs-tokenFinancial',
+      'ordinaryDivs-northmark',
+      'ordinaryDivs-northmarkIndex',
+      'ordinaryDivs-beaconDividend',
+    ],
+    qualDivs: [
+      'qualifiedDivs',
+      'qualifiedDivs-northmarkIndex',
+      'qualifiedDivs-beaconDividend',
+    ],
     ira: ['r-taxableAmt', 'iraDistrib'],
     withholdingW2: ['withholding'],
     withholding99: ['fedTaxWithheld', 'r-fedTaxWithheld', 'withholding1099'],

@@ -648,7 +648,7 @@ export default function DetailFields({
                   {renderCommentBtn(`box12-${activeSubTab}`, `(12) Code ${employer.box12Code || '—'} — 401(k) deferral`, employer.name)}
                 </div>
               )}
-              {savedField === 'box12' && <span className={styles.recalcBadge}>1040 updated</span>}
+              {savedField === 'box12' && <span className={styles.recalcBadge}>Saved</span>}
               {isEdited('box12') && savedField !== 'box12' && <span className={styles.editedBadge}>Edited</span>}
             </div>
             <ValidationNote fieldKey="box12" />

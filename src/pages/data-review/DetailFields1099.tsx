@@ -294,13 +294,21 @@ export default function DetailFields1099({
   }
 
   // Editable row with hover-revealed Edit + Mark as correct + Comment — same pattern as
-  // the W-2 panel's renderStaticRow. Edits are local (staticValues) since only
-  // taxableInterest feeds the live 1040 calculation.
+  // the W-2 panel's renderStaticRow. Per-payer Box 1 interest also updates live amounts.
   const renderReadOnlyRow = (fieldKey: string, label: string, defaultValue: string, inputClass = styles.fieldInputSmall, placeholder?: string) => {
-    const currentVal = staticValues[fieldKey] ?? defaultValue
+    const syncedInterest =
+      amounts && fieldKey.startsWith('taxableInterest-')
+        ? activePayer === 'harborlineCredit'
+          ? amounts.interestHarborline.toLocaleString()
+          : activePayer === 'cascadeFederal'
+            ? amounts.interestCascade.toLocaleString()
+            : null
+        : null
+    const currentVal = syncedInterest ?? staticValues[fieldKey] ?? defaultValue
     const isEditing = editingField === fieldKey
     const isReviewed = reviewedFields?.has(fieldKey)
     const isCommentOpen = commentField === fieldKey
+    const flowsTo1040 = fieldKey.startsWith('taxableInterest-')
     const commitStatic = () => {
       setStaticValues(prev => ({ ...prev, [fieldKey]: draftValue }))
       setEditingField(null)
@@ -346,7 +354,7 @@ export default function DetailFields1099({
             {renderCommentBtn(fieldKey, label)}
           </div>
         )}
-        {savedField === fieldKey && <span className={styles.recalcBadge}>Saved</span>}
+        {savedField === fieldKey && <span className={styles.recalcBadge}>{flowsTo1040 ? '1040 updated' : 'Saved'}</span>}
         {isEdited(fieldKey) && savedField !== fieldKey && <span className={styles.editedBadge}>Edited</span>}
       </div>
     )

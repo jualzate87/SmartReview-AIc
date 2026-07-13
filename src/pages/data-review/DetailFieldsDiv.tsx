@@ -300,15 +300,29 @@ export default function DetailFieldsDiv({
     const { inputClass = styles.fieldInputSmall, placeholder = '—', fieldKeyOverride, reviewedKeyOverride } = opts
     const flagKey = fieldKeyOverride ?? fieldKey
     const reviewedKey = reviewedKeyOverride ?? fieldKey
-    const syncedFedWh =
-      fieldKey === 'fedTaxWithheld' && amounts
-        ? amounts.divWithholding.toLocaleString()
-        : null
-    const currentVal = syncedFedWh ?? staticValues[fieldKey] ?? defaultValue
+    const syncedAmountDisplay = (() => {
+      if (!amounts) return null
+      if (fieldKey === 'fedTaxWithheld') return amounts.divWithholding.toLocaleString()
+      if (fieldKey.startsWith('ordinaryDivs-')) {
+        if (activePayer === 'tokenFinancial') return amounts.ordinaryDivsToken.toLocaleString()
+        if (activePayer === 'northmarkIndex') return amounts.ordinaryDivsNorthmark.toLocaleString()
+        if (activePayer === 'beaconDividend') return amounts.ordinaryDivsBeacon.toLocaleString()
+      }
+      if (fieldKey.startsWith('qualifiedDivs-')) {
+        if (activePayer === 'northmarkIndex') return amounts.qualifiedDivsNorthmark.toLocaleString()
+        if (activePayer === 'beaconDividend') return amounts.qualifiedDivsBeacon.toLocaleString()
+      }
+      return null
+    })()
+    const currentVal = syncedAmountDisplay ?? staticValues[fieldKey] ?? defaultValue
     const isEditing = editingField === fieldKey
     const isFlagged = !!flaggedFields[flagKey] && !reviewedFields?.has(reviewedKey)
     const isReviewed = reviewedFields?.has(reviewedKey)
     const isCommentOpen = commentField === fieldKey
+    const flowsTo1040 =
+      fieldKey === 'fedTaxWithheld' ||
+      fieldKey.startsWith('ordinaryDivs-') ||
+      fieldKey.startsWith('qualifiedDivs-')
     const commitStatic = () => {
       setStaticValues(prev => ({ ...prev, [fieldKey]: draftValue }))
       setEditingField(null)
@@ -323,6 +337,9 @@ export default function DetailFieldsDiv({
       } else if (fieldKey.startsWith('ordinaryDivs-')) {
         if (activePayer === 'tokenFinancial') onAmountChange?.({ ordinaryDivsToken: num }, fieldKey)
         else if (activePayer === 'beaconDividend') onAmountChange?.({ ordinaryDivsBeacon: num }, fieldKey)
+      } else if (fieldKey.startsWith('qualifiedDivs-')) {
+        if (activePayer === 'northmarkIndex') onAmountChange?.({ qualifiedDivsNorthmark: num }, fieldKey)
+        else if (activePayer === 'beaconDividend') onAmountChange?.({ qualifiedDivsBeacon: num }, fieldKey)
       }
       if (draftValue.trim()) onMarkReviewed?.(reviewedKey)
     }
@@ -362,7 +379,7 @@ export default function DetailFieldsDiv({
               {renderCommentBtn(fieldKey, label)}
             </div>
           )}
-          {savedField === fieldKey && <span className={styles.recalcBadge}>{fieldKey === 'fedTaxWithheld' ? '1040 updated' : 'Saved'}</span>}
+          {savedField === fieldKey && <span className={styles.recalcBadge}>{flowsTo1040 ? '1040 updated' : 'Saved'}</span>}
           {isEdited(fieldKey) && savedField !== fieldKey && <span className={styles.editedBadge}>Edited</span>}
         </div>
         <ValidationNote fieldKey={flagKey} reviewedKey={reviewedKey} />
