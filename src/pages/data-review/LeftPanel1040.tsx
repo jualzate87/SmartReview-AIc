@@ -2,7 +2,13 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { CircleCheck, Comment } from '@design-systems/icons'
 import FieldPopover, { FIELD_META } from './FieldPopover'
+import TaxControlDocPopover, {
+  getDocValuesForRow,
+  setDocValueForRow,
+  sumControlDocInputs,
+} from './TaxControlDocPopover'
 import Tooltip from './Tooltip'
+import { TAX_CONTROL_ROWS, getControlSystemValues } from '../../data/sourceDocuments'
 import styles from '../../styles/data-review/LeftPanel1040.module.css'
 
 
@@ -134,8 +140,11 @@ export default function LeftPanel1040({
   const [view, setView] = useState<'form' | 'table' | 'control'>('form')
   // Table view: which categories are expanded
   const [expanded, setExpanded] = useState<Set<string>>(new Set(['income', 'deductions', 'tax', 'payments']))
-  // Control sheet: input values keyed by row id
+  // Control sheet: input values keyed by "rowId" (single doc) or "rowId::docId" (multi-doc)
   const [controlInputs, setControlInputs] = useState<Record<string, string>>({})
+  // Multi-doc popover state for tax control rows
+  const [controlPopoverRow, setControlPopoverRow] = useState<string | null>(null)
+  const [controlPopoverRect, setControlPopoverRect] = useState<DOMRect | null>(null)
 
   useEffect(() => {
     if (taxControlViewRequest > 0) setView('control')
@@ -710,64 +719,63 @@ export default function LeftPanel1040({
 
       {/* ── TAX CONTROL VIEW ── */}
       {view === 'control' && (() => {
-        type ControlRow = {
-          id: string
-          line: string
-          label: string
-          desc: string           // where the value comes from / what to add up
-          systemVal: number | null
-          sourceTab?: Parameters<NonNullable<typeof onViewSource>>[0]  // which doc tab to jump to
-          isTotalRow?: boolean   // bold total rows
-          isBlank?: boolean      // rows with no system value (not applicable to this return)
-        }
-        const controlSections: { key: string; label: string; rows: ControlRow[] }[] = [
-          {
-            key: 'income',
-            label: 'Income',
-            rows: [
-              { id: 'wages',       line: '1a', label: 'Wages',           desc: 'Sum of Box 1 from all W-2s',                              systemVal: total1a,        sourceTab: 'wages' },
-              { id: 'interest',    line: '2b', label: 'Interest',        desc: 'Box 1 (taxable interest) from all 1099-INTs',              systemVal: taxableInterest, sourceTab: 'taxableInterest' },
-              { id: 'dividends',   line: '3b', label: 'Dividends',       desc: 'Box 1a (ordinary dividends) from all 1099-DIVs',           systemVal: ordinaryDivs,   sourceTab: 'ordinaryDivs' },
-              { id: 'qualDivs',    line: '3a', label: 'Qualified divs',  desc: 'Box 1b (qualified dividends) from all 1099-DIVs',          systemVal: qualifiedDivs,  sourceTab: 'qualifiedDivs' },
-              { id: 'ira',         line: '4b', label: 'IRA / pension',   desc: 'Box 2a (taxable amount) from all 1099-Rs',                 systemVal: null,           isBlank: true },
-              { id: 'totalIncome', line: '9',  label: 'Total income',    desc: 'Lines 1z + 2b + 3b + 4b (sum of all income lines)',       systemVal: totalIncome,    isTotalRow: true },
-            ],
-          },
-          {
-            key: 'deductions',
-            label: 'Deductions',
-            rows: [
-              { id: 'stdDeduction',  line: '12', label: 'Standard deduction', desc: 'Deduction for filing status Single: $15,750 for 2025', systemVal: stdDeduction },
-              { id: 'taxableIncome', line: '15', label: 'Taxable income',      desc: 'Line 9 minus line 12 (Total income − Deductions)',      systemVal: taxableIncome, isTotalRow: true },
-            ],
-          },
-          {
-            key: 'payments',
-            label: 'Payments & tax owed',
-            rows: [
-              { id: 'totalTax',      line: '24', label: 'Total tax',           desc: 'Tax on taxable income per IRS tax tables',                              systemVal: totalTax,       isTotalRow: true },
-              { id: 'withholdingW2', line: '25a', label: 'W-2 withholding',   desc: 'Box 2 (federal income tax withheld) from all W-2s',                    systemVal: w2Withholding,  sourceTab: 'withholding' },
-              { id: 'withholding99', line: '25b', label: '1099 withholding',   desc: 'Box 4 (federal income tax withheld) from all 1099s',                   systemVal: DIV_WITHHOLDING, sourceTab: 'withholding1099' },
-              { id: 'totalPayments', line: '33', label: 'Total payments',      desc: 'Lines 25a + 25b (sum of all federal tax withheld)',                    systemVal: withholding1040, isTotalRow: true },
-              { id: 'amountOwed',    line: '37', label: 'Amount owed',         desc: 'Line 24 minus line 33 (Total tax − Total payments)',                   systemVal: oweAmount,      isTotalRow: true },
-            ],
-          },
+        const systemVals = getControlSystemValues({
+          total1a,
+          taxableInterest,
+          ordinaryDivs,
+          qualifiedDivs,
+          totalIncome,
+          stdDeduction,
+          taxableIncome,
+          totalTax,
+          w2Withholding,
+          divWithholding: DIV_WITHHOLDING,
+          totalWithholding: withholding1040,
+          oweAmount,
+        })
+
+        const controlSections = [
+          { key: 'income', label: 'Income', rowIds: ['wages', 'interest', 'dividends', 'qualDivs', 'ira', 'totalIncome'] },
+          { key: 'deductions', label: 'Deductions', rowIds: ['stdDeduction', 'taxableIncome'] },
+          { key: 'payments', label: 'Payments & tax owed', rowIds: ['totalTax', 'withholdingW2', 'withholding99', 'totalPayments', 'amountOwed'] },
         ]
 
-        const allRows = controlSections.flatMap(s => s.rows).filter(r => !r.isBlank)
-        const inputRows = allRows.filter(r => r.systemVal !== null && !r.isBlank)
+        const getRowConfig = (id: string) => TAX_CONTROL_ROWS.find(r => r.id === id)!
+
+        const getEnteredTotal = (rowId: string) => {
+          const cfg = getRowConfig(rowId)
+          if (cfg.docs.length === 0) {
+            const raw = controlInputs[rowId]
+            if (!raw?.trim()) return null
+            const parsed = parseFloat(raw.replace(/[,$]/g, ''))
+            return isNaN(parsed) ? null : parsed
+          }
+          if (cfg.docs.length === 1) {
+            const raw = controlInputs[`${rowId}::${cfg.docs[0].docId}`] ?? controlInputs[rowId]
+            if (!raw?.trim()) return null
+            const parsed = parseFloat(raw.replace(/[,$]/g, ''))
+            return isNaN(parsed) ? null : parsed
+          }
+          return sumControlDocInputs(cfg.docs, getDocValuesForRow(rowId, cfg.docs, controlInputs))
+        }
+
+        const inputRows = TAX_CONTROL_ROWS.filter(r => !r.isBlank && r.docs.length > 0 && systemVals[r.id] !== null)
         const matches = inputRows.map(r => {
-          const raw = controlInputs[r.id]
-          if (!raw || raw.trim() === '') return null
-          const parsed = parseFloat(raw.replace(/[,$]/g, ''))
-          if (isNaN(parsed)) return null
-          return Math.abs(parsed - r.systemVal!) <= 1
+          const entered = getEnteredTotal(r.id)
+          const systemVal = systemVals[r.id]
+          if (entered === null || systemVal === null) return null
+          return Math.abs(entered - systemVal) <= 1
         })
         const allMatch = matches.length > 0 && matches.every(m => m === true)
 
         const getMatch = (id: string) => {
           const idx = inputRows.findIndex(r => r.id === id)
           return idx >= 0 ? matches[idx] : null
+        }
+
+        const openControlPopover = (rowId: string, el: HTMLElement) => {
+          setControlPopoverRect(el.getBoundingClientRect())
+          setControlPopoverRow(rowId)
         }
 
         return (
@@ -793,7 +801,7 @@ export default function LeftPanel1040({
 
               {/* Column headers */}
               <div className={styles.controlColHeaders}>
-                <div className={styles.controlColLine}>Line</div>
+                <div className={styles.controlColLine}>Box</div>
                 <div className={styles.controlColItem}>Item</div>
                 <div className={styles.controlColSystem}>System</div>
                 <div className={styles.controlColSource}>Source docs</div>
@@ -804,11 +812,14 @@ export default function LeftPanel1040({
                 {controlSections.map(section => (
                   <div key={section.key}>
                     <div className={styles.controlSectionHeader}>{section.label}</div>
-                    {section.rows.map(row => {
+                    {section.rowIds.map(rowId => {
+                      const row = getRowConfig(rowId)
+                      const systemVal = systemVals[row.id]
+
                       if (row.isBlank) {
                         return (
                           <div key={row.id} className={`${styles.controlRow} ${styles.controlRowBlank}`}>
-                            <div className={styles.controlLineNum}>{row.line}</div>
+                            <div className={styles.controlLineNum}>{row.box}</div>
                             <div className={styles.controlLabelGroup}>
                               <span className={styles.controlLabelText}>{row.label}</span>
                               <span className={styles.controlDesc}>{row.desc}</span>
@@ -820,10 +831,17 @@ export default function LeftPanel1040({
                         )
                       }
 
+                      const isMultiDoc = row.docs.length > 1
+                      const isSingleDoc = row.docs.length === 1
+                      const enteredTotal = getEnteredTotal(row.id)
+                      const hasInput = enteredTotal !== null
                       const matchResult = getMatch(row.id)
-                      const hasInput = !!controlInputs[row.id]?.trim()
-                      const diff = hasInput ? parseFloat((controlInputs[row.id] ?? '').replace(/[,$]/g, '')) - (row.systemVal ?? 0) : null
+                      const diff = hasInput && systemVal !== null ? enteredTotal! - systemVal : null
                       const clickable = !!row.sourceTab
+
+                      // Display value for source column
+                      const singleDocKey = isSingleDoc ? `${row.id}::${row.docs[0].docId}` : row.id
+                      const singleDocValue = controlInputs[singleDocKey] ?? controlInputs[row.id] ?? ''
 
                       return (
                         <div
@@ -836,7 +854,7 @@ export default function LeftPanel1040({
                           onClick={clickable ? () => onViewSource?.(row.sourceTab!) : undefined}
                           title={clickable ? 'Click to view source document' : undefined}
                         >
-                          <div className={styles.controlLineNum}>{row.line}</div>
+                          <div className={styles.controlLineNum}>{row.box}</div>
                           <div className={styles.controlLabelGroup}>
                             <span className={styles.controlLabelText}>
                               {row.label}
@@ -849,23 +867,58 @@ export default function LeftPanel1040({
                             <span className={styles.controlDesc}>{row.desc}</span>
                           </div>
                           <div className={styles.controlSystemVal}>
-                            {row.systemVal !== null ? `$${fmt(row.systemVal)}` : '—'}
+                            {systemVal !== null ? `$${fmt(systemVal)}` : '—'}
                           </div>
-                          <input
-                            className={[
-                              styles.controlInput,
-                              hasInput && matchResult === true  ? styles.controlInputOk   : '',
-                              hasInput && matchResult === false ? styles.controlInputFail : '',
-                            ].filter(Boolean).join(' ')}
-                            type="text"
-                            inputMode="numeric"
-                            placeholder="$0"
-                            value={controlInputs[row.id] ?? ''}
-                            onChange={e => setControlInputs(prev => ({ ...prev, [row.id]: e.target.value }))}
-                            onClick={e => e.stopPropagation()}
-                            onFocus={() => row.sourceTab && onViewSource?.(row.sourceTab)}
-                            aria-label={`Source total for ${row.label}`}
-                          />
+
+                          {isMultiDoc ? (
+                            <button
+                              className={[
+                                styles.controlMultiBtn,
+                                hasInput && matchResult === true  ? styles.controlInputOk   : '',
+                                hasInput && matchResult === false ? styles.controlInputFail : '',
+                              ].filter(Boolean).join(' ')}
+                              onClick={e => {
+                                e.stopPropagation()
+                                openControlPopover(row.id, e.currentTarget)
+                              }}
+                              aria-label={`Enter ${row.label} from ${row.docs.length} source documents`}
+                              aria-expanded={controlPopoverRow === row.id}
+                            >
+                              {hasInput ? `$${fmt(enteredTotal!)}` : `${row.docs.length} docs`}
+                            </button>
+                          ) : row.docs.length === 0 ? (
+                            <input
+                              className={[
+                                styles.controlInput,
+                                hasInput && matchResult === true  ? styles.controlInputOk   : '',
+                                hasInput && matchResult === false ? styles.controlInputFail : '',
+                              ].filter(Boolean).join(' ')}
+                              type="text"
+                              inputMode="numeric"
+                              placeholder="$0"
+                              value={controlInputs[row.id] ?? ''}
+                              onChange={e => setControlInputs(prev => ({ ...prev, [row.id]: e.target.value }))}
+                              onClick={e => e.stopPropagation()}
+                              aria-label={`Source total for ${row.label}`}
+                            />
+                          ) : (
+                            <input
+                              className={[
+                                styles.controlInput,
+                                hasInput && matchResult === true  ? styles.controlInputOk   : '',
+                                hasInput && matchResult === false ? styles.controlInputFail : '',
+                              ].filter(Boolean).join(' ')}
+                              type="text"
+                              inputMode="numeric"
+                              placeholder="$0"
+                              value={singleDocValue}
+                              onChange={e => setControlInputs(prev => setDocValueForRow(row.id, row.docs[0].docId, e.target.value, prev))}
+                              onClick={e => e.stopPropagation()}
+                              onFocus={() => row.sourceTab && onViewSource?.(row.sourceTab)}
+                              aria-label={`Source total for ${row.label}`}
+                            />
+                          )}
+
                           <div className={styles.controlMatch}>
                             {hasInput && matchResult === true  && <span className={styles.controlMatchOk}>✓</span>}
                             {hasInput && matchResult === false && (
@@ -890,6 +943,22 @@ export default function LeftPanel1040({
               )}
             </div>
           </div>
+        )
+      })()}
+
+      {/* Tax control multi-doc popover */}
+      {controlPopoverRow && controlPopoverRect && (() => {
+        const cfg = TAX_CONTROL_ROWS.find(r => r.id === controlPopoverRow)
+        if (!cfg || cfg.docs.length <= 1) return null
+        return (
+          <TaxControlDocPopover
+            rowLabel={cfg.label}
+            docs={cfg.docs}
+            values={getDocValuesForRow(cfg.id, cfg.docs, controlInputs)}
+            onChange={(docId, value) => setControlInputs(prev => setDocValueForRow(cfg.id, docId, value, prev))}
+            anchorRect={controlPopoverRect}
+            onClose={() => { setControlPopoverRow(null); setControlPopoverRect(null) }}
+          />
         )
       })()}
 

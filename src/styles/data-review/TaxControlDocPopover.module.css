@@ -1,0 +1,102 @@
+.popover {
+  width: 280px;
+  background: var(--color-container-background-primary, #fff);
+  border: 1px solid var(--color-divider-tertiary, #d5dee3);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  padding: 12px 14px;
+  box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.title {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small, 14px);
+  font-weight: var(--font-weight-component-bold, 600);
+  color: var(--color-text-primary, #21262a);
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  color: #6b7a82;
+  display: flex;
+  align-items: center;
+}
+
+.subtitle {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small, 12px);
+  color: #6b7a82;
+  margin: 0 0 10px;
+  line-height: 1.4;
+}
+
+.docFields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.docField {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.docLabel {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small, 12px);
+  font-weight: var(--font-weight-component-semibold, 500);
+  color: #2d4a5e;
+}
+
+.docInput {
+  padding: 6px 8px;
+  border: 1.5px solid #c5d3db;
+  border-radius: 5px;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small, 14px);
+  text-align: right;
+  color: #1a3347;
+  background: #fff;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.docInput:focus {
+  border-color: #0077c5;
+  box-shadow: 0 0 0 2px rgba(0, 119, 197, 0.15);
+}
+
+.sumRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #e3e8eb;
+}
+
+.sumLabel {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small, 12px);
+  font-weight: var(--font-weight-component-bold, 600);
+  color: #2d4a5e;
+}
+
+.sumValue {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-medium, 16px);
+  font-weight: var(--font-weight-component-bold, 600);
+  color: #1a3347;
+}

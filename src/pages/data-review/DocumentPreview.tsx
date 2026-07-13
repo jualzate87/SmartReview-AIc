@@ -3,16 +3,18 @@ import { ZoomOut, ZoomIn } from '@design-systems/icons'
 import styles from '../../styles/data-review/DocumentPreview.module.css'
 
 interface DocumentPreviewProps {
-  imageSrc: string | string[]
+  imageSrc?: string | string[]
   alt: string
+  /** When set, renders custom content instead of image(s) */
+  customContent?: React.ReactNode
 }
 
 const ZOOM_LEVELS = [50, 60, 65, 70, 75, 85, 100, 125, 150, 200]
 
-export default function DocumentPreview({ imageSrc, alt }: DocumentPreviewProps) {
+export default function DocumentPreview({ imageSrc, alt, customContent }: DocumentPreviewProps) {
   const [zoomIndex, setZoomIndex] = useState(5) // default 85%
   const zoom = ZOOM_LEVELS[zoomIndex]
-  const images = Array.isArray(imageSrc) ? imageSrc : [imageSrc]
+  const images = imageSrc ? (Array.isArray(imageSrc) ? imageSrc : [imageSrc]) : []
 
   const zoomOut = () => setZoomIndex(i => Math.max(0, i - 1))
   const zoomIn  = () => setZoomIndex(i => Math.min(ZOOM_LEVELS.length - 1, i + 1))
@@ -78,8 +80,8 @@ export default function DocumentPreview({ imageSrc, alt }: DocumentPreviewProps)
         onMouseDown={onMouseDown}
       >
         <div className={styles.imageAreaInner}>
-          <div style={{ position: 'relative', width: `${zoom}%`, lineHeight: 0, flexShrink: 0 }}>
-            {images.map((src, i) => (
+          <div style={{ position: 'relative', width: customContent ? '100%' : `${zoom}%`, lineHeight: 0, flexShrink: 0 }}>
+            {customContent ?? images.map((src, i) => (
               <img
                 key={src}
                 src={src}

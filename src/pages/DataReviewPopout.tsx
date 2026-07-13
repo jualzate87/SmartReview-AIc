@@ -12,6 +12,9 @@ import {
   navigationForDetailField,
 } from './data-review/phase1FieldSync'
 import DocumentPreview from './data-review/DocumentPreview'
+import W2FormPreview from './data-review/W2FormPreview'
+import SourceDocumentList, { getActiveDocId } from './data-review/SourceDocumentList'
+import type { SourceDocument } from '../data/sourceDocuments'
 import SourcePanelLoader from './data-review/SourcePanelLoader'
 import DetailFields, { W2_PAYER_TABS } from './data-review/DetailFields'
 import type { W2Employer } from './data-review/DetailFields'
@@ -126,6 +129,7 @@ export default function DataReviewPopout() {
   }, [previewWidth])
 
   const imageSrc =
+    activeTopTab === 'w2s' && activeSubTab === 'techCircle' ? undefined :
     activeTopTab === 'prior-1040' ? [img1040PriorPage1, img1040PriorPage2] :
     activeTopTab === '1099-ints'  ? (
       activeIntPayer === 'harborlineCredit' ? img1099IntHarborline :
@@ -139,7 +143,6 @@ export default function DataReviewPopout() {
     ) :
     activeTopTab === '1099-rs'    ? img1099R :
     activeTopTab === '1099-necs'  ? img1099Nec :
-    activeTopTab === 'w2s'        ? w2TechCircle :
     w2TechCircle
 
   const imageAlt =
@@ -158,6 +161,17 @@ export default function DataReviewPopout() {
         activeTopTab={activeTopTab}
         flagCounts={tabFlagCounts}
         onTopTabChange={(tab) => { setActiveTopTab(tab); setSelectedField(null) }}
+      />
+
+      <SourceDocumentList
+        activeDocId={getActiveDocId(activeTopTab, activeSubTab, activeDivPayer, activeIntPayer)}
+        onSelectDoc={(doc: SourceDocument) => {
+          setActiveTopTab(doc.tab)
+          if (doc.tab === 'w2s' && doc.subTab) setActiveSubTab(doc.subTab as W2Employer)
+          if (doc.tab === '1099-divs' && doc.subTab) setActiveDivPayer(doc.subTab as DivPayer)
+          if (doc.tab === '1099-ints' && doc.subTab) setActiveIntPayer(doc.subTab as IntPayer)
+          setSelectedField(null)
+        }}
       />
 
       {phase1Remaining > 0 && (
@@ -205,6 +219,11 @@ export default function DataReviewPopout() {
       <div ref={rightRef} style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
           <div style={{ width: `${previewWidth}%`, flexShrink: 0, overflow: 'hidden', borderRight: '1px solid #d5dee3' }}>
             <DocumentPreview
+              customContent={
+                activeTopTab === 'w2s' && activeSubTab === 'techCircle'
+                  ? <W2FormPreview />
+                  : undefined
+              }
               imageSrc={imageSrc}
               alt={imageAlt}
             />

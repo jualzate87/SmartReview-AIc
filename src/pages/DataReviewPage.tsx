@@ -19,6 +19,9 @@ import intuitAssistIcon from '../assets/icons/intuit-assist.svg'
 import LeftPanel1040 from './data-review/LeftPanel1040'
 import ReviewTab from './data-review/ReviewTab'
 import DocumentPreview from './data-review/DocumentPreview'
+import W2FormPreview from './data-review/W2FormPreview'
+import SourceDocumentList, { getActiveDocId } from './data-review/SourceDocumentList'
+import type { SourceDocument } from '../data/sourceDocuments'
 import SourcePanelLoader from './data-review/SourcePanelLoader'
 import DetailFields, { W2_PAYER_TABS } from './data-review/DetailFields'
 import type { W2Employer } from './data-review/DetailFields'
@@ -736,6 +739,19 @@ export default function DataReviewPage() {
                 }}
               />
 
+              <SourceDocumentList
+                activeDocId={getActiveDocId(activeTopTab, activeSubTab, activeDivPayer, activeIntPayer)}
+                onSelectDoc={(doc: SourceDocument) => {
+                  setActiveTopTab(doc.tab)
+                  if (doc.tab === 'w2s' && doc.subTab) setActiveSubTab(doc.subTab as W2Employer)
+                  if (doc.tab === '1099-divs' && doc.subTab) setActiveDivPayer(doc.subTab as DivPayer)
+                  if (doc.tab === '1099-ints' && doc.subTab) setActiveIntPayer(doc.subTab as IntPayer)
+                  setFromAgent(false)
+                  setSelectedField(null)
+                  setActiveIssueField(null)
+                }}
+              />
+
               {/* Peel tabs — payer switcher for multi-payer doc types */}
               {activeTopTab === '1099-divs' && (
                 <PeelTab
@@ -782,7 +798,13 @@ export default function DataReviewPage() {
                 : { width: `${previewHeight}%`, flexShrink: 0, overflow: 'hidden', borderRight: '1px solid #D5DEE3', display: 'flex', flexDirection: 'column', minHeight: 0 }
               }>
                 <DocumentPreview
+                  customContent={
+                    activeTopTab === 'w2s' && activeSubTab === 'techCircle'
+                      ? <W2FormPreview />
+                      : undefined
+                  }
                   imageSrc={
+                    activeTopTab === 'w2s' && activeSubTab === 'techCircle' ? undefined :
                     activeTopTab === 'prior-1040' ? [img1040PriorPage1, img1040PriorPage2] :
                     activeTopTab === '1099-ints'  ? (
                       activeIntPayer === 'harborlineCredit' ? img1099IntHarborline :
@@ -796,7 +818,6 @@ export default function DataReviewPage() {
                     ) :
                     activeTopTab === '1099-rs'    ? img1099R :
                     activeTopTab === '1099-necs'  ? img1099Nec :
-                    activeTopTab === 'w2s'        ? w2TechCircle :
                     w2TechCircle
                   }
                   alt={
