@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Close, Plus, ChevronDown, ChevronRight, CircleCheck, Panel } from '@design-systems/icons'
+import { Close, Plus, ChevronDown, ChevronRight, CircleCheck } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import intuitAssistIcon from '../../assets/icons/intuit-assist.svg'
@@ -642,11 +642,6 @@ export default function AgentReportPane({
                           {signOff && <span className={styles.findingSignOff}>{signOff.by} · {signOff.at}</span>}
                           <p className={styles.findingBody}>{issue.summary}</p>
                           <div className={styles.findingActions} onClick={e => e.stopPropagation()}>
-                            <Tooltip text={`Open the source document for: ${issue.title}`}>
-                              <Button priority="secondary" size="small" onClick={() => onNavigateToTab?.(issue.viewSourceTab, issue.viewSourceSubTab, issue.viewSourceField)}>
-                                <Panel size="small" /> View source
-                              </Button>
-                            </Tooltip>
                             <Tooltip text="See the root cause, tax impact, and suggested next steps for this finding">
                               <Button priority="primary" size="small" onClick={() => openDetail(key)}>See details <ChevronRight size="small" /></Button>
                             </Tooltip>
