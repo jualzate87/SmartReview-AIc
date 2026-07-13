@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { CircleCheck, Comment } from '@design-systems/icons'
 import Tooltip from './Tooltip'
 import styles from '../../styles/data-review/DetailFields.module.css'
+import { getBox12SubRowKeys, isBox12FlagResolved } from './phase1FieldSync'
 
 function CheckIcon({ size = 14 }: { size?: number }) {
   return (
@@ -160,6 +161,16 @@ export default function DetailFields({
     setOriginalValue('')
   }
 
+  const box12Resolved = isBox12FlagResolved(reviewedFields ?? new Map(), activeSubTab)
+
+  /** Mark a Box 12 sub-row reviewed and sync the Phase 1 `box12` flag when all rows are done. */
+  const markBox12RowReviewed = (rowKey: string) => {
+    onMarkReviewed?.(rowKey)
+    const subRows = getBox12SubRowKeys(activeSubTab)
+    const allReviewed = subRows.every(k => k === rowKey || reviewedFields?.has(k))
+    if (allReviewed) onMarkReviewed?.('box12')
+  }
+
   // Renders label text with an orange dot when the field is flagged by an AI issue
   const FlaggedLabel = ({ fieldKey, children }: { fieldKey: string; children: string }) => {
     const issue = flaggedFields[fieldKey]
@@ -177,9 +188,12 @@ export default function DetailFields({
   const ValidationNote = ({ fieldKey }: { fieldKey: string }) => {
     const issue = flaggedFields[fieldKey]
     if (!issue) return null
-    // Use the correct reviewed key — wages uses `wages-${activeSubTab}`, box12 uses 'box12'
+    // Use the correct reviewed key — wages uses `wages-${activeSubTab}`, box12 aggregates sub-rows
     const reviewedKey = fieldKey === 'wages' ? `wages-${activeSubTab}` : fieldKey
-    const isReviewed = reviewedFields?.has(reviewedKey)
+    const isReviewed = fieldKey === 'box12'
+      ? box12Resolved
+      : reviewedFields?.has(reviewedKey)
+    if (isReviewed) return null
     return (
       <div className={styles.validationNote} style={isReviewed ? { color: '#1a6b35', borderBottomColor: '#e8edf0' } : {}}>
         {isReviewed ? (
@@ -339,7 +353,7 @@ export default function DetailFields({
         {savedField === key && <span className={styles.recalcBadge}>Saved</span>}
         {editedFields.has(key) && savedField !== key && <span className={styles.editedBadge}>Edited</span>}
       </div>
-      {flaggedFields[fieldKey] && (
+      {flaggedFields[fieldKey] && !isReviewed && (
         <div className={styles.validationNote} style={isReviewed ? { color: '#1a6b35', borderBottomColor: '#e8edf0' } : {}}>
           {isReviewed ? (
             <CircleCheck size="small" style={{ flexShrink: 0 }} />
@@ -373,8 +387,9 @@ export default function DetailFields({
               onClick={() => {
                 onVerifyDoc?.(activeSubTab)
                 const fieldKeys = [
-                  `wages-${activeSubTab}`, 'withholding', 'box12',
-                  `box12a-${activeSubTab}`, `box12b-${activeSubTab}`, `box12c-${activeSubTab}`, `box12d-${activeSubTab}`,
+                  `ssn-${activeSubTab}`, `wages-${activeSubTab}`, `sswages-${activeSubTab}`,
+                  'withholding', 'box12',
+                  ...getBox12SubRowKeys(activeSubTab),
                   `ein-${activeSubTab}`, `employerName-${activeSubTab}`,
                   `street-${activeSubTab}`, `cityStateZip-${activeSubTab}`,
                   `sswages-${activeSubTab}`, `sstax-${activeSubTab}`,
@@ -383,7 +398,6 @@ export default function DetailFields({
                   `dependentcare-${activeSubTab}`, `nonqualified-${activeSubTab}`,
                 ]
                 fieldKeys.forEach(k => onMarkReviewed?.(k))
-                onMarkReviewed?.('wages')
               }}
             >Mark as verified</button>
           )}
@@ -491,7 +505,7 @@ export default function DetailFields({
             {/* Box 12 column headers */}
             <div style={{ display: 'flex', alignItems: 'center', padding: '4px 20px 2px', borderBottom: '1px solid #e8edf0', gap: 8 }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: 4, width: 32, flexShrink: 0 }}>
-                {flaggedFields['box12'] && !reviewedFields?.has('box12') && <span className={styles.issueIndicator} />}
+                {flaggedFields['box12'] && !box12Resolved && <span className={styles.issueIndicator} />}
               </span>
               <span style={{ fontFamily: 'var(--font-family-component)', fontSize: 13, fontWeight: 500, color: '#21262a', flex: '0 0 auto' }}>(12) Box 12 — Codes</span>
               <span style={{ flex: 1 }} />
@@ -503,7 +517,7 @@ export default function DetailFields({
               const codeKey = `box12${entry.sub}-code-${activeSubTab}`
               const amtKey = `box12${entry.sub}-amt-${activeSubTab}`
               const rowKey = `box12${entry.sub}-${activeSubTab}`
-              const isFlagged = !!(flaggedFields['box12'] && !reviewedFields?.has('box12'))
+              const isFlagged = !!(flaggedFields['box12'] && !box12Resolved)
               const isEditingAmt = editingField === amtKey
               const isRowReviewed = reviewedFields?.has(rowKey)
               const codeVal = staticValues[codeKey] ?? entry.code
@@ -525,7 +539,7 @@ export default function DetailFields({
                   setSavedField(amtKey)
                   setTimeout(() => setSavedField(null), 3500)
                 }
-                onMarkReviewed?.(rowKey)
+                markBox12RowReviewed(rowKey)
               }
               return (
                 <div key={entry.sub}>
@@ -571,11 +585,11 @@ export default function DetailFields({
                       </div>
                     ) : isRowReviewed ? (
                       <Tooltip text="Click to unmark" placement="top">
-                        <button className={styles.reviewedBadge} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'inline-flex', alignItems: 'center' }} onClick={e => { e.stopPropagation(); onMarkReviewed?.(rowKey) }}><CircleCheck size="small" /></button>
+                        <button className={styles.reviewedBadge} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'inline-flex', alignItems: 'center' }} onClick={e => { e.stopPropagation(); markBox12RowReviewed(rowKey) }}><CircleCheck size="small" /></button>
                       </Tooltip>
                     ) : (
                       <div className={styles.fieldActions}>
-                        <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.(rowKey) }}><CircleCheck size="small" /></button></Tooltip>
+                        <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); markBox12RowReviewed(rowKey) }}><CircleCheck size="small" /></button></Tooltip>
                         {renderCommentBtn(rowKey, `(12${entry.sub}) Box 12 code`, employer.name)}
                       </div>
                     )}

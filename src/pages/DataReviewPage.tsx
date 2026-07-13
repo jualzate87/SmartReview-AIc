@@ -45,6 +45,8 @@ import {
   field1040ToDetail,
   get1040HighlightField,
   getNextVerifyItem,
+  getTabFlagCounts,
+  isPhase1FlagResolved,
   navigationForDetailField,
 } from './data-review/phase1FieldSync'
 import { GUIDED_ORDER, TOTAL_REVIEW_ITEMS } from './data-review/AgentReportPane'
@@ -132,19 +134,12 @@ export default function DataReviewPage() {
   // The import/OCR flags owned by Phase 1. Each key matches the reviewed-field key
   // emitted by the DetailFields "Edit+Save" / "Mark as correct" controls.
   const phase1Total = PHASE1_FLAG_KEYS.length
-  const phase1Resolved = PHASE1_FLAG_KEYS.filter(k => reviewedFields.has(k)).length
+  const phase1Resolved = PHASE1_FLAG_KEYS.filter(k => isPhase1FlagResolved(k, reviewedFields)).length
   // Counter of unresolved import flags — never below 0
   const phase1Remaining = countPhase1Remaining(reviewedFields)
   const phase1Complete = phase1Remaining === 0
   // Per-document unresolved counts for dynamic tab badges
-  const tabFlagCounts: Record<string, number> = {
-    w2s:          ['ssn-techCircle', 'wages-techCircle', 'sswages-techCircle', 'box12', 'ein-techCircle'].filter(k => !reviewedFields.has(k)).length,
-    '1099-divs':  ['qualifiedDivs', 'divCollectibles', 'divNonDiv', 'fedTaxWithheld'].filter(k => !reviewedFields.has(k)).length,
-    '1099-ints':  ['taxableInterest'].filter(k => !reviewedFields.has(k)).length,
-    '1099-rs':    0,
-    '1099-necs':  0,
-    'prior-1040': 0,
-  }
+  const tabFlagCounts = getTabFlagCounts(reviewedFields)
   // PeelTab per-payer badges — unresolved Phase 1 import flags only (mirrors tabFlagCounts)
   const divPayerFieldCounts: Record<DivPayer, number> = Object.fromEntries(
     DIV_PAYER_TABS.map(({ key: p }) => [p, countPhase1FlagsForDivPayer(p, reviewedFields)])

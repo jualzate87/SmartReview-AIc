@@ -76,12 +76,38 @@ export function get1040HighlightField(selectedField: string | null): string | nu
   return detailTo1040Field(selectedField) ?? selectedField
 }
 
+/** Box 12 sub-row reviewed keys for Tech Circle (multi-code W-2 layout). */
+export function getBox12SubRowKeys(employer: W2Employer): string[] {
+  if (employer === 'techCircle') {
+    return ['box12a-techCircle', 'box12b-techCircle', 'box12c-techCircle', 'box12d-techCircle']
+  }
+  return []
+}
+
+/** True when the single Phase 1 `box12` flag is cleared — directly or via all sub-rows. */
+export function isBox12FlagResolved(
+  reviewedFields: Map<string, unknown>,
+  employer: W2Employer = 'techCircle',
+): boolean {
+  if (reviewedFields.has('box12')) return true
+  const subRows = getBox12SubRowKeys(employer)
+  return subRows.length > 0 && subRows.every(k => reviewedFields.has(k))
+}
+
+export function isPhase1FlagResolved(
+  flagKey: Phase1FlagKey,
+  reviewedFields: Map<string, unknown>,
+): boolean {
+  if (flagKey === 'box12') return isBox12FlagResolved(reviewedFields)
+  return reviewedFields.has(flagKey)
+}
+
 export function countPhase1Remaining(reviewedFields: Map<string, unknown>): number {
-  return PHASE1_FLAG_KEYS.filter(k => !reviewedFields.has(k)).length
+  return PHASE1_FLAG_KEYS.filter(k => !isPhase1FlagResolved(k, reviewedFields)).length
 }
 
 export function getUnresolvedVerifyQueue(reviewedFields: Map<string, unknown>): Phase1VerifyItem[] {
-  return PHASE1_VERIFY_QUEUE.filter(q => !reviewedFields.has(q.flagKey))
+  return PHASE1_VERIFY_QUEUE.filter(q => !isPhase1FlagResolved(q.flagKey, reviewedFields))
 }
 
 export function getNextVerifyItem(
@@ -125,7 +151,35 @@ export function countPhase1FlagsForW2Payer(
   employer: W2Employer,
   reviewedFields: Map<string, unknown>,
 ): number {
-  return W2_PAYER_FLAG_KEYS[employer].filter(k => !reviewedFields.has(k)).length
+  return W2_PAYER_FLAG_KEYS[employer].filter(k => !isPhase1FlagResolved(k, reviewedFields)).length
+}
+
+/** Unresolved W-2 Phase 1 flags across all payers — used for the W-2s top tab badge. */
+export function countPhase1FlagsForW2Tab(reviewedFields: Map<string, unknown>): number {
+  return (Object.keys(W2_PAYER_FLAG_KEYS) as W2Employer[]).reduce(
+    (sum, employer) => sum + countPhase1FlagsForW2Payer(employer, reviewedFields),
+    0,
+  )
+}
+
+/** Single source of truth for ReviewTab badge counts during Phase 1. */
+export function getTabFlagCounts(reviewedFields: Map<string, unknown>): Record<string, number> {
+  const divCount = (Object.keys(DIV_PAYER_FLAG_KEYS) as DivPayer[]).reduce(
+    (sum, payer) => sum + countPhase1FlagsForDivPayer(payer, reviewedFields),
+    0,
+  )
+  const intCount = (Object.keys(INT_PAYER_FLAG_KEYS) as IntPayer[]).reduce(
+    (sum, payer) => sum + countPhase1FlagsForIntPayer(payer, reviewedFields),
+    0,
+  )
+  return {
+    w2s: countPhase1FlagsForW2Tab(reviewedFields),
+    '1099-divs': divCount,
+    '1099-ints': intCount,
+    '1099-rs': 0,
+    '1099-necs': 0,
+    'prior-1040': 0,
+  }
 }
 
 export function countPhase1FlagsForDivPayer(

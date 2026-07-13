@@ -7,6 +7,7 @@ import {
   countPhase1FlagsForDivPayer,
   countPhase1FlagsForIntPayer,
   countPhase1FlagsForW2Payer,
+  getTabFlagCounts,
   getNextVerifyItem,
   navigationForDetailField,
 } from './data-review/phase1FieldSync'
@@ -86,14 +87,7 @@ export default function DataReviewPopout() {
     applyVerifyNavigation(next.field)
   }, [reviewedFields, selectedField, applyVerifyNavigation])
 
-  const tabFlagCounts: Record<string, number> = {
-    w2s:          ['ssn-techCircle', 'wages-techCircle', 'sswages-techCircle', 'box12', 'ein-techCircle'].filter(k => !reviewedFields.has(k)).length,
-    '1099-divs':  ['qualifiedDivs', 'divCollectibles', 'divNonDiv', 'fedTaxWithheld'].filter(k => !reviewedFields.has(k)).length,
-    '1099-ints':  ['taxableInterest'].filter(k => !reviewedFields.has(k)).length,
-    '1099-rs':    0,
-    '1099-necs':  0,
-    'prior-1040': 0,
-  }
+  const tabFlagCounts = getTabFlagCounts(reviewedFields)
   const divPayerFieldCounts: Record<DivPayer, number> = Object.fromEntries(
     DIV_PAYER_TABS.map(({ key: p }) => [p, countPhase1FlagsForDivPayer(p, reviewedFields)])
   ) as Record<DivPayer, number>
