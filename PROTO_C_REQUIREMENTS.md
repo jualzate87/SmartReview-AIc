@@ -118,24 +118,27 @@ CPA reviews compliance issues, YoY anomalies, and planning opportunities — now
 ### What appears here (NOT in Phase 1)
 
 **Critical — blocks filing:**
-- Estimated tax penalty ($3,814 — line 38)
-- AMT exposure at this income level
-- Prior-year AGI not on file
+- Balance due jump (line 37 YoY)
+- Total tax rise (line 24 YoY)
+- Federal withholding below safe harbor
+- Estimated tax penalty — Form 2210
 
 **Review Required:**
-- Capital gains with no withholding
-- CA state filing likely required
-- No estimated tax payments recorded
-- New capital gain this year (YoY)
+- Qualified dividend classification (line 3a vs source Box 1b)
+- Ordinary dividend surge (line 3b YoY)
+- Qualified dividend ratio drop
+- Confirm prior-year AGI matches imported 1040
+- No estimated tax payments recorded (line 26)
+- Net investment income tax — Form 8960 (NIIT)
 
 **Opportunities:**
-- W-4 adjustment recommended
-- QBI deduction — verify eligibility
-- No IRA contribution found
+- Plan 2026 estimated payments (1040-ES)
+- IRA deduction — confirm workplace plan coverage (W-2 Box 13)
 
 **Do NOT show in Phase 2:**
 - Import/OCR confidence flags — those are done
 - Anything already resolved in Phase 1
+- **State return / state filing diagnostics** — Jessica Drake is Austin TX; federal only per Loop 2 BuildSpec
 
 ### Layout
 
@@ -155,14 +158,13 @@ This was a major pain point for Al-Nesha. Fix the destinations:
 
 | Diagnostic | Correct destination |
 |---|---|
-| Estimated tax penalty | Estimated payments input screen |
-| AMT exposure | Form 6251 inputs |
-| Prior-year AGI | Prior year 1040 (this is the ONE case where it's correct) |
-| Capital gains / withholding | Schedule D / withholding summary |
-| CA state filing | State return setup screen |
-| W-4 adjustment | Withholding summary / advisory note |
-| QBI deduction | QBI input screen |
-| IRA contribution | IRA contribution input screen |
+| Estimated tax penalty (Form 2210) | Form 1040 — total payments / line 26 |
+| NIIT (Form 8960) | Form 1040 — total income / investment lines |
+| Prior-year AGI | Prior year 1040 tab |
+| Withholding / dividends | 1099-DIV or W-2 source doc |
+| Missing estimated payments | Form 1040 — line 26 |
+| W-4 / 1040-ES planning | W-2 source doc |
+| IRA deduction | W-2 Box 13 |
 
 ### Navigation
 
