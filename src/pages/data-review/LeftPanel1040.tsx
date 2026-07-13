@@ -287,34 +287,39 @@ export default function LeftPanel1040({
     setCommentField(null); setCommentDraft(''); setCommentAnchor(null)
   }
 
+  /** Anchor popover to the Amount cell of a form row. */
+  const openPopoverForRow = (field: string, rowEl: HTMLElement) => {
+    const cells = rowEl.querySelectorAll('td')
+    const valueCell = cells[cells.length - 1] as HTMLElement | undefined
+    const anchor = valueCell ?? rowEl
+    setPopoverRect(anchor.getBoundingClientRect())
+    setPopoverField(field)
+  }
+
   const handleRowClick = (field: string, e: React.MouseEvent<HTMLTableRowElement>) => {
     // If the field is the active issue field, just toggle selection (orange mode)
     if (field === issueField) {
       onFieldClick?.(activeHighlight === field ? null : field)
       setPopoverField(null)
+      setPopoverRect(null)
       return
     }
 
-    // Toggle: clicking the same field closes the popover
-    if (field === activeHighlight) {
+    // Same field + popover already open → toggle closed
+    if (field === activeHighlight && popoverField === field) {
       onFieldClick?.(null)
       setPopoverField(null)
+      setPopoverRect(null)
       return
     }
 
-    // New field clicked — open blue popover if it has metadata or origin
+    // New field, OR selected (e.g. from detail nav) without a popover → open it
     onFieldClick?.(field)
     if (fieldHasPopover(field)) {
-      // Get the rect of the value cell (last td in the row)
-      const row = e.currentTarget
-      const cells = row.querySelectorAll('td')
-      const valueCell = cells[cells.length - 1]
-      if (valueCell) {
-        setPopoverRect(valueCell.getBoundingClientRect())
-        setPopoverField(field)
-      }
+      openPopoverForRow(field, e.currentTarget)
     } else {
       setPopoverField(null)
+      setPopoverRect(null)
     }
   }
 
@@ -425,6 +430,11 @@ export default function LeftPanel1040({
     return (
       <tr
         className={rowCls}
+        data-field-row={field || undefined}
+        onMouseDown={clickable ? (e) => {
+          // Keep FieldPopover's document mousedown-outside from stealing 1040 row clicks
+          e.stopPropagation()
+        } : undefined}
         onClick={clickable ? (e) => handleRowClick(field!, e) : undefined}
         onMouseEnter={field ? () => setHoveredField(field) : undefined}
         onMouseLeave={field ? () => setHoveredField(null) : undefined}
@@ -689,12 +699,19 @@ export default function LeftPanel1040({
                         <div
                           key={row.line}
                           className={subRowCls}
-                          onClick={clickable ? () => {
-                            if (activeHighlight === row.field) {
+                          data-field-row={row.field || undefined}
+                          onMouseDown={clickable ? (e) => e.stopPropagation() : undefined}
+                          onClick={clickable ? (e) => {
+                            if (activeHighlight === row.field && popoverField === row.field) {
                               onFieldClick?.(null)
                               setPopoverField(null); setPopoverRect(null)
                             } else {
                               onFieldClick?.(row.field!)
+                              if (hasPopover) {
+                                const el = (e.currentTarget as HTMLElement).querySelector(`.${styles.summaryCurrValText}`) as HTMLElement | null
+                                setPopoverRect((el ?? e.currentTarget).getBoundingClientRect())
+                                setPopoverField(row.field!)
+                              }
                             }
                           } : undefined}
                           onMouseEnter={row.field ? () => setHoveredField(row.field!) : undefined}

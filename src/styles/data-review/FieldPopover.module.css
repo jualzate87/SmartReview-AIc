@@ -10,12 +10,8 @@
   pointer-events: none;
 }
 
-/* The popover card itself */
+/* The popover card itself — positioned fixed via portal to document.body */
 .popover {
-  position: absolute;
-  left: calc(100% + 12px); /* 12px gap from anchor edge */
-  top: 50%;
-  transform: translateY(-50%);
   width: 300px;
   background: #ffffff;
   border: 2px solid #236cff;
@@ -180,6 +176,7 @@
 /* ── Sources section ── */
 .sourcesSection {
   padding: 8px 10px 10px;
+  border-bottom: 1px solid #e8edf2;
 }
 
 .sourcesSectionLabel {

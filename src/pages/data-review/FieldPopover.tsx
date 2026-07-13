@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Close, Panel } from '@design-systems/icons'
 import intuitAssistIcon from '../../assets/icons/intuit-assist.svg'
 import type { FieldOrigin, FieldOriginSource } from '../../data/fieldOrigins'
@@ -205,6 +206,9 @@ function badgeClass(pct: number): string {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
+const POPOVER_WIDTH = 300
+const VIEWPORT_PAD = 12
+
 export default function FieldPopover({
   fieldName,
   anchorRect,
@@ -216,13 +220,36 @@ export default function FieldPopover({
 }: FieldPopoverProps) {
   const meta = FIELD_META[fieldName]
   const ref = useRef<HTMLDivElement>(null)
+  const [coords, setCoords] = useState(() => ({
+    top: anchorRect.top + anchorRect.height / 2,
+    left: Math.min(anchorRect.right + 10, window.innerWidth - POPOVER_WIDTH - VIEWPORT_PAD),
+  }))
 
-  // Close on outside click
+  // Clamp popover fully on-screen after mount (height varies with Source/Calc/YoY)
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const h = el.getBoundingClientRect().height
+    let top = anchorRect.top + anchorRect.height / 2
+    // Prefer right of the cell; flip left if it would overflow the viewport
+    let left = anchorRect.right + 10
+    if (left + POPOVER_WIDTH > window.innerWidth - VIEWPORT_PAD) {
+      left = anchorRect.left - POPOVER_WIDTH - 10
+    }
+    left = Math.max(VIEWPORT_PAD, Math.min(left, window.innerWidth - POPOVER_WIDTH - VIEWPORT_PAD))
+    const half = h / 2
+    top = Math.max(VIEWPORT_PAD + half, Math.min(top, window.innerHeight - VIEWPORT_PAD - half))
+    setCoords({ top, left })
+  }, [anchorRect, fieldName, origin, liveCurrent])
+
+  // Close on outside click — ignore 1040/summary field rows (they manage open/close themselves)
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        onClose()
-      }
+      const target = e.target as Element | null
+      if (!target) return
+      if (ref.current?.contains(target)) return
+      if (target.closest?.('[data-field-row]')) return
+      onClose()
     }
     // Small delay so the click that opened the popover doesn't immediately close it
     const id = setTimeout(() => document.addEventListener('mousedown', handler), 80)
@@ -245,13 +272,12 @@ export default function FieldPopover({
   const diff = current - prior
   const pct  = prior !== 0 ? Math.round((diff / prior) * 100) : null
 
+  // Prefer live origin sources; fall back to FIELD_META.sources so Source never vanishes when YoY shows
   const sources = origin?.sources
   const calc = origin?.calc
   const note = origin?.note ?? meta?.note
-
-  // Position: right of the form doc, vertically centered on the anchor cell
-  const top  = anchorRect.top + anchorRect.height / 2
-  const left = anchorRect.right + 10
+  const hasOriginSources = !!(sources && sources.length > 0)
+  const legacySources = !hasOriginSources ? meta?.sources : undefined
 
   const handleSourceClick = (s: FieldOriginSource) => {
     if (onNavigateSource) {
@@ -261,16 +287,17 @@ export default function FieldPopover({
     onViewSource?.(fieldName, s.label)
   }
 
-  return (
+  return createPortal(
     <div
       ref={ref}
       className={styles.popover}
       style={{
         position: 'fixed',
-        top,
-        left,
+        top: coords.top,
+        left: coords.left,
         transform: 'translateY(-50%)',
-        zIndex: 200,
+        zIndex: 10000,
+        width: POPOVER_WIDTH,
       }}
       role="dialog"
       aria-label={`${label} details`}
@@ -285,10 +312,10 @@ export default function FieldPopover({
       </div>
 
       {/* Source documents — preferred when origin has sources */}
-      {sources && sources.length > 0 && (
+      {hasOriginSources && (
         <div className={styles.sourcesSection}>
           <div className={styles.sourcesSectionLabel}>Source documents</div>
-          {sources.map(s => (
+          {sources!.map(s => (
             <button
               key={`${s.docId}-${s.detailFieldId}`}
               type="button"
@@ -341,10 +368,10 @@ export default function FieldPopover({
       )}
 
       {/* Legacy sources fallback when no origin.sources */}
-      {(!sources || sources.length === 0) && meta?.sources && meta.sources.length > 0 && (
+      {legacySources && legacySources.length > 0 && (
         <div className={styles.sourcesSection}>
-          <div className={styles.sourcesSectionLabel}>Sources</div>
-          {meta.sources.map(s => (
+          <div className={styles.sourcesSectionLabel}>Source documents</div>
+          {legacySources.map(s => (
             <div key={s.label} className={styles.sourceRow}>
               <button className={styles.sourceLink} onClick={() => onViewSource?.(fieldName, s.label)}>
                 {s.label}
@@ -390,6 +417,7 @@ export default function FieldPopover({
           </div>
         </div>
       )}
-    </div>
+    </div>,
+    document.body,
   )
 }
