@@ -67,7 +67,7 @@ const FORM_DATA: Record<DivPayer, {
 }> = {
   tokenFinancial: {
     box1a_totalOrdinary:     '331,250', // Box 1a — Total ordinary dividends
-    box1b_qualifiedDivs:     '187,500', // Box 1b — Qualified dividends
+    box1b_qualifiedDivs:     '331,250', // Box 1b — Return value (source $187,500; silent error 6)
     box2a_totalCapGain:      '',       // Box 2a — Total capital gain distr.
     box2b_unrecap1250:       '',       // Box 2b — Unrecap. Sec. 1250 gain
     box2c_sec1202:           '',       // Box 2c — Section 1202 gain

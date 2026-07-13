@@ -27,7 +27,7 @@ interface YoYDetailPaneProps {
 
 const TABLE_ROWS = [
   { label: 'Tech Circle (line 1a)', y2025: '$118,940', y2024: '$136,480', diff: '-$17,540', pct: '-13%', badge: 'orange' as const, total: false },
-  { label: 'W-2 withholding (line 25a)', y2025: '$0', y2024: '$22,360', diff: '-$22,360', pct: '-100%', badge: 'red' as const, total: false },
+  { label: 'W-2 withholding (line 25a)', y2025: '$15,840', y2024: '$22,360', diff: '-$6,520', pct: '-29%', badge: 'orange' as const, total: false },
   { label: 'Wages total',             y2025: '$118,940', y2024: '$136,480', diff: '-$17,540', pct: '-13%', badge: 'orange' as const, total: true  },
 ]
 
@@ -36,7 +36,7 @@ const FINDING_FIELD = 'wages'
 
 // Client Q&A for the wages YoY finding
 const WAGES_QA = {
-  question: 'Your W-2 wages dropped to $118,940 this year from $136,480 last year (-13%). Federal withholding on the W-2 went from $22,360 to $0. Can you confirm your Tech Circle pay and why Box 2 is blank?',
+  question: 'Your W-2 wages dropped to $118,940 this year from $136,480 last year (-13%). Federal withholding on the W-2 went from $22,360 to $15,840. Can you confirm your Tech Circle pay and whether your W-4 changed?',
   answer: 'Yes. I had a compensation adjustment at Tech Circle this year. I\'m not sure why withholding stopped. I didn\'t file a new W-4 claiming exempt. I\'ve uploaded the W-2.',
   date: 'Mar 15, 2025',
 }
@@ -111,7 +111,7 @@ export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSourc
                 W-2 wages down 13% year over year
               </span>
             </div>
-            <p className={styles.summary}>Tech Circle wages fell $17,540 (-13%) from $136,480 in 2024 to $118,940 in 2025. Federal W-2 withholding also dropped from $22,360 to $0. Box 2 is blank on the imported W-2 even though line 1a shows $118,940 in wages.</p>
+            <p className={styles.summary}>Tech Circle wages fell $17,540 (-13%) from $136,480 in 2024 to $118,940 in 2025. Federal W-2 withholding dropped from $22,360 to $15,840 on Box 2, in line with the lower wages.</p>
           </div>
 
           {/* Root cause */}
@@ -175,7 +175,7 @@ export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSourc
             <p className={styles.sectionTitle}>Suggested action</p>
             <ul className={styles.actionList}>
               <li>Confirm Tech Circle W-2 Box 1 shows $118,940 and matches line 1a (last year was $136,480).</li>
-              <li>Find out why W-2 Box 2 federal withholding is $0. Last year it was $22,360. Blank Box 2 with wages present is a red flag.</li>
+              <li>Confirm W-2 Box 2 federal withholding is $15,840 (last year was $22,360) and matches line 25a.</li>
               <li>Ask Jessica if she filed a new W-4 or claimed exempt. If not, request corrected withholding for 2026.</li>
             </ul>
           </div>

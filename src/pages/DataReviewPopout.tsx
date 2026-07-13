@@ -52,8 +52,7 @@ export default function DataReviewPopout() {
     toggleVerifiedDoc,
   } = useSyncedReviewState()
 
-  // W-2 Box 2 is blank for Tech Circle — all federal withholding on this return
-  // comes from the 1099-DIV (Box 4, Token Financial), which flows to 1040 line 25b.
+  // W-2 Box 2 is $15,840 (Tech Circle); 1099-DIV Box 4 ($24,925) flows to line 25b.
   const DIV_WITHHOLDING = FROZEN_RETURN.divWithholding
   const totalWithholding = fieldValues.withholding.techCircle + DIV_WITHHOLDING
   const updateField = (key: keyof typeof fieldValues, value: number | { techCircle: number }) =>

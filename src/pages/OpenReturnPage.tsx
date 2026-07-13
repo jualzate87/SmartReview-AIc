@@ -458,7 +458,7 @@ export default function OpenReturnPage() {
                   <>
                     <div className={styles.checklistTabs}>
                       <span className={`${styles.checklistTab} ${styles.checklistTabActive}`}>
-                        Needed <span className={styles.tabBadge}>5</span>
+                        Needed <span className={styles.tabBadge}>{CHECKLIST_ITEMS.length}</span>
                       </span>
                     </div>
                     <div className={styles.checklistBody}>
