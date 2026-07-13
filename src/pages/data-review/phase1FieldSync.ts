@@ -10,7 +10,6 @@ export const PHASE1_FLAG_KEYS = [
   'sswages-techCircle',
   'box12',
   'ein-techCircle',
-  'qualifiedDivs',
   'divCollectibles',
   'divNonDiv',
   'fedTaxWithheld',
@@ -35,7 +34,6 @@ export const PHASE1_VERIFY_QUEUE: Phase1VerifyItem[] = [
   { flagKey: 'sswages-techCircle',  field: 'sswages',         tab: 'w2s' },
   { flagKey: 'box12',               field: 'box12',           tab: 'w2s' },
   { flagKey: 'ein-techCircle',      field: 'ein',             tab: 'w2s' },
-  { flagKey: 'qualifiedDivs',       field: 'qualifiedDivs',   tab: '1099-divs', divPayer: 'tokenFinancial' },
   { flagKey: 'divCollectibles',     field: 'divCollectibles', tab: '1099-divs', divPayer: 'tokenFinancial' },
   { flagKey: 'divNonDiv',           field: 'divNonDiv',       tab: '1099-divs', divPayer: 'tokenFinancial' },
   { flagKey: 'fedTaxWithheld',      field: 'fedTaxWithheld',  tab: '1099-divs', divPayer: 'tokenFinancial' },
@@ -135,7 +133,7 @@ const W2_PAYER_FLAG_KEYS: Record<W2Employer, Phase1FlagKey[]> = {
 
 /** Phase 1 import flags per 1099-DIV payer — only primary payer carries flags. */
 const DIV_PAYER_FLAG_KEYS: Record<DivPayer, Phase1FlagKey[]> = {
-  tokenFinancial: ['qualifiedDivs', 'divCollectibles', 'divNonDiv', 'fedTaxWithheld'],
+  tokenFinancial: ['divCollectibles', 'divNonDiv', 'fedTaxWithheld'],
   northmarkIndex: [],
   beaconDividend: [],
 }

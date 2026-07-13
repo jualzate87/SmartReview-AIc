@@ -39,9 +39,9 @@ const RECIPIENT_DATA = {
 
 const FORM_DATA = {
   box1_grossDistrib:    '150,000', // Box 1 — Gross distribution
-  box2a_taxableAmt:     '100,000', // Box 2a — Taxable amount
+  box2a_taxableAmt:     '150,000', // Box 2a — Taxable amount (source; return understates at $100,000)
   box3_capitalGain:     '',        // Box 3 — Capital gain (in box 2a)
-  box4_fedTaxWithheld:  '',        // Box 4 — Federal income tax withheld
+  box4_fedTaxWithheld:  '30,000',  // Box 4 — Federal income tax withheld (source; omitted on return)
   box5_employeeContrib: '',        // Box 5 — Employee contributions
   box7_distCode:        '7',       // Box 7 — Distribution code(s)
 }

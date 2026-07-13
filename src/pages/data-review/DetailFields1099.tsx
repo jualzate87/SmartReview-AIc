@@ -71,7 +71,7 @@ const FORM_DATA: Record<IntPayer, {
   unwaverIngFinancial: {
     box1_interest:        '1,986',   // Box 1 — Interest income
     box2_earlyPenalty:    '',        // Box 2 — Early withdrawal penalty
-    box3_usBonds:         '',        // Box 3 — Interest on U.S. Savings Bonds & T-bills
+    box3_usBonds:         '1,500',   // Box 3 — Interest on U.S. Savings Bonds & T-bills (planted silent error)
     box4_fedTaxWithheld:  '',        // Box 4 — Federal income tax withheld
     box5_investExpenses:  '',        // Box 5 — Investment expenses
     box6_foreignTax:      '',        // Box 6 — Foreign tax paid

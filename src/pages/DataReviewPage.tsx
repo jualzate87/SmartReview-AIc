@@ -19,6 +19,7 @@ import intuitAssistIcon from '../assets/icons/intuit-assist.svg'
 import LeftPanel1040 from './data-review/LeftPanel1040'
 import ReviewTab from './data-review/ReviewTab'
 import DocumentPreview from './data-review/DocumentPreview'
+import SourcePanelLoader from './data-review/SourcePanelLoader'
 import DetailFields, { W2_PAYER_TABS } from './data-review/DetailFields'
 import type { W2Employer } from './data-review/DetailFields'
 import DetailFields1099, { INT_PAYER_TABS } from './data-review/DetailFields1099'
@@ -95,7 +96,7 @@ export default function DataReviewPage() {
   // Agent panel width in px when open (default 588px, user-resizable)
   const [agentPanelWidth, setAgentPanelWidth] = useState(588)
   // Right panel width in px (default 700px, user-resizable)
-  const [rightPanelWidth, setRightPanelWidth] = useState(700)
+  const [rightPanelWidth, setRightPanelWidth] = useState(920)
   // Top/bottom section height ratio in right panel (0-100, where value = preview percentage)
   const [previewHeight, setPreviewHeight] = useState(40)
   // Whether right panel is popped out
@@ -227,6 +228,8 @@ export default function DataReviewPage() {
   }, [applyVerifyNavigation, setSelectedField])
 
   const highlightField1040 = get1040HighlightField(selectedField)
+
+  const sourcePanelLoadKey = `${activeTopTab}-${activeSubTab}-${activeDivPayer}-${activeIntPayer}-${rightPanelVisible}`
 
   // Reset field selection on mount
   useEffect(() => {
@@ -664,7 +667,7 @@ export default function DataReviewPage() {
                       const popoutWindow = window.open(
                         `${window.location.origin}${window.location.pathname}#/data-review-popout`,
                         '_blank',
-                        'width=800,height=900'
+                        'width=950,height=900'
                       )
                       if (popoutWindow) {
                         const checkClosed = setInterval(() => {
@@ -734,10 +737,10 @@ export default function DataReviewPage() {
               {/* Document preview (left) + detail fields (right) — same side-by-side
                  layout as the pop-out window, so docking back and forth doesn't
                  reflow the content the CPA is looking at. */}
-              <div style={{ display: 'flex', flexDirection: show1040 ? 'column' : 'row', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+              <SourcePanelLoader loadKey={sourcePanelLoadKey} layout={show1040 ? 'column' : 'row'}>
               <div style={show1040
-                ? { height: `${previewHeight}%`, flexShrink: 0, overflow: 'hidden', borderBottom: '1px solid #D5DEE3' }
-                : { width: `${previewHeight}%`, flexShrink: 0, overflow: 'hidden', borderRight: '1px solid #D5DEE3' }
+                ? { height: `${previewHeight}%`, flexShrink: 0, overflow: 'hidden', borderBottom: '1px solid #D5DEE3', display: 'flex', flexDirection: 'column', minHeight: 0 }
+                : { width: `${previewHeight}%`, flexShrink: 0, overflow: 'hidden', borderRight: '1px solid #D5DEE3', display: 'flex', flexDirection: 'column', minHeight: 0 }
               }>
                 <DocumentPreview
                   imageSrc={
@@ -801,20 +804,20 @@ export default function DataReviewPage() {
                   onVerifyDoc={toggleVerifiedDoc}
                   flaggedFields={{
                     ssn: 'Employee SSN not imported — required for e-filing. Enter manually.',
-                    wages: 'Low confidence (72%) — wages may be misread. Verify Box 1 against source W-2.',
-                    sswages: 'Medium confidence (82%) — social security wages differ from Box 1 wages. Verify Box 3 against source W-2.',
+                    wages: 'Low confidence (72%): wages may be misread. Source W-2 Box 1 shows $148,940 but return has $118,940.',
+                    sswages: 'Medium confidence (82%): social security wages differ from Box 1. Source W-2 shows $148,940 in Box 3 vs. $118,940 on the return.',
                     box12: 'Box 12 not imported — enter code and amount manually from source W-2.',
                     ein:   'Employer EIN not found in document — required for e-filing. Enter manually.',
                   }}
                 />
               )}
-              {activeTopTab === '1099-divs' && <DetailFieldsDiv activePayer={activeDivPayer} selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={handleFieldSelect} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} verifiedDocs={verifiedDocs} onVerifyDoc={toggleVerifiedDoc} flaggedFields={{ qualifiedDivs: 'Large dividend amount — $331,250 ordinary dividends. Verify Box 1a and 1b against source document.', divCollectibles: 'Collectibles (28%) gain not imported — review source document and enter if applicable.', divNonDiv: 'Nondividend distributions not imported — review source document and enter if applicable.', fedTaxWithheld: 'Low confidence (68%) — federal withholding may be misread. Verify Box 4 against source 1099-DIV.' }} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
+              {activeTopTab === '1099-divs' && <DetailFieldsDiv activePayer={activeDivPayer} selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={handleFieldSelect} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} verifiedDocs={verifiedDocs} onVerifyDoc={toggleVerifiedDoc} flaggedFields={{ divCollectibles: 'Collectibles (28%) gain not imported. Review source document and enter if applicable.', divNonDiv: 'Nondividend distributions not imported. Review source document and enter if applicable.', fedTaxWithheld: 'Low confidence (68%): federal withholding may be misread. Source shows $26,363 but return has $24,925. Verify Box 4 against source 1099-DIV.' }} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
               {activeTopTab === '1099-ints' && <DetailFields1099 activePayer={activeIntPayer} selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={handleFieldSelect} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} verifiedDocs={verifiedDocs} onVerifyDoc={toggleVerifiedDoc} flaggedFields={{ taxableInterest: 'Low confidence (72%) — interest income may be misread. Verify Box 1 against source 1099-INT.' }} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
               {activeTopTab === '1099-rs' && <DetailFields1099R selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={handleFieldSelect} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} verifiedDocs={verifiedDocs} onVerifyDoc={toggleVerifiedDoc} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
               {activeTopTab === '1099-necs' && <DetailFieldsNec selectedField={selectedField} onFieldSelect={handleFieldSelect} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} verifiedDocs={verifiedDocs} onVerifyDoc={toggleVerifiedDoc} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
               {activeTopTab === 'prior-1040' && <PriorYear1040Fields onMarkReviewed={handleMarkReviewed} reviewedFields={reviewedFields} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
               </div>
-              </div>
+              </SourcePanelLoader>
             </div>
 
             {/* Drag handle between left panel and agent panel — only when agent open */}

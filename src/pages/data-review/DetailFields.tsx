@@ -64,8 +64,8 @@ const EMPLOYER_DATA = {
     street: '321 Main Orchard Dr',
     city: 'Reno', state: 'NV', zip: '89501',
     federalTax: '',
-    socialSecurityWages: '118,940', ssTax: '7,374',
-    medicareWages: '118,940', medicareTax: '1,725',
+    socialSecurityWages: '148,940', ssTax: '7,374',
+    medicareWages: '148,940', medicareTax: '1,725',
     ssTips: '0', allocatedTips: '0',
     dependentCare: '0', nonqualified: '0',
     box12Code: '' as string, box12Amount: '' as string,
@@ -412,7 +412,7 @@ export default function DetailFields({
         </div>
 
         {renderStaticRow('ssn', '(a) Employee social security number', 'Not found')}
-        {renderStaticRow('ein', '(b) Employer identification number', employer.id || 'Not found')}
+        {renderStaticRow('ein', '(b) Employer identification number', activeSubTab === 'techCircle' ? 'Not found' : (employer.id || 'Not found'))}
         {renderStaticRow('employerName', '(c) Name of employer', employer.name, styles.fieldInputWide)}
         {renderStaticRow('street', 'Street address', employer.street, styles.fieldInputWide)}
         {renderStaticRow('cityStateZip', 'City / State / ZIP code', `${employer.city}, ${employer.state} ${employer.zip}`, styles.fieldInputWide)}

@@ -15,14 +15,22 @@ import styles from '../../styles/data-review/AgentReportPane.module.css'
 // ProtoC Phase 2 — AI diagnostics ONLY. Import/OCR flags (w2Box12, w2Ein,
 // wagesConfidence, divCollectibles, divNonDiv) are owned by Phase 1 and removed here,
 // so there is zero redundancy between the two phases.
-export const TOTAL_REVIEW_ITEMS = 7
+export const TOTAL_REVIEW_ITEMS = 12
 
-// Ordered list of issue keys for guided "Next" navigation (Phase 2 diagnostics only).
-// Exported so DataReviewPage can compute the Phase 2 banner's progress from the same
-// source of truth instead of duplicating the list. Ordered to match REPORT_CARDS
-// grouping (Critical, then Review required, then Opportunities) so each card's
-// "N of 7" badges read as a consecutive local sequence instead of jumping around.
-export const GUIDED_ORDER = ['balanceDue', 'verifyQualifiedDivs', 'missingPriorAgi', 'missingStateReturn', 'missingEstPayments', 'optW4Adjustment', 'optIra'] as const
+export const GUIDED_ORDER = [
+  'balanceDueJump',
+  'totalTaxRise',
+  'withholdingDrop',
+  'w2WithholdingZero',
+  'qualDivDrop',
+  'ordinaryDivSurge',
+  'qualDivRatio',
+  'confirmPriorAgi',
+  'missingStateReturn',
+  'missingEstPayments',
+  'optW4Adjustment',
+  'optIra',
+] as const
 type IssueKey = typeof GUIDED_ORDER[number]
 
 interface AgentReportPaneProps {
@@ -50,9 +58,9 @@ interface AgentReportPaneProps {
 // Key order within each card matches GUIDED_ORDER so the "N of 7" badges are
 // consecutive within the card (e.g. Critical always reads 1, 2 — never 2, 5).
 const REPORT_CARDS = [
-  { label: 'Critical',        keys: ['balanceDue', 'verifyQualifiedDivs'],               badgeColor: 'red'    as const, position: 'first' },
-  { label: 'Review required', keys: ['missingPriorAgi', 'missingStateReturn', 'missingEstPayments'], badgeColor: 'orange' as const, position: 'middle' },
-  { label: 'Opportunities',   keys: ['optW4Adjustment', 'optIra'],                                badgeColor: 'blue'   as const, position: 'last' },
+  { label: 'Critical',        keys: ['balanceDueJump', 'totalTaxRise', 'withholdingDrop', 'w2WithholdingZero'], badgeColor: 'red'    as const, position: 'first' },
+  { label: 'Review required', keys: ['qualDivDrop', 'ordinaryDivSurge', 'qualDivRatio', 'confirmPriorAgi', 'missingStateReturn', 'missingEstPayments'], badgeColor: 'orange' as const, position: 'middle' },
+  { label: 'Opportunities',   keys: ['optW4Adjustment', 'optIra'], badgeColor: 'blue'   as const, position: 'last' },
 ]
 
 const CARD_ICONS = [
@@ -72,26 +80,22 @@ const CARD_ICONS = [
 // Prior-year AGI exceeds $150,000, so the 2025 safe harbor is 110% of 2024's
 // total tax ($108,779) — this year's $24,925 in payments falls far short.
 
-const BALANCE_DUE_ISSUE = {
-  issueKey: 'balanceDue',
+const BALANCE_DUE_JUMP_ISSUE = {
+  issueKey: 'balanceDueJump',
   dotColor: 'red' as const,
-  title: 'Balance due: $124,905, up 448% from last year',
+  title: 'Balance due jumped to $124,905',
   category: 'IRS compliance',
-  summary: 'Line 37 rose from $22,790 in 2024 to $124,905. Total tax is up 52% ($98,890 to $149,830) and federal withholding is down 39% ($41,100 to $24,925). W-2 withholding is $0 this year (it was $22,360) even though wages on line 1a are still $118,940.',
-  taxImpact: 'Withholding of $24,925 covers only 16.6% of the $149,830 total tax. That is well below the $108,779 safe harbor (110% of 2024 tax of $98,890). Review Form 2210 for underpayment penalty before filing. Last year the balance due was $22,790 with $76,100 in total payments.',
-  rootCause: 'Income mix changed sharply: capital gains fell from $219,850 to $0 on line 7, while ordinary dividends rose 161% ($126,750 to $331,250). Total tax went up even though AGI fell 7%. All federal withholding now comes from 1099-DIV Box 4 ($24,925). The Tech Circle W-2 shows no Box 2 withholding.',
+  summary: 'Line 37 rose from $22,790 in 2024 to $124,905 this year, a 448% increase. Confirm Jessica can pay this amount by the filing deadline.',
+  taxImpact: 'A balance due this large may trigger underpayment penalties if quarterly payments were not made. Form 2210 should be reviewed before filing.',
+  rootCause: 'Total tax rose while federal withholding fell sharply. Capital gains dropped to $0 but dividend income surged, shifting the tax profile.',
   tableRows: [
-    { label: 'Total tax (line 24)',              cols: ['$149,830', '$98,890', '+52%'], badge: 'red' as const,    total: false },
-    { label: 'Federal withholding (25a + 25b)', cols: ['$24,925', '$41,100', '-39%'], badge: 'red' as const,    total: false },
-    { label: 'Safe harbor (110% of 2024 tax)',   cols: ['$108,779', 'Not met', '!'],    badge: 'red' as const,    total: false },
-    { label: 'Amount you owe (line 37)',         cols: ['$124,905', '$22,790', '+448%'], badge: 'red' as const,    total: true },
+    { label: 'Amount you owe (line 37)', cols: ['$124,905', '$22,790', '+448%'], badge: 'red' as const, total: true },
   ],
   tableHeaders: ['Item', '2025', '2024', 'YoY'],
   suggestedActions: [
-    'Confirm Jessica can pay $124,905 by the filing deadline. Last year she owed $22,790.',
-    'Run Form 2210 to estimate underpayment penalty. She paid $24,925 vs. a $108,779 safe harbor.',
-    'Ask if she made any 2025 estimated payments (line 26 is $0). Unrecorded payments would lower the balance due.',
-    'Review Form 6251 (AMT). Last year she had $219,850 in capital gains. The income shift may still trigger AMT.',
+    'Confirm Jessica can pay $124,905 by the filing deadline.',
+    'Ask if any 2025 estimated payments were made but not entered on line 26.',
+    'Review Form 2210 for underpayment penalty exposure.',
   ],
   viewSourceLabel: 'View Form 1040',
   viewSourceTab: undefined,
@@ -99,24 +103,94 @@ const BALANCE_DUE_ISSUE = {
   viewSourceField: 'amountOwed',
 }
 
-const VERIFY_QUALIFIED_DIVS_ISSUE = {
-  issueKey: 'verifyQualifiedDivs',
+const TOTAL_TAX_RISE_ISSUE = {
+  issueKey: 'totalTaxRise',
   dotColor: 'red' as const,
-  title: 'Verify qualified dividend classification',
+  title: 'Total tax up 52% year over year',
   category: 'IRS compliance',
-  summary: 'Qualified dividends fell 15% ($219,850 to $187,500 on line 3a). Ordinary dividends rose 161% ($126,750 to $331,250 on line 3b). The qualified share dropped from 63% to 57%. Confirm the holding-period rules were met for the full $187,500.',
-  taxImpact: 'Qualified dividends are taxed at 15% or 20%, not ordinary rates. If any part of the $187,500 fails the 61-day holding rule, reclassifying to ordinary income at 35% could add about $37,500 in tax on a $150,000 reclass alone.',
-  rootCause: 'Unwavering Financial 1099-DIV shows $187,500 qualified (Box 1b) out of $331,250 ordinary dividends (Box 1a). Last year the mix was reversed: $219,850 qualified vs. $126,750 ordinary. That suggests a major portfolio change or reclassification.',
+  summary: 'Total tax on line 24 rose from $98,890 in 2024 to $149,830 in 2025 even though AGI fell 7%. The income mix changed: capital gains fell to $0 while ordinary dividends rose 161%.',
+  taxImpact: 'Higher total tax with lower AGI means more income is taxed at ordinary rates. Review Schedule D and Form 8949 for missing capital gain entries.',
+  rootCause: 'Capital gains fell from $219,850 to $0 on line 7. Ordinary dividends rose from $126,750 to $331,250 on line 3b, replacing lower-rate gain income.',
   tableRows: [
-    { label: 'Qualified dividends (line 3a)', cols: ['$187,500', '$219,850', '-15%'], badge: 'orange' as const, total: false },
-    { label: 'Ordinary dividends (line 3b)',  cols: ['$331,250', '$126,750', '+161%'], badge: 'red' as const,    total: false },
-    { label: 'Capital gain (line 7)',         cols: ['$0', '$219,850', '-100%'],     badge: 'red' as const,    total: true },
+    { label: 'Total tax (line 24)', cols: ['$149,830', '$98,890', '+52%'], badge: 'red' as const, total: true },
+    { label: 'AGI (line 11)',       cols: ['$452,176', '$485,820', '-7%'], badge: 'orange' as const, total: false },
+  ],
+  tableHeaders: ['Item', '2025', '2024', 'YoY'],
+  suggestedActions: [
+    'Compare line 24 to last year\'s return on the Prior Year 1040 tab.',
+    'Check whether capital gains were realized inside funds instead of on Schedule D.',
+    'Review Form 6251 (AMT) given the income mix shift.',
+  ],
+  viewSourceLabel: 'View Form 1040',
+  viewSourceTab: undefined,
+  viewSourceSubTab: undefined,
+  viewSourceField: 'totalTax',
+}
+
+const WITHHOLDING_DROP_ISSUE = {
+  issueKey: 'withholdingDrop',
+  dotColor: 'red' as const,
+  title: 'Federal withholding down 39%',
+  category: 'IRS compliance',
+  summary: 'Combined federal withholding on lines 25a and 25b fell from $41,100 in 2024 to $24,925 this year. That covers only 16.6% of the $149,830 total tax.',
+  taxImpact: 'Withholding below the safe harbor of $108,779 (110% of 2024 tax) exposes Jessica to Form 2210 underpayment penalties.',
+  rootCause: 'All $24,925 in federal withholding now comes from 1099-DIV Box 4 backup withholding. Last year withholding included $22,360 from W-2 Box 2.',
+  tableRows: [
+    { label: 'Federal withholding (25a + 25b)', cols: ['$24,925', '$41,100', '-39%'], badge: 'red' as const, total: false },
+    { label: 'Safe harbor (110% of 2024 tax)',    cols: ['$108,779', 'Not met', '!'],    badge: 'red' as const, total: true },
+  ],
+  tableHeaders: ['Item', '2025', '2024', 'Status'],
+  suggestedActions: [
+    'Cross-check 1099-DIV Box 4 ($26,363 source vs. $24,925 on return).',
+    'Run Form 2210 to estimate underpayment penalty.',
+    'Ask about unrecorded estimated payments that would reduce the balance due.',
+  ],
+  viewSourceLabel: 'View 1099-DIV',
+  viewSourceTab: '1099-divs' as const,
+  viewSourceSubTab: undefined,
+  viewSourceField: 'fedTaxWithheld',
+}
+
+const W2_WITHHOLDING_ZERO_ISSUE = {
+  issueKey: 'w2WithholdingZero',
+  dotColor: 'red' as const,
+  title: 'W-2 federal withholding is $0',
+  category: 'IRS compliance',
+  summary: 'Tech Circle W-2 Box 2 is blank this year. Last year Box 2 was $22,360 despite similar wages of $118,940 on line 1a.',
+  taxImpact: 'Missing W-2 withholding is a major reason total withholding dropped 39%. If Jessica is not exempt, the employer should be withholding.',
+  rootCause: 'W-2 Box 2 shows no federal income tax withheld for Tech Circle. Jessica may have claimed exempt status or the employer stopped withholding mid-year.',
+  tableRows: [
+    { label: 'W-2 Box 2 withholding', cols: ['$0', '$22,360', '-100%'], badge: 'red' as const, total: false },
+    { label: 'W-2 Box 1 wages',       cols: ['$118,940', '$136,480', '-13%'], badge: 'orange' as const, total: true },
+  ],
+  tableHeaders: ['Item', '2025', '2024', 'YoY'],
+  suggestedActions: [
+    'Confirm with Jessica whether she claimed exempt status on Form W-4.',
+    'If not exempt, request flat withholding via Form W-4 Step 4(c).',
+    'Verify wages on the return match the source W-2 ($148,940 on document vs. $118,940 entered).',
+  ],
+  viewSourceLabel: 'View W-2',
+  viewSourceTab: 'w2s' as const,
+  viewSourceSubTab: 'techCircle' as const,
+  viewSourceField: 'w2Withholding',
+}
+
+const QUAL_DIV_DROP_ISSUE = {
+  issueKey: 'qualDivDrop',
+  dotColor: 'orange' as const,
+  title: 'Qualified dividends may be misclassified',
+  category: 'IRS compliance',
+  summary: 'Return line 3a shows $331,250 but Token Financial 1099-DIV Box 1b shows only $187,500 qualified. The full ordinary amount may have been misclassified as qualified.',
+  taxImpact: 'Qualified dividends are taxed at 15% or 20%. If $143,750 was misclassified from ordinary to qualified, the tax difference could exceed $20,000.',
+  rootCause: 'Source Box 1b is $187,500 qualified out of $331,250 ordinary (Box 1a). Return line 3a matches Box 1a instead of Box 1b, a common import miscode.',
+  tableRows: [
+    { label: 'Return line 3a (qualified)', cols: ['$331,250', '$219,850', '+51%'], badge: 'red' as const, total: false },
+    { label: 'Source Box 1b (qualified)',  cols: ['$187,500', 'Should match', '!'], badge: 'red' as const, total: true },
   ],
   tableHeaders: ['Field', '2025', '2024', 'YoY'],
   suggestedActions: [
-    'Confirm with Jessica or the brokerage that shares backing the $187,500 qualified amount were held 61+ days.',
-    'Cross-check Box 1b ($187,500) against Box 1a ($331,250). The $143,750 non-qualified portion is taxed at ordinary rates.',
-    'Ask why capital gains are $0 while ordinary dividends jumped. Gains may have been recognized inside the fund instead of on Schedule D.',
+    'Confirm shares backing the $187,500 qualified amount were held 61+ days.',
+    'Cross-check Box 1b against Box 1a on the Token Financial 1099-DIV.',
   ],
   viewSourceLabel: 'View 1099-DIV',
   viewSourceTab: '1099-divs' as const,
@@ -124,25 +198,69 @@ const VERIFY_QUALIFIED_DIVS_ISSUE = {
   viewSourceField: 'qualifiedDivs',
 }
 
-// ── Missing Information Issues ────────────────────────────────────────────
-
-const MISSING_PRIOR_AGI_ISSUE = {
-  issueKey: 'missingPriorAgi',
+const ORDINARY_DIV_SURGE_ISSUE = {
+  issueKey: 'ordinaryDivSurge',
   dotColor: 'orange' as const,
-  title: 'Prior-year AGI not on file',
-  category: 'Missing information',
-  summary: 'Prior-year (2024) AGI is required for e-file PIN validation. It was not found in any imported document. The $485,820 on the Prior Year 1040 tab is unconfirmed.',
-  taxImpact: 'Without the correct prior-year AGI, the IRS cannot validate the e-file PIN. The return cannot be filed electronically until this is confirmed. Wrong AGI is the top reason for e-file rejections.',
-  rootCause: 'The 2024 return was not imported and no prior-year AGI was entered at onboarding. The $485,820 AGI on the Prior Year 1040 tab (line 11) has not been checked against an IRS transcript or Jessica\'s signed 2024 return.',
+  title: 'Ordinary dividends rose 161%',
+  category: 'IRS compliance',
+  summary: 'Ordinary dividends on line 3b jumped from $126,750 in 2024 to $331,250 this year. This is the largest single income line change on the return.',
+  taxImpact: 'Ordinary dividends are taxed at regular rates up to 37%. The $204,500 increase adds roughly $71,000 in tax at the 35% marginal rate.',
+  rootCause: 'Token Financial 1099-DIV Box 1a shows $331,250 total ordinary dividends. Capital gains on line 7 fell to $0, suggesting gains may have been distributed as dividends instead.',
   tableRows: [
-    { label: '2024 AGI (line 11, e-file PIN)', cols: ['$485,820', 'Unconfirmed', '?'], badge: 'orange' as const, total: false },
-    { label: '2024 total tax (line 24)',        cols: ['$98,890', 'Unconfirmed', '?'],  badge: 'orange' as const, total: false },
+    { label: 'Ordinary dividends (line 3b)', cols: ['$331,250', '$126,750', '+161%'], badge: 'red' as const, total: false },
+    { label: 'Capital gain (line 7)',        cols: ['$0', '$219,850', '-100%'],     badge: 'red' as const, total: true },
   ],
-  tableHeaders: ['Field', 'Value', 'Status', ''],
+  tableHeaders: ['Field', '2025', '2024', 'YoY'],
   suggestedActions: [
-    'Confirm the $485,820 prior-year AGI with Jessica or her signed 2024 Form 1040.',
-    'Enter it in the e-file section before submission.',
-    'Or use IRS Get Transcript (wage and income) to verify AGI and total tax.',
+    'Ask the brokerage why ordinary dividends surged while capital gains dropped to zero.',
+    'Review fund distribution statements for reclassified gain amounts.',
+  ],
+  viewSourceLabel: 'View 1099-DIV',
+  viewSourceTab: '1099-divs' as const,
+  viewSourceSubTab: undefined,
+  viewSourceField: 'ordinaryDivs',
+}
+
+const QUAL_DIV_RATIO_ISSUE = {
+  issueKey: 'qualDivRatio',
+  dotColor: 'orange' as const,
+  title: 'Qualified dividend ratio dropped to 57%',
+  category: 'IRS compliance',
+  summary: 'The qualified share of dividends is inconsistent. Return line 3a shows $331,250 but only $187,500 qualifies per source Box 1b. The ratio should be 57%, not 100%.',
+  taxImpact: 'At a 35% marginal rate, the non-qualified portion alone adds about $50,000 in tax compared to if the full amount were qualified at 20%.',
+  rootCause: 'Box 1b ($187,500) is 57% of Box 1a ($331,250) on the Token Financial 1099-DIV. Return line 3a incorrectly reflects the full Box 1a amount.',
+  tableRows: [
+    { label: 'Qualified share (should be)', cols: ['57%', '63% last year', 'Check'], badge: 'orange' as const, total: false },
+    { label: 'Return line 3a vs source 1b', cols: ['$331,250', '$187,500', 'Mismatch'], badge: 'red' as const, total: true },
+  ],
+  tableHeaders: ['Metric', '2025', '2024', 'Change'],
+  suggestedActions: [
+    'Review brokerage statements for shares sold within 60 days of ex-dividend dates.',
+    'Confirm whether any Box 1a amount was misclassified between qualified and ordinary.',
+  ],
+  viewSourceLabel: 'View 1099-DIV',
+  viewSourceTab: '1099-divs' as const,
+  viewSourceSubTab: undefined,
+  viewSourceField: 'qualifiedDivs',
+}
+
+const CONFIRM_PRIOR_AGI_ISSUE = {
+  issueKey: 'confirmPriorAgi',
+  dotColor: 'orange' as const,
+  title: 'Confirm prior-year AGI matches imported 1040',
+  category: 'Missing information',
+  summary: 'The imported 2024 Form 1040 shows AGI of $485,820 on line 11. Confirm this matches Jessica\'s signed return before e-filing. Prior-year AGI is required for PIN validation.',
+  taxImpact: 'Wrong prior-year AGI is the top reason for e-file rejections. The IRS uses it to validate the taxpayer\'s identity PIN.',
+  rootCause: 'The Prior Year 1040 tab is populated from jessica-1040-2024-variant.pdf. The preparer should verify line 11 against Jessica\'s signed copy or an IRS transcript.',
+  tableRows: [
+    { label: '2024 AGI (line 11)',     cols: ['$485,820', 'Imported', 'Verify'], badge: 'orange' as const, total: false },
+    { label: '2024 total tax (line 24)', cols: ['$98,890', 'Imported', 'Verify'], badge: 'orange' as const, total: true },
+  ],
+  tableHeaders: ['Field', 'Value', 'Source', 'Action'],
+  suggestedActions: [
+    'Open the Prior Year 1040 tab and confirm line 11 shows $485,820.',
+    'Compare against Jessica\'s signed 2024 return or IRS Get Transcript.',
+    'Enter the confirmed AGI in the e-file section before submission.',
   ],
   viewSourceLabel: 'View Prior Year 1040',
   viewSourceTab: 'prior-1040' as const,
@@ -254,18 +372,22 @@ const OPT_IRA_ISSUE = {
 
 // Maps each issue key to the 1040 field it should highlight on Form/Summary view.
 export const ISSUE_FIELD: Partial<Record<IssueKey, string>> = {
-  balanceDue:          'amountOwed',
-  verifyQualifiedDivs: 'qualifiedDivs',
-  missingPriorAgi:   'agi',
-  missingEstPayments: 'totalPayments',
-  optW4Adjustment:   'w2Withholding',
-  optIra:            'agi',
-  // missingStateReturn: no 1040 line; View source navigates to W-2
+  balanceDueJump:      'amountOwed',
+  totalTaxRise:        'totalTax',
+  withholdingDrop:     'withholding',
+  w2WithholdingZero:   'w2Withholding',
+  qualDivDrop:         'qualifiedDivs',
+  ordinaryDivSurge:    'ordinaryDivs',
+  qualDivRatio:        'qualifiedDivs',
+  confirmPriorAgi:     'agi',
+  missingEstPayments:  'totalPayments',
+  optW4Adjustment:     'w2Withholding',
+  optIra:              'agi',
 }
 
-// All issues as a flat list for getIssueConfig lookup
 const ALL_ISSUES = [
-  BALANCE_DUE_ISSUE, VERIFY_QUALIFIED_DIVS_ISSUE, MISSING_PRIOR_AGI_ISSUE,
+  BALANCE_DUE_JUMP_ISSUE, TOTAL_TAX_RISE_ISSUE, WITHHOLDING_DROP_ISSUE, W2_WITHHOLDING_ZERO_ISSUE,
+  QUAL_DIV_DROP_ISSUE, ORDINARY_DIV_SURGE_ISSUE, QUAL_DIV_RATIO_ISSUE, CONFIRM_PRIOR_AGI_ISSUE,
   MISSING_STATE_RETURN_ISSUE, MISSING_EST_PAYMENTS_ISSUE,
   OPT_W4_ISSUE, OPT_IRA_ISSUE,
 ]

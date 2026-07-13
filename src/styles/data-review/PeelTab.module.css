@@ -7,13 +7,27 @@
   background: #ffffff;
   border-bottom: 1px solid #d5dee3;
   flex-shrink: 0;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+.container::-webkit-scrollbar {
+  height: 4px;
+}
+
+.container::-webkit-scrollbar-thumb {
+  background: #c8d3da;
+  border-radius: 2px;
 }
 
 .tab {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4px 14px;
+  padding: 4px 12px;
   height: 28px;
   border-radius: 9999px;
   font-family: var(--font-family-component, 'AvenirNext forINTUIT', sans-serif);
@@ -23,6 +37,7 @@
   white-space: nowrap;
   cursor: pointer;
   transition: background 120ms, color 120ms, border-color 120ms;
+  flex-shrink: 0;
 }
 
 .tabActive {

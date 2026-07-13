@@ -12,6 +12,7 @@ import {
   navigationForDetailField,
 } from './data-review/phase1FieldSync'
 import DocumentPreview from './data-review/DocumentPreview'
+import SourcePanelLoader from './data-review/SourcePanelLoader'
 import DetailFields, { W2_PAYER_TABS } from './data-review/DetailFields'
 import type { W2Employer } from './data-review/DetailFields'
 import DetailFields1099, { INT_PAYER_TABS } from './data-review/DetailFields1099'
@@ -200,6 +201,7 @@ export default function DataReviewPopout() {
         />
       )}
 
+      <SourcePanelLoader loadKey={`${activeTopTab}-${activeSubTab}-${activeDivPayer}-${activeIntPayer}`}>
       <div ref={rightRef} style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
           <div style={{ width: `${previewWidth}%`, flexShrink: 0, overflow: 'hidden', borderRight: '1px solid #d5dee3' }}>
             <DocumentPreview
@@ -238,8 +240,8 @@ export default function DataReviewPopout() {
                 onVerifyDoc={toggleVerifiedDoc}
                 flaggedFields={{
                   ssn: 'Employee SSN not imported — required for e-filing. Enter manually.',
-                  wages: 'Low confidence (72%) — wages may be misread. Verify Box 1 against source W-2.',
-                  sswages: 'Medium confidence (82%) — social security wages differ from Box 1 wages. Verify Box 3 against source W-2.',
+                  wages: 'Low confidence (72%): wages may be misread. Source W-2 Box 1 shows $148,940 but return has $118,940.',
+                  sswages: 'Medium confidence (82%): social security wages differ from Box 1. Source W-2 shows $148,940 in Box 3 vs. $118,940 on the return.',
                   box12: 'Box 12 not imported — enter code and amount manually from source W-2.',
                   ein:   'Employer EIN not found in document — required for e-filing. Enter manually.',
                 }}
@@ -259,10 +261,9 @@ export default function DataReviewPopout() {
                 verifiedDocs={verifiedDocs}
                 onVerifyDoc={toggleVerifiedDoc}
                 flaggedFields={{
-                  qualifiedDivs: 'Large dividend amount — $331,250 ordinary dividends. Verify Box 1a and 1b against source document.',
-                  divCollectibles: 'Collectibles (28%) gain not imported — review source document and enter if applicable.',
-                  divNonDiv: 'Nondividend distributions not imported — review source document and enter if applicable.',
-                  fedTaxWithheld: 'Low confidence (68%) — federal withholding may be misread. Verify Box 4 against source 1099-DIV.',
+                  divCollectibles: 'Collectibles (28%) gain not imported. Review source document and enter if applicable.',
+                  divNonDiv: 'Nondividend distributions not imported. Review source document and enter if applicable.',
+                  fedTaxWithheld: 'Low confidence (68%): federal withholding may be misread. Source shows $26,363 but return has $24,925. Verify Box 4 against source 1099-DIV.',
                 }}
               />
             )}
@@ -310,6 +311,7 @@ export default function DataReviewPopout() {
             {activeTopTab === 'prior-1040' && <PriorYear1040Fields onMarkReviewed={handleMarkReviewed} reviewedFields={reviewedFields} />}
           </div>
         </div>
+      </SourcePanelLoader>
     </div>
   )
 }
