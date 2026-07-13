@@ -19,7 +19,6 @@ import intuitAssistIcon from '../assets/icons/intuit-assist.svg'
 import LeftPanel1040 from './data-review/LeftPanel1040'
 import ReviewTab from './data-review/ReviewTab'
 import DocumentPreview from './data-review/DocumentPreview'
-import W2FormPreview from './data-review/W2FormPreview'
 import Int1099FormPreview from './data-review/Int1099FormPreview'
 import SourcePanelLoader from './data-review/SourcePanelLoader'
 import DetailFields, { W2_PAYER_TABS } from './data-review/DetailFields'
@@ -59,7 +58,7 @@ import {
 } from './data-review/phase1FieldSync'
 import { GUIDED_ORDER, TOTAL_REVIEW_ITEMS } from './data-review/AgentReportPane'
 import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
-import w2TechCircle from '../assets/jessica-w2-tech-circle.png'
+import w2TechCircle from '../assets/w2-tech-circle.jpg'
 import img1040PriorPage1 from '../assets/jessica-1040-2024-variant-1.png'
 import img1040PriorPage2 from '../assets/jessica-1040-2024-variant-2.png'
 import img1099Int from '../assets/jessica-1099-int.jpg'
@@ -785,14 +784,11 @@ export default function DataReviewPage() {
               }>
                 <DocumentPreview
                   customContent={
-                    activeTopTab === 'w2s' && activeSubTab === 'techCircle'
-                      ? <W2FormPreview />
-                      : activeTopTab === '1099-ints' && activeIntPayer === 'unwaverIngFinancial'
+                    activeTopTab === '1099-ints' && activeIntPayer === 'unwaverIngFinancial'
                       ? <Int1099FormPreview />
                       : undefined
                   }
                   imageSrc={
-                    activeTopTab === 'w2s' && activeSubTab === 'techCircle' ? undefined :
                     activeTopTab === '1099-ints' && activeIntPayer === 'unwaverIngFinancial' ? undefined :
                     activeTopTab === 'prior-1040' ? [img1040PriorPage1, img1040PriorPage2] :
                     activeTopTab === '1099-ints'  ? (
