@@ -1,10 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { CircleCheck, Comment } from '@design-systems/icons'
-import { Modal, ModalHeader, ModalTitle, ModalContent, ModalActions } from '@ids-ts/modal-dialog'
-import '@ids-ts/modal-dialog/dist/main.css'
-import { Button } from '@ids-ts/button'
-import '@ids-ts/button/dist/main.css'
 import FieldPopover, { FIELD_META } from './FieldPopover'
 import Tooltip from './Tooltip'
 import styles from '../../styles/data-review/LeftPanel1040.module.css'
@@ -34,8 +30,8 @@ interface LeftPanel1040Props {
   onAddFieldNote?: (text: string, context: string) => void
   /** When true: all Phase 1 import flags have been reviewed — unlocks the Tax control tab's dot indicator */
   allFlagsCleared?: boolean
-  /** Expand the 1040 panel (e.g. when collapsed in Phase 1) and surface Tax control */
-  onOpenTaxControl?: () => void
+  /** Increment to switch the 1040 panel to the Tax control view (from page-level modal). */
+  taxControlViewRequest?: number
 }
 
 import { PRIOR_YEAR_1040_VALUES, buildYoyMap, yoyPercent } from './priorYear1040Data'
@@ -76,11 +72,6 @@ function fmt(n: number) {
 // it to be.
 const DIV_WITHHOLDING = 24925
 
-/** Session-scoped — survives refresh within a tab but resets when Phase 1 flags reopen. */
-const TAX_CONTROL_MODAL_KEY = 'smartReviewProtoC:taxControlModalDismissed'
-/** Legacy ProtoA/ProtoC key — clear so prior deploys don't block the modal forever. */
-const LEGACY_TAX_CONTROL_MODAL_KEY = 'taxControlModalDismissed'
-
 export default function LeftPanel1040({
   selectedField,
   highlightField,
@@ -95,7 +86,7 @@ export default function LeftPanel1040({
   fieldValues,
   onAddFieldNote,
   allFlagsCleared = false,
-  onOpenTaxControl,
+  taxControlViewRequest = 0,
 }: LeftPanel1040Props) {
   // Detail-field keys may differ from 1040 row keys (e.g. fedTaxWithheld ↔ withholding).
   const activeHighlight = highlightField ?? selectedField
@@ -145,46 +136,11 @@ export default function LeftPanel1040({
   const [expanded, setExpanded] = useState<Set<string>>(new Set(['income', 'deductions', 'tax', 'payments']))
   // Control sheet: input values keyed by row id
   const [controlInputs, setControlInputs] = useState<Record<string, string>>({})
-  // Control sheet modal: shown once when Phase 1 flags are first cleared
-  const [modalDismissed, setModalDismissed] = useState(() => {
-    try {
-      localStorage.removeItem(LEGACY_TAX_CONTROL_MODAL_KEY)
-      return sessionStorage.getItem(TAX_CONTROL_MODAL_KEY) === '1'
-    } catch { return false }
-  })
-  const [showModal, setShowModal] = useState(false)
-  const prevFlagsCleared = useRef(false)
 
   useEffect(() => {
-    if (!allFlagsCleared) {
-      prevFlagsCleared.current = false
-      setModalDismissed(false)
-      setShowModal(false)
-      try {
-        sessionStorage.removeItem(TAX_CONTROL_MODAL_KEY)
-        localStorage.removeItem(LEGACY_TAX_CONTROL_MODAL_KEY)
-      } catch { /* ignore */ }
-      return
-    }
+    if (taxControlViewRequest > 0) setView('control')
+  }, [taxControlViewRequest])
 
-    const justCompleted = !prevFlagsCleared.current
-    prevFlagsCleared.current = true
-    if (justCompleted && !modalDismissed) {
-      setShowModal(true)
-    }
-  }, [allFlagsCleared, modalDismissed])
-
-  /** "Not now" / backdrop — suppress for this session only. */
-  const dismissModalForSession = () => {
-    setShowModal(false)
-    setModalDismissed(true)
-    try { sessionStorage.setItem(TAX_CONTROL_MODAL_KEY, '1') } catch { /* ignore */ }
-  }
-  const openControlFromModal = () => {
-    onOpenTaxControl?.()
-    setView('control')
-    dismissModalForSession()
-  }
   const toggleExpanded = (key: string) =>
     setExpanded(prev => { const s = new Set(prev); s.has(key) ? s.delete(key) : s.add(key); return s })
 
@@ -499,22 +455,6 @@ export default function LeftPanel1040({
 
   return (
     <div className={styles.leftPanel}>
-
-      {/* ── Tax control unlock modal (IDS Modal portals to document.body) ── */}
-      <Modal open={showModal} onClose={dismissModalForSession} size="medium" dismissible>
-        <ModalHeader alignment="center" transparentBackground onClose={dismissModalForSession}>
-          <ModalTitle title="Nice job! Want to check your totals?" />
-        </ModalHeader>
-        <ModalContent alignment="left">
-          <p className={styles.controlModalBody}>
-            Compare summary totals against the source documents to quickly see if everything aligns or if you need to look closer at the details.
-          </p>
-        </ModalContent>
-        <ModalActions alignment="right">
-          <Button priority="tertiary" onClick={dismissModalForSession}>Not now</Button>
-          <Button priority="primary" onClick={openControlFromModal}>Check totals</Button>
-        </ModalActions>
-      </Modal>
 
       {/* ── View toggle ── */}
       <div className={styles.viewToggle}>

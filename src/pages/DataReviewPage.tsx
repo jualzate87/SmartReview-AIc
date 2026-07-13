@@ -36,6 +36,11 @@ import WelcomePane from './data-review/WelcomePane'
 import Phase1Banner from './data-review/Phase1Banner'
 import Phase1IssueBanner from './data-review/Phase1IssueBanner'
 import Phase2Banner from './data-review/Phase2Banner'
+import TaxControlUnlockModal, {
+  dismissTaxControlModalForSession,
+  readTaxControlModalDismissed,
+  resetTaxControlModalDismiss,
+} from './data-review/TaxControlUnlockModal'
 import {
   PHASE1_FLAG_KEYS,
   countPhase1Remaining,
@@ -131,6 +136,11 @@ export default function DataReviewPage() {
   const [phase, setPhase] = useState<ReviewPhase>('welcome')
   // Phase 1: whether the 1040 panel is expanded (minimized by default in import phase)
   const [show1040, setShow1040] = useState(false)
+  // Tax control unlock modal — page-level so it fires even when 1040 is collapsed
+  const [showTaxControlModal, setShowTaxControlModal] = useState(false)
+  const [taxModalDismissed, setTaxModalDismissed] = useState(readTaxControlModalDismissed)
+  const [taxControlViewRequest, setTaxControlViewRequest] = useState(0)
+  const prevPhase1Complete = useRef(false)
 
   // The import/OCR flags owned by Phase 1. Each key matches the reviewed-field key
   // emitted by the DetailFields "Edit+Save" / "Mark as correct" controls.
@@ -212,7 +222,36 @@ export default function DataReviewPage() {
 
   const handleOpenTaxControl = useCallback(() => {
     setShow1040(true)
+    setTaxControlViewRequest(n => n + 1)
   }, [])
+
+  const dismissTaxControlModal = useCallback(() => {
+    setShowTaxControlModal(false)
+    setTaxModalDismissed(true)
+    dismissTaxControlModalForSession()
+  }, [])
+
+  // Show tax control unlock modal the instant Phase 1 flags hit zero (false → true).
+  useEffect(() => {
+    if (phase !== 'import') {
+      setShowTaxControlModal(false)
+      return
+    }
+
+    if (!phase1Complete) {
+      prevPhase1Complete.current = false
+      setTaxModalDismissed(false)
+      setShowTaxControlModal(false)
+      resetTaxControlModalDismiss()
+      return
+    }
+
+    const justCompleted = !prevPhase1Complete.current
+    prevPhase1Complete.current = true
+    if (justCompleted && !taxModalDismissed) {
+      setShowTaxControlModal(true)
+    }
+  }, [phase, phase1Complete, taxModalDismissed])
 
   const handle1040FieldClick = useCallback((field1040: string | null) => {
     if (!field1040) {
@@ -575,7 +614,7 @@ export default function DataReviewPage() {
             issueField={issueField}
             fieldValues={{ ...fieldValues, withholding: totalWithholding }}
             allFlagsCleared={phase1Complete}
-            onOpenTaxControl={handleOpenTaxControl}
+            taxControlViewRequest={taxControlViewRequest}
             onAddFieldNote={(text, context) => handleAddNote(text, context)}
             onViewSource={(fieldName, sourceLabel) => {
               // Map field → document tab
@@ -909,6 +948,15 @@ export default function DataReviewPage() {
           onAdd={(text) => handleAddNote(text)}
           onClose={handleCloseNotes}
           closing={notesClosing}
+        />
+      )}
+
+      {/* Tax control unlock — page-level so it appears even when 1040 is collapsed */}
+      {inImportPhase && (
+        <TaxControlUnlockModal
+          open={showTaxControlModal}
+          onClose={dismissTaxControlModal}
+          onCheckTotals={handleOpenTaxControl}
         />
       )}
     </div>
