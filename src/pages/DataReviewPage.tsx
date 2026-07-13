@@ -379,7 +379,7 @@ export default function DataReviewPage() {
     }, 350)
   }
 
-  const PREPARER_NAME = 'Juan Alzate'
+  const PREPARER_NAME = 'Sara Chen'
 
   const handleOpenNotes = () => setNotesOpen(true)
   const handleCloseNotes = () => {

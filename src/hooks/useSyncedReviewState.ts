@@ -38,9 +38,9 @@ interface SyncedState {
 
 const CHANNEL_NAME = 'protoc-data-review-sync'
 // Bump whenever DEFAULT_STATE shape or seed values change so stale sessions reset.
-const STATE_VERSION = 10
+const STATE_VERSION = 11
 const STORAGE_KEY = 'protoc-data-review-state-v' + STATE_VERSION
-const PREPARER_NAME = 'Juan Alzate'
+const PREPARER_NAME = 'Sara Chen'
 
 function formatTimestamp(date: Date): string {
   return date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })
