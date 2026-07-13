@@ -27,6 +27,7 @@ import sidebarClientActivityIcon from '../assets/icons/sidebar-client-activity.s
 import sidebarFlaggedItemsIcon from '../assets/icons/sidebar-flagged-items.svg'
 import sidebarCommentsIcon from '../assets/icons/sidebar-comments.svg'
 import ProConnectNav from './ProConnectNav'
+import { SOURCE_DOCUMENTS } from '../data/sourceDocuments'
 import styles from '../styles/OpenReturnPage.module.css'
 
 type Step = 1 | 2 | 3 | 4 | 5
@@ -37,12 +38,14 @@ const CHECKLIST_ITEMS = [
   { id: '1099-div', type: '1099-DIV', label: 'Form 1099-DIV from Unwavering Financial' },
 ]
 
-const RECEIVED_DOCS = [
-  { name: 'W2-Bing.pdf',     status: 'Ready to import', type: 'W-2',       date: 'Jun 27' },
-  { name: 'W2-Techcircle',   status: 'Ready to import', type: 'W-2',       date: 'Jun 27' },
-  { name: 'Form1099-DIV',    status: 'Ready to import', type: '1099-DIV',  date: 'Jun 27' },
-  { name: 'Form1099-INT',    status: 'Ready to import', type: '1099-INT',  date: 'Jun 27' },
-]
+/** Received tab rows — derived from canonical source document list. */
+const RECEIVED_DOCS = SOURCE_DOCUMENTS.map(doc => ({
+  id: doc.id,
+  name: doc.label,
+  status: 'Ready to import',
+  type: doc.formType,
+  date: 'Jun 27',
+}))
 
 export default function OpenReturnPage() {
   const navigate = useNavigate()
@@ -550,7 +553,7 @@ export default function OpenReturnPage() {
 
                       {/* Table rows */}
                       {RECEIVED_DOCS.map(doc => (
-                        <div key={doc.name} className={styles.tableRow}>
+                        <div key={doc.id} className={styles.tableRow}>
                           <div className={styles.tableCheckAll}>
                             <Checkbox defaultChecked size="small" onChange={() => {}} />
                           </div>
