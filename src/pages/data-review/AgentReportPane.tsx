@@ -11,31 +11,24 @@ import taxesAndCreditsIcon from '../../assets/icons/taxes-and-credits.svg'
 import IssueDetailPane from './IssueDetailPane'
 import Tooltip from './Tooltip'
 import { FROZEN_RETURN } from '../../data/frozenReturn'
-import type { LiveReturnTotals } from '../../data/liveReturn'
+import type { LiveAmounts, LiveReturnTotals } from '../../data/liveReturn'
 import { computeLiveReturn, SEED_AMOUNTS } from '../../data/liveReturn'
 import { RETURN_SUMMARY_INSIGHTS } from './phase1FlagMessages'
+import {
+  getPhase2Progress,
+  PHASE2_DIAGNOSTIC_ORDER,
+  type Phase2IssueKey,
+} from './phase2FlagSync'
 import styles from '../../styles/data-review/AgentReportPane.module.css'
 
 // ProtoC Phase 2 — AI diagnostics ONLY. Import/OCR flags (w2Box12, w2Ein,
 // wagesConfidence, divCollectibles, divNonDiv) are owned by Phase 1 and removed here,
 // so there is zero redundancy between the two phases.
-export const TOTAL_REVIEW_ITEMS = 12
+/** Full catalog size before Phase 1 sync dismisses any cards. */
+export const TOTAL_REVIEW_ITEMS = PHASE2_DIAGNOSTIC_ORDER.length
 
-export const GUIDED_ORDER = [
-  'balanceDueJump',
-  'totalTaxRise',
-  'withholdingDrop',
-  'estTaxPenalty',
-  'qualDivDrop',
-  'ordinaryDivSurge',
-  'qualDivRatio',
-  'confirmPriorAgi',
-  'missingEstPayments',
-  'niitForm8960',
-  'optW4Adjustment',
-  'optIra',
-] as const
-type IssueKey = typeof GUIDED_ORDER[number]
+export const GUIDED_ORDER = PHASE2_DIAGNOSTIC_ORDER
+type IssueKey = Phase2IssueKey
 
 interface AgentReportPaneProps {
   onClose?: () => void
@@ -58,6 +51,8 @@ interface AgentReportPaneProps {
   onFieldValueChange?: (key: 'withholding' | 'box12' | 'taxableInterest' | 'qualifiedDivs', value: number) => void
   /** Live-recalculated 1040 totals — keeps Phase 2 figures in sync after Phase 1 edits */
   liveTotals?: LiveReturnTotals
+  /** Editable amounts — used with liveTotals to auto-dismiss invalidated diagnostics */
+  amounts?: LiveAmounts
 }
 
 // ProtoC Phase 2 — diagnostics only. Import/OCR keys removed (owned by Phase 1).
@@ -436,16 +431,25 @@ export default function AgentReportPane({
   fieldValues,
   onFieldValueChange,
   liveTotals,
+  amounts = SEED_AMOUNTS,
 }: AgentReportPaneProps) {
-  const live = liveTotals ?? computeLiveReturn(SEED_AMOUNTS)
+  const live = liveTotals ?? computeLiveReturn(amounts)
   const ALL_ISSUES = buildAllIssues(live)
-  // ProtoC: count ONLY the Phase 2 diagnostic keys — Phase 1 import flags share the same
-  // reviewedFields map but must not inflate this counter.
-  const reviewedCount = GUIDED_ORDER.filter(k => reviewedFields.has(k)).length
-  const progressPct = Math.round((reviewedCount / TOTAL_REVIEW_ITEMS) * 100)
-  const allReviewed = reviewedCount >= TOTAL_REVIEW_ITEMS
+  // Active = not auto-dismissed by Phase 1 flag resolution or amount edits.
+  // Remaining / badges follow live synced state so source-review fixes clear Phase 2 ghosts.
+  const phase2Progress = getPhase2Progress({ reviewedFields, live, amounts })
+  const activeOrder = phase2Progress.activeKeys
+  const reviewedCount = phase2Progress.reviewed
+  const totalActive = phase2Progress.total
+  const remainingCount = phase2Progress.remaining
+  const progressPct = totalActive === 0 ? 100 : Math.round((reviewedCount / totalActive) * 100)
+  const allReviewed = phase2Progress.complete
   const [showCompletion, setShowCompletion] = useState(false)
   const prevAllReviewed = useRef(false)
+  const [inputValue, setInputValue] = useState('')
+  const [expandedCard, setExpandedCard] = useState<string | null>(null)
+  const [issueDetailOpen, setIssueDetailOpen] = useState<string | null>(null)
+  const [issueDetailClosing, setIssueDetailClosing] = useState(false)
 
   // Auto-trigger completion screen the moment all items become reviewed
   useEffect(() => {
@@ -459,10 +463,14 @@ export default function AgentReportPane({
     }
     prevAllReviewed.current = allReviewed
   }, [allReviewed])
-  const [inputValue, setInputValue] = useState('')
-  const [expandedCard, setExpandedCard] = useState<string | null>(null)
-  const [issueDetailOpen, setIssueDetailOpen] = useState<string | null>(null)
-  const [issueDetailClosing, setIssueDetailClosing] = useState(false)
+
+  // Close detail pane if the open issue was auto-dismissed by Phase 1 sync
+  useEffect(() => {
+    if (issueDetailOpen && !activeOrder.includes(issueDetailOpen as IssueKey)) {
+      setIssueDetailOpen(null)
+      onHighlightField?.(null)
+    }
+  }, [activeOrder, issueDetailOpen, onHighlightField])
 
   // ── Detail pane navigation ─────────────────────────────────
   const openDetail = (key: string) => {
@@ -478,10 +486,10 @@ export default function AgentReportPane({
     setTimeout(() => { setIssueDetailOpen(null); setIssueDetailClosing(false) }, 200)
   }
 
-  // Navigate to next issue in guided order
+  // Navigate to next issue in active (non-dismissed) guided order
   const handleNext = (currentKey: string) => {
-    const idx = GUIDED_ORDER.indexOf(currentKey as IssueKey)
-    const nextKey = idx >= 0 && idx < GUIDED_ORDER.length - 1 ? GUIDED_ORDER[idx + 1] : null
+    const idx = activeOrder.indexOf(currentKey as IssueKey)
+    const nextKey = idx >= 0 && idx < activeOrder.length - 1 ? activeOrder[idx + 1] : null
     if (nextKey) {
       handleCloseIssueDetail()
       setTimeout(() => openDetail(nextKey), 220)
@@ -492,17 +500,17 @@ export default function AgentReportPane({
     }
   }
 
-  // Navigate to previous issue in guided order
+  // Navigate to previous issue in active guided order
   const handlePrev = (currentKey: string) => {
-    const idx = GUIDED_ORDER.indexOf(currentKey as IssueKey)
-    const prevKey = idx > 0 ? GUIDED_ORDER[idx - 1] : null
+    const idx = activeOrder.indexOf(currentKey as IssueKey)
+    const prevKey = idx > 0 ? activeOrder[idx - 1] : null
     if (!prevKey) return
     handleCloseIssueDetail()
     setTimeout(() => openDetail(prevKey), 220)
   }
 
-  const isLastIssue  = (key: string) => GUIDED_ORDER.indexOf(key as IssueKey) === GUIDED_ORDER.length - 1
-  const isFirstIssue = (key: string) => GUIDED_ORDER.indexOf(key as IssueKey) === 0
+  const isLastIssue  = (key: string) => activeOrder.indexOf(key as IssueKey) === activeOrder.length - 1
+  const isFirstIssue = (key: string) => activeOrder.indexOf(key as IssueKey) === 0
 
   const handleCardClick = (label: string) => {
     setExpandedCard(prev => {
@@ -552,7 +560,7 @@ export default function AgentReportPane({
               <div className={styles.progressFill} style={{ width: `${progressPct || 5}%`, background: '#00856d', transition: 'width 400ms ease' }} />
             </div>
             <div className={styles.scoreCountRow}>
-              <span className={styles.scoreCountNumber}>{Math.max(0, TOTAL_REVIEW_ITEMS - reviewedCount)}</span>
+              <span className={styles.scoreCountNumber}>{Math.max(0, remainingCount)}</span>
               <span className={styles.scoreCountLabel}>diagnostics remaining</span>
             </div>
           </div>
@@ -565,7 +573,7 @@ export default function AgentReportPane({
                 <span className={styles.completionTitle}>Review complete</span>
               </div>
               <p className={styles.completionBody}>
-                All {TOTAL_REVIEW_ITEMS} issues reviewed and reconciled. This return is ready to move forward.
+                All {totalActive} issues reviewed and reconciled. This return is ready to move forward.
               </p>
               {[...reviewedFields.values()].slice(0, 1).map((v, idx) => (
                 <p key={idx} className={styles.completionSignOff}>
@@ -586,7 +594,9 @@ export default function AgentReportPane({
           {/* Expandable report card bundle — hidden when completion screen is shown */}
           <div className={styles.cardBundle} style={allReviewed && showCompletion ? { display: 'none' } : {}}>
             {REPORT_CARDS.map((card, i) => {
-              const remaining = card.keys.filter(k => !reviewedFields.has(k)).length
+              const visibleKeys = card.keys.filter(k => activeOrder.includes(k as IssueKey))
+              if (visibleKeys.length === 0) return null
+              const remaining = visibleKeys.filter(k => !reviewedFields.has(k)).length
               const cardDone = remaining === 0
               return (
               <div key={card.label}>
@@ -608,12 +618,12 @@ export default function AgentReportPane({
                 {/* ── Issue findings — rendered from ALL_ISSUES filtered to this card's keys ── */}
                 {expandedCard === card.label && (
                   <div className={styles.findingCard} style={{ gap: 12 }}>
-                    {card.keys.map((key) => {
+                    {visibleKeys.map((key) => {
                       const issue = getIssueConfig(key)
                       if (!issue) return null
                       const signOff = reviewedFields.get(key)
                       const isReviewed = !!signOff
-                      const issueNum = GUIDED_ORDER.indexOf(key as IssueKey) + 1
+                      const issueNum = activeOrder.indexOf(key as IssueKey) + 1
                       return (
                         <div
                           key={key}
@@ -626,7 +636,7 @@ export default function AgentReportPane({
                           <div className={styles.findingTitleRow}>
                             {isReviewed ? <span className={styles.findingCheckIcon}><CircleCheck size="small" /></span> : <span className={styles.findingDot} style={{ background: issue.dotColor === 'blue' ? '#0077c5' : issue.dotColor === 'orange' ? '#d68000' : '#c22929' }} />}
                             <span className={styles.findingTitle}>{issue.title}</span>
-                            <span className={styles.issueChip}>{issueNum} of {GUIDED_ORDER.length}</span>
+                            <span className={styles.issueChip}>{issueNum} of {activeOrder.length}</span>
                             {isReviewed && <span className={styles.findingReviewedBadge}>Reviewed</span>}
                           </div>
                           {signOff && <span className={styles.findingSignOff}>{signOff.by} · {signOff.at}</span>}
@@ -706,7 +716,7 @@ export default function AgentReportPane({
             suggestedActions={activeIssue.suggestedActions}
             viewSourceLabel={activeIssue.viewSourceLabel}
             reviewedCount={reviewedCount}
-            totalItems={TOTAL_REVIEW_ITEMS}
+            totalItems={totalActive}
             reviewedFields={reviewedFields}
             onBack={handleCloseIssueDetail}
             onClose={() => { handleCloseIssueDetail(); onClose?.() }}
@@ -714,9 +724,9 @@ export default function AgentReportPane({
               onNavigateToTab?.(activeIssue.viewSourceTab, activeIssue.viewSourceSubTab, activeIssue.viewSourceField)
             }}
             onMarkReviewed={onMarkReviewed}
-            issueNumber={GUIDED_ORDER.indexOf(activeIssue.issueKey as IssueKey) + 1}
+            issueNumber={activeOrder.indexOf(activeIssue.issueKey as IssueKey) + 1}
             category={activeIssue.category}
-            totalIssues={GUIDED_ORDER.length}
+            totalIssues={activeOrder.length}
             onPrev={isFirstIssue(activeIssue.issueKey) ? undefined : () => handlePrev(activeIssue.issueKey)}
             onNext={isLastIssue(activeIssue.issueKey) ? undefined : () => handleNext(activeIssue.issueKey)}
           />

@@ -46,7 +46,7 @@ import {
   isPhase1FlagResolved,
   navigationForDetailField,
 } from './data-review/phase1FieldSync'
-import { GUIDED_ORDER, TOTAL_REVIEW_ITEMS } from './data-review/AgentReportPane'
+import { getPhase2Progress } from './data-review/phase2FlagSync'
 import { PHASE1_FLAG_MESSAGES } from './data-review/phase1FlagMessages'
 import { computeLiveReturn } from '../data/liveReturn'
 import { navigationForSourceDoc } from '../data/sourceDocuments'
@@ -156,10 +156,16 @@ export default function DataReviewPage() {
   const w2PayerFieldCounts: Record<W2Employer, number> = Object.fromEntries(
     W2_PAYER_TABS.map(({ key: p }) => [p, countPhase1FlagsForW2Payer(p, reviewedFields)])
   ) as Record<W2Employer, number>
-  // Phase 2 diagnostics progress — same GUIDED_ORDER/TOTAL_REVIEW_ITEMS AgentReportPane uses,
-  // imported rather than duplicated so the two banners can't drift out of sync.
-  const phase2Reviewed = GUIDED_ORDER.filter(k => reviewedFields.has(k)).length
-  const phase2Complete = phase2Reviewed >= TOTAL_REVIEW_ITEMS
+  // Phase 2 diagnostics progress — same dismiss rules AgentReportPane uses, so
+  // resolving Phase 1 flags / editing amounts that fix an insight keeps the banner in sync.
+  const phase2Progress = getPhase2Progress({
+    reviewedFields,
+    live: liveTotals,
+    amounts,
+  })
+  const phase2Reviewed = phase2Progress.reviewed
+  const phase2Total = phase2Progress.total
+  const phase2Complete = phase2Progress.complete
   // ---------------------------------------------------------------------------
 
   const handleToggleChecked = (fieldName: string) => {
@@ -607,7 +613,7 @@ export default function DataReviewPage() {
       {!inImportPhase && (
         <Phase2Banner
           reviewed={phase2Reviewed}
-          total={TOTAL_REVIEW_ITEMS}
+          total={phase2Total}
           complete={phase2Complete}
         />
       )}
@@ -1066,6 +1072,7 @@ export default function DataReviewPage() {
                       }}
                       fieldValues={{ ...fieldValues, withholding: totalWithholding }}
                       liveTotals={liveTotals}
+                      amounts={amounts}
                       onFieldValueChange={(key, value) => {
                         if (key === 'withholding' && typeof value === 'number') {
                           updateField('withholding', { techCircle: value })
