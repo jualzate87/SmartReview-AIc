@@ -537,7 +537,8 @@ export default function DetailFields({
               const isEditingAmt = editingField === amtKey
               const isRowReviewed = reviewedFields?.has(rowKey)
               const codeVal = staticValues[codeKey] ?? entry.code
-              const amtVal = staticValues[amtKey] ?? (entry.sub === 'a' && fieldValues?.box12 !== undefined ? fieldValues.box12.toLocaleString() : entry.amount)
+              // Seed box12=0 must stay blank (codes shown, amounts missing) — only show once > 0
+              const amtVal = staticValues[amtKey] ?? (entry.sub === 'a' && fieldValues?.box12 ? fieldValues.box12.toLocaleString() : entry.amount)
               const BOX12_CODES = ['', 'A','B','C','D','E','F','G','H','J','K','L','M','N','P','Q','R','S','T','V','W','AA','BB','DD','EE','FF','GG','HH']
               const commitAmt = () => {
                 if (entry.sub === 'a') {
