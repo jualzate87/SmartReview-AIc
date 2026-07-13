@@ -10,7 +10,7 @@ import intuitAssistIcon from '../assets/icons/intuit-assist.svg'
 import LeftPanel1040 from './data-review/LeftPanel1040'
 import ReviewTab from './data-review/ReviewTab'
 import DocumentPreview from './data-review/DocumentPreview'
-import SourceFormPreview, { usesSourceFormPreview } from './data-review/SourceFormPreview'
+import { getSourceDocPreview } from './data-review/sourceDocImages'
 import SourcePanelLoader from './data-review/SourcePanelLoader'
 import DetailFields, { W2_PAYER_TABS } from './data-review/DetailFields'
 import type { W2Employer } from './data-review/DetailFields'
@@ -50,7 +50,6 @@ import {
 import { GUIDED_ORDER, TOTAL_REVIEW_ITEMS } from './data-review/AgentReportPane'
 import { PHASE1_FLAG_MESSAGES } from './data-review/phase1FlagMessages'
 import { FROZEN_RETURN } from '../data/frozenReturn'
-import w2TechCircle from '../assets/w2-tech-circle.jpg'
 import img1040PriorPage1 from '../assets/jessica-1040-2024-variant-1.png'
 import img1040PriorPage2 from '../assets/jessica-1040-2024-variant-2.png'
 import styles from '../styles/data-review/DataReviewPage.module.css'
@@ -264,6 +263,14 @@ export default function DataReviewPage() {
   const highlightField1040 = get1040HighlightField(selectedField)
 
   const sourcePanelLoadKey = `${activeTopTab}-${activeSubTab}-${activeDivPayer}-${activeIntPayer}-${rightPanelVisible}`
+
+  const sourceDocPreview = getSourceDocPreview({
+    activeTopTab,
+    activeSubTab,
+    activeIntPayer,
+    activeDivPayer,
+    prior1040Images: [img1040PriorPage1, img1040PriorPage2],
+  })
 
   // Reset field selection on mount
   useEffect(() => {
@@ -777,31 +784,8 @@ export default function DataReviewPage() {
                 : { width: `${previewHeight}%`, flexShrink: 0, overflow: 'hidden', borderRight: '1px solid #D5DEE3', display: 'flex', flexDirection: 'column', minHeight: 0 }
               }>
                 <DocumentPreview
-                  customContent={
-                    usesSourceFormPreview(activeTopTab)
-                      ? (
-                        <SourceFormPreview
-                          activeTopTab={activeTopTab}
-                          activeIntPayer={activeIntPayer}
-                          activeDivPayer={activeDivPayer}
-                        />
-                      )
-                      : undefined
-                  }
-                  imageSrc={
-                    usesSourceFormPreview(activeTopTab) ? undefined :
-                    activeTopTab === 'prior-1040' ? [img1040PriorPage1, img1040PriorPage2] :
-                    w2TechCircle
-                  }
-                  alt={
-                    activeTopTab === 'prior-1040' ? 'Form 1040 (2024) — Jessica Drake' :
-                    activeTopTab === '1099-ints'  ? `1099-INT ${activeIntPayer}` :
-                    activeTopTab === '1099-divs'  ? `1099-DIV ${activeDivPayer}` :
-                    activeTopTab === '1099-rs'    ? '1099-R Meridian Retirement Trust' :
-                    activeTopTab === '1099-necs'  ? '1099-NEC Summit Advisory Partners' :
-                    activeTopTab === 'w2s'        ? `W-2 ${W2_PAYER_TABS.find(t => t.key === activeSubTab)?.label ?? 'Tech Circle'}` :
-                    'W-2 Tech Circle'
-                  }
+                  imageSrc={sourceDocPreview.imageSrc}
+                  alt={sourceDocPreview.alt}
                 />
               </div>
 

@@ -12,7 +12,7 @@ import {
   navigationForDetailField,
 } from './data-review/phase1FieldSync'
 import DocumentPreview from './data-review/DocumentPreview'
-import SourceFormPreview, { usesSourceFormPreview } from './data-review/SourceFormPreview'
+import { getSourceDocPreview } from './data-review/sourceDocImages'
 import SourcePanelLoader from './data-review/SourcePanelLoader'
 import DetailFields, { W2_PAYER_TABS } from './data-review/DetailFields'
 import type { W2Employer } from './data-review/DetailFields'
@@ -27,7 +27,6 @@ import PriorYear1040Fields from './data-review/PriorYear1040Fields'
 import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
 import { FROZEN_RETURN } from '../data/frozenReturn'
 import { PHASE1_FLAG_MESSAGES } from './data-review/phase1FlagMessages'
-import w2TechCircle from '../assets/w2-tech-circle.jpg'
 import img1040PriorPage1 from '../assets/jessica-1040-2024-variant-1.png'
 import img1040PriorPage2 from '../assets/jessica-1040-2024-variant-2.png'
 import dragStyles from '../styles/data-review/DragHandle.module.css'
@@ -120,19 +119,13 @@ export default function DataReviewPopout() {
     document.addEventListener('mouseup', onMouseUp)
   }, [previewWidth])
 
-  const imageSrc =
-    usesSourceFormPreview(activeTopTab) ? undefined :
-    activeTopTab === 'prior-1040' ? [img1040PriorPage1, img1040PriorPage2] :
-    w2TechCircle
-
-  const imageAlt =
-    activeTopTab === 'prior-1040' ? 'Form 1040 (2024) — Jessica Drake' :
-    activeTopTab === '1099-ints'  ? `1099-INT ${activeIntPayer}` :
-    activeTopTab === '1099-divs'  ? `1099-DIV ${activeDivPayer}` :
-    activeTopTab === '1099-rs'    ? '1099-R Meridian Retirement Trust' :
-    activeTopTab === '1099-necs'  ? '1099-NEC Summit Advisory Partners' :
-    activeTopTab === 'w2s'        ? `W-2 ${W2_PAYER_TABS.find(t => t.key === activeSubTab)?.label ?? 'Tech Circle'}` :
-    'W-2 Tech Circle'
+  const sourceDocPreview = getSourceDocPreview({
+    activeTopTab,
+    activeSubTab,
+    activeIntPayer,
+    activeDivPayer,
+    prior1040Images: [img1040PriorPage1, img1040PriorPage2],
+  })
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
@@ -188,19 +181,8 @@ export default function DataReviewPopout() {
       <div ref={rightRef} style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
           <div style={{ width: `${previewWidth}%`, flexShrink: 0, overflow: 'hidden', borderRight: '1px solid #d5dee3' }}>
             <DocumentPreview
-              customContent={
-                usesSourceFormPreview(activeTopTab)
-                  ? (
-                    <SourceFormPreview
-                      activeTopTab={activeTopTab}
-                      activeIntPayer={activeIntPayer}
-                      activeDivPayer={activeDivPayer}
-                    />
-                  )
-                  : undefined
-              }
-              imageSrc={imageSrc}
-              alt={imageAlt}
+              imageSrc={sourceDocPreview.imageSrc}
+              alt={sourceDocPreview.alt}
             />
           </div>
 
