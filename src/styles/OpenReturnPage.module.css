@@ -977,6 +977,19 @@
 .sendLinkBtn:hover { background: #f4f5f8; }
 
 /* ── Table (step 4) ── */
+/* Scroll shell: sticky header + ~6 visible rows */
+.tableScroll {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.tableRows {
+  /* Row ≈ 12+22+12 padding/content + 1px border ≈ 47px; show ~6 */
+  max-height: calc(6 * 47px);
+  overflow-y: auto;
+}
+
 .tableHeader {
   display: flex;
   align-items: center;
@@ -984,6 +997,10 @@
   background: #f8f9fa;
   border-bottom: 1px solid #eceef1;
   gap: 0;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  flex-shrink: 0;
 }
 
 .tableRow {
@@ -992,6 +1009,8 @@
   padding: 12px 16px;
   border-bottom: 1px solid #eceef1;
   gap: 0;
+  box-sizing: border-box;
+  min-height: 47px;
 }
 
 .tableRow:last-of-type {

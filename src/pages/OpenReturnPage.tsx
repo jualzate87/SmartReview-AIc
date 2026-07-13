@@ -539,37 +539,40 @@ export default function OpenReturnPage() {
                       </span>
                     </div>
                     <div className={styles.checklistBody}>
-                      {/* Table header */}
-                      <div className={styles.tableHeader}>
-                        <div className={styles.tableCheckAll}>
-                          <Checkbox defaultChecked size="small" onChange={() => {}} />
-                        </div>
-                        <span className={styles.tableColName}>Name ↕</span>
-                        <span className={styles.tableColStatus}>Import status</span>
-                        <span className={styles.tableColType}>Type ↕</span>
-                        <span className={styles.tableColDate}>Updated ↕</span>
-                        <span className={styles.tableColMenu}></span>
-                      </div>
-
-                      {/* Table rows */}
-                      {RECEIVED_DOCS.map(doc => (
-                        <div key={doc.id} className={styles.tableRow}>
+                      {/* Sticky header + scrollable rows (~6 visible) */}
+                      <div className={styles.tableScroll}>
+                        <div className={styles.tableHeader}>
                           <div className={styles.tableCheckAll}>
                             <Checkbox defaultChecked size="small" onChange={() => {}} />
                           </div>
-                          <a className={styles.tableDocName}>{doc.name}</a>
-                          <div className={styles.tableStatus}>
-                            <img src={readyToImportIcon} alt="" className={styles.statusIcon} />
-                            <span className={styles.statusText}>{doc.status}</span>
-                          </div>
-                          <div className={styles.tableType}>
-                            <span className={styles.typeText}>{doc.type}</span>
-                            <ChevronDown size="xsmall" />
-                          </div>
-                          <span className={styles.tableDate}>{doc.date}</span>
-                          <IconControl aria-label="More options" size="small" shape="square"><OverflowWeb /></IconControl>
+                          <span className={styles.tableColName}>Name ↕</span>
+                          <span className={styles.tableColStatus}>Import status</span>
+                          <span className={styles.tableColType}>Type ↕</span>
+                          <span className={styles.tableColDate}>Updated ↕</span>
+                          <span className={styles.tableColMenu}></span>
                         </div>
-                      ))}
+
+                        <div className={styles.tableRows}>
+                          {RECEIVED_DOCS.map(doc => (
+                            <div key={doc.id} className={styles.tableRow}>
+                              <div className={styles.tableCheckAll}>
+                                <Checkbox defaultChecked size="small" onChange={() => {}} />
+                              </div>
+                              <a className={styles.tableDocName}>{doc.name}</a>
+                              <div className={styles.tableStatus}>
+                                <img src={readyToImportIcon} alt="" className={styles.statusIcon} />
+                                <span className={styles.statusText}>{doc.status}</span>
+                              </div>
+                              <div className={styles.tableType}>
+                                <span className={styles.typeText}>{doc.type}</span>
+                                <ChevronDown size="xsmall" />
+                              </div>
+                              <span className={styles.tableDate}>{doc.date}</span>
+                              <IconControl aria-label="More options" size="small" shape="square"><OverflowWeb /></IconControl>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
 
                       {/* Table footer */}
                       <div className={styles.tableFooter}>
