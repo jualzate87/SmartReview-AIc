@@ -36,7 +36,9 @@
 }
 
 .title {
-  font-family: var(--font-name-heading, var(--font-family-heading));
+  /* Use --font-family-* (full stack), not --font-name-* — name tokens are
+     unquoted multi-word values and resolve as invalid font lists → serif fallback. */
+  font-family: var(--font-family-heading, "Avenir Next forINTUIT", Avenir, Helvetica, Arial, sans-serif);
   font-size: var(--font-size-heading-4, 28px);
   font-weight: var(--font-weight-heading, 600);
   line-height: 1.3;
