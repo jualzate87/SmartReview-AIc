@@ -754,12 +754,6 @@ export default function LeftPanel1040({
             const parsed = parseFloat(raw.replace(/[,$]/g, ''))
             return isNaN(parsed) ? null : parsed
           }
-          if (cfg.docs.length === 1) {
-            const raw = controlInputs[`${rowId}::${cfg.docs[0].docId}`] ?? controlInputs[rowId]
-            if (!raw?.trim()) return null
-            const parsed = parseFloat(raw.replace(/[,$]/g, ''))
-            return isNaN(parsed) ? null : parsed
-          }
           return sumControlDocInputs(cfg.docs, getDocValuesForRow(rowId, cfg.docs, controlInputs))
         }
 
@@ -837,17 +831,13 @@ export default function LeftPanel1040({
                         )
                       }
 
-                      const isMultiDoc = row.docs.length > 1
-                      const isSingleDoc = row.docs.length === 1
+                      const hasSourceDocs = row.docs.length >= 1
                       const enteredTotal = getEnteredTotal(row.id)
                       const hasInput = enteredTotal !== null
                       const matchResult = getMatch(row.id)
                       const diff = hasInput && systemVal !== null ? enteredTotal! - systemVal : null
                       const clickable = !!row.sourceTab
-
-                      // Display value for source column
-                      const singleDocKey = isSingleDoc ? `${row.id}::${row.docs[0].docId}` : row.id
-                      const singleDocValue = controlInputs[singleDocKey] ?? controlInputs[row.id] ?? ''
+                      const docCountLabel = `${row.docs.length} doc${row.docs.length === 1 ? '' : 's'}`
 
                       return (
                         <div
@@ -876,7 +866,7 @@ export default function LeftPanel1040({
                             {systemVal !== null ? `$${fmt(systemVal)}` : '—'}
                           </div>
 
-                          {isMultiDoc ? (
+                          {hasSourceDocs ? (
                             <button
                               className={[
                                 styles.controlMultiBtn,
@@ -887,12 +877,12 @@ export default function LeftPanel1040({
                                 e.stopPropagation()
                                 openControlPopover(row.id, e.currentTarget)
                               }}
-                              aria-label={`Enter ${row.label} from ${row.docs.length} source documents`}
+                              aria-label={`Enter ${row.label} from ${docCountLabel}`}
                               aria-expanded={controlPopoverRow === row.id}
                             >
-                              {hasInput ? `$${fmt(enteredTotal!)}` : `${row.docs.length} docs`}
+                              {hasInput ? `$${fmt(enteredTotal!)}` : docCountLabel}
                             </button>
-                          ) : row.docs.length === 0 ? (
+                          ) : (
                             <input
                               className={[
                                 styles.controlInput,
@@ -905,22 +895,6 @@ export default function LeftPanel1040({
                               value={controlInputs[row.id] ?? ''}
                               onChange={e => setControlInputs(prev => ({ ...prev, [row.id]: e.target.value }))}
                               onClick={e => e.stopPropagation()}
-                              aria-label={`Source total for ${row.label}`}
-                            />
-                          ) : (
-                            <input
-                              className={[
-                                styles.controlInput,
-                                hasInput && matchResult === true  ? styles.controlInputOk   : '',
-                                hasInput && matchResult === false ? styles.controlInputFail : '',
-                              ].filter(Boolean).join(' ')}
-                              type="text"
-                              inputMode="numeric"
-                              placeholder="$0"
-                              value={singleDocValue}
-                              onChange={e => setControlInputs(prev => setDocValueForRow(row.id, row.docs[0].docId, e.target.value, prev))}
-                              onClick={e => e.stopPropagation()}
-                              onFocus={() => row.sourceTab && onViewSource?.(row.sourceTab)}
                               aria-label={`Source total for ${row.label}`}
                             />
                           )}
@@ -955,7 +929,7 @@ export default function LeftPanel1040({
       {/* Tax control multi-doc popover */}
       {controlPopoverRow && controlPopoverRect && (() => {
         const cfg = TAX_CONTROL_ROWS.find(r => r.id === controlPopoverRow)
-        if (!cfg || cfg.docs.length <= 1) return null
+        if (!cfg || cfg.docs.length === 0) return null
         return (
           <TaxControlDocPopover
             rowLabel={cfg.label}

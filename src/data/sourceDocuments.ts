@@ -127,7 +127,8 @@ export const TAX_CONTROL_ROWS: TaxControlRowConfig[] = [
     box: '2a',
     label: 'IRA / pension',
     desc: 'Box 2a (taxable amount) from all 1099-Rs',
-    docs: [{ docId: '1099-r-meridian', label: 'Meridian Retirement Trust', hint: 150000 }],
+    docs: [{ docId: '1099-r-meridian', label: 'Meridian Retirement Trust (1099-R)', hint: 100000 }],
+    sourceTab: 'iraDistrib',
   },
   {
     id: 'totalIncome',

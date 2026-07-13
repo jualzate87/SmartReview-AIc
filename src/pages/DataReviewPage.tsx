@@ -656,6 +656,7 @@ export default function DataReviewPage() {
                 qualifiedDivs:   '1099-divs',
                 ordinaryDivs:    '1099-divs',
                 withholding1099: '1099-divs',
+                iraDistrib:      '1099-rs',
                 capitalGain:     'w2s',
                 stdDeduction:    'w2s',
                 agi:             'prior-1040',
