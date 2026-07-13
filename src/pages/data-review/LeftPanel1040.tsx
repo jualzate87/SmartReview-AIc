@@ -990,7 +990,7 @@ export default function LeftPanel1040({
               </div>
               <div className={styles.infoField}>
                 <span className={styles.infoLabel}>Your social security number</span>
-                <span className={styles.infoValue}>400-01-4699</span>
+                <span className={styles.infoValue}>987-65-4321</span>
               </div>
             </div>
             <div className={styles.infoRow}>
