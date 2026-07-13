@@ -59,24 +59,35 @@ const DETAIL_TO_1040: Record<string, string> = {
   necIncome: 'otherIncome',
   'nec-box1': 'otherIncome',
   otherIncome: 'otherIncome',
+  /** 1099-INT Box 8 — tax-exempt interest → line 2a */
+  'taxExempt-unwaverIngFinancial': 'taxExemptInterest',
+  withholding: 'w2Withholding',
 }
 
 /** 1040 row field → detail field key + navigation. */
 const FIELD_1040_TO_DETAIL: Record<string, Pick<Phase1VerifyItem, 'field' | 'tab' | 'divPayer' | 'intPayer'>> = {
   wages: { field: 'wages', tab: 'w2s' },
   taxableInterest: { field: 'taxableInterest', tab: '1099-ints', intPayer: 'unwaverIngFinancial' },
+  taxExemptInterest: { field: 'taxExempt-unwaverIngFinancial', tab: '1099-ints', intPayer: 'unwaverIngFinancial' },
   ordinaryDivs: { field: 'ordinaryDivs', tab: '1099-divs', divPayer: 'northmarkIndex' },
   qualifiedDivs: { field: 'qualifiedDivs', tab: '1099-divs', divPayer: 'tokenFinancial' },
   withholding: { field: 'fedTaxWithheld', tab: '1099-divs', divPayer: 'tokenFinancial' },
   withholding1099: { field: 'withholding1099', tab: '1099-rs' },
-  iraDistrib: { field: 'grossDistrib', tab: '1099-rs' },
+  iraDistrib: { field: 'r-taxableAmt', tab: '1099-rs' },
   otherIncome: { field: 'nec-box1', tab: '1099-necs' },
   w2Withholding: { field: 'withholding', tab: 'w2s' },
 }
 
 export function detailTo1040Field(detailField: string | null): string | null {
   if (!detailField) return null
-  return DETAIL_TO_1040[detailField] ?? null
+  if (DETAIL_TO_1040[detailField]) return DETAIL_TO_1040[detailField]
+  // Per-payer detail keys: taxableInterest-harborlineCredit → taxableInterest
+  if (detailField.startsWith('taxableInterest-')) return 'taxableInterest'
+  if (detailField.startsWith('taxExempt-')) return 'taxExemptInterest'
+  if (detailField.startsWith('ordinaryDivs-')) return 'ordinaryDivs'
+  if (detailField.startsWith('qualifiedDivs-')) return 'qualifiedDivs'
+  if (detailField.startsWith('fedTaxWithheld-')) return 'withholding'
+  return null
 }
 
 export function field1040ToDetail(field1040: string): Phase1VerifyItem | null {
@@ -139,7 +150,29 @@ export function navigationForDetailField(field: string): Pick<Phase1VerifyItem, 
   const fromQueue = PHASE1_VERIFY_QUEUE.find(q => q.field === field)
   if (fromQueue) return { tab: fromQueue.tab, divPayer: fromQueue.divPayer, intPayer: fromQueue.intPayer }
   const from1040 = Object.values(FIELD_1040_TO_DETAIL).find(n => n.field === field)
-  return from1040 ?? null
+  if (from1040) return from1040
+
+  // Per-payer detail keys used by FieldPopover source navigation
+  if (field === 'taxExempt-unwaverIngFinancial' || field.startsWith('taxableInterest-')) {
+    if (field.includes('harborline')) return { tab: '1099-ints', intPayer: 'harborlineCredit' }
+    if (field.includes('cascade')) return { tab: '1099-ints', intPayer: 'cascadeFederal' }
+    return { tab: '1099-ints', intPayer: 'unwaverIngFinancial' }
+  }
+  if (field.startsWith('ordinaryDivs-') || field.startsWith('qualifiedDivs-') || field.startsWith('fedTaxWithheld-')) {
+    if (field.includes('northmark')) return { tab: '1099-divs', divPayer: 'northmarkIndex' }
+    if (field.includes('beacon')) return { tab: '1099-divs', divPayer: 'beaconDividend' }
+    return { tab: '1099-divs', divPayer: 'tokenFinancial' }
+  }
+  if (field === 'r-taxableAmt' || field === 'withholding1099' || field === 'r-fedTaxWithheld' || field === 'grossDistrib') {
+    return { tab: '1099-rs' }
+  }
+  if (field === 'nec-box1' || field === 'necIncome') {
+    return { tab: '1099-necs' }
+  }
+  if (field === 'wages' || field === 'withholding') {
+    return { tab: 'w2s' }
+  }
+  return null
 }
 
 /** Phase 1 import flags per W-2 employer — only Tech Circle carries flags. */

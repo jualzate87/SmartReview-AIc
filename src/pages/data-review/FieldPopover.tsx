@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { Close, Panel } from '@design-systems/icons'
 import intuitAssistIcon from '../../assets/icons/intuit-assist.svg'
+import type { FieldOrigin, FieldOriginSource } from '../../data/fieldOrigins'
 import styles from '../../styles/data-review/FieldPopover.module.css'
 
 // ── Field metadata ────────────────────────────────────────────────────────────
@@ -14,7 +15,7 @@ export interface FieldMeta {
   // Year labels
   priorYear?: string
   currentYear?: string
-  // Source document links
+  // Source document links (legacy — prefer FieldOrigin.sources)
   sources?: { label: string; value: number }[]
   // Optional explanatory note (e.g. why a deduction or figure was chosen)
   note?: string
@@ -31,6 +32,11 @@ export const FIELD_META: Record<string, FieldMeta> = {
       { label: 'Tech Circle (W-2)', value: 118940 },
     ],
   },
+  wagesTotal: {
+    label: 'Total wages (1a–1h)',
+    prior: 136480,
+    current: 118940,
+  },
   taxableInterest: {
     label: 'Taxable interest',
     prior: 2740,
@@ -45,6 +51,9 @@ export const FIELD_META: Record<string, FieldMeta> = {
     label: 'Tax-exempt interest',
     prior: 180,
     current: 180,
+    sources: [
+      { label: 'Unwavering Financial (1099-INT) · Box 8', value: 180 },
+    ],
   },
   qualifiedDivs: {
     label: 'Qualified dividends',
@@ -66,9 +75,22 @@ export const FIELD_META: Record<string, FieldMeta> = {
       { label: 'Beacon Dividend Trust (1099-DIV)', value: 6750 },
     ],
   },
+  iraDistrib: {
+    label: 'IRA distributions',
+    prior: 0,
+    current: FROZEN_RETURN.taxablePension,
+    sources: [
+      { label: 'Meridian Retirement Trust (1099-R)', value: FROZEN_RETURN.taxablePension },
+    ],
+  },
   capitalGain: {
     label: 'Capital gain / (loss)',
     prior: 219850,
+    current: 0,
+  },
+  otherIncome: {
+    label: 'Other income',
+    prior: 0,
     current: 0,
   },
   totalIncome: {
@@ -85,10 +107,12 @@ export const FIELD_META: Record<string, FieldMeta> = {
     label: 'Standard deduction',
     prior: 31850,
     current: 15750,
-    sources: [
-      { label: 'Standard deduction (single)', value: 15750 },
-    ],
     note: 'Jessica qualifies for the standard deduction because her itemizable expenses (mortgage interest, state and local taxes, charitable gifts) don\'t exceed the standard deduction amount for her filing status.',
+  },
+  deductionSum: {
+    label: 'Deductions total',
+    prior: 31850,
+    current: 15750,
   },
   taxableIncome: {
     label: 'Taxable income',
@@ -158,7 +182,14 @@ interface FieldPopoverProps {
   /** Viewport rect of the value cell — used for fixed positioning */
   anchorRect: DOMRect
   onClose: () => void
+  /** Legacy source-link handler (label match) */
   onViewSource?: (fieldName: string, sourceLabel?: string) => void
+  /** Navigate to a specific source document + highlight the detail field */
+  onNavigateSource?: (source: FieldOriginSource) => void
+  /** Live origin breakdown (sources / calc) */
+  origin?: FieldOrigin | null
+  /** Override current-year amount (live totals) */
+  liveCurrent?: number
 }
 
 function fmt(n: number) {
@@ -177,9 +208,11 @@ function badgeClass(pct: number): string {
 export default function FieldPopover({
   fieldName,
   anchorRect,
-  containerRect,
   onClose,
   onViewSource,
+  onNavigateSource,
+  origin,
+  liveCurrent,
 }: FieldPopoverProps) {
   const meta = FIELD_META[fieldName]
   const ref = useRef<HTMLDivElement>(null)
@@ -203,15 +236,30 @@ export default function FieldPopover({
     return () => document.removeEventListener('keydown', handler)
   }, [onClose])
 
-  if (!meta) return null
+  const label = origin?.label ?? meta?.label
+  if (!label) return null
 
-  const diff = meta.current - meta.prior
-  const pct  = meta.prior !== 0 ? Math.round((diff / meta.prior) * 100) : null
+  const prior = meta?.prior ?? 0
+  const current = liveCurrent ?? meta?.current ?? 0
+  const hasYoy = !!meta
+  const diff = current - prior
+  const pct  = prior !== 0 ? Math.round((diff / prior) * 100) : null
+
+  const sources = origin?.sources
+  const calc = origin?.calc
+  const note = origin?.note ?? meta?.note
 
   // Position: right of the form doc, vertically centered on the anchor cell
-  // Calculated relative to the viewport
   const top  = anchorRect.top + anchorRect.height / 2
   const left = anchorRect.right + 10
+
+  const handleSourceClick = (s: FieldOriginSource) => {
+    if (onNavigateSource) {
+      onNavigateSource(s)
+      return
+    }
+    onViewSource?.(fieldName, s.label)
+  }
 
   return (
     <div
@@ -224,63 +272,80 @@ export default function FieldPopover({
         transform: 'translateY(-50%)',
         zIndex: 200,
       }}
+      role="dialog"
+      aria-label={`${label} details`}
     >
       {/* Header */}
       <div className={styles.header}>
         <img src={intuitAssistIcon} alt="" className={styles.assistIcon} />
-        <span className={styles.fieldLabel}>{meta.label}</span>
+        <span className={styles.fieldLabel}>{label}</span>
         <button className={styles.closeBtn} onClick={onClose} aria-label="Close popover">
           <Close size="small" />
         </button>
       </div>
 
-      {/* YoY section */}
-      <div className={styles.yoySection}>
-        <div className={styles.yoySectionLabel}>Year over year</div>
-        <div className={styles.yoyCard}>
-          <div className={styles.yoyRow}>
-            <div className={styles.yoyCol}>
-              <span className={styles.yoyColLabel}>2024</span>
-              <span className={styles.yoyColValue}>${fmt(meta.prior)}</span>
-            </div>
-            <div className={styles.yoyDivider} />
-            <div className={styles.yoyCol}>
-              <span className={styles.yoyColLabel}>2025</span>
-              <span className={styles.yoyColValue}>${fmt(meta.current)}</span>
-            </div>
-            <div className={styles.yoyDivider} />
-            <div className={styles.yoyCol}>
-              <span className={styles.yoyColLabel}>Diff</span>
-              <span className={styles.yoyColValue}>{diff > 0 ? `+$${fmt(diff)}` : diff < 0 ? `−$${fmt(Math.abs(diff))}` : '—'}</span>
-            </div>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
-            {pct !== null ? (
-              <span className={`${styles.yoyBadge} ${badgeClass(pct)}`}>
-                {pct >= 0 ? `+${pct}%` : `${pct}%`}
-              </span>
-            ) : (
-              <span className={`${styles.yoyBadge} ${styles.yoyBadgeNeutral}`}>New</span>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Explanatory note section — only if field has one */}
-      {meta.note && (
+      {/* Source documents — preferred when origin has sources */}
+      {sources && sources.length > 0 && (
         <div className={styles.sourcesSection}>
-          <div className={styles.sourcesSectionLabel}>Why this deduction?</div>
-          <p style={{ margin: 0, fontFamily: 'var(--font-family-component)', fontSize: 12, lineHeight: 1.4, color: '#495a63' }}>{meta.note}</p>
+          <div className={styles.sourcesSectionLabel}>Source documents</div>
+          {sources.map(s => (
+            <button
+              key={`${s.docId}-${s.detailFieldId}`}
+              type="button"
+              className={styles.sourceNavRow}
+              onClick={() => handleSourceClick(s)}
+            >
+              <div className={styles.sourceNavMain}>
+                <span className={styles.sourceNavLabel}>
+                  {s.label}
+                  <span className={styles.sourcePanelIcon}><Panel size="small" /></span>
+                </span>
+                <span className={styles.sourceNavBox}>{s.box}</span>
+              </div>
+              <span className={styles.sourceAmountChip}>${fmt(s.amount)}</span>
+            </button>
+          ))}
         </div>
       )}
 
-      {/* Sources section — only if field has sources */}
-      {meta.sources && meta.sources.length > 0 && (
+      {/* Calculated from */}
+      {calc && calc.components.length > 0 && (
+        <div className={styles.calcSection}>
+          <div className={styles.sourcesSectionLabel}>Calculated from</div>
+          <p className={styles.calcFormula}>{calc.formula}</p>
+          <ul className={styles.calcList}>
+            {calc.components.map((comp, i) => (
+              <li key={i} className={styles.calcRow}>
+                <span className={styles.calcOp}>{comp.operator ?? '+'}</span>
+                <span className={styles.calcLabel}>{comp.label}</span>
+                <span className={styles.calcValue}>${fmt(comp.amount)}</span>
+              </li>
+            ))}
+          </ul>
+          <div className={styles.calcTotalRow}>
+            <span className={styles.calcTotalLabel}>{calc.totalLabel}</span>
+            <span className={styles.calcTotalValue}>${fmt(calc.total)}</span>
+          </div>
+          {calc.footnote && <p className={styles.calcFootnote}>{calc.footnote}</p>}
+        </div>
+      )}
+
+      {/* Manual / no-source note */}
+      {note && (
+        <div className={styles.sourcesSection}>
+          <div className={styles.sourcesSectionLabel}>
+            {origin?.kind === 'manual' ? 'About this amount' : origin?.kind === 'calc' && !calc ? 'About this amount' : 'Note'}
+          </div>
+          <p className={styles.noteText}>{note}</p>
+        </div>
+      )}
+
+      {/* Legacy sources fallback when no origin.sources */}
+      {(!sources || sources.length === 0) && meta?.sources && meta.sources.length > 0 && (
         <div className={styles.sourcesSection}>
           <div className={styles.sourcesSectionLabel}>Sources</div>
           {meta.sources.map(s => (
             <div key={s.label} className={styles.sourceRow}>
-              {/* Link: name + panel icon together, inline */}
               <button className={styles.sourceLink} onClick={() => onViewSource?.(fieldName, s.label)}>
                 {s.label}
                 <span className={styles.sourcePanelIcon}><Panel size="small" /></span>
@@ -289,6 +354,40 @@ export default function FieldPopover({
               <span className={styles.sourceValue}>${fmt(s.value)}</span>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* YoY section */}
+      {hasYoy && (
+        <div className={styles.yoySection}>
+          <div className={styles.yoySectionLabel}>Year over year</div>
+          <div className={styles.yoyCard}>
+            <div className={styles.yoyRow}>
+              <div className={styles.yoyCol}>
+                <span className={styles.yoyColLabel}>2024</span>
+                <span className={styles.yoyColValue}>${fmt(prior)}</span>
+              </div>
+              <div className={styles.yoyDivider} />
+              <div className={styles.yoyCol}>
+                <span className={styles.yoyColLabel}>2025</span>
+                <span className={styles.yoyColValue}>${fmt(current)}</span>
+              </div>
+              <div className={styles.yoyDivider} />
+              <div className={styles.yoyCol}>
+                <span className={styles.yoyColLabel}>Diff</span>
+                <span className={styles.yoyColValue}>{diff > 0 ? `+$${fmt(diff)}` : diff < 0 ? `−$${fmt(Math.abs(diff))}` : '—'}</span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
+              {pct !== null ? (
+                <span className={`${styles.yoyBadge} ${badgeClass(pct)}`}>
+                  {pct >= 0 ? `+${pct}%` : `${pct}%`}
+                </span>
+              ) : (
+                <span className={`${styles.yoyBadge} ${styles.yoyBadgeNeutral}`}>New</span>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

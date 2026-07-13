@@ -250,6 +250,17 @@ export default function DataReviewPage() {
     setActiveIntPayer,
   ])
 
+  /** From FieldPopover source row — jump to doc + highlight the matching detail field. */
+  const handleNavigateSource = useCallback((source: {
+    docId: string
+    detailFieldId: string
+    label: string
+  }) => {
+    handleNavigateToSourceDoc(source.docId)
+    setSelectedField(source.detailFieldId)
+    if (detailTo1040Field(source.detailFieldId)) setShow1040(true)
+  }, [handleNavigateToSourceDoc, setSelectedField])
+
   const dismissTaxControlModal = useCallback(() => {
     setShowTaxControlModal(false)
     setTaxModalDismissed(true)
@@ -649,11 +660,13 @@ export default function DataReviewPage() {
             onToggleChecked={handleToggleChecked}
             issueField={issueField}
             liveTotals={liveTotals}
+            liveAmounts={amounts}
             editedFields={editedFields}
             allFlagsCleared={phase1Complete}
             taxControlViewRequest={taxControlViewRequest}
             onAddFieldNote={(text, context) => handleAddNote(text, context)}
             onNavigateToSourceDoc={handleNavigateToSourceDoc}
+            onNavigateSource={handleNavigateSource}
             onViewSource={(fieldName, sourceLabel) => {
               // Map field → document tab
               const tabMap: Record<string, typeof activeTopTab> = {

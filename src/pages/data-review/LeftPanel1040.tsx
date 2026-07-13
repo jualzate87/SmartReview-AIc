@@ -9,6 +9,10 @@ import TaxControlDocPopover, {
 } from './TaxControlDocPopover'
 import TaxControlBreakdownPopover from './TaxControlBreakdownPopover'
 import { getTaxControlBreakdown } from '../../data/taxControlBreakdowns'
+import { getFieldLiveCurrent, getFieldOrigin } from '../../data/fieldOrigins'
+import type { FieldOriginSource } from '../../data/fieldOrigins'
+import type { LiveAmounts } from '../../data/liveReturn'
+import { SEED_AMOUNTS } from '../../data/liveReturn'
 import Tooltip from './Tooltip'
 import { TAX_CONTROL_ROWS, getControlSystemValues } from '../../data/sourceDocuments'
 import type { LiveReturnTotals } from '../../data/liveReturn'
@@ -34,6 +38,8 @@ interface LeftPanel1040Props {
   issueField?: string | null
   /** Called when user clicks a source link in the field popover */
   onViewSource?: (fieldName: string, sourceLabel?: string) => void
+  /** Navigate to a specific source document + highlight its detail field */
+  onNavigateSource?: (source: FieldOriginSource) => void
   /** Navigate to a specific source document (tax control flyout) */
   onNavigateToSourceDoc?: (docId: string) => void
   /**
@@ -41,6 +47,8 @@ interface LeftPanel1040Props {
    * Prefer this over frozen constants so edits recalculate income / payments / owed.
    */
   liveTotals?: LiveReturnTotals
+  /** Per-payer live amounts for source-document popover values */
+  liveAmounts?: LiveAmounts
   /** Audit-trail field keys that were edited+saved this session */
   editedFields?: Set<string>
   /** Called when user posts a comment from a 1040 field */
@@ -95,8 +103,10 @@ export default function LeftPanel1040({
   onToggleChecked,
   issueField,
   onViewSource,
+  onNavigateSource,
   onNavigateToSourceDoc,
   liveTotals,
+  liveAmounts = SEED_AMOUNTS,
   editedFields = new Set(),
   onAddFieldNote,
   allFlagsCleared = false,
@@ -127,6 +137,34 @@ export default function LeftPanel1040({
   const displaySsn          = liveTotals?.employeeSsn?.trim()
     ? liveTotals.employeeSsn
     : '987-65-4321'
+
+  /** Effective totals object for field-origin lookups (always defined). */
+  const originTotals: LiveReturnTotals = liveTotals ?? {
+    wages: wages1040,
+    taxableInterest: taxableInterest1040,
+    ordinaryDivs,
+    qualifiedDivs: qualifiedDivs1040,
+    taxablePension,
+    otherIncome,
+    capitalGain,
+    totalIncome,
+    stdDeduction,
+    taxableIncome,
+    totalTax,
+    w2Withholding,
+    divWithholding: withholding1099,
+    rWithholding: 0,
+    withholding1099,
+    totalWithholding: withholding1040,
+    totalPayments: withholding1040,
+    oweAmount,
+    necOnReturn,
+    employeeSsn: displaySsn,
+    employerEin: '',
+  }
+
+  const fieldHasPopover = (field: string) =>
+    !!FIELD_META[field] || !!getFieldOrigin(field, originTotals, liveAmounts)
 
   const controlSystemVals = getControlSystemValues({
     total1a: wages1040,
@@ -264,9 +302,9 @@ export default function LeftPanel1040({
       return
     }
 
-    // New field clicked — open blue popover if it has metadata
+    // New field clicked — open blue popover if it has metadata or origin
     onFieldClick?.(field)
-    if (FIELD_META[field]) {
+    if (fieldHasPopover(field)) {
       // Get the rect of the value cell (last td in the row)
       const row = e.currentTarget
       const cells = row.querySelectorAll('td')
@@ -506,7 +544,7 @@ export default function LeftPanel1040({
       totalField: 'taxableIncome', totalCurr: taxableIncome,
       rows: [
         // AGI (Line 11) omitted — equals Income total shown in section header above
-        { line: '12', label: 'Standard deduction',  sub: 'From Schedule A', field: 'stdDeduction', curr: stdDeduction,  kind: 'source' as const },
+        { line: '12', label: 'Standard deduction',  sub: 'From Schedule A', field: 'stdDeduction', curr: stdDeduction,  kind: 'calc' as const },
         // Taxable income (Line 15) omitted — same value as this section header total
       ],
     },
@@ -635,7 +673,7 @@ export default function LeftPanel1040({
                       const isBlue     = isSelected && !isIssue
                       const isOrange   = isSelected && !!isIssue
                       const clickable  = !!row.field
-                      const hasPopover = !!row.field && !!FIELD_META[row.field]
+                      const hasPopover = !!row.field && fieldHasPopover(row.field)
                       const diffPos = diff !== null && diff > 0
                       const diffNeg = diff !== null && diff < 0
 
@@ -1168,7 +1206,7 @@ export default function LeftPanel1040({
               <Row field="agi"             line="11" label="Adjusted gross income"                                         kind="calc"   value={totalIncome} bold shaded />
 
               <Section title="Deductions" />
-              <Row field="stdDeduction"    line="12" label="Standard deduction or itemized deductions (from Schedule A)"  kind="source" value={stdDeduction} />
+              <Row field="stdDeduction"    line="12" label="Standard deduction or itemized deductions (from Schedule A)"  kind="calc"   value={stdDeduction} />
               <Row field="deductionSum"    line="14" label="Add lines 12 and 13"                                           kind="calc"   value={stdDeduction} />
 
               <Divider />
@@ -1199,7 +1237,13 @@ export default function LeftPanel1040({
         <FieldPopover
           fieldName={popoverField}
           anchorRect={popoverRect}
+          origin={getFieldOrigin(popoverField, originTotals, liveAmounts)}
+          liveCurrent={getFieldLiveCurrent(popoverField, originTotals)}
           onClose={handleClosePopover}
+          onNavigateSource={(source) => {
+            handleDismissPopoverKeepSelection()
+            onNavigateSource?.(source)
+          }}
           onViewSource={(fieldName, sourceLabel) => {
             // Dismiss the popover UI but keep the field selected so highlight carries through
             handleDismissPopoverKeepSelection()

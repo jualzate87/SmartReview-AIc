@@ -256,3 +256,159 @@
 .sourcePanelIcon:hover {
   color: #0365ac;
 }
+
+/* ── Clickable source nav rows (doc + amount chip) ── */
+.sourceNavRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  margin-bottom: 4px;
+  border: 1px solid var(--color-divider-tertiary, #e3e8eb);
+  border-radius: 6px;
+  background: var(--color-container-background-secondary, #f4f5f8);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.sourceNavRow:last-child {
+  margin-bottom: 0;
+}
+
+.sourceNavRow:hover {
+  border-color: #236cff;
+  background: #f0f5ff;
+}
+
+.sourceNavMain {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.sourceNavLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-component-x-small, 12px);
+  font-weight: var(--font-weight-component-semibold, 500);
+  color: #0365ac;
+  line-height: 1.3;
+}
+
+.sourceNavBox {
+  font-size: 11px;
+  color: var(--color-text-secondary, #5d686f);
+  line-height: 1.3;
+}
+
+.sourceAmountChip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 100px;
+  background: #236cff;
+  color: #ffffff;
+  font-size: var(--font-size-component-x-small, 12px);
+  font-weight: var(--font-weight-component-bold, 600);
+  white-space: nowrap;
+}
+
+/* ── Calculated-from section ── */
+.calcSection {
+  padding: 8px 10px 10px;
+  border-bottom: 1px solid #e8edf2;
+}
+
+.calcFormula {
+  margin: 0 0 8px;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small, 12px);
+  color: var(--color-text-secondary, #5d686f);
+  line-height: 1.4;
+}
+
+.calcList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.calcRow {
+  display: grid;
+  grid-template-columns: 16px 1fr auto;
+  align-items: baseline;
+  gap: 6px;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small, 12px);
+}
+
+.calcOp {
+  color: #8fa3af;
+  font-weight: var(--font-weight-component-semibold, 500);
+  text-align: center;
+}
+
+.calcLabel {
+  color: #2d4a5e;
+  line-height: 1.35;
+}
+
+.calcValue {
+  font-weight: var(--font-weight-component-semibold, 500);
+  color: #1a3347;
+  white-space: nowrap;
+}
+
+.calcTotalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e3e8eb;
+}
+
+.calcTotalLabel {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small, 12px);
+  font-weight: var(--font-weight-component-bold, 600);
+  color: #2d4a5e;
+}
+
+.calcTotalValue {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small, 14px);
+  font-weight: var(--font-weight-component-bold, 600);
+  color: #1a3347;
+  padding: 2px 8px;
+  border-radius: 100px;
+  background: #eef3ff;
+}
+
+.calcFootnote {
+  margin: 6px 0 0;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small, 12px);
+  color: #8fa3af;
+  line-height: 1.4;
+  font-style: italic;
+}
+
+.noteText {
+  margin: 0;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small, 12px);
+  line-height: 1.4;
+  color: #495a63;
+}

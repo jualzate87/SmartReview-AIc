@@ -308,7 +308,8 @@ export default function DetailFields1099({
     const isEditing = editingField === fieldKey
     const isReviewed = reviewedFields?.has(fieldKey)
     const isCommentOpen = commentField === fieldKey
-    const flowsTo1040 = fieldKey.startsWith('taxableInterest-')
+    const isSelected = selectedField === fieldKey
+    const flowsTo1040 = fieldKey.startsWith('taxableInterest-') || fieldKey.startsWith('taxExempt-')
     const commitStatic = () => {
       setStaticValues(prev => ({ ...prev, [fieldKey]: draftValue }))
       setEditingField(null)
@@ -324,13 +325,14 @@ export default function DetailFields1099({
     }
     return (
       <div
-        className={`${styles.fieldRow} ${isCommentOpen ? styles.fieldRowCommentOpen : ''}`}
+        ref={isSelected ? highlightedRef : undefined}
+        className={`${styles.fieldRow} ${isCommentOpen ? styles.fieldRowCommentOpen : ''} ${isSelected ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''}`}
         onClick={() => onFieldSelect?.(fieldKey)}
         style={{ cursor: 'pointer' }}
       >
         <span className={styles.fieldLabel}>{label}</span>
         <input
-          className={`${styles.fieldInput} ${inputClass} ${isEditing ? styles.fieldInputEditing : ''}`}
+          className={`${styles.fieldInput} ${inputClass} ${isEditing ? styles.fieldInputEditing : isSelected ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`}
           readOnly={!isEditing}
           value={isEditing ? draftValue : currentVal}
           onChange={e => setDraftValue(e.target.value)}

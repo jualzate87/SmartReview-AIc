@@ -319,6 +319,8 @@ export default function DetailFieldsDiv({
     const isFlagged = !!flaggedFields[flagKey] && !reviewedFields?.has(reviewedKey)
     const isReviewed = reviewedFields?.has(reviewedKey)
     const isCommentOpen = commentField === fieldKey
+    const selectKey = flagKey === 'ordinaryDivs' ? 'ordinaryDivs' : fieldKey
+    const isSelected = selectedField === selectKey || selectedField === fieldKey || selectedField === flagKey
     const flowsTo1040 =
       fieldKey === 'fedTaxWithheld' ||
       fieldKey.startsWith('ordinaryDivs-') ||
@@ -346,8 +348,9 @@ export default function DetailFieldsDiv({
     return (
       <>
         <div
-          className={`${styles.fieldRow} ${isFlagged ? styles.fieldRowHasNote : ''} ${isCommentOpen ? styles.fieldRowCommentOpen : ''}`}
-          onClick={() => onFieldSelect?.(flagKey === 'ordinaryDivs' ? 'ordinaryDivs' : fieldKey)}
+          ref={isSelected ? highlightedRef : undefined}
+          className={`${styles.fieldRow} ${isFlagged ? styles.fieldRowHasNote : ''} ${isCommentOpen ? styles.fieldRowCommentOpen : ''} ${isSelected ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''}`}
+          onClick={() => onFieldSelect?.(selectKey)}
           style={{ cursor: 'pointer' }}
         >
           <span className={`${styles.fieldLabel} ${isFlagged ? styles.fieldLabelFlagged : ''}`}>
@@ -355,7 +358,7 @@ export default function DetailFieldsDiv({
             {label}
           </span>
           <input
-            className={`${styles.fieldInput} ${inputClass} ${isEditing ? styles.fieldInputEditing : isFlagged ? styles.fieldInputHighlightedOrange : ''}`}
+            className={`${styles.fieldInput} ${inputClass} ${isEditing ? styles.fieldInputEditing : isFlagged ? styles.fieldInputHighlightedOrange : isSelected ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`}
             readOnly={!isEditing}
             value={isEditing ? draftValue : currentVal}
             onChange={e => setDraftValue(e.target.value)}
