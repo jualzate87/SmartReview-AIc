@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Close, Panel } from '@design-systems/icons'
+import { Close } from '@design-systems/icons'
 import intuitAssistIcon from '../../assets/icons/intuit-assist.svg'
 import type { FieldOrigin, FieldOriginSource } from '../../data/fieldOrigins'
 import styles from '../../styles/data-review/FieldPopover.module.css'
@@ -206,7 +206,7 @@ function badgeClass(pct: number): string {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-const POPOVER_WIDTH = 300
+const POPOVER_WIDTH = 360
 const VIEWPORT_PAD = 12
 
 export default function FieldPopover({
@@ -225,18 +225,19 @@ export default function FieldPopover({
     left: Math.min(anchorRect.right + 10, window.innerWidth - POPOVER_WIDTH - VIEWPORT_PAD),
   }))
 
-  // Clamp popover fully on-screen after mount (height varies with Source/Calc/YoY)
+  // Clamp popover fully on-screen after mount (width/height vary with Source/Calc/YoY)
   useLayoutEffect(() => {
     const el = ref.current
     if (!el) return
-    const h = el.getBoundingClientRect().height
+    const { width: w, height: h } = el.getBoundingClientRect()
+    const popW = Math.max(w, POPOVER_WIDTH)
     let top = anchorRect.top + anchorRect.height / 2
     // Prefer right of the cell; flip left if it would overflow the viewport
     let left = anchorRect.right + 10
-    if (left + POPOVER_WIDTH > window.innerWidth - VIEWPORT_PAD) {
-      left = anchorRect.left - POPOVER_WIDTH - 10
+    if (left + popW > window.innerWidth - VIEWPORT_PAD) {
+      left = anchorRect.left - popW - 10
     }
-    left = Math.max(VIEWPORT_PAD, Math.min(left, window.innerWidth - POPOVER_WIDTH - VIEWPORT_PAD))
+    left = Math.max(VIEWPORT_PAD, Math.min(left, window.innerWidth - popW - VIEWPORT_PAD))
     const half = h / 2
     top = Math.max(VIEWPORT_PAD + half, Math.min(top, window.innerHeight - VIEWPORT_PAD - half))
     setCoords({ top, left })
@@ -373,9 +374,8 @@ export default function FieldPopover({
                   onClick={() => handleSourceClick(s)}
                 >
                   {displayLabel}
-                  <span className={styles.sourcePanelIcon}><Panel size="small" /></span>
                 </button>
-                <span className={styles.sourceDots} />
+                <span className={styles.sourceDots} aria-hidden="true" />
                 <span className={styles.sourceValue}>${fmt(s.amount)}</span>
               </div>
             )
@@ -395,9 +395,8 @@ export default function FieldPopover({
                 onClick={() => onViewSource?.(fieldName, s.label)}
               >
                 {s.label}
-                <span className={styles.sourcePanelIcon}><Panel size="small" /></span>
               </button>
-              <span className={styles.sourceDots} />
+              <span className={styles.sourceDots} aria-hidden="true" />
               <span className={styles.sourceValue}>${fmt(s.value)}</span>
             </div>
           ))}

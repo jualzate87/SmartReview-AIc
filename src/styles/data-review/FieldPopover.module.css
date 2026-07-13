@@ -12,7 +12,9 @@
 
 /* The popover card itself — positioned fixed via portal to document.body */
 .popover {
-  width: 300px;
+  width: 360px;
+  min-width: 360px;
+  max-width: calc(100vw - 24px);
   background: #ffffff;
   border: 2px solid #236cff;
   border-radius: 8px;
@@ -20,6 +22,7 @@
   pointer-events: all;
   animation: popoverIn 180ms cubic-bezier(0.2, 0, 0.25, 1) both;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 @keyframes popoverIn {
@@ -193,21 +196,21 @@
 }
 
 .sourceRow {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(12px, 40px) max-content;
   align-items: baseline;
-  gap: 0;
-  margin-bottom: 4px;
+  column-gap: 0;
+  margin-bottom: 6px;
+  min-width: 0;
 }
 
 .sourceRow:last-child {
   margin-bottom: 0;
 }
 
-/* Link = name + panel icon together */
+/* Label wraps; amount column is max-content so dollars stay fully visible */
 .sourceLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+  display: block;
   background: none;
   border: none;
   padding: 0;
@@ -215,35 +218,26 @@
   font-size: 12px;
   font-family: inherit;
   color: #0365ac;
-  white-space: nowrap;
-  flex-shrink: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  min-width: 0;
   text-align: left;
+  line-height: 1.35;
 }
 
 .sourceLink:hover {
   text-decoration: underline;
 }
 
-.sourceLink:hover .sourcePanelIcon {
-  color: #0365ac;
-}
-
-.sourcePanelIcon {
-  display: inline-flex;
-  align-items: center;
-  color: #5d9ec6;
-  flex-shrink: 0;
-  line-height: 1;
-}
-
 .sourceDots {
-  flex: 1;
   border-bottom: 1px dotted #adb9c2;
-  margin: 0 6px;
-  min-width: 8px;
+  margin: 0 8px;
+  min-width: 12px;
   /* sits on baseline */
   position: relative;
   top: -3px;
+  align-self: baseline;
 }
 
 .sourceValue {
@@ -251,11 +245,8 @@
   font-weight: 600;
   color: #21262a;
   white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.sourcePanelIcon:hover {
-  color: #0365ac;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ── Calculated-from section (quiet, matches TaxControlBreakdownPopover) ── */
