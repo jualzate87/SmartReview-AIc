@@ -1020,6 +1020,7 @@ export default function DataReviewPage() {
             >
                 <AgentLoadingPane
                   onClose={handleAgentClose}
+                  isLoading={agentView === 'loading'}
                   showReport={agentView === 'report' || agentView === 'closing'}
                   closing={agentView === 'closing'}
                   reportContent={

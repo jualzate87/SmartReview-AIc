@@ -23,8 +23,8 @@
   100% { opacity: 0; transform: translateY(8px); }
 }
 
-/* GIF-only phase: fade in */
-@keyframes gifFadeIn {
+/* Spin-only phase: fade in */
+@keyframes spinFadeIn {
   0%   { opacity: 0; transform: scale(0.92); }
   100% { opacity: 1; transform: scale(1); }
 }
@@ -122,19 +122,12 @@
   position: relative;
 }
 
-/* ── Phase A: GIF only ── */
-.gifOnlyPhase {
+/* ── Phase A: rotating Intuit Assist icon only ── */
+.spinOnlyPhase {
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: gifFadeIn 300ms cubic-bezier(0, 0, 0.25, 1) both;
-}
-
-.logo {
-  width: 48px;
-  height: 48px;
-  display: block;
-  object-fit: contain;
+  animation: spinFadeIn 280ms cubic-bezier(0, 0, 0.25, 1) both;
 }
 
 /* ── Phase B: Greeting (icon + text fade in together) ── */
@@ -159,20 +152,20 @@
   animation: greetingGroupOut 200ms cubic-bezier(0.35, 0, 0.25, 1) forwards;
 }
 
-/* Spinning snowflake icon container */
+/* Spinning Intuit Assist icon */
 .spinningIcon {
-  width: 44px;
-  height: 44px;
+  width: 56px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  animation: snowflakeSpin 3s linear infinite;
+  animation: snowflakeSpin 2.5s linear infinite;
 }
 
 .greetingIconImg {
-  width: 44px;
-  height: 44px;
+  width: 56px;
+  height: 56px;
   display: block;
 }
 
@@ -229,7 +222,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .panel,
-  .gifOnlyPhase,
+  .spinOnlyPhase,
   .greetingPhase,
   .greetingExiting,
   .spinningIcon,

@@ -153,6 +153,7 @@
   flex-direction: column;
   gap: 8px;
   width: 100%;
+  align-self: stretch;
   box-sizing: border-box;
 }
 
@@ -668,7 +669,7 @@
   padding: 0 2px 4px;
 }
 
-/* ── Completion screen ── */
+/* ── Completion screen — stretch to match scoreCard width ── */
 .completionScreen {
   display: flex;
   flex-direction: column;
@@ -679,6 +680,8 @@
   border-radius: 4px;
   margin: 0;
   width: 100%;
+  max-width: 100%;
+  align-self: stretch;
   box-sizing: border-box;
 }
 
