@@ -64,6 +64,7 @@ import img1040PriorPage1 from '../assets/jessica-1040-2024-variant-1.png'
 import img1040PriorPage2 from '../assets/jessica-1040-2024-variant-2.png'
 import styles from '../styles/data-review/DataReviewPage.module.css'
 import dragStyles from '../styles/data-review/DragHandle.module.css'
+import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
 
 export default function DataReviewPage() {
   // Source-doc review state — flags, reviewed fields, active tab, editable field
