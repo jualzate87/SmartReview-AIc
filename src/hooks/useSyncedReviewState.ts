@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { FROZEN_RETURN, TOKEN_QUALIFIED_DIVS_RETURN } from '../data/frozenReturn'
 import type { W2Employer } from '../pages/data-review/DetailFields'
 import type { TopTab } from '../pages/data-review/ReviewTab'
 import type { DivPayer } from '../pages/data-review/DetailFieldsDiv'
@@ -36,7 +37,7 @@ const CHANNEL_NAME = 'protoc-data-review-sync'
 // means the cached session predates the new numbers, so it's discarded instead
 // of silently mixing old field values with the new defaults (which caused the
 // 1040 to show stale withholding/amount-owed figures after a data fix).
-const STATE_VERSION = 7
+const STATE_VERSION = 8
 const STORAGE_KEY = 'protoc-data-review-state-v' + STATE_VERSION
 const PREPARER_NAME = 'Juan Alzate'
 
@@ -48,12 +49,12 @@ const DEFAULT_STATE: SyncedState = {
   activeTopTab: 'w2s',
   activeSubTab: 'techCircle',
   selectedField: null,
-  wages: { techCircle: 118940 },
+  wages: { techCircle: FROZEN_RETURN.wages },
   fieldValues: {
-    withholding: { techCircle: 0 },
+    withholding: { techCircle: FROZEN_RETURN.w2Withholding },
     box12: 0,
     taxableInterest: 1986,
-    qualifiedDivs: 331250,
+    qualifiedDivs: TOKEN_QUALIFIED_DIVS_RETURN,
   },
   reviewedFieldsList: [],
   verifiedDocsList: [],

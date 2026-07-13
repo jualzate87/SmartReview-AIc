@@ -25,6 +25,8 @@ import DetailFieldsNec, { NEC_PAYER_TABS } from './data-review/DetailFieldsNec'
 import PeelTab from './data-review/PeelTab'
 import PriorYear1040Fields from './data-review/PriorYear1040Fields'
 import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
+import { FROZEN_RETURN } from '../data/frozenReturn'
+import { PHASE1_FLAG_MESSAGES } from './data-review/phase1FlagMessages'
 import w2TechCircle from '../assets/w2-tech-circle.jpg'
 import img1040PriorPage1 from '../assets/jessica-1040-2024-variant-1.png'
 import img1040PriorPage2 from '../assets/jessica-1040-2024-variant-2.png'
@@ -61,7 +63,7 @@ export default function DataReviewPopout() {
 
   // W-2 Box 2 is blank for Tech Circle — all federal withholding on this return
   // comes from the 1099-DIV (Box 4, Token Financial), which flows to 1040 line 25b.
-  const DIV_WITHHOLDING = 24925
+  const DIV_WITHHOLDING = FROZEN_RETURN.divWithholding
   const totalWithholding = fieldValues.withholding.techCircle + DIV_WITHHOLDING
   const updateField = (key: keyof typeof fieldValues, value: number | { techCircle: number }) =>
     updateFieldValue(key, value)
@@ -245,10 +247,10 @@ export default function DataReviewPopout() {
                 verifiedDocs={verifiedDocs}
                 onVerifyDoc={toggleVerifiedDoc}
                 flaggedFields={{
-                  ssn: 'Employee SSN not imported — required for e-filing. Enter manually.',
-                  wages: 'Low confidence (72%): wages may be misread. Source W-2 Box 1 shows $148,940 but return has $118,940.',
-                  box12: 'Box 12 not imported — enter code and amount manually from source W-2.',
-                  ein:   'Employer EIN not found in document — required for e-filing. Enter manually.',
+                  ssn: PHASE1_FLAG_MESSAGES.w2.ssn,
+                  wages: PHASE1_FLAG_MESSAGES.w2.wages,
+                  box12: PHASE1_FLAG_MESSAGES.w2.box12,
+                  ein: PHASE1_FLAG_MESSAGES.w2.ein,
                 }}
               />
             )}
@@ -266,10 +268,10 @@ export default function DataReviewPopout() {
                 verifiedDocs={verifiedDocs}
                 onVerifyDoc={toggleVerifiedDoc}
                 flaggedFields={{
-                  divCollectibles: 'Collectibles (28%) gain not imported. Review source document and enter if applicable.',
-                  divNonDiv: 'Nondividend distributions not imported. Review source document and enter if applicable.',
-                  fedTaxWithheld: 'Low confidence (68%): federal withholding may be misread. Source shows $26,363 but return has $24,925. Verify Box 4 against source 1099-DIV.',
-                  ordinaryDivs: 'Low confidence (85%): ordinary dividends may be misread. Source 1099-DIV shows $12,400 — verify Box 1a against Northmark Index Funds source.',
+                  divCollectibles: PHASE1_FLAG_MESSAGES.div.divCollectibles,
+                  divNonDiv: PHASE1_FLAG_MESSAGES.div.divNonDiv,
+                  fedTaxWithheld: PHASE1_FLAG_MESSAGES.div.fedTaxWithheld,
+                  ordinaryDivs: PHASE1_FLAG_MESSAGES.div.ordinaryDivs,
                 }}
               />
             )}
@@ -287,7 +289,7 @@ export default function DataReviewPopout() {
                 verifiedDocs={verifiedDocs}
                 onVerifyDoc={toggleVerifiedDoc}
                 flaggedFields={{
-                  taxableInterest: 'Low confidence (72%) — interest income may be misread. Verify Box 1 against source 1099-INT.',
+                  taxableInterest: PHASE1_FLAG_MESSAGES.int.taxableInterest,
                 }}
               />
             )}
@@ -302,7 +304,7 @@ export default function DataReviewPopout() {
                 verifiedDocs={verifiedDocs}
                 onVerifyDoc={toggleVerifiedDoc}
                 flaggedFields={{
-                  grossDistrib: 'Low confidence (78%): gross distribution may be misread. Source 1099-R shows $150,000 — verify Box 1 against Meridian Retirement Trust source.',
+                  grossDistrib: PHASE1_FLAG_MESSAGES.r.grossDistrib,
                 }}
               />
             )}

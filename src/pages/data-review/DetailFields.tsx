@@ -63,7 +63,7 @@ const EMPLOYER_DATA = {
     name: 'Tech Circle Inc',
     street: '321 Main Orchard Dr',
     city: 'Reno', state: 'NV', zip: '89501',
-    federalTax: '',
+    federalTax: '15,840',
     socialSecurityWages: '148,940', ssTax: '9,234.28',
     medicareWages: '148,940', medicareTax: '2,159.63',
     ssTips: '0', allocatedTips: '0',

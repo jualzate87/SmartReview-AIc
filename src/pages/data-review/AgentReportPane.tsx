@@ -10,23 +10,26 @@ import scannerIcon from '../../assets/icons/scanner.svg'
 import taxesAndCreditsIcon from '../../assets/icons/taxes-and-credits.svg'
 import IssueDetailPane from './IssueDetailPane'
 import Tooltip from './Tooltip'
+import { FROZEN_RETURN } from '../../data/frozenReturn'
+import { RETURN_SUMMARY_INSIGHTS } from './phase1FlagMessages'
 import styles from '../../styles/data-review/AgentReportPane.module.css'
 
 // ProtoC Phase 2 — AI diagnostics ONLY. Import/OCR flags (w2Box12, w2Ein,
 // wagesConfidence, divCollectibles, divNonDiv) are owned by Phase 1 and removed here,
 // so there is zero redundancy between the two phases.
-export const TOTAL_REVIEW_ITEMS = 11
+export const TOTAL_REVIEW_ITEMS = 12
 
 export const GUIDED_ORDER = [
   'balanceDueJump',
   'totalTaxRise',
   'withholdingDrop',
-  'w2WithholdingZero',
+  'estTaxPenalty',
   'qualDivDrop',
   'ordinaryDivSurge',
   'qualDivRatio',
   'confirmPriorAgi',
   'missingEstPayments',
+  'niitForm8960',
   'optW4Adjustment',
   'optIra',
 ] as const
@@ -57,8 +60,8 @@ interface AgentReportPaneProps {
 // Key order within each card matches GUIDED_ORDER so the "N of 7" badges are
 // consecutive within the card (e.g. Critical always reads 1, 2 — never 2, 5).
 const REPORT_CARDS = [
-  { label: 'Critical',        keys: ['balanceDueJump', 'totalTaxRise', 'withholdingDrop', 'w2WithholdingZero'], badgeColor: 'red'    as const, position: 'first' },
-  { label: 'Review required', keys: ['qualDivDrop', 'ordinaryDivSurge', 'qualDivRatio', 'confirmPriorAgi', 'missingEstPayments'], badgeColor: 'orange' as const, position: 'middle' },
+  { label: 'Critical',        keys: ['balanceDueJump', 'totalTaxRise', 'withholdingDrop', 'estTaxPenalty'], badgeColor: 'red'    as const, position: 'first' },
+  { label: 'Review required', keys: ['qualDivDrop', 'ordinaryDivSurge', 'qualDivRatio', 'confirmPriorAgi', 'missingEstPayments', 'niitForm8960'], badgeColor: 'orange' as const, position: 'middle' },
   { label: 'Opportunities',   keys: ['optW4Adjustment', 'optIra'], badgeColor: 'blue'   as const, position: 'last' },
 ]
 
@@ -70,29 +73,25 @@ const CARD_ICONS = [
 ]
 
 // ── Jessica Drake Issues (Phase 2 diagnostics only) ────────────────────────
-// Every figure below is pulled directly from LeftPanel1040's live values
-// (wages $118,940, taxable interest $1,986, qualified divs $187,500, ordinary
-// divs $331,250, capital gain $0, total income/AGI $452,176, taxable income
-// $436,426, total tax $149,830 flat, withholding $24,925 [$0 W-2 + $24,925 1099-DIV,
-// editable], amount owed $124,905) or the real prior-year figures from
-// priorYear1040Data.ts (AGI $485,820, total tax $98,890, amount owed $22,790).
-// Prior-year AGI exceeds $150,000, so the 2025 safe harbor is 110% of 2024's
-// total tax ($108,779) — this year's $24,925 in payments falls far short.
+// Figures align with Loop 2 frozen return anchors (FROZEN_RETURN).
+
+const fmtUsd = (n: number) => `$${n.toLocaleString()}`
+const OWE_AMOUNT = FROZEN_RETURN.totalTax - FROZEN_RETURN.totalWithholding
 
 const BALANCE_DUE_JUMP_ISSUE = {
   issueKey: 'balanceDueJump',
   dotColor: 'red' as const,
-  title: 'Balance due jumped to $124,905',
+  title: `Balance due jumped to ${fmtUsd(OWE_AMOUNT)}`,
   category: 'IRS compliance',
-  summary: 'Line 37 rose from $22,790 in 2024 to $124,905 this year, a 448% increase. Confirm Jessica can pay this amount by the filing deadline.',
-  taxImpact: 'A balance due this large may trigger underpayment penalties if quarterly payments were not made. Form 2210 should be reviewed before filing.',
+  summary: `Line 37 rose from $22,790 in 2024 to ${fmtUsd(OWE_AMOUNT)} this year, a 378% increase. Confirm Jessica can pay this amount by the filing deadline.`,
+  taxImpact: RETURN_SUMMARY_INSIGHTS.estTaxPenalty,
   rootCause: 'Total tax rose while federal withholding fell sharply. Capital gains dropped to $0 but dividend income surged, shifting the tax profile.',
   tableRows: [
-    { label: 'Amount you owe (line 37)', cols: ['$124,905', '$22,790', '+448%'], badge: 'red' as const, total: true },
+    { label: 'Amount you owe (line 37)', cols: [fmtUsd(OWE_AMOUNT), '$22,790', '+378%'], badge: 'red' as const, total: true },
   ],
   tableHeaders: ['Item', '2025', '2024', 'YoY'],
   suggestedActions: [
-    'Confirm Jessica can pay $124,905 by the filing deadline.',
+    `Confirm Jessica can pay ${fmtUsd(OWE_AMOUNT)} by the filing deadline.`,
     'Ask if any 2025 estimated payments were made but not entered on line 26.',
     'Review Form 2210 for underpayment penalty exposure.',
   ],
@@ -107,12 +106,12 @@ const TOTAL_TAX_RISE_ISSUE = {
   dotColor: 'red' as const,
   title: 'Total tax up 52% year over year',
   category: 'IRS compliance',
-  summary: 'Total tax on line 24 rose from $98,890 in 2024 to $149,830 in 2025 even though AGI fell 7%. The income mix changed: capital gains fell to $0 while ordinary dividends rose 161%.',
-  taxImpact: 'Higher total tax with lower AGI means more income is taxed at ordinary rates. Review Schedule D and Form 8949 for missing capital gain entries.',
-  rootCause: 'Capital gains fell from $219,850 to $0 on line 7. Ordinary dividends rose from $126,750 to $331,250 on line 3b, replacing lower-rate gain income.',
+  summary: `Total tax on line 24 rose from $98,890 in 2024 to ${fmtUsd(FROZEN_RETURN.totalTax)} in 2025 even though AGI rose 19%. The income mix changed: capital gains fell to $0 while ordinary dividends rose 177%.`,
+  taxImpact: 'Higher total tax with a shifted income mix means more income is taxed at ordinary rates. Review Schedule D and Form 8949 for missing capital gain entries.',
+  rootCause: `Capital gains fell from $219,850 to $0 on line 7. Ordinary dividends rose from $126,750 to ${fmtUsd(FROZEN_RETURN.ordinaryDivs)} on line 3b, replacing lower-rate gain income.`,
   tableRows: [
-    { label: 'Total tax (line 24)', cols: ['$149,830', '$98,890', '+52%'], badge: 'red' as const, total: true },
-    { label: 'AGI (line 11)',       cols: ['$452,176', '$485,820', '-7%'], badge: 'orange' as const, total: false },
+    { label: 'Total tax (line 24)', cols: [fmtUsd(FROZEN_RETURN.totalTax), '$98,890', '+52%'], badge: 'red' as const, total: true },
+    { label: 'AGI (line 11)',       cols: [fmtUsd(FROZEN_RETURN.totalIncome), '$485,820', '+19%'], badge: 'orange' as const, total: false },
   ],
   tableHeaders: ['Item', '2025', '2024', 'YoY'],
   suggestedActions: [
@@ -129,14 +128,14 @@ const TOTAL_TAX_RISE_ISSUE = {
 const WITHHOLDING_DROP_ISSUE = {
   issueKey: 'withholdingDrop',
   dotColor: 'red' as const,
-  title: 'Federal withholding down 39%',
+  title: 'Federal withholding below safe harbor',
   category: 'IRS compliance',
-  summary: 'Combined federal withholding on lines 25a and 25b fell from $41,100 in 2024 to $24,925 this year. That covers only 16.6% of the $149,830 total tax.',
-  taxImpact: 'Withholding below the safe harbor of $108,779 (110% of 2024 tax) exposes Jessica to Form 2210 underpayment penalties.',
-  rootCause: 'All $24,925 in federal withholding now comes from 1099-DIV Box 4 backup withholding. Last year withholding included $22,360 from W-2 Box 2.',
+  summary: `Combined federal withholding on lines 25a and 25b is ${fmtUsd(FROZEN_RETURN.totalWithholding)} this year (${fmtUsd(FROZEN_RETURN.w2Withholding)} W-2 + ${fmtUsd(FROZEN_RETURN.divWithholding)} 1099-DIV). That covers only 27% of the ${fmtUsd(FROZEN_RETURN.totalTax)} total tax.`,
+  taxImpact: RETURN_SUMMARY_INSIGHTS.estTaxPenalty,
+  rootCause: `W-2 Box 2 shows ${fmtUsd(FROZEN_RETURN.w2Withholding)} and 1099-DIV Box 4 shows ${fmtUsd(FROZEN_RETURN.divWithholding)} on the return. 1099-R withholding was not imported. Last year total withholding was $41,100.`,
   tableRows: [
-    { label: 'Federal withholding (25a + 25b)', cols: ['$24,925', '$41,100', '-39%'], badge: 'red' as const, total: false },
-    { label: 'Safe harbor (110% of 2024 tax)',    cols: ['$108,779', 'Not met', '!'],    badge: 'red' as const, total: true },
+    { label: 'Federal withholding (25a + 25b)', cols: [fmtUsd(FROZEN_RETURN.totalWithholding), '$41,100', '-1%'], badge: 'red' as const, total: false },
+    { label: 'Safe harbor (110% of 2024 tax)',    cols: ['$108,779', 'Not met', '!'], badge: 'red' as const, total: true },
   ],
   tableHeaders: ['Item', '2025', '2024', 'Status'],
   suggestedActions: [
@@ -150,28 +149,28 @@ const WITHHOLDING_DROP_ISSUE = {
   viewSourceField: 'fedTaxWithheld',
 }
 
-const W2_WITHHOLDING_ZERO_ISSUE = {
-  issueKey: 'w2WithholdingZero',
+const EST_TAX_PENALTY_ISSUE = {
+  issueKey: 'estTaxPenalty',
   dotColor: 'red' as const,
-  title: 'W-2 federal withholding is $0',
+  title: 'Estimated tax penalty may apply',
   category: 'IRS compliance',
-  summary: 'Tech Circle W-2 Box 2 is blank this year. Last year Box 2 was $22,360 despite similar wages of $118,940 on line 1a.',
-  taxImpact: 'Missing W-2 withholding is a major reason total withholding dropped 39%. If Jessica is not exempt, the employer should be withholding.',
-  rootCause: 'W-2 Box 2 shows no federal income tax withheld for Tech Circle. Jessica may have claimed exempt status or the employer stopped withholding mid-year.',
+  summary: RETURN_SUMMARY_INSIGHTS.estTaxPenalty,
+  taxImpact: `Withholding of ${fmtUsd(FROZEN_RETURN.totalWithholding)} is well below the $108,779 safe harbor (110% of 2024 tax). Form 2210 should be completed before filing.`,
+  rootCause: `Total payments on line 33 (${fmtUsd(FROZEN_RETURN.totalWithholding)}) fall short of both total tax (${fmtUsd(FROZEN_RETURN.totalTax)}) and the prior-year safe harbor.`,
   tableRows: [
-    { label: 'W-2 Box 2 withholding', cols: ['$0', '$22,360', '-100%'], badge: 'red' as const, total: false },
-    { label: 'W-2 Box 1 wages',       cols: ['$118,940', '$136,480', '-13%'], badge: 'orange' as const, total: true },
+    { label: 'Total payments (line 33)', cols: [fmtUsd(FROZEN_RETURN.totalWithholding), '$76,100', '-46%'], badge: 'red' as const, total: false },
+    { label: 'Safe harbor shortfall',    cols: ['$68,014', 'Gap', '!'], badge: 'red' as const, total: true },
   ],
-  tableHeaders: ['Item', '2025', '2024', 'YoY'],
+  tableHeaders: ['Item', '2025', '2024 / status', ''],
   suggestedActions: [
-    'Confirm with Jessica whether she claimed exempt status on Form W-4.',
-    'If not exempt, request flat withholding via Form W-4 Step 4(c).',
-    'Verify wages on the return match the source W-2 ($148,940 on document vs. $118,940 entered).',
+    'Review Form 2210 for underpayment penalty exposure.',
+    'Ask Jessica if any 2025 Form 1040-ES quarterly payments were made but not entered.',
+    'Confirm total withholding matches source documents before filing.',
   ],
-  viewSourceLabel: 'View W-2',
-  viewSourceTab: 'w2s' as const,
-  viewSourceSubTab: 'techCircle' as const,
-  viewSourceField: 'w2Withholding',
+  viewSourceLabel: 'View Form 1040',
+  viewSourceTab: undefined,
+  viewSourceSubTab: undefined,
+  viewSourceField: 'totalPayments',
 }
 
 const QUAL_DIV_DROP_ISSUE = {
@@ -179,12 +178,12 @@ const QUAL_DIV_DROP_ISSUE = {
   dotColor: 'orange' as const,
   title: 'Qualified dividends may be misclassified',
   category: 'IRS compliance',
-  summary: 'Return line 3a shows $331,250 but Token Financial 1099-DIV Box 1b shows only $187,500 qualified. The full ordinary amount may have been misclassified as qualified.',
-  taxImpact: 'Qualified dividends are taxed at 15% or 20%. If $143,750 was misclassified from ordinary to qualified, the tax difference could exceed $20,000.',
-  rootCause: 'Source Box 1b is $187,500 qualified out of $331,250 ordinary (Box 1a). Return line 3a matches Box 1a instead of Box 1b, a common import miscode.',
+  summary: `Return line 3a shows ${fmtUsd(FROZEN_RETURN.qualifiedDivs)} but Token Financial 1099-DIV Box 1b shows only $187,500 qualified. Token's return value may overstate qualified dividends.`,
+  taxImpact: RETURN_SUMMARY_INSIGHTS.niit,
+  rootCause: 'Source Box 1b is $187,500 qualified out of $331,250 ordinary (Box 1a) for Token. Return aggregates qualified dividends across all payers on line 3a.',
   tableRows: [
-    { label: 'Return line 3a (qualified)', cols: ['$331,250', '$219,850', '+51%'], badge: 'red' as const, total: false },
-    { label: 'Source Box 1b (qualified)',  cols: ['$187,500', 'Should match', '!'], badge: 'red' as const, total: true },
+    { label: 'Return line 3a (qualified)', cols: [fmtUsd(FROZEN_RETURN.qualifiedDivs), '$219,850', '+56%'], badge: 'red' as const, total: false },
+    { label: 'Token source Box 1b',        cols: ['$187,500', 'Should match', '!'], badge: 'red' as const, total: true },
   ],
   tableHeaders: ['Field', '2025', '2024', 'YoY'],
   suggestedActions: [
@@ -200,13 +199,13 @@ const QUAL_DIV_DROP_ISSUE = {
 const ORDINARY_DIV_SURGE_ISSUE = {
   issueKey: 'ordinaryDivSurge',
   dotColor: 'orange' as const,
-  title: 'Ordinary dividends rose 161%',
+  title: 'Ordinary dividends rose 177%',
   category: 'IRS compliance',
-  summary: 'Ordinary dividends on line 3b jumped from $126,750 in 2024 to $331,250 this year. This is the largest single income line change on the return.',
-  taxImpact: 'Ordinary dividends are taxed at regular rates up to 37%. The $204,500 increase adds roughly $71,000 in tax at the 35% marginal rate.',
-  rootCause: 'Token Financial 1099-DIV Box 1a shows $331,250 total ordinary dividends. Capital gains on line 7 fell to $0, suggesting gains may have been distributed as dividends instead.',
+  summary: `Ordinary dividends on line 3b jumped from $126,750 in 2024 to ${fmtUsd(FROZEN_RETURN.ordinaryDivs)} this year. This is the largest single income line change on the return.`,
+  taxImpact: 'Ordinary dividends are taxed at regular rates up to 37%. The increase adds significant tax at Jessica\'s marginal rate.',
+  rootCause: '1099-DIV Box 1a totals $350,400 across all payers. Capital gains on line 7 fell to $0, suggesting gains may have been distributed as dividends instead.',
   tableRows: [
-    { label: 'Ordinary dividends (line 3b)', cols: ['$331,250', '$126,750', '+161%'], badge: 'red' as const, total: false },
+    { label: 'Ordinary dividends (line 3b)', cols: [fmtUsd(FROZEN_RETURN.ordinaryDivs), '$126,750', '+177%'], badge: 'red' as const, total: false },
     { label: 'Capital gain (line 7)',        cols: ['$0', '$219,850', '-100%'],     badge: 'red' as const, total: true },
   ],
   tableHeaders: ['Field', '2025', '2024', 'YoY'],
@@ -225,12 +224,12 @@ const QUAL_DIV_RATIO_ISSUE = {
   dotColor: 'orange' as const,
   title: 'Qualified dividend ratio dropped to 57%',
   category: 'IRS compliance',
-  summary: 'The qualified share of dividends is inconsistent. Return line 3a shows $331,250 but only $187,500 qualifies per source Box 1b. The ratio should be 57%, not 100%.',
-  taxImpact: 'At a 35% marginal rate, the non-qualified portion alone adds about $50,000 in tax compared to if the full amount were qualified at 20%.',
-  rootCause: 'Box 1b ($187,500) is 57% of Box 1a ($331,250) on the Token Financial 1099-DIV. Return line 3a incorrectly reflects the full Box 1a amount.',
+  summary: `The qualified share of dividends should be reviewed. Return line 3a shows ${fmtUsd(FROZEN_RETURN.qualifiedDivs)} across all payers.`,
+  taxImpact: RETURN_SUMMARY_INSIGHTS.niit,
+  rootCause: 'Token Financial Box 1b ($187,500) is 57% of Box 1a ($331,250). Aggregate qualified dividends on line 3a include all payers.',
   tableRows: [
-    { label: 'Qualified share (should be)', cols: ['57%', '63% last year', 'Check'], badge: 'orange' as const, total: false },
-    { label: 'Return line 3a vs source 1b', cols: ['$331,250', '$187,500', 'Mismatch'], badge: 'red' as const, total: true },
+    { label: 'Qualified share (Token)', cols: ['57%', '63% last year', 'Check'], badge: 'orange' as const, total: false },
+    { label: 'Return line 3a total', cols: [fmtUsd(FROZEN_RETURN.qualifiedDivs), '$219,850', '+56%'], badge: 'red' as const, total: true },
   ],
   tableHeaders: ['Metric', '2025', '2024', 'Change'],
   suggestedActions: [
@@ -267,29 +266,28 @@ const CONFIRM_PRIOR_AGI_ISSUE = {
   viewSourceField: 'agi',
 }
 
-const MISSING_STATE_RETURN_ISSUE = {
-  issueKey: 'missingStateReturn',
+const NIIT_FORM8960_ISSUE = {
+  issueKey: 'niitForm8960',
   dotColor: 'orange' as const,
-  title: 'CA state filing likely required',
-  category: 'Missing information',
-  summary: 'Jessica\'s address is Middlefield, CA. No California state return information was found in imported documents. Last year\'s CA liability was likely significant given $485,820 AGI.',
-  taxImpact: 'California taxes capital gains and dividends at ordinary rates, about 10.3% to 11.3% in this income range. Estimated 2025 CA tax is roughly $38,000 to $42,000 on taxable income of $436,426. Last year may have been higher with $219,850 in capital gains.',
-  rootCause: 'No CA documents (CA W-2 withholding, CA 540 prior return) were imported. Filing is inferred from the Middlefield, CA address on Form 1040. Federal amount owed rose 448% year over year. State underpayment risk may match federal.',
+  title: 'Net investment income tax may apply',
+  category: 'IRS compliance',
+  summary: RETURN_SUMMARY_INSIGHTS.niit,
+  taxImpact: 'At AGI above $200,000 for single filers, net investment income may be subject to the 3.8% NIIT on Form 8960.',
+  rootCause: `Investment income is substantial: ${fmtUsd(FROZEN_RETURN.taxableInterest)} taxable interest, ${fmtUsd(FROZEN_RETURN.ordinaryDivs)} ordinary dividends, and ${fmtUsd(FROZEN_RETURN.qualifiedDivs)} qualified dividends on the return.`,
   tableRows: [
-    { label: 'CA state return (CA 540)', cols: ['N/A', 'Not started', '!'], badge: 'orange' as const, total: false },
-    { label: 'CA withholding on W-2',    cols: ['N/A', 'Verify', '?'],      badge: 'orange' as const, total: false },
-    { label: 'Estimated CA liability',   cols: ['~$38,000 to $42,000', 'Estimate', ''], badge: 'orange' as const, total: false },
+    { label: 'AGI (line 11)', cols: [fmtUsd(FROZEN_RETURN.totalIncome), '$485,820', '+19%'], badge: 'orange' as const, total: false },
+    { label: 'Investment income lines', cols: ['Review', 'Form 8960', '!'], badge: 'orange' as const, total: true },
   ],
-  tableHeaders: ['Item', 'Value', 'Status', ''],
+  tableHeaders: ['Item', '2025', '2024 / action', ''],
   suggestedActions: [
-    'Confirm California filing with Jessica. Middlefield, CA residency triggers Form CA 540.',
-    'Prepare Form CA 540. Ordinary dividends ($331,250) are taxed at full CA ordinary rates.',
-    'Check W-2 Box 17 for CA withholding and whether CA estimated payments were made.',
+    'Review Form 8960 for net investment income tax exposure.',
+    'Confirm which dividend and interest amounts are subject to NIIT.',
+    'Cross-check qualified vs. ordinary dividend classifications.',
   ],
-  viewSourceLabel: 'View W-2',
-  viewSourceTab: 'w2s' as const,
-  viewSourceSubTab: 'techCircle' as const,
-  viewSourceField: 'wages',
+  viewSourceLabel: 'View Form 1040',
+  viewSourceTab: undefined,
+  viewSourceSubTab: undefined,
+  viewSourceField: 'totalIncome',
 }
 
 const MISSING_EST_PAYMENTS_ISSUE = {
@@ -297,13 +295,13 @@ const MISSING_EST_PAYMENTS_ISSUE = {
   dotColor: 'orange' as const,
   title: 'No estimated tax payments recorded',
   category: 'Missing information',
-  summary: 'Line 26 shows $0 in 2025 estimated payments. With $124,905 owed (up from $22,790 last year) and only $24,925 in withholding, confirm whether Jessica made quarterly 1040-ES payments.',
-  taxImpact: 'If estimated payments were made but not entered, the $124,905 balance due on line 37 would go down. With $83,854 between withholding ($24,925) and the safe harbor ($108,779), missing payments are the most likely way to avoid a Form 2210 penalty.',
-  rootCause: 'No 1040-ES payment records were imported. Last year total payments were $76,100 (line 33) against $98,890 tax. This year only $24,925 is recorded against $149,830 tax, a much wider gap.',
+  summary: `Line 26 shows $0 in 2025 estimated payments. With ${fmtUsd(OWE_AMOUNT)} owed (up from $22,790 last year) and ${fmtUsd(FROZEN_RETURN.totalWithholding)} in withholding, confirm whether Jessica made quarterly 1040-ES payments.`,
+  taxImpact: `If estimated payments were made but not entered, the ${fmtUsd(OWE_AMOUNT)} balance due on line 37 would go down. Withholding is below the $108,779 safe harbor.`,
+  rootCause: `No 1040-ES payment records were imported. Last year total payments were $76,100 (line 33) against $98,890 tax. This year ${fmtUsd(FROZEN_RETURN.totalWithholding)} is recorded against ${fmtUsd(FROZEN_RETURN.totalTax)} tax.`,
   tableRows: [
     { label: '2025 estimated payments (line 26)', cols: ['$0', 'Unconfirmed', '?'], badge: 'orange' as const, total: false },
-    { label: 'Amount you owe (line 37)',          cols: ['$124,905', '$22,790', '+448%'], badge: 'orange' as const, total: false },
-    { label: 'Safe harbor shortfall',             cols: ['$83,854', 'Gap', '!'], badge: 'red' as const, total: true },
+    { label: 'Amount you owe (line 37)',          cols: [fmtUsd(OWE_AMOUNT), '$22,790', '+378%'], badge: 'orange' as const, total: false },
+    { label: 'Safe harbor shortfall',             cols: ['$68,014', 'Gap', '!'], badge: 'red' as const, total: true },
   ],
   tableHeaders: ['Field', '2025', '2024 / status', ''],
   suggestedActions: [
@@ -322,21 +320,21 @@ const MISSING_EST_PAYMENTS_ISSUE = {
 const OPT_W4_ISSUE = {
   issueKey: 'optW4Adjustment',
   dotColor: 'blue' as const,
-  title: 'Set up 2026 estimated payments. W-2 withholding is $0',
+  title: 'Plan 2026 estimated payments',
   category: 'Optimization',
-  summary: 'Federal withholding fell from $41,100 to $24,925 while total tax rose to $149,830. W-2 Box 2 is blank ($0 vs. $22,360 last year). There is nothing to fix via W-4. Quarterly 1040-ES payments are the main lever for 2026.',
-  taxImpact: 'The 2026 safe harbor will be 110% of this year\'s $149,830 total tax: $164,813. Without action, Jessica may face another large balance due and a Form 2210 penalty. She did not meet the $108,779 safe harbor this year.',
-  rootCause: 'All federal withholding comes from 1099-DIV backup withholding ($24,925). W-2 federal withholding dropped from $22,360 to $0 despite $118,940 in wages. Jessica may have claimed exempt status or the employer stopped withholding. Investment income now drives most of the tax.',
+  summary: `Federal withholding is ${fmtUsd(FROZEN_RETURN.totalWithholding)} while total tax is ${fmtUsd(FROZEN_RETURN.totalTax)}. W-2 Box 2 shows ${fmtUsd(FROZEN_RETURN.w2Withholding)}. Quarterly 1040-ES payments are the main lever for 2026.`,
+  taxImpact: `The 2026 safe harbor will be 110% of this year's ${fmtUsd(FROZEN_RETURN.totalTax)} total tax: $164,813. Jessica did not meet the $108,779 safe harbor this year.`,
+  rootCause: `Federal withholding includes ${fmtUsd(FROZEN_RETURN.w2Withholding)} from W-2 and ${fmtUsd(FROZEN_RETURN.divWithholding)} from 1099-DIV. Investment income drives most of the tax at AGI of ${fmtUsd(FROZEN_RETURN.totalIncome)}.`,
   tableRows: [
-    { label: '2025 total withholding (25a+25b)', cols: ['$24,925', '$41,100', '-39%'], badge: 'orange' as const, total: false },
-    { label: '2026 safe-harbor target (110%)',   cols: ['$164,813', 'Plan now', ''],    badge: 'blue' as const,  total: false },
+    { label: '2025 total withholding (25a+25b)', cols: [fmtUsd(FROZEN_RETURN.totalWithholding), '$41,100', '-1%'], badge: 'orange' as const, total: false },
+    { label: '2026 safe-harbor target (110%)',   cols: ['$164,813', 'Plan now', ''], badge: 'blue' as const, total: false },
     { label: 'Quarterly 1040-ES needed',         cols: ['~$41,203/qtr', 'Suggestion', ''], badge: 'blue' as const, total: true },
   ],
   tableHeaders: ['Item', '2025', '2024 / target', ''],
   suggestedActions: [
     'Set up quarterly 1040-ES payments for 2026. Target $164,813 total (safe harbor).',
-    'Find out why W-2 Box 2 is blank. If Jessica is not exempt, request flat withholding via Form W-4 Step 4(c).',
-    'When reconciling totals, cross-check 1099-INT Box 1 against line 2b. Gaps between sources and the 1040 weaken return integrity.',
+    'Review W-4 withholding at Tech Circle if additional wage withholding is desired.',
+    'When reconciling totals, cross-check 1099-INT Box 1 against line 2b.',
   ],
   viewSourceLabel: 'View W-2',
   viewSourceTab: 'w2s' as const,
@@ -349,8 +347,8 @@ const OPT_IRA_ISSUE = {
   dotColor: 'blue' as const,
   title: 'IRA deduction: confirm workplace plan coverage',
   category: 'Optimization',
-  summary: 'No IRA deduction was claimed. At AGI of $452,176 (down from $485,820), a traditional IRA is deductible only if Jessica is NOT covered by a workplace plan. For covered single filers, the 2025 phase-out ends around $89,000 MAGI.',
-  taxImpact: 'If Jessica is not covered by a workplace plan (check W-2 Box 13), a full $7,000 traditional IRA deduction would cut taxable income from $436,426 to $429,426. That saves about $2,450 at her 35% marginal rate. AGI fell 7% but stays far above any phase-out for covered filers.',
+  summary: `No IRA deduction was claimed. At AGI of ${fmtUsd(FROZEN_RETURN.totalIncome)} (up from $485,820), a traditional IRA is deductible only if Jessica is NOT covered by a workplace plan.`,
+  taxImpact: `If Jessica is not covered by a workplace plan (check W-2 Box 13), a full $7,000 traditional IRA deduction would reduce taxable income. AGI of ${fmtUsd(FROZEN_RETURN.totalIncome)} stays far above any phase-out for covered filers.`,
   rootCause: 'No IRA deduction appears on the return. The Tech Circle W-2 does not show whether Box 13 "Retirement plan" is checked. Wages dropped 13% ($136,480 to $118,940) but remain well above IRA limits.',
   tableRows: [
     { label: 'W-2 Box 13, Retirement plan', cols: ['Unconfirmed', 'Check first', '?'], badge: 'orange' as const, total: false },
@@ -374,20 +372,21 @@ export const ISSUE_FIELD: Partial<Record<IssueKey, string>> = {
   balanceDueJump:      'amountOwed',
   totalTaxRise:        'totalTax',
   withholdingDrop:     'withholding',
-  w2WithholdingZero:   'w2Withholding',
+  estTaxPenalty:       'totalPayments',
   qualDivDrop:         'qualifiedDivs',
   ordinaryDivSurge:    'ordinaryDivs',
   qualDivRatio:        'qualifiedDivs',
   confirmPriorAgi:     'agi',
   missingEstPayments:  'totalPayments',
+  niitForm8960:        'totalIncome',
   optW4Adjustment:     'w2Withholding',
   optIra:              'agi',
 }
 
 const ALL_ISSUES = [
-  BALANCE_DUE_JUMP_ISSUE, TOTAL_TAX_RISE_ISSUE, WITHHOLDING_DROP_ISSUE, W2_WITHHOLDING_ZERO_ISSUE,
+  BALANCE_DUE_JUMP_ISSUE, TOTAL_TAX_RISE_ISSUE, WITHHOLDING_DROP_ISSUE, EST_TAX_PENALTY_ISSUE,
   QUAL_DIV_DROP_ISSUE, ORDINARY_DIV_SURGE_ISSUE, QUAL_DIV_RATIO_ISSUE, CONFIRM_PRIOR_AGI_ISSUE,
-  MISSING_STATE_RETURN_ISSUE, MISSING_EST_PAYMENTS_ISSUE,
+  NIIT_FORM8960_ISSUE, MISSING_EST_PAYMENTS_ISSUE,
   OPT_W4_ISSUE, OPT_IRA_ISSUE,
 ]
 

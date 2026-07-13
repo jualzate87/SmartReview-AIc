@@ -9,6 +9,7 @@ import TaxControlDocPopover, {
 } from './TaxControlDocPopover'
 import Tooltip from './Tooltip'
 import { TAX_CONTROL_ROWS, getControlSystemValues } from '../../data/sourceDocuments'
+import { FROZEN_RETURN } from '../../data/frozenReturn'
 import styles from '../../styles/data-review/LeftPanel1040.module.css'
 
 
@@ -73,10 +74,8 @@ function fmt(n: number) {
   return n.toLocaleString()
 }
 
-// 1099-DIV Box 4 withholding is a fixed $26,363 (Token Financial); the W-2 Box 2 (federal
-// withholding) is blank on Jessica's W-2, so the W-2 portion is whatever the preparer edits
-// it to be.
-const DIV_WITHHOLDING = 24925
+// 1099-DIV Box 4 withholding on return (Token Financial); W-2 Box 2 is $15,840 per frozen return.
+const DIV_WITHHOLDING = FROZEN_RETURN.divWithholding
 
 export default function LeftPanel1040({
   selectedField,
@@ -97,28 +96,27 @@ export default function LeftPanel1040({
   // Detail-field keys may differ from 1040 row keys (e.g. fedTaxWithheld ↔ withholding).
   const activeHighlight = highlightField ?? selectedField
 
-  // Derived 1040 values — Jessica Drake's return (TY 2025)
-  const taxableInterest = fieldValues?.taxableInterest ?? 1986
-  const qualifiedDivs   = fieldValues?.qualifiedDivs   ?? 187500
-  const withholding1040 = fieldValues?.withholding      ?? DIV_WITHHOLDING
-  const w2Withholding    = Math.max(0, withholding1040 - DIV_WITHHOLDING)
-  const ordinaryDivs    = 331250  // Box 1a — includes the qualifiedDivs portion above
-  const capitalGain     = 0       // 1099-DIV Box 2a — not present on this year's 1099-DIV
-  // totalIncome & AGI recalculate from live taxableInterest/qualifiedDivs (other lines are static)
-  const totalIncome     = total1a + taxableInterest + ordinaryDivs + capitalGain
-  const stdDeduction    = 15750
-  const taxableIncome   = totalIncome - stdDeduction
-  // Flat, hardcoded total tax — matches ProtoA (no bracket computation, no NIIT breakout).
-  const totalTax = 149830
-  const incomeTax = totalTax
-  const estimatedPayments = 0
-  const oweAmount = Math.max(0, totalTax - withholding1040)
+  // Derived 1040 values — Jessica Drake's frozen return (Loop 2 Build Spec anchors)
+  const taxableInterest1040 = FROZEN_RETURN.taxableInterest
+  const qualifiedDivs1040     = FROZEN_RETURN.qualifiedDivs
+  const ordinaryDivs        = FROZEN_RETURN.ordinaryDivs
+  const taxablePension      = FROZEN_RETURN.taxablePension
+  const w2Withholding       = Math.max(0, (fieldValues?.withholding ?? FROZEN_RETURN.totalWithholding) - DIV_WITHHOLDING)
+  const withholding1040     = w2Withholding + DIV_WITHHOLDING
+  const capitalGain         = FROZEN_RETURN.capitalGain
+  const totalIncome         = FROZEN_RETURN.totalIncome
+  const stdDeduction        = FROZEN_RETURN.stdDeduction
+  const taxableIncome       = totalIncome - stdDeduction
+  const totalTax            = FROZEN_RETURN.totalTax
+  const incomeTax           = totalTax
+  const estimatedPayments   = 0
+  const oweAmount           = Math.max(0, totalTax - withholding1040)
 
   const YOY = buildYoyMap({
     wages: total1a,
     wagesTotal: total1a,
-    taxableInterest,
-    qualifiedDivs,
+    taxableInterest: taxableInterest1040,
+    qualifiedDivs: qualifiedDivs1040,
     ordinaryDivs,
     capitalGain,
     totalIncome,
@@ -428,10 +426,11 @@ export default function LeftPanel1040({
       totalField: 'totalIncome', totalCurr: totalIncome,
       rows: [
         { line: '1a',  label: 'W-2 wages',              sub: 'Form W-2 · Box 1',              field: 'wages',            curr: total1a,         kind: 'source' as const },
-        { line: '2a',  label: 'Tax-exempt interest',     sub: 'Line 2a',                       field: 'taxExemptInterest', curr: 234,             kind: 'source' as const },
-        { line: '2b',  label: 'Taxable interest',        sub: 'Line 2b',                       field: 'taxableInterest',  curr: taxableInterest, kind: 'source' as const },
-        { line: '3a',  label: 'Qualified dividends',     sub: 'Line 3a',                       field: 'qualifiedDivs',    curr: qualifiedDivs,   kind: 'source' as const },
+        { line: '2a',  label: 'Tax-exempt interest',     sub: 'Line 2a',                       field: 'taxExemptInterest', curr: 180,                  kind: 'source' as const },
+        { line: '2b',  label: 'Taxable interest',        sub: 'Line 2b',                       field: 'taxableInterest',  curr: taxableInterest1040, kind: 'source' as const },
+        { line: '3a',  label: 'Qualified dividends',     sub: 'Line 3a',                       field: 'qualifiedDivs',    curr: qualifiedDivs1040,   kind: 'source' as const },
         { line: '3b',  label: 'Ordinary dividends',      sub: 'Line 3b',                       field: 'ordinaryDivs',     curr: ordinaryDivs,    kind: 'source' as const },
+        { line: '4b',  label: 'IRA distributions',       sub: '1099-R · Box 2a',               field: 'iraDistrib',       curr: taxablePension,    kind: 'source' as const },
         { line: '7',   label: 'Capital gain or (loss)',  sub: 'Line 7',                        field: 'capitalGain',      curr: capitalGain,     kind: 'source' as const },
         // 'Total income' (Line 9) omitted — same value as section header total
       ],
@@ -721,9 +720,9 @@ export default function LeftPanel1040({
       {view === 'control' && (() => {
         const systemVals = getControlSystemValues({
           total1a,
-          taxableInterest,
+          taxableInterest: taxableInterest1040,
           ordinaryDivs,
-          qualifiedDivs,
+          qualifiedDivs: qualifiedDivs1040,
           totalIncome,
           stdDeduction,
           taxableIncome,
@@ -732,6 +731,7 @@ export default function LeftPanel1040({
           divWithholding: DIV_WITHHOLDING,
           totalWithholding: withholding1040,
           oweAmount,
+          taxablePension,
         })
 
         const controlSections = [
@@ -1053,9 +1053,10 @@ export default function LeftPanel1040({
               <Row field="wagesTotal"      line="1z" label="Add lines 1a through 1h"                           kind="calc"   value={total1a} bold />
 
               <Row field="taxExemptInterest" line="2a" label="Tax-exempt interest"                             kind="source" value={180} />
-              <Row field="taxableInterest"  line="2b" label="Taxable interest"                                 kind="source" value={taxableInterest} />
-              <Row field="qualifiedDivs"   line="3a" label="Qualified dividends"                               kind="source" value={qualifiedDivs} />
+              <Row field="taxableInterest"  line="2b" label="Taxable interest"                                 kind="source" value={taxableInterest1040} />
+              <Row field="qualifiedDivs"   line="3a" label="Qualified dividends"                               kind="source" value={qualifiedDivs1040} />
               <Row field="ordinaryDivs"    line="3b" label="Ordinary dividends"                                kind="source" value={ordinaryDivs} />
+              <Row field="iraDistrib"      line="4b" label="IRA distributions"                                 kind="source" value={taxablePension} />
               <Row field="capitalGain"     line="7"  label="Capital gain or (loss)"                            kind="source" value={capitalGain} />
 
               <Divider />

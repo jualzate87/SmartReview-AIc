@@ -20,7 +20,7 @@ export interface FieldMeta {
   note?: string
 }
 
-// Static metadata for each 1040 field — Jessica Drake 2025 return
+import { FROZEN_RETURN, TOKEN_QUALIFIED_DIVS_RETURN } from '../../data/frozenReturn'
 // Prior-year (2024) values sourced from priorYear1040Data.ts / sample_1040_2024_variant_amounts_no_ssn.pdf
 export const FIELD_META: Record<string, FieldMeta> = {
   wages: {
@@ -34,9 +34,11 @@ export const FIELD_META: Record<string, FieldMeta> = {
   taxableInterest: {
     label: 'Taxable interest',
     prior: 2740,
-    current: 1986,
+    current: FROZEN_RETURN.taxableInterest,
     sources: [
       { label: 'Unwavering Financial (1099-INT)', value: 1986 },
+      { label: 'Harborline Credit Union (1099-INT)', value: 3200 },
+      { label: 'Cascade Federal Savings (1099-INT)', value: 1150 },
     ],
   },
   taxExemptInterest: {
@@ -47,17 +49,21 @@ export const FIELD_META: Record<string, FieldMeta> = {
   qualifiedDivs: {
     label: 'Qualified dividends',
     prior: 219850,
-    current: 187500,
+    current: FROZEN_RETURN.qualifiedDivs,
     sources: [
-      { label: 'Unwavering Financial (1099-DIV)', value: 187500 },
+      { label: 'Token Financial (1099-DIV)', value: TOKEN_QUALIFIED_DIVS_RETURN },
+      { label: 'Northmark Index Funds (1099-DIV)', value: 8000 },
+      { label: 'Beacon Dividend Trust (1099-DIV)', value: 4200 },
     ],
   },
   ordinaryDivs: {
     label: 'Ordinary dividends',
     prior: 126750,
-    current: 331250,
+    current: FROZEN_RETURN.ordinaryDivs,
     sources: [
-      { label: 'Unwavering Financial (1099-DIV)', value: 331250 },
+      { label: 'Token Financial (1099-DIV)', value: 331250 },
+      { label: 'Northmark Index Funds (1099-DIV)', value: 12400 },
+      { label: 'Beacon Dividend Trust (1099-DIV)', value: 6750 },
     ],
   },
   capitalGain: {
@@ -68,12 +74,12 @@ export const FIELD_META: Record<string, FieldMeta> = {
   totalIncome: {
     label: 'Total income',
     prior: 485820,
-    current: 452176,
+    current: FROZEN_RETURN.totalIncome,
   },
   agi: {
     label: 'Adjusted gross income',
     prior: 485820,
-    current: 452176,
+    current: FROZEN_RETURN.totalIncome,
   },
   stdDeduction: {
     label: 'Standard deduction',
@@ -87,20 +93,20 @@ export const FIELD_META: Record<string, FieldMeta> = {
   taxableIncome: {
     label: 'Taxable income',
     prior: 453970,
-    current: 436426,
+    current: FROZEN_RETURN.totalIncome - FROZEN_RETURN.stdDeduction,
   },
   withholding: {
     label: 'Federal income tax withheld',
     prior: 18740,
-    current: 24925,
+    current: FROZEN_RETURN.divWithholding,
     sources: [
-      { label: 'Unwavering Financial (1099-DIV)', value: 24925 },
+      { label: 'Token Financial (1099-DIV)', value: FROZEN_RETURN.divWithholding },
     ],
   },
   totalPayments: {
     label: 'Total payments',
     prior: 76100,
-    current: 24925,
+    current: FROZEN_RETURN.totalWithholding,
   },
   totalTax: {
     label: 'Total tax',
@@ -115,15 +121,15 @@ export const FIELD_META: Record<string, FieldMeta> = {
   w2Withholding: {
     label: 'W-2 federal withholding',
     prior: 22360,
-    current: 0,
+    current: FROZEN_RETURN.w2Withholding,
     sources: [
-      { label: 'Tech Circle (W-2 Box 2)', value: 0 },
+      { label: 'Tech Circle (W-2 Box 2)', value: FROZEN_RETURN.w2Withholding },
     ],
   },
   totalWithholding: {
     label: 'Total withholding',
     prior: 41100,
-    current: 24925,
+    current: FROZEN_RETURN.totalWithholding,
   },
   estimatedPayments: {
     label: 'Estimated tax payments',
@@ -133,7 +139,7 @@ export const FIELD_META: Record<string, FieldMeta> = {
   amountOwed: {
     label: 'Amount you owe',
     prior: 22790,
-    current: 124905,
+    current: FROZEN_RETURN.totalTax - FROZEN_RETURN.totalWithholding,
   },
   box12: {
     label: 'Box 12 — Codes',

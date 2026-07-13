@@ -107,7 +107,6 @@ export const TAX_CONTROL_ROWS: TaxControlRowConfig[] = [
     label: 'IRA / pension',
     desc: 'Box 2a (taxable amount) from all 1099-Rs',
     docs: [{ docId: '1099-r-meridian', label: 'Meridian Retirement Trust', hint: 150000 }],
-    isBlank: true,
   },
   {
     id: 'totalIncome',
@@ -159,7 +158,7 @@ export const TAX_CONTROL_ROWS: TaxControlRowConfig[] = [
     desc: 'Box 4 (federal income tax withheld) from all 1099s',
     docs: [
       { docId: '1099-div-token', label: 'Token Financial (1099-DIV)', hint: 26363 },
-      { docId: '1099-r-meridian', label: 'Meridian Retirement Trust (1099-R)', hint: 0 },
+      { docId: '1099-r-meridian', label: 'Meridian Retirement Trust (1099-R)', hint: 30000 },
       { docId: '1099-nec-summit', label: 'Summit Advisory Partners (1099-NEC)', hint: 0 },
     ],
     sourceTab: 'withholding1099',
@@ -198,13 +197,14 @@ export function getControlSystemValues(params: {
   divWithholding: number
   totalWithholding: number
   oweAmount: number
+  taxablePension: number
 }): Record<string, number | null> {
   return {
     wages: params.total1a,
     interest: params.taxableInterest,
     dividends: params.ordinaryDivs,
     qualDivs: params.qualifiedDivs,
-    ira: null,
+    ira: params.taxablePension,
     totalIncome: params.totalIncome,
     stdDeduction: params.stdDeduction,
     taxableIncome: params.taxableIncome,
