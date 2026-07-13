@@ -174,13 +174,10 @@ export default function DataReviewPage() {
   }
 
   // issueField: the 1040 field currently flagged by the active agent issue
-  // — set whenever an issue detail pane is open (in agent panel or after navigating away)
   const issueField = (() => {
-    // Agent panel open and an issue was highlighted via onHighlightField
     if (activeIssueField && (agentView === 'report' || agentView === 'closing' || fromAgent)) {
       return DOC_FIELD_TO_1040[activeIssueField] ?? activeIssueField
     }
-    // Agent is open and showing the YoY detail (wages issue)
     if (agentSubView === 'yoyDetail' && (agentView === 'report' || agentView === 'closing')) return 'wages'
     return null
   })()
@@ -564,7 +561,7 @@ export default function DataReviewPage() {
             onFieldClick={inImportPhase ? handle1040FieldClick : setSelectedField}
             total1a={total1a}
             wages={wages}
-            yoyExpanded={yoyExpanded || agentSubView === 'yoyDetail' || activeTopTab === 'prior-1040'}
+            yoyExpanded={yoyExpanded || agentSubView === 'yoyDetail' || activeTopTab === 'prior-1040' || phase === 'diagnostics'}
             reviewedFields={reviewedFields}
             checkedFields={checkedFields}
             onToggleChecked={handleToggleChecked}
@@ -576,6 +573,7 @@ export default function DataReviewPage() {
               // Map field → document tab
               const tabMap: Record<string, typeof activeTopTab> = {
                 wages:           'w2s',
+                w2Withholding:   'w2s',
                 withholding:     'w2s',
                 taxableInterest: '1099-ints',
                 qualifiedDivs:   '1099-divs',
@@ -583,6 +581,10 @@ export default function DataReviewPage() {
                 withholding1099: '1099-divs',
                 capitalGain:     'w2s',
                 stdDeduction:    'w2s',
+                agi:             'prior-1040',
+                totalTax:        'prior-1040',
+                amountOwed:      'prior-1040',
+                totalPayments:   'prior-1040',
               }
               const tab = tabMap[fieldName] ?? 'w2s'
               setActiveTopTab(tab)
@@ -858,13 +860,14 @@ export default function DataReviewPage() {
                         setActiveTopTab('w2s')
                       }}
                       onNavigateToTab={(tab, subTab, field) => {
-                        // Navigate to the source document, optionally highlighting a specific field
-                        setActiveTopTab(tab)
-                        if (subTab) setActiveSubTab(subTab)
+                        if (tab) {
+                          setActiveTopTab(tab)
+                          if (subTab) setActiveSubTab(subTab)
+                        }
                         if (field) {
                           setSelectedField(field)
                           setActiveIssueField(field)
-                        } else {
+                        } else if (!tab) {
                           setSelectedField(null)
                           setActiveIssueField(null)
                         }
@@ -872,7 +875,6 @@ export default function DataReviewPage() {
                         handleAgentClose(true)
                       }}
                       onHighlightField={(field) => {
-                        // Highlight the 1040 field without leaving the agent panel
                         setSelectedField(field)
                         setActiveIssueField(field)
                       }}

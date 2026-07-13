@@ -36,58 +36,16 @@ interface LeftPanel1040Props {
   allFlagsCleared?: boolean
 }
 
-import { PRIOR_YEAR_1040_VALUES } from './priorYear1040Data'
+import { PRIOR_YEAR_1040_VALUES, buildYoyMap, yoyPercent } from './priorYear1040Data'
 
 const PRIOR_YEAR = PRIOR_YEAR_1040_VALUES
 
-// Current-year values used for YoY comparison (must match the live figures below)
-const CURR_YEAR = {
-  wages:           118940,
-  taxableInterest:   1986,
-  qualifiedDivs:   187500,
-  ordinaryDivs:    331250,
-  capitalGain:          0,
-  totalIncome:     452176,
-  agi:             452176,
-  stdDeduction:     15750,
-  taxableIncome:   436426,
-  withholding:      24925,  // 1099-DIV Box 4 (line 25b)
-}
-
-// YOY % — derived from document values vs current year (for badge/tint logic only)
-const YOY: Record<string, number> = {
-  wages:           Math.round((CURR_YEAR.wages           - PRIOR_YEAR.wages)           / PRIOR_YEAR.wages           * 100),
-  taxableInterest: Math.round((CURR_YEAR.taxableInterest - PRIOR_YEAR.taxableInterest) / PRIOR_YEAR.taxableInterest * 100),
-  qualifiedDivs:   Math.round((CURR_YEAR.qualifiedDivs    - PRIOR_YEAR.qualifiedDivs)   / PRIOR_YEAR.qualifiedDivs   * 100),
-  ordinaryDivs:    Math.round((CURR_YEAR.ordinaryDivs    - PRIOR_YEAR.ordinaryDivs)    / PRIOR_YEAR.ordinaryDivs    * 100),
-  capitalGain:     PRIOR_YEAR.capitalGain !== 0 ? Math.round((CURR_YEAR.capitalGain - PRIOR_YEAR.capitalGain) / PRIOR_YEAR.capitalGain * 100) : 0,
-  totalIncome:     Math.round((CURR_YEAR.totalIncome      - PRIOR_YEAR.totalIncome)     / PRIOR_YEAR.totalIncome     * 100),
-  agi:             Math.round((CURR_YEAR.agi              - PRIOR_YEAR.agi)             / PRIOR_YEAR.agi             * 100),
-  stdDeduction:    Math.round((CURR_YEAR.stdDeduction     - PRIOR_YEAR.stdDeduction)    / PRIOR_YEAR.stdDeduction    * 100),
-  taxableIncome:   Math.round((CURR_YEAR.taxableIncome    - PRIOR_YEAR.taxableIncome)   / PRIOR_YEAR.taxableIncome   * 100),
-  withholding:     Math.round((CURR_YEAR.withholding      - PRIOR_YEAR.withholding)     / PRIOR_YEAR.withholding     * 100),
-}
-
-// Dollar tax impact = change in field value × marginal rate (qualified divs/cap gain use the
-// 15% preferential rate; everything else uses Jessica's ordinary marginal rate)
-const YOY_TAX_IMPACT: Record<string, number> = {
-  wages:           Math.abs(CURR_YEAR.wages           - PRIOR_YEAR.wages)           * 0.24,
-  taxableInterest: Math.abs(CURR_YEAR.taxableInterest - PRIOR_YEAR.taxableInterest) * 0.24,
-  qualifiedDivs:   Math.abs(CURR_YEAR.qualifiedDivs   - PRIOR_YEAR.qualifiedDivs)   * 0.15,
-  ordinaryDivs:    Math.abs(CURR_YEAR.ordinaryDivs    - PRIOR_YEAR.ordinaryDivs)    * 0.15,
-  capitalGain:     Math.abs(CURR_YEAR.capitalGain     - PRIOR_YEAR.capitalGain)     * 0.15,
-  totalIncome:     Math.abs(CURR_YEAR.totalIncome      - PRIOR_YEAR.totalIncome)     * 0.24,
-  agi:             Math.abs(CURR_YEAR.agi              - PRIOR_YEAR.agi)             * 0.24,
-  stdDeduction:    Math.abs(CURR_YEAR.stdDeduction     - PRIOR_YEAR.stdDeduction)    * 0.24,
-  taxableIncome:   Math.abs(CURR_YEAR.taxableIncome    - PRIOR_YEAR.taxableIncome)   * 0.24,
-  withholding:     Math.abs(CURR_YEAR.withholding      - PRIOR_YEAR.withholding)     * 0.24,
-}
-
 // Threshold: >=15% change AND >$300 estimated tax impact
-function meetsRowTintThreshold(field: string): boolean {
-  const pct = YOY[field]
+function meetsRowTintThreshold(field: string, yoy: Record<string, number>): boolean {
+  const pct = yoy[field]
   if (pct === undefined) return false
-  const taxImpact = YOY_TAX_IMPACT[field] ?? 0
+  const prior = PRIOR_YEAR[field]
+  const taxImpact = prior !== undefined ? Math.abs(pct) * prior * 0.001 : 0
   return Math.abs(pct) >= 15 && taxImpact > 300
 }
 
@@ -153,6 +111,30 @@ export default function LeftPanel1040({
   // Flat, hardcoded total tax — matches ProtoA (no bracket computation, no NIIT breakout).
   const totalTax = 149830
   const incomeTax = totalTax
+  const estimatedPayments = 0
+  const oweAmount = Math.max(0, totalTax - withholding1040)
+
+  const YOY = buildYoyMap({
+    wages: total1a,
+    wagesTotal: total1a,
+    taxableInterest,
+    qualifiedDivs,
+    ordinaryDivs,
+    capitalGain,
+    totalIncome,
+    agi: totalIncome,
+    stdDeduction,
+    deductionSum: stdDeduction,
+    taxableIncome,
+    incomeTax,
+    totalTax,
+    w2Withholding,
+    withholding: DIV_WITHHOLDING,
+    totalWithholding: withholding1040,
+    estimatedPayments,
+    totalPayments: withholding1040,
+    amountOwed: oweAmount,
+  })
 
   // View toggle: 'form' | 'table' | 'control'
   const [view, setView] = useState<'form' | 'table' | 'control'>('form')
@@ -496,23 +478,20 @@ export default function LeftPanel1040({
     },
     {
       key: 'tax', label: 'Tax & Credits', icon: '🧾',
-      totalField: null, totalCurr: totalTax,
+      totalField: 'totalTax', totalCurr: totalTax,
       rows: [
-        { line: '16', label: 'Tax', sub: 'See instructions', field: null, curr: incomeTax, kind: 'calc' as const },
-        // Total tax (Line 24) omitted — same value as section header
+        { line: '16', label: 'Tax', sub: 'See instructions', field: 'incomeTax', curr: incomeTax, kind: 'calc' as const },
       ],
     },
     {
       key: 'payments', label: 'Payments', icon: '💳',
-      totalField: null, totalCurr: withholding1040,
+      totalField: 'totalPayments', totalCurr: withholding1040,
       rows: [
-        { line: '25a', label: 'Federal tax withheld', sub: 'Form W-2 · Box 2',    field: null,           curr: w2Withholding,  kind: 'source' as const },
-        { line: '25b', label: 'Federal tax withheld', sub: '1099-DIV · Box 4',    field: 'withholding',  curr: DIV_WITHHOLDING, kind: 'source' as const },
-        // Total payments (Line 33) omitted — same value as section header
+        { line: '25a', label: 'Federal tax withheld (W-2)', sub: 'Form W-2 · Box 2', field: 'w2Withholding', curr: w2Withholding, kind: 'source' as const },
+        { line: '25b', label: 'Federal tax withheld (1099)', sub: '1099-DIV · Box 4', field: 'withholding', curr: DIV_WITHHOLDING, kind: 'source' as const },
       ],
     },
   ]
-  const oweAmount = Math.max(0, totalTax - withholding1040)
 
   return (
     <div className={styles.leftPanel}>
@@ -637,7 +616,8 @@ export default function LeftPanel1040({
                       const isHov      = !!row.field && hoveredField === row.field
                       const isBlue     = isSelected && !isIssue
                       const isOrange   = isSelected && !!isIssue
-                      const clickable  = !!row.field && !!FIELD_META[row.field]
+                      const clickable  = !!row.field
+                      const hasPopover = !!row.field && !!FIELD_META[row.field]
                       const diffPos = diff !== null && diff > 0
                       const diffNeg = diff !== null && diff < 0
 
@@ -653,6 +633,14 @@ export default function LeftPanel1040({
                         <div
                           key={row.line}
                           className={subRowCls}
+                          onClick={clickable ? () => {
+                            if (activeHighlight === row.field) {
+                              onFieldClick?.(null)
+                              setPopoverField(null); setPopoverRect(null)
+                            } else {
+                              onFieldClick?.(row.field!)
+                            }
+                          } : undefined}
                           onMouseEnter={row.field ? () => setHoveredField(row.field!) : undefined}
                           onMouseLeave={row.field ? () => setHoveredField(null) : undefined}
                         >
@@ -678,7 +666,7 @@ export default function LeftPanel1040({
                                     setPopoverField(null); setPopoverRect(null)
                                   } else {
                                     onFieldClick?.(row.field!)
-                                    if (FIELD_META[row.field!]) {
+                                    if (hasPopover) {
                                       setPopoverRect(el.getBoundingClientRect())
                                       setPopoverField(row.field!)
                                     }
@@ -739,17 +727,38 @@ export default function LeftPanel1040({
               })}
 
               {/* Amount owed row */}
-              <div className={`${styles.summarySubRow} ${styles.summaryOweRow}`}>
+              {(() => {
+                const priorOwed = PRIOR_YEAR.amountOwed
+                const diff = oweAmount - priorOwed
+                const pctChg = yoyPercent(oweAmount, priorOwed)
+                const isIssue = issueField === 'amountOwed'
+                const isSelected = activeHighlight === 'amountOwed'
+                const diffPos = diff > 0
+                const diffNeg = diff < 0
+                return (
+              <div
+                className={`${styles.summarySubRow} ${styles.summaryOweRow} ${isIssue && isSelected ? styles.summarySubRowOrange : ''} ${isSelected && !isIssue ? styles.summarySubRowBlue : ''}`}
+                role="button"
+                tabIndex={0}
+                onClick={() => onFieldClick?.(activeHighlight === 'amountOwed' ? null : 'amountOwed')}
+                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onFieldClick?.(activeHighlight === 'amountOwed' ? null : 'amountOwed') } }}
+              >
                 <div className={styles.summaryRowLeft}>
                   <span className={styles.summaryOweLabel}>Amount you owe · Line 37</span>
                 </div>
                 <div className={styles.summaryRowRight}>
                   <div className={styles.summaryCurrVal}><span className={`${styles.summaryCurrValText} ${styles.summaryOweAmt}`}>${fmt(oweAmount)}</span></div>
-                  <span className={styles.summaryPriorVal} />
-                  <span className={styles.summaryDiffVal} />
-                  <span className={styles.summaryPctVal} />
+                  <span className={styles.summaryPriorVal}>${fmt(priorOwed)}</span>
+                  <span className={`${styles.summaryDiffVal} ${diffPos ? styles.summaryDiffPos : ''} ${diffNeg ? styles.summaryDiffNeg : ''}`}>
+                    {diff >= 0 ? `$${fmt(diff)}` : `−$${fmt(Math.abs(diff))}`}
+                  </span>
+                  <span className={`${styles.summaryPctVal} ${diffPos ? styles.summaryDiffPos : ''} ${diffNeg ? styles.summaryDiffNeg : ''}`}>
+                    {pctChg >= 0 ? '' : '−'}{Math.abs(pctChg)}%
+                  </span>
                 </div>
               </div>
+                )
+              })()}
             </div>
           </div>
         </div>
@@ -1028,7 +1037,7 @@ export default function LeftPanel1040({
               <Row field="wages"           line="1a" label="Total amount from Form(s) W-2, box 1"              kind="source" value={total1a} />
               <Row                         line="1b" label="Household employee wages not on Form(s) W-2"      subdued />
               <Row                         line="1c" label="Tip income not reported on line 1a"                subdued />
-              <Row                         line="1z" label="Add lines 1a through 1h"                           kind="calc"   value={total1a} bold />
+              <Row field="wagesTotal"      line="1z" label="Add lines 1a through 1h"                           kind="calc"   value={total1a} bold />
 
               <Row field="taxExemptInterest" line="2a" label="Tax-exempt interest"                             kind="source" value={180} />
               <Row field="taxableInterest"  line="2b" label="Taxable interest"                                 kind="source" value={taxableInterest} />
@@ -1044,25 +1053,25 @@ export default function LeftPanel1040({
 
               <Section title="Deductions" />
               <Row field="stdDeduction"    line="12" label="Standard deduction or itemized deductions (from Schedule A)"  kind="source" value={stdDeduction} />
-              <Row                         line="14" label="Add lines 12 and 13"                                           kind="calc"   value={stdDeduction} />
+              <Row field="deductionSum"    line="14" label="Add lines 12 and 13"                                           kind="calc"   value={stdDeduction} />
 
               <Divider />
               <Row field="taxableIncome"   line="15" label="Taxable income"                                                kind="calc"   value={taxableIncome} bold shaded />
 
               <Section title="Tax and Credits" />
-              <Row                         line="16" label="Tax (see instructions)"                                        kind="calc"   value={incomeTax} />
-              <Row                         line="24" label="Total tax"                                                     kind="calc"   value={totalTax} bold />
+              <Row field="incomeTax"       line="16" label="Tax (see instructions)"                                        kind="calc"   value={incomeTax} />
+              <Row field="totalTax"        line="24" label="Total tax"                                                     kind="calc"   value={totalTax} bold />
 
               <Section title="Payments" />
-              <Row                         line="25a" label="Federal income tax withheld from Form(s) W-2"                 kind="source" value={w2Withholding} />
+              <Row field="w2Withholding"   line="25a" label="Federal income tax withheld from Form(s) W-2"                 kind="source" value={w2Withholding} />
               <Row field="withholding"     line="25b" label="Federal income tax withheld from Form(s) 1099"               kind="source" value={DIV_WITHHOLDING} />
-              <Row                         line="25d" label="Add lines 25a through 25c"                                    kind="calc"   value={withholding1040} />
-              <Row                         line="33"  label="Total payments"                                               kind="calc"   value={withholding1040} bold />
+              <Row field="totalWithholding" line="25d" label="Add lines 25a through 25c"                                    kind="calc"   value={withholding1040} />
+              <Row field="totalPayments"   line="33"  label="Total payments"                                               kind="calc"   value={withholding1040} bold />
 
               <tr className={styles.oweDividerRow}>
                 <td colSpan={4} />
               </tr>
-              <Row                         line="37" label="Amount you owe. Subtract line 33 from line 24"                kind="calc"   value={oweAmount} bold owe />
+              <Row field="amountOwed"      line="37" label="Amount you owe. Subtract line 33 from line 24"                kind="calc"   value={oweAmount} bold owe />
             </tbody>
           </table>
 

@@ -34,6 +34,7 @@ export const PRIOR_YEAR_1040_FIELDS: {
 /** Numeric prior-year values for YoY comparisons in LeftPanel1040. */
 export const PRIOR_YEAR_1040_VALUES: Record<string, number> = {
   wages: 136480,
+  wagesTotal: 136480,       // line 1z (same as 1a this return)
   taxableInterest: 2740,
   qualifiedDivs: 219850,
   ordinaryDivs: 126750,
@@ -41,11 +42,30 @@ export const PRIOR_YEAR_1040_VALUES: Record<string, number> = {
   totalIncome: 485820,
   agi: 485820,
   stdDeduction: 31850,
+  deductionSum: 31850,      // line 14 (12 + 13)
   taxableIncome: 453970,
+  incomeTax: 84610,         // line 16
   w2Withholding: 22360,
-  withholding: 18740,   // line 25b — 1099 federal withholding
-  totalWithholding: 41100, // line 25d
-  totalPayments: 76100,    // line 33
+  withholding: 18740,         // line 25b, 1099 federal withholding
+  totalWithholding: 41100,    // line 25d
+  estimatedPayments: 35000,   // line 26 (76100 total payments minus 41100 withholding)
+  totalPayments: 76100,       // line 33
   totalTax: 98890,
   amountOwed: 22790,
+}
+
+/** YoY percent change; returns rounded integer percent. */
+export function yoyPercent(current: number, prior: number): number {
+  if (prior === 0) return current === 0 ? 0 : Math.round((current - prior) / Math.abs(prior || 1) * 100)
+  return Math.round((current - prior) / prior * 100)
+}
+
+/** Build YoY map from live current-year values against priorYear1040Data. */
+export function buildYoyMap(current: Record<string, number>): Record<string, number> {
+  const out: Record<string, number> = {}
+  for (const [key, curr] of Object.entries(current)) {
+    const prior = PRIOR_YEAR_1040_VALUES[key]
+    if (prior !== undefined) out[key] = yoyPercent(curr, prior)
+  }
+  return out
 }

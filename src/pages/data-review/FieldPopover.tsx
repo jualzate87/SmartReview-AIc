@@ -107,6 +107,29 @@ export const FIELD_META: Record<string, FieldMeta> = {
     prior: 98890,
     current: 149830,
   },
+  incomeTax: {
+    label: 'Tax (line 16)',
+    prior: 84610,
+    current: 149830,
+  },
+  w2Withholding: {
+    label: 'W-2 federal withholding',
+    prior: 22360,
+    current: 0,
+    sources: [
+      { label: 'Tech Circle (W-2 Box 2)', value: 0 },
+    ],
+  },
+  totalWithholding: {
+    label: 'Total withholding',
+    prior: 41100,
+    current: 24925,
+  },
+  estimatedPayments: {
+    label: 'Estimated tax payments',
+    prior: 35000,
+    current: 0,
+  },
   amountOwed: {
     label: 'Amount you owe',
     prior: 22790,
