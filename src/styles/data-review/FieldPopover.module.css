@@ -173,10 +173,14 @@
 .yoyBadgeGrey    { background: #8a9ba5; }
 .yoyBadgeNeutral { background: var(--color-text-secondary); }
 
-/* ── Sources section ── */
+/* ── Sources section — slim dotted rows (original FieldPopover language) ── */
 .sourcesSection {
   padding: 8px 10px 10px;
   border-bottom: 1px solid #e8edf2;
+}
+
+.sourcesSection:last-child {
+  border-bottom: none;
 }
 
 .sourcesSectionLabel {
@@ -254,74 +258,9 @@
   color: #0365ac;
 }
 
-/* ── Clickable source nav rows (doc + amount chip) ── */
-.sourceNavRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  width: 100%;
-  padding: 6px 8px;
-  margin-bottom: 4px;
-  border: 1px solid var(--color-divider-tertiary, #e3e8eb);
-  border-radius: 6px;
-  background: var(--color-container-background-secondary, #f4f5f8);
-  cursor: pointer;
-  text-align: left;
-  font-family: inherit;
-  transition: border-color 120ms ease, background 120ms ease;
-}
-
-.sourceNavRow:last-child {
-  margin-bottom: 0;
-}
-
-.sourceNavRow:hover {
-  border-color: #236cff;
-  background: #f0f5ff;
-}
-
-.sourceNavMain {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  min-width: 0;
-  flex: 1;
-}
-
-.sourceNavLabel {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: var(--font-size-component-x-small, 12px);
-  font-weight: var(--font-weight-component-semibold, 500);
-  color: #0365ac;
-  line-height: 1.3;
-}
-
-.sourceNavBox {
-  font-size: 11px;
-  color: var(--color-text-secondary, #5d686f);
-  line-height: 1.3;
-}
-
-.sourceAmountChip {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 8px;
-  border-radius: 100px;
-  background: #236cff;
-  color: #ffffff;
-  font-size: var(--font-size-component-x-small, 12px);
-  font-weight: var(--font-weight-component-bold, 600);
-  white-space: nowrap;
-}
-
-/* ── Calculated-from section ── */
+/* ── Calculated-from section (quiet, matches TaxControlBreakdownPopover) ── */
 .calcSection {
   padding: 8px 10px 10px;
-  border-bottom: 1px solid #e8edf2;
 }
 
 .calcFormula {
@@ -388,9 +327,7 @@
   font-size: var(--font-size-component-small, 14px);
   font-weight: var(--font-weight-component-bold, 600);
   color: #1a3347;
-  padding: 2px 8px;
-  border-radius: 100px;
-  background: #eef3ff;
+  white-space: nowrap;
 }
 
 .calcFootnote {

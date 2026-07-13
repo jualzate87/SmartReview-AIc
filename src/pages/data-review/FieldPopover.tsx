@@ -302,7 +302,7 @@ export default function FieldPopover({
       role="dialog"
       aria-label={`${label} details`}
     >
-      {/* Header */}
+      {/* Header — sparkle + field label + close */}
       <div className={styles.header}>
         <img src={intuitAssistIcon} alt="" className={styles.assistIcon} />
         <span className={styles.fieldLabel}>{label}</span>
@@ -311,80 +311,7 @@ export default function FieldPopover({
         </button>
       </div>
 
-      {/* Source documents — preferred when origin has sources */}
-      {hasOriginSources && (
-        <div className={styles.sourcesSection}>
-          <div className={styles.sourcesSectionLabel}>Source documents</div>
-          {sources!.map(s => (
-            <button
-              key={`${s.docId}-${s.detailFieldId}`}
-              type="button"
-              className={styles.sourceNavRow}
-              onClick={() => handleSourceClick(s)}
-            >
-              <div className={styles.sourceNavMain}>
-                <span className={styles.sourceNavLabel}>
-                  {s.label}
-                  <span className={styles.sourcePanelIcon}><Panel size="small" /></span>
-                </span>
-                <span className={styles.sourceNavBox}>{s.box}</span>
-              </div>
-              <span className={styles.sourceAmountChip}>${fmt(s.amount)}</span>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Calculated from */}
-      {calc && calc.components.length > 0 && (
-        <div className={styles.calcSection}>
-          <div className={styles.sourcesSectionLabel}>Calculated from</div>
-          <p className={styles.calcFormula}>{calc.formula}</p>
-          <ul className={styles.calcList}>
-            {calc.components.map((comp, i) => (
-              <li key={i} className={styles.calcRow}>
-                <span className={styles.calcOp}>{comp.operator ?? '+'}</span>
-                <span className={styles.calcLabel}>{comp.label}</span>
-                <span className={styles.calcValue}>${fmt(comp.amount)}</span>
-              </li>
-            ))}
-          </ul>
-          <div className={styles.calcTotalRow}>
-            <span className={styles.calcTotalLabel}>{calc.totalLabel}</span>
-            <span className={styles.calcTotalValue}>${fmt(calc.total)}</span>
-          </div>
-          {calc.footnote && <p className={styles.calcFootnote}>{calc.footnote}</p>}
-        </div>
-      )}
-
-      {/* Manual / no-source note */}
-      {note && (
-        <div className={styles.sourcesSection}>
-          <div className={styles.sourcesSectionLabel}>
-            {origin?.kind === 'manual' ? 'About this amount' : origin?.kind === 'calc' && !calc ? 'About this amount' : 'Note'}
-          </div>
-          <p className={styles.noteText}>{note}</p>
-        </div>
-      )}
-
-      {/* Legacy sources fallback when no origin.sources */}
-      {legacySources && legacySources.length > 0 && (
-        <div className={styles.sourcesSection}>
-          <div className={styles.sourcesSectionLabel}>Source documents</div>
-          {legacySources.map(s => (
-            <div key={s.label} className={styles.sourceRow}>
-              <button className={styles.sourceLink} onClick={() => onViewSource?.(fieldName, s.label)}>
-                {s.label}
-                <span className={styles.sourcePanelIcon}><Panel size="small" /></span>
-              </button>
-              <span className={styles.sourceDots} />
-              <span className={styles.sourceValue}>${fmt(s.value)}</span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* YoY section */}
+      {/* YoY section — original structure */}
       {hasYoy && (
         <div className={styles.yoySection}>
           <div className={styles.yoySectionLabel}>Year over year</div>
@@ -415,6 +342,87 @@ export default function FieldPopover({
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Manual / explanatory note */}
+      {note && (
+        <div className={styles.sourcesSection}>
+          <div className={styles.sourcesSectionLabel}>
+            {fieldName === 'stdDeduction'
+              ? 'Why this deduction?'
+              : origin?.kind === 'manual' || (origin?.kind === 'calc' && !calc)
+                ? 'About this amount'
+                : 'Note'}
+          </div>
+          <p className={styles.noteText}>{note}</p>
+        </div>
+      )}
+
+      {/* Sources — original slim rows (label ····· $amount), clickable for navigate+highlight */}
+      {hasOriginSources && (
+        <div className={styles.sourcesSection}>
+          <div className={styles.sourcesSectionLabel}>Sources</div>
+          {sources!.map(s => {
+            const displayLabel = s.box ? `${s.label} · ${s.box}` : s.label
+            return (
+              <div key={`${s.docId}-${s.detailFieldId}`} className={styles.sourceRow}>
+                <button
+                  type="button"
+                  className={styles.sourceLink}
+                  onClick={() => handleSourceClick(s)}
+                >
+                  {displayLabel}
+                  <span className={styles.sourcePanelIcon}><Panel size="small" /></span>
+                </button>
+                <span className={styles.sourceDots} />
+                <span className={styles.sourceValue}>${fmt(s.amount)}</span>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Legacy sources fallback when no origin.sources */}
+      {legacySources && legacySources.length > 0 && (
+        <div className={styles.sourcesSection}>
+          <div className={styles.sourcesSectionLabel}>Sources</div>
+          {legacySources.map(s => (
+            <div key={s.label} className={styles.sourceRow}>
+              <button
+                type="button"
+                className={styles.sourceLink}
+                onClick={() => onViewSource?.(fieldName, s.label)}
+              >
+                {s.label}
+                <span className={styles.sourcePanelIcon}><Panel size="small" /></span>
+              </button>
+              <span className={styles.sourceDots} />
+              <span className={styles.sourceValue}>${fmt(s.value)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Calculated from — quiet formula list (matches TaxControlBreakdownPopover language) */}
+      {calc && calc.components.length > 0 && (
+        <div className={styles.calcSection}>
+          <div className={styles.sourcesSectionLabel}>Calculated from</div>
+          <p className={styles.calcFormula}>{calc.formula}</p>
+          <ul className={styles.calcList}>
+            {calc.components.map((comp, i) => (
+              <li key={i} className={styles.calcRow}>
+                <span className={styles.calcOp}>{comp.operator ?? '+'}</span>
+                <span className={styles.calcLabel}>{comp.label}</span>
+                <span className={styles.calcValue}>${fmt(comp.amount)}</span>
+              </li>
+            ))}
+          </ul>
+          <div className={styles.calcTotalRow}>
+            <span className={styles.calcTotalLabel}>{calc.totalLabel}</span>
+            <span className={styles.calcTotalValue}>${fmt(calc.total)}</span>
+          </div>
+          {calc.footnote && <p className={styles.calcFootnote}>{calc.footnote}</p>}
         </div>
       )}
     </div>,
