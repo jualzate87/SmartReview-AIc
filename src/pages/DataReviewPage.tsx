@@ -1,20 +1,11 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
+import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
 import { ArrowLeft, DotsSix, Panel, ChevronLeft, ChevronRight, Comment, PopOut } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import NotesPane from './data-review/NotesPane'
 import Tooltip from './data-review/Tooltip'
 import type { Note } from './data-review/NotesPane'
-
-function VerticalGripIcon() {
-  return (
-    <svg width="4" height="20" viewBox="0 0 4 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="2" cy="4"  r="1.5" fill="#93A3AB"/>
-      <circle cx="2" cy="10" r="1.5" fill="#93A3AB"/>
-      <circle cx="2" cy="16" r="1.5" fill="#93A3AB"/>
-    </svg>
-  )
-}
 import intuitAssistIcon from '../assets/icons/intuit-assist.svg'
 import LeftPanel1040 from './data-review/LeftPanel1040'
 import ReviewTab from './data-review/ReviewTab'
@@ -64,7 +55,16 @@ import img1040PriorPage1 from '../assets/jessica-1040-2024-variant-1.png'
 import img1040PriorPage2 from '../assets/jessica-1040-2024-variant-2.png'
 import styles from '../styles/data-review/DataReviewPage.module.css'
 import dragStyles from '../styles/data-review/DragHandle.module.css'
-import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
+
+function VerticalGripIcon() {
+  return (
+    <svg width="4" height="20" viewBox="0 0 4 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="2" cy="4"  r="1.5" fill="#93A3AB"/>
+      <circle cx="2" cy="10" r="1.5" fill="#93A3AB"/>
+      <circle cx="2" cy="16" r="1.5" fill="#93A3AB"/>
+    </svg>
+  )
+}
 
 export default function DataReviewPage() {
   // Source-doc review state — flags, reviewed fields, active tab, editable field
