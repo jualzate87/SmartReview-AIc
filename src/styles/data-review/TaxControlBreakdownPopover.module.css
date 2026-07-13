@@ -1,0 +1,108 @@
+.popover {
+  width: 300px;
+  background: var(--color-container-background-primary, #fff);
+  border: 1px solid var(--color-divider-tertiary, #d5dee3);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  padding: 12px 14px;
+  box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.title {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-small, 14px);
+  font-weight: var(--font-weight-component-bold, 600);
+  color: var(--color-text-primary, #21262a);
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  color: #6b7a82;
+  display: flex;
+  align-items: center;
+}
+
+.formula {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small, 12px);
+  color: #6b7a82;
+  margin: 0 0 10px;
+  line-height: 1.45;
+}
+
+.componentList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.componentRow {
+  display: grid;
+  grid-template-columns: 16px 1fr auto;
+  align-items: baseline;
+  gap: 6px;
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small, 12px);
+}
+
+.componentOp {
+  color: #8fa3af;
+  font-weight: var(--font-weight-component-semibold, 500);
+  text-align: center;
+}
+
+.componentLabel {
+  color: #2d4a5e;
+  line-height: 1.35;
+}
+
+.componentValue {
+  font-weight: var(--font-weight-component-semibold, 500);
+  color: #1a3347;
+  white-space: nowrap;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #e3e8eb;
+}
+
+.totalLabel {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small, 12px);
+  font-weight: var(--font-weight-component-bold, 600);
+  color: #2d4a5e;
+}
+
+.totalValue {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-medium, 16px);
+  font-weight: var(--font-weight-component-bold, 600);
+  color: #1a3347;
+}
+
+.footnote {
+  font-family: var(--font-family-component);
+  font-size: var(--font-size-component-x-small, 12px);
+  color: #8fa3af;
+  margin: 8px 0 0;
+  line-height: 1.4;
+  font-style: italic;
+}

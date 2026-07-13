@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { CircleCheck, Comment } from '@design-systems/icons'
+import { CircleCheck, CircleInfo, Comment } from '@design-systems/icons'
 import FieldPopover, { FIELD_META } from './FieldPopover'
 import TaxControlDocPopover, {
   getDocValuesForRow,
   setDocValueForRow,
   sumControlDocInputs,
 } from './TaxControlDocPopover'
+import TaxControlBreakdownPopover from './TaxControlBreakdownPopover'
+import { getTaxControlBreakdown } from '../../data/taxControlBreakdowns'
 import Tooltip from './Tooltip'
 import { TAX_CONTROL_ROWS, getControlSystemValues } from '../../data/sourceDocuments'
 import { FROZEN_RETURN } from '../../data/frozenReturn'
@@ -116,6 +118,22 @@ export default function LeftPanel1040({
   const estimatedPayments   = 0
   const oweAmount           = Math.max(0, totalTax - withholding1040)
 
+  const controlSystemVals = getControlSystemValues({
+    total1a,
+    taxableInterest: taxableInterest1040,
+    ordinaryDivs,
+    qualifiedDivs: qualifiedDivs1040,
+    totalIncome,
+    stdDeduction,
+    taxableIncome,
+    totalTax,
+    w2Withholding,
+    divWithholding: DIV_WITHHOLDING,
+    totalWithholding: withholding1040,
+    oweAmount,
+    taxablePension,
+  })
+
   const YOY = buildYoyMap({
     wages: total1a,
     wagesTotal: total1a,
@@ -147,6 +165,9 @@ export default function LeftPanel1040({
   // Multi-doc popover state for tax control rows
   const [controlPopoverRow, setControlPopoverRow] = useState<string | null>(null)
   const [controlPopoverRect, setControlPopoverRect] = useState<DOMRect | null>(null)
+  // Read-only calculation / source breakdown popover (system column)
+  const [breakdownRow, setBreakdownRow] = useState<string | null>(null)
+  const [breakdownRect, setBreakdownRect] = useState<DOMRect | null>(null)
 
   useEffect(() => {
     if (taxControlViewRequest > 0) setView('control')
@@ -722,21 +743,7 @@ export default function LeftPanel1040({
 
       {/* ── TAX CONTROL VIEW ── */}
       {view === 'control' && (() => {
-        const systemVals = getControlSystemValues({
-          total1a,
-          taxableInterest: taxableInterest1040,
-          ordinaryDivs,
-          qualifiedDivs: qualifiedDivs1040,
-          totalIncome,
-          stdDeduction,
-          taxableIncome,
-          totalTax,
-          w2Withholding,
-          divWithholding: DIV_WITHHOLDING,
-          totalWithholding: withholding1040,
-          oweAmount,
-          taxablePension,
-        })
+        const systemVals = controlSystemVals
 
         const controlSections = [
           { key: 'income', label: 'Income', rowIds: ['wages', 'interest', 'dividends', 'qualDivs', 'ira', 'totalIncome'] },
@@ -772,10 +779,28 @@ export default function LeftPanel1040({
         }
 
         const openControlPopover = (rowId: string, el: HTMLElement) => {
+          setBreakdownRow(null)
+          setBreakdownRect(null)
           setControlPopoverRect(el.getBoundingClientRect())
           setControlPopoverRow(rowId)
           const cfg = TAX_CONTROL_ROWS.find(r => r.id === rowId)
           if (cfg?.docs[0]) onNavigateToSourceDoc?.(cfg.docs[0].docId)
+        }
+
+        const openBreakdownPopover = (rowId: string, el: HTMLElement) => {
+          setControlPopoverRow(null)
+          setControlPopoverRect(null)
+          setBreakdownRect(el.getBoundingClientRect())
+          setBreakdownRow(rowId)
+        }
+
+        const toggleBreakdownPopover = (rowId: string, el: HTMLElement) => {
+          if (breakdownRow === rowId) {
+            setBreakdownRow(null)
+            setBreakdownRect(null)
+          } else {
+            openBreakdownPopover(rowId, el)
+          }
         }
 
         return (
@@ -862,8 +887,44 @@ export default function LeftPanel1040({
                             </span>
                             <span className={styles.controlDesc}>{row.desc}</span>
                           </div>
-                          <div className={styles.controlSystemVal}>
-                            {systemVal !== null ? `$${fmt(systemVal)}` : '—'}
+                          <div className={styles.controlSystemCell}>
+                            {systemVal !== null ? (
+                              <>
+                                <button
+                                  type="button"
+                                  className={[
+                                    styles.controlSystemBtn,
+                                    row.isTotalRow ? styles.controlSystemBtnTotal : '',
+                                    breakdownRow === row.id ? styles.controlSystemBtnActive : '',
+                                  ].filter(Boolean).join(' ')}
+                                  onClick={e => {
+                                    e.stopPropagation()
+                                    toggleBreakdownPopover(row.id, e.currentTarget)
+                                  }}
+                                  aria-label={`View calculation for ${row.label}`}
+                                  aria-expanded={breakdownRow === row.id}
+                                >
+                                  ${fmt(systemVal)}
+                                </button>
+                                <button
+                                  type="button"
+                                  className={[
+                                    styles.controlInfoBtn,
+                                    breakdownRow === row.id ? styles.controlInfoBtnActive : '',
+                                  ].filter(Boolean).join(' ')}
+                                  onClick={e => {
+                                    e.stopPropagation()
+                                    toggleBreakdownPopover(row.id, e.currentTarget)
+                                  }}
+                                  aria-label={`View breakdown for ${row.label}`}
+                                  aria-expanded={breakdownRow === row.id}
+                                >
+                                  <CircleInfo size="small" />
+                                </button>
+                              </>
+                            ) : (
+                              <span className={styles.controlSystemVal}>—</span>
+                            )}
                           </div>
 
                           {hasSourceDocs ? (
@@ -939,6 +1000,19 @@ export default function LeftPanel1040({
             onNavigateToDoc={onNavigateToSourceDoc}
             anchorRect={controlPopoverRect}
             onClose={() => { setControlPopoverRow(null); setControlPopoverRect(null) }}
+          />
+        )
+      })()}
+
+      {/* Tax control calculation / source breakdown popover */}
+      {breakdownRow && breakdownRect && (() => {
+        const breakdown = getTaxControlBreakdown(breakdownRow, controlSystemVals)
+        if (!breakdown) return null
+        return (
+          <TaxControlBreakdownPopover
+            breakdown={breakdown}
+            anchorRect={breakdownRect}
+            onClose={() => { setBreakdownRow(null); setBreakdownRect(null) }}
           />
         )
       })()}
