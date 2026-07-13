@@ -32,16 +32,16 @@ const RECIPIENT_DATA = {
   ssn: 'XXX-XX-4321',
   name: 'Jessica Drake',
   street: '333 Easy Street',
-  city: 'Middlefield',
-  state: 'CA',
-  zip: '98756',
+  city: 'Austin',
+  state: 'TX',
+  zip: '78704',
 }
 
 const FORM_DATA = {
-  box1_grossDistrib:    '150,000', // Box 1 — Gross distribution
-  box2a_taxableAmt:     '150,000', // Box 2a — Taxable amount (source; return understates at $100,000)
+  box1_grossDistrib:    '150,000', // Box 1 — Gross distribution (source; flagged)
+  box2a_taxableAmt:     '100,000', // Box 2a — Taxable amount on return (source $150,000)
   box3_capitalGain:     '',        // Box 3 — Capital gain (in box 2a)
-  box4_fedTaxWithheld:  '30,000',  // Box 4 — Federal income tax withheld (source; omitted on return)
+  box4_fedTaxWithheld:  '',        // Box 4 — Dropped on return (source $30,000)
   box5_employeeContrib: '',        // Box 5 — Employee contributions
   box7_distCode:        '7',       // Box 7 — Distribution code(s)
 }
@@ -56,9 +56,10 @@ interface DetailFields1099RProps {
   verifiedDocs?: Set<string>
   onVerifyDoc?: (docKey: string) => void
   onAddFieldNote?: (text: string, context?: string) => void
+  flaggedFields?: Record<string, string>
 }
 
-export default function DetailFields1099R({ selectedField, highlightMode = 'blue', onFieldSelect, onMarkReviewed, onMarkReviewedBulk, reviewedFields, verifiedDocs, onVerifyDoc, onAddFieldNote }: DetailFields1099RProps) {
+export default function DetailFields1099R({ selectedField, highlightMode = 'blue', onFieldSelect, onMarkReviewed, onMarkReviewedBulk, reviewedFields, verifiedDocs, onVerifyDoc, onAddFieldNote, flaggedFields = {} }: DetailFields1099RProps) {
   const highlightedRef = useRef<HTMLDivElement>(null)
   const [editingField, setEditingField] = useState<string | null>(null)
   const [draftValue, setDraftValue] = useState('')
@@ -95,13 +96,28 @@ export default function DetailFields1099R({ selectedField, highlightMode = 'blue
 
   const cancelEdit = () => { setEditingField(null); setDraftValue('') }
 
-  const commitStaticEdit = (fieldKey: string) => {
+  const commitStaticEdit = (fieldKey: string, resolveKey = fieldKey) => {
     setStaticValues(prev => ({ ...prev, [fieldKey]: draftValue }))
     setEditingField(null)
     setEditedFields(prev => new Set(prev).add(fieldKey))
     setSavedField(fieldKey)
     setTimeout(() => setSavedField(null), 3500)
-    if (draftValue.trim()) onMarkReviewed?.(fieldKey)
+    if (draftValue.trim()) onMarkReviewed?.(resolveKey)
+  }
+
+  const ValidationNote = ({ issueKey, resolveKey }: { issueKey: string; resolveKey: string }) => {
+    const issue = flaggedFields[issueKey]
+    if (!issue || reviewedFields?.has(resolveKey)) return null
+    return (
+      <div className={styles.validationNote}>
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, marginTop: 1 }}>
+          <circle cx="6" cy="6" r="5.5" fill="#c9500f"/>
+          <path d="M6 3.5V6.5" stroke="white" strokeWidth="1.2" strokeLinecap="round"/>
+          <circle cx="6" cy="8.5" r="0.6" fill="white"/>
+        </svg>
+        <span>{issue}</span>
+      </div>
+    )
   }
 
   const openComment = (fieldKey: string, btn: HTMLElement) => {
@@ -166,52 +182,73 @@ export default function DetailFields1099R({ selectedField, highlightMode = 'blue
     )
   }
 
-  const renderStaticRow = (fieldKey: string, label: string, defaultValue: string, inputClass = styles.fieldInputSmall, selectedKey?: string) => {
+  const renderStaticRow = (
+    fieldKey: string,
+    label: string,
+    defaultValue: string,
+    inputClass = styles.fieldInputSmall,
+    selectedKey?: string,
+    flagKey?: string,
+    reviewedKey?: string,
+  ) => {
     const selectKey = selectedKey ?? fieldKey
+    const issueKey = flagKey ?? fieldKey
+    const resolveKey = reviewedKey ?? fieldKey
     const currentVal = staticValues[fieldKey] ?? defaultValue
     const isEditing = editingField === fieldKey
-    const isReviewed = reviewedFields?.has(fieldKey)
+    const isFlagged = !!flaggedFields[issueKey] && !reviewedFields?.has(resolveKey)
+    const isReviewed = reviewedFields?.has(resolveKey)
     const isCommentOpen = commentField === fieldKey
     const isSelected = selectedField === selectKey
     return (
-      <div className={`${styles.fieldRow} ${isCommentOpen ? styles.fieldRowCommentOpen : ''} ${isSelected ? styles.fieldRowHighlighted : ''}`} onClick={() => onFieldSelect?.(selectKey)} style={{ cursor: 'pointer' }}>
-        <span className={styles.fieldLabel}>{label}</span>
+      <>
+      <div className={`${styles.fieldRow} ${isFlagged ? styles.fieldRowHasNote : ''} ${isCommentOpen ? styles.fieldRowCommentOpen : ''} ${isSelected ? (highlightMode === 'orange' && isFlagged ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''}`} onClick={() => onFieldSelect?.(selectKey)} style={{ cursor: 'pointer' }}>
+        {flaggedFields[issueKey] ? (
+          <span className={`${styles.fieldLabel} ${isFlagged ? styles.fieldLabelFlagged : ''}`}>
+            {isFlagged && <span className={styles.issueIndicator} />}
+            {label}
+          </span>
+        ) : (
+          <span className={styles.fieldLabel}>{label}</span>
+        )}
         <input
-          className={`${styles.fieldInput} ${inputClass} ${isEditing ? styles.fieldInputEditing : isSelected ? styles.fieldInputHighlighted : ''}`}
+          className={`${styles.fieldInput} ${inputClass} ${isEditing ? styles.fieldInputEditing : isFlagged ? styles.fieldInputHighlightedOrange : isSelected ? styles.fieldInputHighlighted : ''}`}
           readOnly={!isEditing}
           value={isEditing ? draftValue : currentVal}
           onChange={e => setDraftValue(e.target.value)}
           autoFocus={isEditing}
           onKeyDown={e => {
-            if (e.key === 'Enter') { e.preventDefault(); commitStaticEdit(fieldKey) }
+            if (e.key === 'Enter') { e.preventDefault(); commitStaticEdit(fieldKey, resolveKey) }
             if (e.key === 'Escape') cancelEdit()
           }}
           onClick={e => { e.stopPropagation(); if (!isEditing) startEdit(fieldKey, currentVal) }}
         />
         {isEditing ? (
           <div className={styles.editActions}>
-            <button className={styles.saveBtn} onClick={() => commitStaticEdit(fieldKey)}>Save</button>
+            <button className={styles.saveBtn} onClick={() => commitStaticEdit(fieldKey, resolveKey)}>Save</button>
             <button className={styles.undoBtn} onClick={cancelEdit}>Undo</button>
           </div>
         ) : isReviewed ? (
           (() => {
-            const meta = reviewedFields?.get(fieldKey)
+            const meta = reviewedFields?.get(resolveKey)
             const tip = meta ? `Reviewed by ${meta.by} · ${meta.at} — Click to unmark` : 'Click to unmark'
             return (
               <Tooltip text={tip} placement="top">
-                <button className={styles.markCorrectBtn} style={{ color: '#108000' }} onClick={e => { e.stopPropagation(); onMarkReviewed?.(fieldKey) }}><CircleCheck size="small" /></button>
+                <button className={styles.markCorrectBtn} style={{ color: '#108000' }} onClick={e => { e.stopPropagation(); onMarkReviewed?.(resolveKey) }}><CircleCheck size="small" /></button>
               </Tooltip>
             )
           })()
         ) : (
           <div className={styles.fieldActions}>
-            <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.(fieldKey) }}><CircleCheck size="small" /></button></Tooltip>
+            <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.(resolveKey) }}><CircleCheck size="small" /></button></Tooltip>
             {renderCommentBtn(fieldKey, label)}
           </div>
         )}
         {savedField === fieldKey && <span className={styles.recalcBadge}>Saved</span>}
         {editedFields.has(fieldKey) && savedField !== fieldKey && <span className={styles.editedBadge}>Edited</span>}
       </div>
+      {flaggedFields[issueKey] && <ValidationNote issueKey={issueKey} resolveKey={resolveKey} />}
+      </>
     )
   }
 
@@ -262,7 +299,7 @@ export default function DetailFields1099R({ selectedField, highlightMode = 'blue
         {/* ── Distribution Income ── */}
         <div className={styles.sectionHeader}>Distribution Income</div>
 
-        {renderStaticRow('r-grossDistrib', '(1) Gross distribution', FORM_DATA.box1_grossDistrib)}
+        {renderStaticRow('r-grossDistrib', '(1) Gross distribution', FORM_DATA.box1_grossDistrib, styles.fieldInputSmall, 'grossDistrib', 'grossDistrib', 'grossDistrib-meridian')}
         {renderStaticRow('r-taxableAmt', '(2a) Taxable amount', FORM_DATA.box2a_taxableAmt)}
         {renderStaticRow('r-capitalGain', '(3) Capital gain (in box 2a)', FORM_DATA.box3_capitalGain)}
         {renderStaticRow('r-fedTaxWithheld', '(4) Federal income tax withheld', FORM_DATA.box4_fedTaxWithheld, styles.fieldInputSmall, 'withholding1099')}

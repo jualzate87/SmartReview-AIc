@@ -33,9 +33,9 @@ const RECIPIENT_DATA = {
   ssn: 'XXX-XX-4321',
   name: 'Jessica Drake',
   street: '333 Easy Street',
-  city: 'Middlefield',
-  state: 'CA',
-  zip: '98756',
+  city: 'Austin',
+  state: 'TX',
+  zip: '78704',
 }
 
 const FORM_DATA = {

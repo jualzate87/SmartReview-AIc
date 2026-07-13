@@ -64,8 +64,8 @@ const EMPLOYER_DATA = {
     street: '321 Main Orchard Dr',
     city: 'Reno', state: 'NV', zip: '89501',
     federalTax: '',
-    socialSecurityWages: '148,940', ssTax: '7,374',
-    medicareWages: '148,940', medicareTax: '1,725',
+    socialSecurityWages: '148,940', ssTax: '9,234.28',
+    medicareWages: '148,940', medicareTax: '2,159.63',
     ssTips: '0', allocatedTips: '0',
     dependentCare: '0', nonqualified: '0',
     box12Code: '' as string, box12Amount: '' as string,
@@ -387,7 +387,7 @@ export default function DetailFields({
               onClick={() => {
                 onVerifyDoc?.(activeSubTab)
                 const fieldKeys = [
-                  `ssn-${activeSubTab}`, `wages-${activeSubTab}`, `sswages-${activeSubTab}`,
+                  `ssn-${activeSubTab}`, `wages-${activeSubTab}`,
                   'withholding', 'box12',
                   ...getBox12SubRowKeys(activeSubTab),
                   `ein-${activeSubTab}`, `employerName-${activeSubTab}`,

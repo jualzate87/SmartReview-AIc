@@ -1000,7 +1000,7 @@ export default function LeftPanel1040({
               </div>
               <div className={styles.infoField}>
                 <span className={styles.infoLabel}>City, State, ZIP</span>
-                <span className={styles.infoValue}>Middlefield, CA  98756</span>
+                <span className={styles.infoValue}>Austin, TX  78704</span>
               </div>
             </div>
           </div>

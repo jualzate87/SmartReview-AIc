@@ -15,7 +15,7 @@ import styles from '../../styles/data-review/AgentReportPane.module.css'
 // ProtoC Phase 2 — AI diagnostics ONLY. Import/OCR flags (w2Box12, w2Ein,
 // wagesConfidence, divCollectibles, divNonDiv) are owned by Phase 1 and removed here,
 // so there is zero redundancy between the two phases.
-export const TOTAL_REVIEW_ITEMS = 12
+export const TOTAL_REVIEW_ITEMS = 11
 
 export const GUIDED_ORDER = [
   'balanceDueJump',
@@ -26,7 +26,6 @@ export const GUIDED_ORDER = [
   'ordinaryDivSurge',
   'qualDivRatio',
   'confirmPriorAgi',
-  'missingStateReturn',
   'missingEstPayments',
   'optW4Adjustment',
   'optIra',
@@ -59,7 +58,7 @@ interface AgentReportPaneProps {
 // consecutive within the card (e.g. Critical always reads 1, 2 — never 2, 5).
 const REPORT_CARDS = [
   { label: 'Critical',        keys: ['balanceDueJump', 'totalTaxRise', 'withholdingDrop', 'w2WithholdingZero'], badgeColor: 'red'    as const, position: 'first' },
-  { label: 'Review required', keys: ['qualDivDrop', 'ordinaryDivSurge', 'qualDivRatio', 'confirmPriorAgi', 'missingStateReturn', 'missingEstPayments'], badgeColor: 'orange' as const, position: 'middle' },
+  { label: 'Review required', keys: ['qualDivDrop', 'ordinaryDivSurge', 'qualDivRatio', 'confirmPriorAgi', 'missingEstPayments'], badgeColor: 'orange' as const, position: 'middle' },
   { label: 'Opportunities',   keys: ['optW4Adjustment', 'optIra'], badgeColor: 'blue'   as const, position: 'last' },
 ]
 

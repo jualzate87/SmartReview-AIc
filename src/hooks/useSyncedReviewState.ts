@@ -36,7 +36,7 @@ const CHANNEL_NAME = 'protoc-data-review-sync'
 // means the cached session predates the new numbers, so it's discarded instead
 // of silently mixing old field values with the new defaults (which caused the
 // 1040 to show stale withholding/amount-owed figures after a data fix).
-const STATE_VERSION = 6
+const STATE_VERSION = 7
 const STORAGE_KEY = 'protoc-data-review-state-v' + STATE_VERSION
 const PREPARER_NAME = 'Juan Alzate'
 

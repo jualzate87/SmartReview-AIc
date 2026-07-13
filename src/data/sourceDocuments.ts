@@ -159,7 +159,7 @@ export const TAX_CONTROL_ROWS: TaxControlRowConfig[] = [
     desc: 'Box 4 (federal income tax withheld) from all 1099s',
     docs: [
       { docId: '1099-div-token', label: 'Token Financial (1099-DIV)', hint: 26363 },
-      { docId: '1099-r-meridian', label: 'Meridian Retirement Trust (1099-R)', hint: 30000 },
+      { docId: '1099-r-meridian', label: 'Meridian Retirement Trust (1099-R)', hint: 0 },
       { docId: '1099-nec-summit', label: 'Summit Advisory Partners (1099-NEC)', hint: 0 },
     ],
     sourceTab: 'withholding1099',

@@ -13,6 +13,7 @@ import {
 } from './data-review/phase1FieldSync'
 import DocumentPreview from './data-review/DocumentPreview'
 import W2FormPreview from './data-review/W2FormPreview'
+import Int1099FormPreview from './data-review/Int1099FormPreview'
 import SourceDocumentList, { getActiveDocId } from './data-review/SourceDocumentList'
 import type { SourceDocument } from '../data/sourceDocuments'
 import SourcePanelLoader from './data-review/SourcePanelLoader'
@@ -130,6 +131,7 @@ export default function DataReviewPopout() {
 
   const imageSrc =
     activeTopTab === 'w2s' && activeSubTab === 'techCircle' ? undefined :
+    activeTopTab === '1099-ints' && activeIntPayer === 'unwaverIngFinancial' ? undefined :
     activeTopTab === 'prior-1040' ? [img1040PriorPage1, img1040PriorPage2] :
     activeTopTab === '1099-ints'  ? (
       activeIntPayer === 'harborlineCredit' ? img1099IntHarborline :
@@ -202,7 +204,7 @@ export default function DataReviewPopout() {
       )}
       {activeTopTab === '1099-rs' && (
         <PeelTab
-          tabs={R_PAYER_TABS.map(t => ({ ...t, badge: 0 }))}
+          tabs={R_PAYER_TABS.map(t => ({ ...t, badge: tabFlagCounts['1099-rs'] }))}
           activeKey="meridian"
           onChange={() => {}}
         />
@@ -222,6 +224,8 @@ export default function DataReviewPopout() {
               customContent={
                 activeTopTab === 'w2s' && activeSubTab === 'techCircle'
                   ? <W2FormPreview />
+                  : activeTopTab === '1099-ints' && activeIntPayer === 'unwaverIngFinancial'
+                  ? <Int1099FormPreview />
                   : undefined
               }
               imageSrc={imageSrc}
@@ -260,7 +264,6 @@ export default function DataReviewPopout() {
                 flaggedFields={{
                   ssn: 'Employee SSN not imported — required for e-filing. Enter manually.',
                   wages: 'Low confidence (72%): wages may be misread. Source W-2 Box 1 shows $148,940 but return has $118,940.',
-                  sswages: 'Medium confidence (82%): social security wages differ from Box 1. Source W-2 shows $148,940 in Box 3 vs. $118,940 on the return.',
                   box12: 'Box 12 not imported — enter code and amount manually from source W-2.',
                   ein:   'Employer EIN not found in document — required for e-filing. Enter manually.',
                 }}
@@ -283,6 +286,7 @@ export default function DataReviewPopout() {
                   divCollectibles: 'Collectibles (28%) gain not imported. Review source document and enter if applicable.',
                   divNonDiv: 'Nondividend distributions not imported. Review source document and enter if applicable.',
                   fedTaxWithheld: 'Low confidence (68%): federal withholding may be misread. Source shows $26,363 but return has $24,925. Verify Box 4 against source 1099-DIV.',
+                  ordinaryDivs: 'Low confidence (85%): ordinary dividends may be misread. Source 1099-DIV shows $12,400 — verify Box 1a against Northmark Index Funds source.',
                 }}
               />
             )}
@@ -314,6 +318,9 @@ export default function DataReviewPopout() {
                 reviewedFields={reviewedFields}
                 verifiedDocs={verifiedDocs}
                 onVerifyDoc={toggleVerifiedDoc}
+                flaggedFields={{
+                  grossDistrib: 'Low confidence (78%): gross distribution may be misread. Source 1099-R shows $150,000 — verify Box 1 against Meridian Retirement Trust source.',
+                }}
               />
             )}
             {activeTopTab === '1099-necs' && (

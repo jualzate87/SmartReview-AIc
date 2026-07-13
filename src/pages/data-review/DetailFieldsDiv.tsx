@@ -55,9 +55,9 @@ const RECIPIENT_DATA = {
   ssn: 'XXX-XX-4699',
   name: 'Jessica Drake',
   street: '333 Easy Street',
-  city: 'Middlefield',
-  state: 'CA',
-  zip: '98756',
+  city: 'Austin',
+  state: 'TX',
+  zip: '78704',
 }
 
 // Form 1099-DIV boxes per payer — Jessica Drake TY 2025
@@ -76,7 +76,7 @@ const FORM_DATA: Record<DivPayer, {
     box2c_sec1202:           '',       // Box 2c — Section 1202 gain
     box2d_collectibles:      '',       // Box 2d — Collectibles (28%) gain
     box3_nonDivDistrib:      '',       // Box 3 — Nondividend distributions
-    box4_fedTaxWithheld:     '26,363', // Box 4 — Federal income tax withheld
+    box4_fedTaxWithheld:     '24,925', // Box 4 — Return value (source $26,363)
     box5_investExpenses:     '1,200',  // Box 5 — Investment expenses
     box6_foreignTaxPaid:     '',       // Box 6 — Foreign tax paid
     box7_foreignCountry:     '',       // Box 7 — Foreign country or U.S. possession
@@ -252,10 +252,10 @@ export default function DetailFieldsDiv({ activePayer, selectedField, highlightM
     )
   }
 
-  const ValidationNote = ({ fieldKey }: { fieldKey: string }) => {
+  const ValidationNote = ({ fieldKey, reviewedKey }: { fieldKey: string; reviewedKey?: string }) => {
     const issue = flaggedFields[fieldKey]
     if (!issue) return null
-    const resolved = reviewedFields?.has(fieldKey)
+    const resolved = reviewedFields?.has(reviewedKey ?? fieldKey)
     return (
       <div className={styles.validationNote} style={resolved ? { color: '#1a6b35' } : {}}>
         {resolved ? (
@@ -272,12 +272,19 @@ export default function DetailFieldsDiv({ activePayer, selectedField, highlightM
   // the W-2 panel's renderStaticRow. Flagged rows (e.g. collectibles, nondividend — "not
   // imported") also get a validation note; editing such a row lets the preparer fill in
   // the real value from the source document instead of just dismissing the flag.
-  const renderReadOnlyRow = (fieldKey: string, label: string, defaultValue: string, opts: { inputClass?: string; placeholder?: string } = {}) => {
-    const { inputClass = styles.fieldInputSmall, placeholder = '—' } = opts
+  const renderReadOnlyRow = (
+    fieldKey: string,
+    label: string,
+    defaultValue: string,
+    opts: { inputClass?: string; placeholder?: string; fieldKeyOverride?: string; reviewedKeyOverride?: string } = {},
+  ) => {
+    const { inputClass = styles.fieldInputSmall, placeholder = '—', fieldKeyOverride, reviewedKeyOverride } = opts
+    const flagKey = fieldKeyOverride ?? fieldKey
+    const reviewedKey = reviewedKeyOverride ?? fieldKey
     const currentVal = staticValues[fieldKey] ?? defaultValue
     const isEditing = editingField === fieldKey
-    const isFlagged = !!flaggedFields[fieldKey] && !reviewedFields?.has(fieldKey)
-    const isReviewed = reviewedFields?.has(fieldKey)
+    const isFlagged = !!flaggedFields[flagKey] && !reviewedFields?.has(reviewedKey)
+    const isReviewed = reviewedFields?.has(reviewedKey)
     const isCommentOpen = commentField === fieldKey
     const commitStatic = () => {
       setStaticValues(prev => ({ ...prev, [fieldKey]: draftValue }))
@@ -285,13 +292,13 @@ export default function DetailFieldsDiv({ activePayer, selectedField, highlightM
       setEditedFields(prev => new Set(prev).add(fieldKey))
       setSavedField(fieldKey)
       setTimeout(() => setSavedField(null), 3500)
-      if (draftValue.trim()) onMarkReviewed?.(fieldKey)
+      if (draftValue.trim()) onMarkReviewed?.(reviewedKey)
     }
     return (
       <>
         <div
           className={`${styles.fieldRow} ${isFlagged ? styles.fieldRowHasNote : ''} ${isCommentOpen ? styles.fieldRowCommentOpen : ''}`}
-          onClick={() => onFieldSelect?.(fieldKey)}
+          onClick={() => onFieldSelect?.(flagKey === 'ordinaryDivs' ? 'ordinaryDivs' : fieldKey)}
           style={{ cursor: 'pointer' }}
         >
           <span className={`${styles.fieldLabel} ${isFlagged ? styles.fieldLabelFlagged : ''}`}>
@@ -315,18 +322,18 @@ export default function DetailFieldsDiv({ activePayer, selectedField, highlightM
             </div>
           ) : isReviewed ? (
             <Tooltip text="Click to unmark" placement="top">
-              <button className={styles.reviewedBadge} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'inline-flex', alignItems: 'center' }} onClick={e => { e.stopPropagation(); onMarkReviewed?.(fieldKey) }}><CircleCheck size="small" /></button>
+              <button className={styles.reviewedBadge} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'inline-flex', alignItems: 'center' }} onClick={e => { e.stopPropagation(); onMarkReviewed?.(reviewedKey) }}><CircleCheck size="small" /></button>
             </Tooltip>
           ) : (
             <div className={styles.fieldActions}>
-              <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.(fieldKey) }}><CircleCheck size="small" /></button></Tooltip>
+              <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.(reviewedKey) }}><CircleCheck size="small" /></button></Tooltip>
               {renderCommentBtn(fieldKey, label)}
             </div>
           )}
           {savedField === fieldKey && <span className={styles.recalcBadge}>Saved</span>}
           {editedFields.has(fieldKey) && savedField !== fieldKey && <span className={styles.editedBadge}>Edited</span>}
         </div>
-        <ValidationNote fieldKey={fieldKey} />
+        <ValidationNote fieldKey={flagKey} reviewedKey={reviewedKey} />
       </>
     )
   }
@@ -387,7 +394,10 @@ export default function DetailFieldsDiv({ activePayer, selectedField, highlightM
         {/* ── Dividend Income ── */}
         <div className={styles.sectionHeader}>Dividend Income</div>
 
-        {renderReadOnlyRow(`ordinaryDivs-${activePayer}`, '(1a) Total ordinary dividends', form.box1a_totalOrdinary)}
+        {renderReadOnlyRow(`ordinaryDivs-${activePayer}`, '(1a) Total ordinary dividends', form.box1a_totalOrdinary, {
+          fieldKeyOverride: activePayer === 'northmarkIndex' ? 'ordinaryDivs' : undefined,
+          reviewedKeyOverride: activePayer === 'northmarkIndex' ? 'ordinaryDivs-northmark' : undefined,
+        })}
 
         {isPrimary ? (
           <>

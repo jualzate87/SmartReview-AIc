@@ -133,7 +133,7 @@ export default function PriorYear1040Panel() {
         <div className={styles.titleRow}>
           <h2 className={styles.title}>Prior Year 1040 (2024)</h2>
         </div>
-        <div className={styles.subHeader}>Jessica Drake · Middlefield, CA</div>
+        <div className={styles.subHeader}>Jessica Drake · Austin, TX</div>
 
         <div className={styles.fieldsBody}>
           {PRIOR_YEAR_FIELDS.map((row, i) => {

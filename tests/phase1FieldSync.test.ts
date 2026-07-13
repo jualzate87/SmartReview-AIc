@@ -13,22 +13,22 @@ function reviewed(...keys: string[]) {
 }
 
 describe('W-2 Phase 1 flag counting', () => {
-  it('counts all five Tech Circle flags when nothing is reviewed', () => {
+  it('counts all four Tech Circle flags when nothing is reviewed', () => {
     const empty = new Map<string, unknown>()
-    expect(countPhase1FlagsForW2Payer('techCircle', empty)).toBe(5)
-    expect(countPhase1FlagsForW2Tab(empty)).toBe(5)
-    expect(getTabFlagCounts(empty).w2s).toBe(5)
+    expect(countPhase1FlagsForW2Payer('techCircle', empty)).toBe(4)
+    expect(countPhase1FlagsForW2Tab(empty)).toBe(4)
+    expect(getTabFlagCounts(empty).w2s).toBe(4)
   })
 
-  it('drops wages and sswages from count when those keys are reviewed', () => {
-    const fields = reviewed('wages-techCircle', 'sswages-techCircle')
+  it('drops wages from count when that key is reviewed', () => {
+    const fields = reviewed('wages-techCircle')
     expect(countPhase1FlagsForW2Payer('techCircle', fields)).toBe(3)
   })
 
-  it('identifies the two remaining flags when wages and sswages are done', () => {
-    const fields = reviewed('wages-techCircle', 'sswages-techCircle')
+  it('identifies the remaining flags when wages is done', () => {
+    const fields = reviewed('wages-techCircle')
     const w2Flags = PHASE1_FLAG_KEYS.filter(k =>
-      ['ssn-techCircle', 'wages-techCircle', 'sswages-techCircle', 'box12', 'ein-techCircle'].includes(k),
+      ['ssn-techCircle', 'wages-techCircle', 'box12', 'ein-techCircle'].includes(k),
     )
     const unresolved = w2Flags.filter(k => !isPhase1FlagResolved(k, fields))
     expect(unresolved).toEqual(['ssn-techCircle', 'box12', 'ein-techCircle'])
@@ -44,7 +44,7 @@ describe('W-2 Phase 1 flag counting', () => {
     )
     expect(isBox12FlagResolved(fields)).toBe(true)
     expect(isPhase1FlagResolved('box12', fields)).toBe(true)
-    expect(countPhase1FlagsForW2Payer('techCircle', fields)).toBe(4)
+    expect(countPhase1FlagsForW2Payer('techCircle', fields)).toBe(3)
   })
 
   it('clears box12 when the aggregate box12 key is reviewed directly', () => {
@@ -53,22 +53,31 @@ describe('W-2 Phase 1 flag counting', () => {
   })
 
   it('keeps tab and peel-tab counts in sync', () => {
-    const fields = reviewed('wages-techCircle', 'sswages-techCircle')
+    const fields = reviewed('wages-techCircle')
     const tabCount = getTabFlagCounts(fields).w2s
     const peelCount = countPhase1FlagsForW2Payer('techCircle', fields)
     expect(tabCount).toBe(peelCount)
     expect(tabCount).toBe(3)
   })
 
-  it('hides W-2 badges when all five Phase 1 flags are resolved', () => {
+  it('hides W-2 badges when all four Phase 1 flags are resolved', () => {
     const fields = reviewed(
       'ssn-techCircle',
       'wages-techCircle',
-      'sswages-techCircle',
       'box12',
       'ein-techCircle',
     )
     expect(countPhase1FlagsForW2Tab(fields)).toBe(0)
     expect(getTabFlagCounts(fields).w2s).toBe(0)
+  })
+})
+
+describe('Phase 1 flag total', () => {
+  it('tracks ten import flags across all document types', () => {
+    expect(PHASE1_FLAG_KEYS.length).toBe(10)
+    const empty = new Map<string, unknown>()
+    const total = PHASE1_FLAG_KEYS.filter(k => !isPhase1FlagResolved(k, empty)).length
+    expect(total).toBe(10)
+    expect(getTabFlagCounts(empty)['1099-rs']).toBe(1)
   })
 })

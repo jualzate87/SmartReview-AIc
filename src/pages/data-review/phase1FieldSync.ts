@@ -7,13 +7,14 @@ import type { W2Employer } from './DetailFields'
 export const PHASE1_FLAG_KEYS = [
   'ssn-techCircle',
   'wages-techCircle',
-  'sswages-techCircle',
   'box12',
   'ein-techCircle',
   'divCollectibles',
   'divNonDiv',
   'fedTaxWithheld',
   'taxableInterest',
+  'grossDistrib-meridian',
+  'ordinaryDivs-northmark',
 ] as const
 
 export type Phase1FlagKey = (typeof PHASE1_FLAG_KEYS)[number]
@@ -27,17 +28,18 @@ export type Phase1VerifyItem = {
   intPayer?: IntPayer
 }
 
-/** Ordered Verify queue — W-2 flags first, then DIV, then INT. */
+/** Ordered Verify queue — W-2 flags first, then DIV, INT, 1099-R. */
 export const PHASE1_VERIFY_QUEUE: Phase1VerifyItem[] = [
-  { flagKey: 'ssn-techCircle',      field: 'ssn',             tab: 'w2s' },
-  { flagKey: 'wages-techCircle',    field: 'wages',           tab: 'w2s' },
-  { flagKey: 'sswages-techCircle',  field: 'sswages',         tab: 'w2s' },
-  { flagKey: 'box12',               field: 'box12',           tab: 'w2s' },
-  { flagKey: 'ein-techCircle',      field: 'ein',             tab: 'w2s' },
-  { flagKey: 'divCollectibles',     field: 'divCollectibles', tab: '1099-divs', divPayer: 'tokenFinancial' },
-  { flagKey: 'divNonDiv',           field: 'divNonDiv',       tab: '1099-divs', divPayer: 'tokenFinancial' },
-  { flagKey: 'fedTaxWithheld',      field: 'fedTaxWithheld',  tab: '1099-divs', divPayer: 'tokenFinancial' },
-  { flagKey: 'taxableInterest',     field: 'taxableInterest', tab: '1099-ints', intPayer: 'unwaverIngFinancial' },
+  { flagKey: 'ssn-techCircle',           field: 'ssn',             tab: 'w2s' },
+  { flagKey: 'wages-techCircle',         field: 'wages',           tab: 'w2s' },
+  { flagKey: 'box12',                    field: 'box12',           tab: 'w2s' },
+  { flagKey: 'ein-techCircle',           field: 'ein',             tab: 'w2s' },
+  { flagKey: 'divCollectibles',          field: 'divCollectibles', tab: '1099-divs', divPayer: 'tokenFinancial' },
+  { flagKey: 'divNonDiv',                field: 'divNonDiv',       tab: '1099-divs', divPayer: 'tokenFinancial' },
+  { flagKey: 'fedTaxWithheld',           field: 'fedTaxWithheld',  tab: '1099-divs', divPayer: 'tokenFinancial' },
+  { flagKey: 'ordinaryDivs-northmark',   field: 'ordinaryDivs',    tab: '1099-divs', divPayer: 'northmarkIndex' },
+  { flagKey: 'taxableInterest',          field: 'taxableInterest', tab: '1099-ints', intPayer: 'unwaverIngFinancial' },
+  { flagKey: 'grossDistrib-meridian',    field: 'grossDistrib',    tab: '1099-rs' },
 ]
 
 /** Detail field key → 1040 row field (when a 1040 line exists). */
@@ -127,15 +129,20 @@ export function navigationForDetailField(field: string): Pick<Phase1VerifyItem, 
 
 /** Phase 1 import flags per W-2 employer — only Tech Circle carries flags. */
 const W2_PAYER_FLAG_KEYS: Record<W2Employer, Phase1FlagKey[]> = {
-  techCircle: ['ssn-techCircle', 'wages-techCircle', 'sswages-techCircle', 'box12', 'ein-techCircle'],
+  techCircle: ['ssn-techCircle', 'wages-techCircle', 'box12', 'ein-techCircle'],
   bingEquipment: [],
 }
 
-/** Phase 1 import flags per 1099-DIV payer — only primary payer carries flags. */
+/** Phase 1 import flags per 1099-DIV payer — primary + Northmark carry flags. */
 const DIV_PAYER_FLAG_KEYS: Record<DivPayer, Phase1FlagKey[]> = {
   tokenFinancial: ['divCollectibles', 'divNonDiv', 'fedTaxWithheld'],
-  northmarkIndex: [],
+  northmarkIndex: ['ordinaryDivs-northmark'],
   beaconDividend: [],
+}
+
+/** Phase 1 import flags per 1099-R payer — Meridian gross distribution flagged. */
+const R_PAYER_FLAG_KEYS: Record<'meridian', Phase1FlagKey[]> = {
+  meridian: ['grossDistrib-meridian'],
 }
 
 /** Phase 1 import flags per 1099-INT payer — only primary payer carries flags. */
@@ -174,7 +181,7 @@ export function getTabFlagCounts(reviewedFields: Map<string, unknown>): Record<s
     w2s: countPhase1FlagsForW2Tab(reviewedFields),
     '1099-divs': divCount,
     '1099-ints': intCount,
-    '1099-rs': 0,
+    '1099-rs': R_PAYER_FLAG_KEYS.meridian.filter(k => !isPhase1FlagResolved(k, reviewedFields)).length,
     '1099-necs': 0,
     'prior-1040': 0,
   }
@@ -184,12 +191,18 @@ export function countPhase1FlagsForDivPayer(
   payer: DivPayer,
   reviewedFields: Map<string, unknown>,
 ): number {
-  return DIV_PAYER_FLAG_KEYS[payer].filter(k => !reviewedFields.has(k)).length
+  return DIV_PAYER_FLAG_KEYS[payer].filter(k => !isPhase1FlagResolved(k, reviewedFields)).length
+}
+
+export function countPhase1FlagsForRPayer(
+  reviewedFields: Map<string, unknown>,
+): number {
+  return R_PAYER_FLAG_KEYS.meridian.filter(k => !isPhase1FlagResolved(k, reviewedFields)).length
 }
 
 export function countPhase1FlagsForIntPayer(
   payer: IntPayer,
   reviewedFields: Map<string, unknown>,
 ): number {
-  return INT_PAYER_FLAG_KEYS[payer].filter(k => !reviewedFields.has(k)).length
+  return INT_PAYER_FLAG_KEYS[payer].filter(k => !isPhase1FlagResolved(k, reviewedFields)).length
 }

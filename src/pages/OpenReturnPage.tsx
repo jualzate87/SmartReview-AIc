@@ -32,11 +32,11 @@ import styles from '../styles/OpenReturnPage.module.css'
 
 type Step = 1 | 2 | 3 | 4 | 5
 
-const CHECKLIST_ITEMS = [
-  { id: 'w2-tech',  type: 'W2',      label: 'Form W-2 from Tech Circle' },
-  { id: '1099-int', type: '1099-INT', label: 'Form 1099-INT from Unwavering Financial' },
-  { id: '1099-div', type: '1099-DIV', label: 'Form 1099-DIV from Unwavering Financial' },
-]
+const CHECKLIST_ITEMS = SOURCE_DOCUMENTS.map(doc => ({
+  id: doc.id,
+  type: doc.formType,
+  label: doc.label,
+}))
 
 /** Received tab rows — derived from canonical source document list. */
 const RECEIVED_DOCS = SOURCE_DOCUMENTS.map(doc => ({

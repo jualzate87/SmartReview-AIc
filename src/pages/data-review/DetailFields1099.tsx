@@ -55,9 +55,9 @@ const RECIPIENT_DATA = {
   ssn: 'XXX-XX-4699',
   name: 'Jessica Drake',
   street: '333 Easy Street',
-  city: 'Middlefield',
-  state: 'CA',
-  zip: '98756',
+  city: 'Austin',
+  state: 'TX',
+  zip: '78704',
 }
 
 // Form 1099-INT boxes per payer — Jessica Drake values
@@ -71,7 +71,7 @@ const FORM_DATA: Record<IntPayer, {
   unwaverIngFinancial: {
     box1_interest:        '1,986',   // Box 1 — Interest income
     box2_earlyPenalty:    '',        // Box 2 — Early withdrawal penalty
-    box3_usBonds:         '1,500',   // Box 3 — Interest on U.S. Savings Bonds & T-bills (planted silent error)
+    box3_usBonds:         '',        // Box 3 — Dropped on return (source has $1,500)
     box4_fedTaxWithheld:  '',        // Box 4 — Federal income tax withheld
     box5_investExpenses:  '',        // Box 5 — Investment expenses
     box6_foreignTax:      '',        // Box 6 — Foreign tax paid
@@ -80,7 +80,7 @@ const FORM_DATA: Record<IntPayer, {
     box9_specPrivActivity:'',        // Box 9 — Specified private activity bond interest
     box10_marketDiscount: '',        // Box 10 — Market discount
     box11_bondPremium:    '',        // Box 11 — Bond premium
-    box13_stateTaxId:     'CA-47882103',
+    box13_stateTaxId:     'CO-47882103',
     box14_stateTax:       '',
     box15_stateIncome:    '1,986',
   },
