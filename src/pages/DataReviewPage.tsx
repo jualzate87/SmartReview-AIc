@@ -369,11 +369,16 @@ export default function DataReviewPage() {
     setNotesClosing(true)
     setTimeout(() => { setNotesOpen(false); setNotesClosing(false) }, 200)
   }
+  const formatNoteAt = () =>
+    new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })
+
   const handleAddNote = (text: string, context?: string) => {
-    const now = new Date()
-    const at = now.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })
-    setNotes(prev => [...prev, { id: `note-${Date.now()}`, text, author: PREPARER_NAME, at, context }])
+    setNotes(prev => [...prev, { id: `note-${Date.now()}`, text, author: PREPARER_NAME, at: formatNoteAt(), context }])
     setNotesOpen(true)
+  }
+
+  const handleEditNote = (id: string, text: string) => {
+    setNotes(prev => prev.map(n => n.id === id ? { ...n, text, at: formatNoteAt() } : n))
   }
 
   const bodyRef = useRef<HTMLDivElement>(null)
@@ -1068,6 +1073,7 @@ export default function DataReviewPage() {
         <NotesPane
           notes={notes}
           onAdd={(text) => handleAddNote(text)}
+          onEdit={handleEditNote}
           onClose={handleCloseNotes}
           closing={notesClosing}
         />

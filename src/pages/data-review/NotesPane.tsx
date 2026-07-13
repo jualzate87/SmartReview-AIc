@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Close, CircleCheck } from '@design-systems/icons'
+import { Close, CircleCheck, Edit } from '@design-systems/icons'
 import styles from '../../styles/data-review/NotesPane.module.css'
 
 export type Note = {
@@ -13,6 +13,7 @@ export type Note = {
 interface NotesPaneProps {
   notes: Note[]
   onAdd: (text: string) => void
+  onEdit: (id: string, text: string) => void
   onClose: () => void
   closing?: boolean
 }
@@ -26,19 +27,44 @@ function renderNoteText(text: string) {
   )
 }
 
-export default function NotesPane({ notes, onAdd, onClose, closing = false }: NotesPaneProps) {
+export default function NotesPane({ notes, onAdd, onEdit, onClose, closing = false }: NotesPaneProps) {
   const [draft, setDraft] = useState('')
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editDraft, setEditDraft] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const editTextareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
     textareaRef.current?.focus()
   }, [])
+
+  useEffect(() => {
+    if (editingId) editTextareaRef.current?.focus()
+  }, [editingId])
 
   const handlePost = () => {
     const trimmed = draft.trim()
     if (!trimmed) return
     onAdd(trimmed)
     setDraft('')
+  }
+
+  const startEdit = (note: Note) => {
+    setEditingId(note.id)
+    setEditDraft(note.text)
+  }
+
+  const cancelEdit = () => {
+    setEditingId(null)
+    setEditDraft('')
+  }
+
+  const saveEdit = () => {
+    const trimmed = editDraft.trim()
+    if (!trimmed || !editingId) return
+    onEdit(editingId, trimmed)
+    setEditingId(null)
+    setEditDraft('')
   }
 
   return (
@@ -69,26 +95,66 @@ export default function NotesPane({ notes, onAdd, onClose, closing = false }: No
           </div>
         ) : (
           <div className={styles.noteItems}>
-            {notes.map(note => (
-              <div key={note.id} className={styles.noteCard}>
-                <div className={styles.noteHeader}>
-                  <div className={styles.noteAvatar}>
-                    {note.author.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+            {notes.map(note => {
+              const isEditing = editingId === note.id
+              return (
+                <div key={note.id} className={styles.noteCard}>
+                  <div className={styles.noteHeader}>
+                    <div className={styles.noteAvatar}>
+                      {note.author.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                    </div>
+                    <div className={styles.noteMeta}>
+                      <span className={styles.noteAuthor}>{note.author}</span>
+                      <span className={styles.noteAt}>{note.at}</span>
+                    </div>
+                    {!isEditing && (
+                      <button
+                        className={styles.editBtn}
+                        aria-label="Edit comment"
+                        onClick={() => startEdit(note)}
+                      >
+                        <Edit size="small" />
+                      </button>
+                    )}
                   </div>
-                  <div className={styles.noteMeta}>
-                    <span className={styles.noteAuthor}>{note.author}</span>
-                    <span className={styles.noteAt}>{note.at}</span>
-                  </div>
+                  {note.context && (
+                    <div className={styles.noteContext}>
+                      <span className={styles.noteContextIcon}><CircleCheck size="small" /></span>
+                      {note.context}
+                    </div>
+                  )}
+                  {isEditing ? (
+                    <div className={styles.editArea}>
+                      <div className={styles.editBox}>
+                        <textarea
+                          ref={editTextareaRef}
+                          className={styles.editInput}
+                          value={editDraft}
+                          onChange={e => setEditDraft(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === 'Escape') cancelEdit()
+                            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) saveEdit()
+                          }}
+                          rows={3}
+                        />
+                      </div>
+                      <div className={styles.editActions}>
+                        <button className={styles.cancelBtn} onClick={cancelEdit}>Cancel</button>
+                        <button
+                          className={`${styles.postBtn} ${editDraft.trim() ? styles.postBtnActive : ''}`}
+                          disabled={!editDraft.trim()}
+                          onClick={saveEdit}
+                        >
+                          Save
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className={styles.noteText}>{renderNoteText(note.text)}</p>
+                  )}
                 </div>
-                {note.context && (
-                  <div className={styles.noteContext}>
-                    <span className={styles.noteContextIcon}><CircleCheck size="small" /></span>
-                    {note.context}
-                  </div>
-                )}
-                <p className={styles.noteText}>{renderNoteText(note.text)}</p>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>
