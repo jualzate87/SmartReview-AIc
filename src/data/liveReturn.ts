@@ -68,7 +68,7 @@ export const SEED_AMOUNTS: LiveAmounts = {
   box12: 0,
 }
 
-/** Source-true NEC Box 1 (shown in detail panel before/while editing). */
+/** Source-true NEC Box 1 on the Summit PDF — not seeded onto the return/detail panel. */
 export const NEC_SOURCE_AMOUNT = 24_000
 
 export type LiveReturnTotals = {

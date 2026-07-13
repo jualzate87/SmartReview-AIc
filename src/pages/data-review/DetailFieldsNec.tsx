@@ -37,7 +37,8 @@ const RECIPIENT_DATA = {
 }
 
 const FORM_DATA = {
-  box1_nonemployeeComp: '24,000',
+  // Box 1 — silent omit (error #10): source doc shows $24,000; return starts at $0
+  box1_nonemployeeComp: '0',
   box4_fedTaxWithheld:  '',
   box5_stateTaxId:      '',
   box6_stateTax:        '',
@@ -182,10 +183,11 @@ export default function DetailFieldsNec({
     selectKey?: string,
   ) => {
     const select = selectKey ?? fieldKey
-    // Once NEC is on the return, prefer the synced amount for Box 1 display
+    // Box 1 always reads from synced amounts (seeded 0 / necOnReturn false).
+    // Source $24,000 lives only on the JPEG preview until the user edits+saves.
     const syncedNecDisplay =
-      fieldKey === 'nec-box1' && amounts?.necOnReturn
-        ? amounts.necIncome.toLocaleString()
+      fieldKey === 'nec-box1' && amounts
+        ? (amounts.necIncome > 0 ? amounts.necIncome.toLocaleString() : '0')
         : null
     const currentVal = syncedNecDisplay ?? staticValues[fieldKey] ?? defaultValue
     const isEditing = editingField === fieldKey
@@ -200,7 +202,9 @@ export default function DetailFieldsNec({
       setTimeout(() => setSavedField(null), 3500)
       // Saving NEC Box 1 confirms omitted income onto Form 1040 line 8
       if (fieldKey === 'nec-box1') {
-        const num = parseAmountDraft(draftValue) || NEC_SOURCE_AMOUNT
+        const parsed = parseAmountDraft(draftValue)
+        // Empty save defaults to source amount (the planted miss the preparer is correcting)
+        const num = parsed > 0 ? parsed : NEC_SOURCE_AMOUNT
         onAmountChange?.({ necIncome: num, necOnReturn: true }, 'nec-box1')
       }
       if (draftValue.trim() || fieldKey === 'nec-box1') onMarkReviewed?.(fieldKey)

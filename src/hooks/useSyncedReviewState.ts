@@ -38,7 +38,7 @@ interface SyncedState {
 
 const CHANNEL_NAME = 'protoc-data-review-sync'
 // Bump whenever DEFAULT_STATE shape or seed values change so stale sessions reset.
-const STATE_VERSION = 9
+const STATE_VERSION = 10
 const STORAGE_KEY = 'protoc-data-review-state-v' + STATE_VERSION
 const PREPARER_NAME = 'Juan Alzate'
 
