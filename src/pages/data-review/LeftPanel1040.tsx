@@ -32,6 +32,8 @@ interface LeftPanel1040Props {
   issueField?: string | null
   /** Called when user clicks a source link in the field popover */
   onViewSource?: (fieldName: string, sourceLabel?: string) => void
+  /** Navigate to a specific source document (tax control flyout) */
+  onNavigateToSourceDoc?: (docId: string) => void
   /** Live editable field values from source-doc entry sheets */
   fieldValues?: { withholding: number; box12: number; taxableInterest: number; qualifiedDivs: number }
   /** Called when user posts a comment from a 1040 field */
@@ -89,6 +91,7 @@ export default function LeftPanel1040({
   onToggleChecked,
   issueField,
   onViewSource,
+  onNavigateToSourceDoc,
   fieldValues,
   onAddFieldNote,
   allFlagsCleared = false,
@@ -777,6 +780,8 @@ export default function LeftPanel1040({
         const openControlPopover = (rowId: string, el: HTMLElement) => {
           setControlPopoverRect(el.getBoundingClientRect())
           setControlPopoverRow(rowId)
+          const cfg = TAX_CONTROL_ROWS.find(r => r.id === rowId)
+          if (cfg?.docs[0]) onNavigateToSourceDoc?.(cfg.docs[0].docId)
         }
 
         return (
@@ -957,6 +962,7 @@ export default function LeftPanel1040({
             docs={cfg.docs}
             values={getDocValuesForRow(cfg.id, cfg.docs, controlInputs)}
             onChange={(docId, value) => setControlInputs(prev => setDocValueForRow(cfg.id, docId, value, prev))}
+            onNavigateToDoc={onNavigateToSourceDoc}
             anchorRect={controlPopoverRect}
             onClose={() => { setControlPopoverRow(null); setControlPopoverRect(null) }}
           />

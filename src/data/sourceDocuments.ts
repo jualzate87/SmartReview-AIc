@@ -49,6 +49,27 @@ export type TaxControlRowConfig = {
   sourceTab?: string
 }
 
+/** Resolve a source document id → tab + payer/sub-tab for navigation. */
+export function navigationForSourceDoc(docId: string): {
+  tab: TopTab
+  subTab?: W2Employer
+  divPayer?: DivPayer
+  intPayer?: IntPayer
+} | null {
+  const doc = SOURCE_DOCUMENTS.find(d => d.id === docId)
+  if (!doc) return null
+  if (doc.tab === 'w2s') {
+    return { tab: doc.tab, subTab: doc.subTab as W2Employer }
+  }
+  if (doc.tab === '1099-divs') {
+    return { tab: doc.tab, divPayer: doc.subTab as DivPayer }
+  }
+  if (doc.tab === '1099-ints') {
+    return { tab: doc.tab, intPayer: doc.subTab as IntPayer }
+  }
+  return { tab: doc.tab }
+}
+
 /** Parse comma-formatted currency string to number. */
 export function parseCurrency(raw: string): number | null {
   if (!raw || raw.trim() === '') return null

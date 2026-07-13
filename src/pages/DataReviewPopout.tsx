@@ -13,7 +13,6 @@ import {
 } from './data-review/phase1FieldSync'
 import DocumentPreview from './data-review/DocumentPreview'
 import { getSourceDocPreview } from './data-review/sourceDocImages'
-import SourcePanelLoader from './data-review/SourcePanelLoader'
 import DetailFields, { W2_PAYER_TABS } from './data-review/DetailFields'
 import type { W2Employer } from './data-review/DetailFields'
 import DetailFields1099, { INT_PAYER_TABS } from './data-review/DetailFields1099'
@@ -176,7 +175,6 @@ export default function DataReviewPopout() {
         />
       )}
 
-      <SourcePanelLoader loadKey={`${activeTopTab}-${activeSubTab}-${activeDivPayer}-${activeIntPayer}`}>
       <div ref={rightRef} style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
           <div style={{ width: `${previewWidth}%`, flexShrink: 0, overflow: 'hidden', borderRight: '1px solid #d5dee3' }}>
             <DocumentPreview
@@ -289,7 +287,6 @@ export default function DataReviewPopout() {
             {activeTopTab === 'prior-1040' && <PriorYear1040Fields onMarkReviewed={handleMarkReviewed} reviewedFields={reviewedFields} />}
           </div>
         </div>
-      </SourcePanelLoader>
     </div>
   )
 }

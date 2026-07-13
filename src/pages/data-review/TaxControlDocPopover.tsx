@@ -10,6 +10,8 @@ interface TaxControlDocPopoverProps {
   /** Current per-doc input values keyed by docId */
   values: Record<string, string>
   onChange: (docId: string, value: string) => void
+  /** Navigate to the source document for a specific doc field */
+  onNavigateToDoc?: (docId: string) => void
   anchorRect: DOMRect
   onClose: () => void
 }
@@ -23,6 +25,7 @@ export default function TaxControlDocPopover({
   docs,
   values,
   onChange,
+  onNavigateToDoc,
   anchorRect,
   onClose,
 }: TaxControlDocPopoverProps) {
@@ -71,7 +74,11 @@ export default function TaxControlDocPopover({
 
       <div className={styles.docFields}>
         {docs.map(doc => (
-          <div key={doc.docId} className={styles.docField}>
+          <div
+            key={doc.docId}
+            className={styles.docField}
+            onClick={() => onNavigateToDoc?.(doc.docId)}
+          >
             <label className={styles.docLabel} htmlFor={`tc-${doc.docId}`}>
               {doc.label}
             </label>
@@ -83,6 +90,7 @@ export default function TaxControlDocPopover({
               placeholder={doc.hint !== undefined ? `$${fmt(doc.hint)}` : '$0'}
               value={values[doc.docId] ?? ''}
               onChange={e => onChange(doc.docId, e.target.value)}
+              onFocus={() => onNavigateToDoc?.(doc.docId)}
               aria-label={`${doc.label} amount`}
             />
           </div>

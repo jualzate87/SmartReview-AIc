@@ -11,7 +11,6 @@ import LeftPanel1040 from './data-review/LeftPanel1040'
 import ReviewTab from './data-review/ReviewTab'
 import DocumentPreview from './data-review/DocumentPreview'
 import { getSourceDocPreview } from './data-review/sourceDocImages'
-import SourcePanelLoader from './data-review/SourcePanelLoader'
 import DetailFields, { W2_PAYER_TABS } from './data-review/DetailFields'
 import type { W2Employer } from './data-review/DetailFields'
 import DetailFields1099, { INT_PAYER_TABS } from './data-review/DetailFields1099'
@@ -50,6 +49,7 @@ import {
 import { GUIDED_ORDER, TOTAL_REVIEW_ITEMS } from './data-review/AgentReportPane'
 import { PHASE1_FLAG_MESSAGES } from './data-review/phase1FlagMessages'
 import { FROZEN_RETURN } from '../data/frozenReturn'
+import { navigationForSourceDoc } from '../data/sourceDocuments'
 import img1040PriorPage1 from '../assets/jessica-1040-2024-variant-1.png'
 import img1040PriorPage2 from '../assets/jessica-1040-2024-variant-2.png'
 import styles from '../styles/data-review/DataReviewPage.module.css'
@@ -218,6 +218,36 @@ export default function DataReviewPage() {
     setTaxControlViewRequest(n => n + 1)
   }, [])
 
+  const handleNavigateToSourceDoc = useCallback((docId: string) => {
+    const nav = navigationForSourceDoc(docId)
+    if (!nav) return
+    setActiveTopTab(nav.tab)
+    if (nav.subTab) setActiveSubTab(nav.subTab)
+    if (nav.divPayer) setActiveDivPayer(nav.divPayer)
+    if (nav.intPayer) setActiveIntPayer(nav.intPayer)
+
+    if (agentView !== 'idle') {
+      setFromAgent(true)
+      setAgentSubView('overview')
+      setAgentView('closing')
+      setYoyExpanded(false)
+      setTimeout(() => setAgentView('idle'), 350)
+    } else if (!rightPanelVisible) {
+      setRightPanelVisible(true)
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        setRightPanelAnimating(true)
+        setTimeout(() => setRightPanelAnimating(false), 350)
+      }))
+    }
+  }, [
+    agentView,
+    rightPanelVisible,
+    setActiveTopTab,
+    setActiveSubTab,
+    setActiveDivPayer,
+    setActiveIntPayer,
+  ])
+
   const dismissTaxControlModal = useCallback(() => {
     setShowTaxControlModal(false)
     setTaxModalDismissed(true)
@@ -260,8 +290,6 @@ export default function DataReviewPage() {
   }, [applyVerifyNavigation, setSelectedField])
 
   const highlightField1040 = get1040HighlightField(selectedField)
-
-  const sourcePanelLoadKey = `${activeTopTab}-${activeSubTab}-${activeDivPayer}-${activeIntPayer}-${rightPanelVisible}`
 
   const sourceDocPreview = getSourceDocPreview({
     activeTopTab,
@@ -617,6 +645,7 @@ export default function DataReviewPage() {
             allFlagsCleared={phase1Complete}
             taxControlViewRequest={taxControlViewRequest}
             onAddFieldNote={(text, context) => handleAddNote(text, context)}
+            onNavigateToSourceDoc={handleNavigateToSourceDoc}
             onViewSource={(fieldName, sourceLabel) => {
               // Map field → document tab
               const tabMap: Record<string, typeof activeTopTab> = {
@@ -777,7 +806,14 @@ export default function DataReviewPage() {
               {/* Document preview (left) + detail fields (right) — same side-by-side
                  layout as the pop-out window, so docking back and forth doesn't
                  reflow the content the CPA is looking at. */}
-              <SourcePanelLoader loadKey={sourcePanelLoadKey} layout={show1040 ? 'column' : 'row'}>
+              <div style={{
+                display: 'flex',
+                flex: 1,
+                minHeight: 0,
+                minWidth: 0,
+                overflow: 'hidden',
+                flexDirection: show1040 ? 'column' : 'row',
+              }}>
               <div style={show1040
                 ? { height: `${previewHeight}%`, flexShrink: 0, overflow: 'hidden', borderBottom: '1px solid #D5DEE3', display: 'flex', flexDirection: 'column', minHeight: 0 }
                 : { width: `${previewHeight}%`, flexShrink: 0, overflow: 'hidden', borderRight: '1px solid #D5DEE3', display: 'flex', flexDirection: 'column', minHeight: 0 }
@@ -832,7 +868,7 @@ export default function DataReviewPage() {
               {activeTopTab === '1099-necs' && <DetailFieldsNec selectedField={selectedField} onFieldSelect={handleFieldSelect} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} verifiedDocs={verifiedDocs} onVerifyDoc={toggleVerifiedDoc} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
               {activeTopTab === 'prior-1040' && <PriorYear1040Fields onMarkReviewed={handleMarkReviewed} reviewedFields={reviewedFields} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
               </div>
-              </SourcePanelLoader>
+              </div>
             </div>
 
             {/* Drag handle between left panel and agent panel — only when agent open */}
