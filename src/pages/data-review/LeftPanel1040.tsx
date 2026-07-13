@@ -116,6 +116,11 @@ function fmt(n: number) {
 // it to be.
 const DIV_WITHHOLDING = 24925
 
+/** Session-scoped — survives refresh within a tab but resets when Phase 1 flags reopen. */
+const TAX_CONTROL_MODAL_KEY = 'smartReviewProtoC:taxControlModalDismissed'
+/** Legacy ProtoA/ProtoC key — clear so prior deploys don't block the modal forever. */
+const LEGACY_TAX_CONTROL_MODAL_KEY = 'taxControlModalDismissed'
+
 export default function LeftPanel1040({
   selectedField,
   highlightField,
@@ -155,28 +160,44 @@ export default function LeftPanel1040({
   const [expanded, setExpanded] = useState<Set<string>>(new Set(['income', 'deductions', 'tax', 'payments']))
   // Control sheet: input values keyed by row id
   const [controlInputs, setControlInputs] = useState<Record<string, string>>({})
-  // Control sheet modal: shown once when flags are first cleared
+  // Control sheet modal: shown once when Phase 1 flags are first cleared
   const [modalDismissed, setModalDismissed] = useState(() => {
-    try { return localStorage.getItem('taxControlModalDismissed') === '1' } catch { return false }
+    try {
+      localStorage.removeItem(LEGACY_TAX_CONTROL_MODAL_KEY)
+      return sessionStorage.getItem(TAX_CONTROL_MODAL_KEY) === '1'
+    } catch { return false }
   })
   const [showModal, setShowModal] = useState(false)
   const prevFlagsCleared = useRef(false)
 
   useEffect(() => {
-    if (allFlagsCleared && !prevFlagsCleared.current && !modalDismissed) {
+    if (!allFlagsCleared) {
+      prevFlagsCleared.current = false
+      setModalDismissed(false)
+      setShowModal(false)
+      try {
+        sessionStorage.removeItem(TAX_CONTROL_MODAL_KEY)
+        localStorage.removeItem(LEGACY_TAX_CONTROL_MODAL_KEY)
+      } catch { /* ignore */ }
+      return
+    }
+
+    const justCompleted = !prevFlagsCleared.current
+    prevFlagsCleared.current = true
+    if (justCompleted && !modalDismissed) {
       setShowModal(true)
     }
-    prevFlagsCleared.current = !!allFlagsCleared
   }, [allFlagsCleared, modalDismissed])
 
-  const dismissModal = () => {
+  /** "Not now" / backdrop — suppress for this session only. */
+  const dismissModalForSession = () => {
     setShowModal(false)
     setModalDismissed(true)
-    try { localStorage.setItem('taxControlModalDismissed', '1') } catch { /* ignore */ }
+    try { sessionStorage.setItem(TAX_CONTROL_MODAL_KEY, '1') } catch { /* ignore */ }
   }
   const openControlFromModal = () => {
     setView('control')
-    dismissModal()
+    dismissModalForSession()
   }
   const toggleExpanded = (key: string) =>
     setExpanded(prev => { const s = new Set(prev); s.has(key) ? s.delete(key) : s.add(key); return s })
@@ -496,9 +517,9 @@ export default function LeftPanel1040({
   return (
     <div className={styles.leftPanel}>
 
-      {/* ── Tax control unlock modal ── */}
-      <Modal open={showModal} onClose={dismissModal} size="medium" dismissible>
-        <ModalHeader alignment="center" transparentBackground onClose={dismissModal}>
+      {/* ── Tax control unlock modal (IDS Modal portals to document.body) ── */}
+      <Modal open={showModal} onClose={dismissModalForSession} size="medium" dismissible>
+        <ModalHeader alignment="center" transparentBackground onClose={dismissModalForSession}>
           <ModalTitle title="Nice job! Want to check your totals?" />
         </ModalHeader>
         <ModalContent alignment="left">
@@ -507,7 +528,7 @@ export default function LeftPanel1040({
           </p>
         </ModalContent>
         <ModalActions alignment="right">
-          <Button priority="tertiary" onClick={dismissModal}>Not now</Button>
+          <Button priority="tertiary" onClick={dismissModalForSession}>Not now</Button>
           <Button priority="primary" onClick={openControlFromModal}>Check totals</Button>
         </ModalActions>
       </Modal>
@@ -534,7 +555,7 @@ export default function LeftPanel1040({
               styles.viewToggleTab,
               view === 'control' ? styles.viewToggleTabActive : '',
             ].filter(Boolean).join(' ')}
-            onClick={() => { setView('control'); dismissModal() }}
+            onClick={() => setView('control')}
           >
             Tax control
             {allFlagsCleared && view !== 'control' && (
