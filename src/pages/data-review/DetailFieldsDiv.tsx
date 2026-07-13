@@ -62,54 +62,57 @@ const RECIPIENT_DATA = {
 const FORM_DATA: Record<DivPayer, {
   box1a_totalOrdinary: string; box1b_qualifiedDivs: string; box2a_totalCapGain: string;
   box2b_unrecap1250: string; box2c_sec1202: string; box2d_collectibles: string;
-  box3_nonDivDistrib: string; box4_fedTaxWithheld: string; box5_investExpenses: string;
-  box6_foreignTaxPaid: string; box7_foreignCountry: string; box8_cashLiquidation: string;
-  box9_nonCashLiquidation: string;
+  box3_nonDivDistrib: string; box4_fedTaxWithheld: string; box5_sec199A: string;
+  box6_investExpenses: string; box7_foreignTaxPaid: string; box8_foreignCountry: string;
+  box9_cashLiquidation: string; box10_nonCashLiquidation: string;
 }> = {
   tokenFinancial: {
-    box1a_totalOrdinary:     '331,250', // Box 1a — Total ordinary dividends
-    box1b_qualifiedDivs:     '331,250', // Box 1b — Return value (source $187,500; silent error 6)
-    box2a_totalCapGain:      '',       // Box 2a — Total capital gain distr.
-    box2b_unrecap1250:       '',       // Box 2b — Unrecap. Sec. 1250 gain
-    box2c_sec1202:           '',       // Box 2c — Section 1202 gain
-    box2d_collectibles:      '',       // Box 2d — Collectibles (28%) gain
-    box3_nonDivDistrib:      '',       // Box 3 — Nondividend distributions
-    box4_fedTaxWithheld:     '24,925', // Box 4 — Return value (source $26,363)
-    box5_investExpenses:     '1,200',  // Box 5 — Investment expenses
-    box6_foreignTaxPaid:     '',       // Box 6 — Foreign tax paid
-    box7_foreignCountry:     '',       // Box 7 — Foreign country or U.S. possession
-    box8_cashLiquidation:    '',       // Box 8 — Cash liquidation distributions
-    box9_nonCashLiquidation: '',       // Box 9 — Noncash liquidation distributions
+    box1a_totalOrdinary:      '331,250', // Box 1a — Total ordinary dividends
+    box1b_qualifiedDivs:      '331,250', // Box 1b — Return value (source $187,500; silent error 6)
+    box2a_totalCapGain:       '',       // Box 2a — Total capital gain distr.
+    box2b_unrecap1250:        '',       // Box 2b — Unrecap. Sec. 1250 gain
+    box2c_sec1202:            '',       // Box 2c — Section 1202 gain
+    box2d_collectibles:       '',       // Box 2d — Collectibles (28%) gain
+    box3_nonDivDistrib:       '',       // Box 3 — Nondividend distributions
+    box4_fedTaxWithheld:      '24,925', // Box 4 — Return value (source $26,363)
+    box5_sec199A:             '',       // Box 5 — Section 199A dividends
+    box6_investExpenses:      '1,200',  // Box 6 — Investment expenses
+    box7_foreignTaxPaid:      '',       // Box 7 — Foreign tax paid
+    box8_foreignCountry:      '',       // Box 8 — Foreign country or U.S. possession
+    box9_cashLiquidation:     '',       // Box 9 — Cash liquidation distributions
+    box10_nonCashLiquidation: '',       // Box 10 — Noncash liquidation distributions
   },
   northmarkIndex: {
-    box1a_totalOrdinary:     '12,400',
-    box1b_qualifiedDivs:     '8,000',
-    box2a_totalCapGain:      '',
-    box2b_unrecap1250:       '',
-    box2c_sec1202:           '',
-    box2d_collectibles:      '',
-    box3_nonDivDistrib:      '',
-    box4_fedTaxWithheld:     '',
-    box5_investExpenses:     '',
-    box6_foreignTaxPaid:     '',
-    box7_foreignCountry:     '',
-    box8_cashLiquidation:    '',
-    box9_nonCashLiquidation: '',
+    box1a_totalOrdinary:      '12,400',
+    box1b_qualifiedDivs:      '8,000',
+    box2a_totalCapGain:       '',
+    box2b_unrecap1250:        '',
+    box2c_sec1202:            '',
+    box2d_collectibles:       '',
+    box3_nonDivDistrib:       '',
+    box4_fedTaxWithheld:      '',
+    box5_sec199A:             '',
+    box6_investExpenses:      '',
+    box7_foreignTaxPaid:      '',
+    box8_foreignCountry:      '',
+    box9_cashLiquidation:     '',
+    box10_nonCashLiquidation: '',
   },
   beaconDividend: {
-    box1a_totalOrdinary:     '6,750',
-    box1b_qualifiedDivs:     '4,200',
-    box2a_totalCapGain:      '',
-    box2b_unrecap1250:       '',
-    box2c_sec1202:           '',
-    box2d_collectibles:      '',
-    box3_nonDivDistrib:      '',
-    box4_fedTaxWithheld:     '',
-    box5_investExpenses:     '',
-    box6_foreignTaxPaid:     '',
-    box7_foreignCountry:     '',
-    box8_cashLiquidation:    '',
-    box9_nonCashLiquidation: '',
+    box1a_totalOrdinary:      '6,750',
+    box1b_qualifiedDivs:      '4,200',
+    box2a_totalCapGain:       '',
+    box2b_unrecap1250:        '',
+    box2c_sec1202:            '',
+    box2d_collectibles:       '',
+    box3_nonDivDistrib:       '',
+    box4_fedTaxWithheld:      '',
+    box5_sec199A:             '',
+    box6_investExpenses:      '',
+    box7_foreignTaxPaid:      '',
+    box8_foreignCountry:      '',
+    box9_cashLiquidation:     '',
+    box10_nonCashLiquidation: '',
   },
 }
 
@@ -413,7 +416,7 @@ export default function DetailFieldsDiv({
                 `recipientSsn-${p}`, `recipientName-${p}`, `recipientStreet-${p}`, `recipientCityStateZip-${p}`,
                 `ordinaryDivs-${p}`,
                 ...(isPrimary ? ['qualifiedDivs', 'divCollectibles', 'divNonDiv', 'fedTaxWithheld'] : [`qualifiedDivs-${p}`, `divCollectibles-${p}`, `divNonDiv-${p}`, `fedTaxWithheld-${p}`]),
-                `totalCapGain-${p}`, `unrecap1250-${p}`, `sec1202-${p}`, `investExpenses-${p}`,
+                `totalCapGain-${p}`, `unrecap1250-${p}`, `sec1202-${p}`, `sec199A-${p}`, `investExpenses-${p}`,
                 `foreignTaxPaid-${p}`, `foreignCountry-${p}`, `cashLiquidation-${p}`, `nonCashLiquidation-${p}`,
               ]
               onMarkReviewedBulk?.(docFieldKeys)
@@ -508,11 +511,12 @@ export default function DetailFieldsDiv({
         {isPrimary
           ? renderReadOnlyRow('fedTaxWithheld', '(4) Federal income tax withheld', form.box4_fedTaxWithheld)
           : renderReadOnlyRow(`fedTaxWithheld-${activePayer}`, '(4) Federal income tax withheld', form.box4_fedTaxWithheld)}
-        {renderReadOnlyRow(`investExpenses-${activePayer}`, '(5) Investment expenses', form.box5_investExpenses)}
-        {renderReadOnlyRow(`foreignTaxPaid-${activePayer}`, '(6) Foreign tax paid', form.box6_foreignTaxPaid)}
-        {renderReadOnlyRow(`foreignCountry-${activePayer}`, '(7) Foreign country or U.S. possession', form.box7_foreignCountry, { inputClass: styles.fieldInputWide })}
-        {renderReadOnlyRow(`cashLiquidation-${activePayer}`, '(8) Cash liquidation distributions', form.box8_cashLiquidation)}
-        {renderReadOnlyRow(`nonCashLiquidation-${activePayer}`, '(9) Noncash liquidation distributions', form.box9_nonCashLiquidation)}
+        {renderReadOnlyRow(`sec199A-${activePayer}`, '(5) Section 199A dividends', form.box5_sec199A)}
+        {renderReadOnlyRow(`investExpenses-${activePayer}`, '(6) Investment expenses', form.box6_investExpenses)}
+        {renderReadOnlyRow(`foreignTaxPaid-${activePayer}`, '(7) Foreign tax paid', form.box7_foreignTaxPaid)}
+        {renderReadOnlyRow(`foreignCountry-${activePayer}`, '(8) Foreign country or U.S. possession', form.box8_foreignCountry, { inputClass: styles.fieldInputWide })}
+        {renderReadOnlyRow(`cashLiquidation-${activePayer}`, '(9) Cash liquidation distributions', form.box9_cashLiquidation)}
+        {renderReadOnlyRow(`nonCashLiquidation-${activePayer}`, '(10) Noncash liquidation distributions', form.box10_nonCashLiquidation)}
 
       </div>
     </div>
