@@ -182,14 +182,18 @@ export default function IssueDetailPane({
             </ul>
           </div>
 
-          {/* Action buttons + sign-off stamp */}
+          {/* Action buttons + sign-off stamp.
+              "View Form 1040" is omitted — the 1040 is already on screen, so that
+              CTA is misleading. Keep real source-doc CTAs (W-2, 1099, etc.). */}
           <div className={styles.actionButtonsWrap}>
             <div className={styles.actionButtons}>
-              <Tooltip text="Open the source document alongside the 1040 to verify or correct this value">
-                <Button priority="primary" size="small" onClick={onViewSource}>
-                  <Panel size="small" /> {viewSourceLabel}
-                </Button>
-              </Tooltip>
+              {viewSourceLabel !== 'View Form 1040' && (
+                <Tooltip text="Open the source document alongside the 1040 to verify or correct this value">
+                  <Button priority="primary" size="small" onClick={onViewSource}>
+                    <Panel size="small" /> {viewSourceLabel}
+                  </Button>
+                </Tooltip>
+              )}
               {isReviewed ? (
                 <Tooltip text="You've already marked this finding as reviewed">
                   <button className={styles.reviewedBtn} disabled>
@@ -199,7 +203,11 @@ export default function IssueDetailPane({
                 </Tooltip>
               ) : (
                 <Tooltip text="Confirm you've checked this finding. Progress is tracked automatically.">
-                  <Button priority="secondary" size="small" onClick={handleMarkReviewed}>
+                  <Button
+                    priority={viewSourceLabel === 'View Form 1040' ? 'primary' : 'secondary'}
+                    size="small"
+                    onClick={handleMarkReviewed}
+                  >
                     <CircleCheck size="small" /> Mark as reviewed
                   </Button>
                 </Tooltip>
