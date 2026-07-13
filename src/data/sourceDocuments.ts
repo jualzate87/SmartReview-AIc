@@ -216,10 +216,13 @@ export function getControlSystemValues(params: {
   taxableIncome: number
   totalTax: number
   w2Withholding: number
+  /** Combined 1099 withholding (DIV + 1099-R + …) for line 25b / tax control */
   divWithholding: number
   totalWithholding: number
   oweAmount: number
   taxablePension: number
+  /** Line 8 other income (NEC) when confirmed onto the return */
+  otherIncome?: number
 }): Record<string, number | null> {
   return {
     wages: params.total1a,
@@ -227,6 +230,7 @@ export function getControlSystemValues(params: {
     dividends: params.ordinaryDivs,
     qualDivs: params.qualifiedDivs,
     ira: params.taxablePension,
+    otherIncome: params.otherIncome ?? 0,
     totalIncome: params.totalIncome,
     stdDeduction: params.stdDeduction,
     taxableIncome: params.taxableIncome,

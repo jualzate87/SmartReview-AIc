@@ -46,17 +46,32 @@ export const PHASE1_VERIFY_QUEUE: Phase1VerifyItem[] = [
 const DETAIL_TO_1040: Record<string, string> = {
   wages: 'wages',
   taxableInterest: 'taxableInterest',
+  ordinaryDivs: 'ordinaryDivs',
   qualifiedDivs: 'qualifiedDivs',
   fedTaxWithheld: 'withholding',
+  /** 1099-R Box 4 — highlights 1040 line 25b (combined 1099 withholding) */
+  withholding1099: 'withholding',
+  'r-fedTaxWithheld': 'withholding',
+  iraDistrib: 'iraDistrib',
+  'r-taxableAmt': 'iraDistrib',
+  grossDistrib: 'iraDistrib',
+  /** NEC Box 1 → Form 1040 line 8 (other income) once confirmed onto return */
+  necIncome: 'otherIncome',
+  'nec-box1': 'otherIncome',
+  otherIncome: 'otherIncome',
 }
 
 /** 1040 row field → detail field key + navigation. */
 const FIELD_1040_TO_DETAIL: Record<string, Pick<Phase1VerifyItem, 'field' | 'tab' | 'divPayer' | 'intPayer'>> = {
   wages: { field: 'wages', tab: 'w2s' },
   taxableInterest: { field: 'taxableInterest', tab: '1099-ints', intPayer: 'unwaverIngFinancial' },
+  ordinaryDivs: { field: 'ordinaryDivs', tab: '1099-divs', divPayer: 'northmarkIndex' },
   qualifiedDivs: { field: 'qualifiedDivs', tab: '1099-divs', divPayer: 'tokenFinancial' },
   withholding: { field: 'fedTaxWithheld', tab: '1099-divs', divPayer: 'tokenFinancial' },
-  withholding1099: { field: 'fedTaxWithheld', tab: '1099-divs', divPayer: 'tokenFinancial' },
+  withholding1099: { field: 'withholding1099', tab: '1099-rs' },
+  iraDistrib: { field: 'grossDistrib', tab: '1099-rs' },
+  otherIncome: { field: 'nec-box1', tab: '1099-necs' },
+  w2Withholding: { field: 'withholding', tab: 'w2s' },
 }
 
 export function detailTo1040Field(detailField: string | null): string | null {

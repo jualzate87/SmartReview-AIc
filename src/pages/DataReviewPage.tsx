@@ -48,7 +48,7 @@ import {
 } from './data-review/phase1FieldSync'
 import { GUIDED_ORDER, TOTAL_REVIEW_ITEMS } from './data-review/AgentReportPane'
 import { PHASE1_FLAG_MESSAGES } from './data-review/phase1FlagMessages'
-import { FROZEN_RETURN } from '../data/frozenReturn'
+import { computeLiveReturn } from '../data/liveReturn'
 import { navigationForSourceDoc } from '../data/sourceDocuments'
 import img1040PriorPage1 from '../assets/jessica-1040-2024-variant-1.png'
 import img1040PriorPage2 from '../assets/jessica-1040-2024-variant-2.png'
@@ -74,8 +74,11 @@ export default function DataReviewPage() {
     activeSubTab, setActiveSubTab,
     selectedField, setSelectedField,
     wages, setWages,
+    amounts, updateAmounts,
     fieldValues, updateFieldValue,
     reviewedFields,
+    editedFields,
+    markEdited,
     activeDivPayer, setActiveDivPayer,
     activeIntPayer, setActiveIntPayer,
     markReviewed: handleMarkReviewed,
@@ -83,10 +86,9 @@ export default function DataReviewPage() {
     verifiedDocs,
     toggleVerifiedDoc,
   } = useSyncedReviewState()
-  const total1a = wages.techCircle
-  // W-2 Box 2 is $15,840 (Tech Circle); 1099-DIV Box 4 ($24,925) flows to line 25b.
-  const DIV_WITHHOLDING = FROZEN_RETURN.divWithholding
-  const totalWithholding = fieldValues.withholding.techCircle + DIV_WITHHOLDING
+  const liveTotals = computeLiveReturn(amounts)
+  const total1a = liveTotals.wages
+  const totalWithholding = liveTotals.totalWithholding
   const updateField = (key: keyof typeof fieldValues, value: number | { techCircle: number }) =>
     updateFieldValue(key, value)
   // Left panel width in px when idle (950px default); as % when agent open
@@ -641,7 +643,8 @@ export default function DataReviewPage() {
             checkedFields={checkedFields}
             onToggleChecked={handleToggleChecked}
             issueField={issueField}
-            fieldValues={{ ...fieldValues, withholding: totalWithholding }}
+            liveTotals={liveTotals}
+            editedFields={editedFields}
             allFlagsCleared={phase1Complete}
             taxControlViewRequest={taxControlViewRequest}
             onAddFieldNote={(text, context) => handleAddNote(text, context)}
@@ -651,12 +654,13 @@ export default function DataReviewPage() {
               const tabMap: Record<string, typeof activeTopTab> = {
                 wages:           'w2s',
                 w2Withholding:   'w2s',
-                withholding:     'w2s',
+                withholding:     '1099-divs',
                 taxableInterest: '1099-ints',
                 qualifiedDivs:   '1099-divs',
                 ordinaryDivs:    '1099-divs',
-                withholding1099: '1099-divs',
+                withholding1099: '1099-rs',
                 iraDistrib:      '1099-rs',
+                otherIncome:     '1099-necs',
                 capitalGain:     'w2s',
                 stdDeduction:    'w2s',
                 agi:             'prior-1040',
@@ -841,18 +845,30 @@ export default function DataReviewPage() {
                   activeSubTab={activeSubTab}
                   onSubTabChange={(tab) => setActiveSubTab(tab as W2Employer)}
                   wages={{ bingEquipment: 0, techCircle: wages.techCircle }}
-                  onWageChange={(employer, value) => setWages({ ...wages, [employer]: value })}
+                  onWageChange={(employer, value) => {
+                    setWages({ ...wages, [employer]: value })
+                    markEdited(`wages-${employer}`)
+                  }}
                   fieldValues={{ ...fieldValues, withholding: fieldValues.withholding[activeSubTab] }}
                   onFieldValueChange={(key, value) => {
                     if (key === 'withholding' && typeof value === 'number') {
                       updateField('withholding', { techCircle: value })
+                      markEdited('withholding')
                     } else {
                       updateField(key as keyof typeof fieldValues, value as number)
+                      markEdited(String(key))
                     }
                   }}
+                  onIdentityChange={(kind, value) => {
+                    if (kind === 'ssn') updateAmounts({ employeeSsn: value })
+                    else updateAmounts({ employerEin: value })
+                    markEdited(kind === 'ssn' ? 'ssn-techCircle' : 'ein-techCircle')
+                  }}
+                  identityValues={{ ssn: amounts.employeeSsn, ein: amounts.employerEin }}
                   onMarkReviewed={handleMarkReviewed}
                   onMarkReviewedBulk={handleMarkReviewedBulk}
                   reviewedFields={reviewedFields}
+                  editedFields={editedFields}
                   verifiedDocs={verifiedDocs}
                   onVerifyDoc={toggleVerifiedDoc}
                   flaggedFields={{
@@ -863,10 +879,102 @@ export default function DataReviewPage() {
                   }}
                 />
               )}
-              {activeTopTab === '1099-divs' && <DetailFieldsDiv activePayer={activeDivPayer} selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={handleFieldSelect} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} verifiedDocs={verifiedDocs} onVerifyDoc={toggleVerifiedDoc} flaggedFields={{ divCollectibles: PHASE1_FLAG_MESSAGES.div.divCollectibles, divNonDiv: PHASE1_FLAG_MESSAGES.div.divNonDiv, fedTaxWithheld: PHASE1_FLAG_MESSAGES.div.fedTaxWithheld, ordinaryDivs: PHASE1_FLAG_MESSAGES.div.ordinaryDivs }} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
-              {activeTopTab === '1099-ints' && <DetailFields1099 activePayer={activeIntPayer} selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={handleFieldSelect} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} verifiedDocs={verifiedDocs} onVerifyDoc={toggleVerifiedDoc} flaggedFields={{ taxableInterest: PHASE1_FLAG_MESSAGES.int.taxableInterest }} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
-              {activeTopTab === '1099-rs' && <DetailFields1099R selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={handleFieldSelect} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} verifiedDocs={verifiedDocs} onVerifyDoc={toggleVerifiedDoc} flaggedFields={{ grossDistrib: PHASE1_FLAG_MESSAGES.r.grossDistrib }} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
-              {activeTopTab === '1099-necs' && <DetailFieldsNec selectedField={selectedField} onFieldSelect={handleFieldSelect} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} verifiedDocs={verifiedDocs} onVerifyDoc={toggleVerifiedDoc} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
+              {activeTopTab === '1099-divs' && (
+                <DetailFieldsDiv
+                  activePayer={activeDivPayer}
+                  selectedField={selectedField}
+                  highlightMode={highlightMode}
+                  onFieldSelect={handleFieldSelect}
+                  fieldValues={{ ...fieldValues, withholding: totalWithholding, divWithholding: amounts.divWithholding }}
+                  onFieldValueChange={(key, value) => {
+                    updateField(key as keyof typeof fieldValues, value)
+                    markEdited(String(key))
+                  }}
+                  onAmountChange={(patch, editedKey) => {
+                    updateAmounts(patch)
+                    if (editedKey) markEdited(editedKey)
+                  }}
+                  amounts={amounts}
+                  onMarkReviewed={handleMarkReviewed}
+                  onMarkReviewedBulk={handleMarkReviewedBulk}
+                  reviewedFields={reviewedFields}
+                  editedFields={editedFields}
+                  verifiedDocs={verifiedDocs}
+                  onVerifyDoc={toggleVerifiedDoc}
+                  flaggedFields={{
+                    divCollectibles: PHASE1_FLAG_MESSAGES.div.divCollectibles,
+                    divNonDiv: PHASE1_FLAG_MESSAGES.div.divNonDiv,
+                    fedTaxWithheld: PHASE1_FLAG_MESSAGES.div.fedTaxWithheld,
+                    ordinaryDivs: PHASE1_FLAG_MESSAGES.div.ordinaryDivs,
+                  }}
+                  onAddFieldNote={(text, context) => handleAddNote(text, context)}
+                />
+              )}
+              {activeTopTab === '1099-ints' && (
+                <DetailFields1099
+                  activePayer={activeIntPayer}
+                  selectedField={selectedField}
+                  highlightMode={highlightMode}
+                  onFieldSelect={handleFieldSelect}
+                  fieldValues={{ ...fieldValues, withholding: totalWithholding }}
+                  onFieldValueChange={(key, value) => {
+                    updateField(key as keyof typeof fieldValues, value)
+                    markEdited(String(key))
+                  }}
+                  onAmountChange={(patch, editedKey) => {
+                    updateAmounts(patch)
+                    if (editedKey) markEdited(editedKey)
+                  }}
+                  amounts={amounts}
+                  onMarkReviewed={handleMarkReviewed}
+                  onMarkReviewedBulk={handleMarkReviewedBulk}
+                  reviewedFields={reviewedFields}
+                  editedFields={editedFields}
+                  verifiedDocs={verifiedDocs}
+                  onVerifyDoc={toggleVerifiedDoc}
+                  flaggedFields={{ taxableInterest: PHASE1_FLAG_MESSAGES.int.taxableInterest }}
+                  onAddFieldNote={(text, context) => handleAddNote(text, context)}
+                />
+              )}
+              {activeTopTab === '1099-rs' && (
+                <DetailFields1099R
+                  selectedField={selectedField}
+                  highlightMode={highlightMode}
+                  onFieldSelect={handleFieldSelect}
+                  amounts={amounts}
+                  onAmountChange={(patch, editedKey) => {
+                    updateAmounts(patch)
+                    if (editedKey) markEdited(editedKey)
+                  }}
+                  onMarkReviewed={handleMarkReviewed}
+                  onMarkReviewedBulk={handleMarkReviewedBulk}
+                  reviewedFields={reviewedFields}
+                  editedFields={editedFields}
+                  verifiedDocs={verifiedDocs}
+                  onVerifyDoc={toggleVerifiedDoc}
+                  flaggedFields={{ grossDistrib: PHASE1_FLAG_MESSAGES.r.grossDistrib }}
+                  onAddFieldNote={(text, context) => handleAddNote(text, context)}
+                />
+              )}
+              {activeTopTab === '1099-necs' && (
+                <DetailFieldsNec
+                  selectedField={selectedField}
+                  highlightMode={highlightMode}
+                  onFieldSelect={handleFieldSelect}
+                  amounts={amounts}
+                  onAmountChange={(patch, editedKey) => {
+                    updateAmounts(patch)
+                    if (editedKey) markEdited(editedKey)
+                  }}
+                  onMarkReviewed={handleMarkReviewed}
+                  onMarkReviewedBulk={handleMarkReviewedBulk}
+                  reviewedFields={reviewedFields}
+                  editedFields={editedFields}
+                  verifiedDocs={verifiedDocs}
+                  onVerifyDoc={toggleVerifiedDoc}
+                  onAddFieldNote={(text, context) => handleAddNote(text, context)}
+                />
+              )}
               {activeTopTab === 'prior-1040' && <PriorYear1040Fields onMarkReviewed={handleMarkReviewed} reviewedFields={reviewedFields} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
               </div>
               </div>
@@ -939,6 +1047,7 @@ export default function DataReviewPage() {
                         setActiveIssueField(field)
                       }}
                       fieldValues={{ ...fieldValues, withholding: totalWithholding }}
+                      liveTotals={liveTotals}
                       onFieldValueChange={(key, value) => {
                         if (key === 'withholding' && typeof value === 'number') {
                           updateField('withholding', { techCircle: value })

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { CircleCheck, Comment } from '@design-systems/icons'
 import Tooltip from './Tooltip'
 import { CLIENT_ADDRESS } from '../../data/clientAddress'
+import { NEC_SOURCE_AMOUNT, parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
 import styles from '../../styles/data-review/DetailFields.module.css'
 
 function CheckIcon() {
@@ -47,26 +48,44 @@ const DOC_KEY = '1099-nec'
 
 interface DetailFieldsNecProps {
   selectedField?: string | null
+  highlightMode?: 'orange' | 'blue'
   onFieldSelect?: (field: string) => void
+  amounts?: LiveAmounts
+  onAmountChange?: (patch: Partial<LiveAmounts>, editedKey?: string) => void
   onMarkReviewed?: (field: string) => void
   onMarkReviewedBulk?: (fields: string[]) => void
   reviewedFields?: Map<string, { by: string; at: string }>
+  editedFields?: Set<string>
   verifiedDocs?: Set<string>
   onVerifyDoc?: (docKey: string) => void
   onAddFieldNote?: (text: string, context?: string) => void
 }
 
-export default function DetailFieldsNec({ selectedField, onFieldSelect, onMarkReviewed, onMarkReviewedBulk, reviewedFields, verifiedDocs, onVerifyDoc, onAddFieldNote }: DetailFieldsNecProps) {
+export default function DetailFieldsNec({
+  selectedField,
+  highlightMode = 'blue',
+  onFieldSelect,
+  amounts,
+  onAmountChange,
+  onMarkReviewed,
+  onMarkReviewedBulk,
+  reviewedFields,
+  editedFields: syncedEditedFields,
+  verifiedDocs,
+  onVerifyDoc,
+  onAddFieldNote,
+}: DetailFieldsNecProps) {
   const highlightedRef = useRef<HTMLDivElement>(null)
   const [editingField, setEditingField] = useState<string | null>(null)
   const [draftValue, setDraftValue] = useState('')
   const [savedField, setSavedField] = useState<string | null>(null)
-  const [editedFields, setEditedFields] = useState<Set<string>>(new Set())
+  const [localEdited, setLocalEdited] = useState<Set<string>>(new Set())
   const [staticValues, setStaticValues] = useState<Record<string, string>>({})
   const [commentField, setCommentField] = useState<string | null>(null)
   const [commentDraft, setCommentDraft] = useState('')
   const [commentAnchor, setCommentAnchor] = useState<{ top: number; left: number } | null>(null)
   const commentRef = useRef<HTMLDivElement>(null)
+  const isEdited = (key: string) => syncedEditedFields?.has(key) || localEdited.has(key)
 
   useEffect(() => {
     if (selectedField && highlightedRef.current) {
@@ -155,25 +174,47 @@ export default function DetailFieldsNec({ selectedField, onFieldSelect, onMarkRe
     )
   }
 
-  const renderStaticRow = (fieldKey: string, label: string, defaultValue: string, inputClass = styles.fieldInputSmall) => {
-    const currentVal = staticValues[fieldKey] ?? defaultValue
+  const renderStaticRow = (
+    fieldKey: string,
+    label: string,
+    defaultValue: string,
+    inputClass = styles.fieldInputSmall,
+    selectKey?: string,
+  ) => {
+    const select = selectKey ?? fieldKey
+    // Once NEC is on the return, prefer the synced amount for Box 1 display
+    const syncedNecDisplay =
+      fieldKey === 'nec-box1' && amounts?.necOnReturn
+        ? amounts.necIncome.toLocaleString()
+        : null
+    const currentVal = syncedNecDisplay ?? staticValues[fieldKey] ?? defaultValue
     const isEditing = editingField === fieldKey
     const isReviewed = reviewedFields?.has(fieldKey)
     const isCommentOpen = commentField === fieldKey
-    const isSelected = selectedField === fieldKey
+    const isSelected = selectedField === select || selectedField === fieldKey || selectedField === 'necIncome'
     const commitStatic = () => {
       setStaticValues(prev => ({ ...prev, [fieldKey]: draftValue }))
       setEditingField(null)
-      setEditedFields(prev => new Set(prev).add(fieldKey))
+      setLocalEdited(prev => new Set(prev).add(fieldKey))
       setSavedField(fieldKey)
       setTimeout(() => setSavedField(null), 3500)
-      if (draftValue.trim()) onMarkReviewed?.(fieldKey)
+      // Saving NEC Box 1 confirms omitted income onto Form 1040 line 8
+      if (fieldKey === 'nec-box1') {
+        const num = parseAmountDraft(draftValue) || NEC_SOURCE_AMOUNT
+        onAmountChange?.({ necIncome: num, necOnReturn: true }, 'nec-box1')
+      }
+      if (draftValue.trim() || fieldKey === 'nec-box1') onMarkReviewed?.(fieldKey)
     }
     return (
-      <div className={`${styles.fieldRow} ${isCommentOpen ? styles.fieldRowCommentOpen : ''} ${isSelected ? styles.fieldRowHighlighted : ''}`} onClick={() => onFieldSelect?.(fieldKey)} style={{ cursor: 'pointer' }}>
+      <div
+        ref={isSelected ? highlightedRef : undefined}
+        className={`${styles.fieldRow} ${isCommentOpen ? styles.fieldRowCommentOpen : ''} ${isSelected ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''}`}
+        onClick={() => onFieldSelect?.(select)}
+        style={{ cursor: 'pointer' }}
+      >
         <span className={styles.fieldLabel}>{label}</span>
         <input
-          className={`${styles.fieldInput} ${inputClass} ${isEditing ? styles.fieldInputEditing : isSelected ? styles.fieldInputHighlighted : ''}`}
+          className={`${styles.fieldInput} ${inputClass} ${isEditing ? styles.fieldInputEditing : isSelected ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`}
           readOnly={!isEditing}
           value={isEditing ? draftValue : currentVal}
           onChange={e => setDraftValue(e.target.value)}
@@ -205,8 +246,8 @@ export default function DetailFieldsNec({ selectedField, onFieldSelect, onMarkRe
             {renderCommentBtn(fieldKey, label)}
           </div>
         )}
-        {savedField === fieldKey && <span className={styles.recalcBadge}>Saved</span>}
-        {editedFields.has(fieldKey) && savedField !== fieldKey && <span className={styles.editedBadge}>Edited</span>}
+        {savedField === fieldKey && <span className={styles.recalcBadge}>{fieldKey === 'nec-box1' ? '1040 updated' : 'Saved'}</span>}
+        {isEdited(fieldKey) && savedField !== fieldKey && <span className={styles.editedBadge}>Edited</span>}
       </div>
     )
   }
@@ -259,7 +300,7 @@ export default function DetailFieldsNec({ selectedField, onFieldSelect, onMarkRe
         {/* ── Nonemployee Compensation ── */}
         <div className={styles.sectionHeader}>Nonemployee Compensation</div>
 
-        {renderStaticRow('nec-box1', '(1) Nonemployee compensation', FORM_DATA.box1_nonemployeeComp)}
+        {renderStaticRow('nec-box1', '(1) Nonemployee compensation', FORM_DATA.box1_nonemployeeComp, styles.fieldInputSmall, 'nec-box1')}
         {renderStaticRow('nec-fedTaxWithheld', '(4) Federal income tax withheld', FORM_DATA.box4_fedTaxWithheld)}
 
         {/* ── State Tax Information ── */}

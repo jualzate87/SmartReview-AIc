@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { CircleCheck, Comment } from '@design-systems/icons'
 import Tooltip from './Tooltip'
 import { CLIENT_ADDRESS } from '../../data/clientAddress'
+import { parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
 import styles from '../../styles/data-review/DetailFields.module.css'
 
 function CheckIcon() {
@@ -53,7 +54,7 @@ const PAYER_DATA: Record<DivPayer, { ein: string; name: string; street: string; 
 }
 
 const RECIPIENT_DATA = {
-  ssn: 'XXX-XX-4699',
+  ssn: 'XXX-XX-4321',
   ...CLIENT_ADDRESS,
 }
 
@@ -117,28 +118,48 @@ interface DetailFieldsDivProps {
   selectedField?: string | null
   highlightMode?: 'orange' | 'blue'
   onFieldSelect?: (field: string) => void
-  fieldValues?: { withholding: number; box12: number; taxableInterest: number; qualifiedDivs: number }
+  fieldValues?: { withholding: number; box12: number; taxableInterest: number; qualifiedDivs: number; divWithholding?: number }
   onFieldValueChange?: (key: 'withholding' | 'box12' | 'taxableInterest' | 'qualifiedDivs', value: number) => void
+  amounts?: LiveAmounts
+  onAmountChange?: (patch: Partial<LiveAmounts>, editedKey?: string) => void
   onMarkReviewed?: (field: string) => void
   onMarkReviewedBulk?: (fields: string[]) => void
   reviewedFields?: Map<string, { by: string; at: string }>
+  editedFields?: Set<string>
   verifiedDocs?: Set<string>
   onVerifyDoc?: (docKey: string) => void
   flaggedFields?: Record<string, string>
   onAddFieldNote?: (text: string, context: string) => void
 }
 
-export default function DetailFieldsDiv({ activePayer, selectedField, highlightMode = 'blue', onFieldSelect, fieldValues, onFieldValueChange, onMarkReviewed, onMarkReviewedBulk, reviewedFields, verifiedDocs, onVerifyDoc, flaggedFields = {}, onAddFieldNote }: DetailFieldsDivProps) {
+export default function DetailFieldsDiv({
+  activePayer,
+  selectedField,
+  highlightMode = 'blue',
+  onFieldSelect,
+  fieldValues,
+  onFieldValueChange,
+  amounts,
+  onAmountChange,
+  onMarkReviewed,
+  onMarkReviewedBulk,
+  reviewedFields,
+  editedFields: syncedEditedFields,
+  verifiedDocs,
+  onVerifyDoc,
+  flaggedFields = {},
+  onAddFieldNote,
+}: DetailFieldsDivProps) {
 
   const highlightedRef = useRef<HTMLDivElement>(null)
   const [editingField, setEditingField] = useState<string | null>(null)
   const [draftValue, setDraftValue] = useState('')
   const [savedField, setSavedField] = useState<string | null>(null)
-  const [editedFields, setEditedFields] = useState<Set<string>>(new Set())
+  const [localEdited, setLocalEdited] = useState<Set<string>>(new Set())
   // Local overrides for fields edited by the preparer (payer/recipient info, boxes not
-  // imported, etc.) — these aren't part of shared fieldValues since only qualifiedDivs
-  // feeds the live 1040 calculation
+  // imported, etc.) — amount fields that feed the 1040 also call onAmountChange
   const [staticValues, setStaticValues] = useState<Record<string, string>>({})
+  const isEdited = (key: string) => syncedEditedFields?.has(key) || localEdited.has(key)
   // Field key whose comment popover is currently open + its anchor position (fixed)
   const [commentField, setCommentField] = useState<string | null>(null)
   const [commentDraft, setCommentDraft] = useState('')
@@ -160,8 +181,9 @@ export default function DetailFieldsDiv({ activePayer, selectedField, highlightM
   const commitEdit = (field: 'qualifiedDivs') => {
     const num = parseFloat(draftValue.replace(/,/g, '')) || 0
     onFieldValueChange?.(field, num)
+    onAmountChange?.({ qualifiedDivsToken: num }, 'qualifiedDivs')
     setEditingField(null)
-    setEditedFields(prev => new Set(prev).add(field))
+    setLocalEdited(prev => new Set(prev).add(field))
     setSavedField(field)
     setTimeout(() => setSavedField(null), 3500)
     onMarkReviewed?.(field)
@@ -278,7 +300,11 @@ export default function DetailFieldsDiv({ activePayer, selectedField, highlightM
     const { inputClass = styles.fieldInputSmall, placeholder = '—', fieldKeyOverride, reviewedKeyOverride } = opts
     const flagKey = fieldKeyOverride ?? fieldKey
     const reviewedKey = reviewedKeyOverride ?? fieldKey
-    const currentVal = staticValues[fieldKey] ?? defaultValue
+    const syncedFedWh =
+      fieldKey === 'fedTaxWithheld' && amounts
+        ? amounts.divWithholding.toLocaleString()
+        : null
+    const currentVal = syncedFedWh ?? staticValues[fieldKey] ?? defaultValue
     const isEditing = editingField === fieldKey
     const isFlagged = !!flaggedFields[flagKey] && !reviewedFields?.has(reviewedKey)
     const isReviewed = reviewedFields?.has(reviewedKey)
@@ -286,9 +312,18 @@ export default function DetailFieldsDiv({ activePayer, selectedField, highlightM
     const commitStatic = () => {
       setStaticValues(prev => ({ ...prev, [fieldKey]: draftValue }))
       setEditingField(null)
-      setEditedFields(prev => new Set(prev).add(fieldKey))
+      setLocalEdited(prev => new Set(prev).add(fieldKey))
       setSavedField(fieldKey)
       setTimeout(() => setSavedField(null), 3500)
+      const num = parseAmountDraft(draftValue)
+      if (fieldKey === 'fedTaxWithheld') {
+        onAmountChange?.({ divWithholding: num }, 'fedTaxWithheld')
+      } else if (fieldKey === 'ordinaryDivs-northmarkIndex' || (flagKey === 'ordinaryDivs' && activePayer === 'northmarkIndex')) {
+        onAmountChange?.({ ordinaryDivsNorthmark: num }, 'ordinaryDivs-northmark')
+      } else if (fieldKey.startsWith('ordinaryDivs-')) {
+        if (activePayer === 'tokenFinancial') onAmountChange?.({ ordinaryDivsToken: num }, fieldKey)
+        else if (activePayer === 'beaconDividend') onAmountChange?.({ ordinaryDivsBeacon: num }, fieldKey)
+      }
       if (draftValue.trim()) onMarkReviewed?.(reviewedKey)
     }
     return (
@@ -327,8 +362,8 @@ export default function DetailFieldsDiv({ activePayer, selectedField, highlightM
               {renderCommentBtn(fieldKey, label)}
             </div>
           )}
-          {savedField === fieldKey && <span className={styles.recalcBadge}>Saved</span>}
-          {editedFields.has(fieldKey) && savedField !== fieldKey && <span className={styles.editedBadge}>Edited</span>}
+          {savedField === fieldKey && <span className={styles.recalcBadge}>{fieldKey === 'fedTaxWithheld' ? '1040 updated' : 'Saved'}</span>}
+          {isEdited(fieldKey) && savedField !== fieldKey && <span className={styles.editedBadge}>Edited</span>}
         </div>
         <ValidationNote fieldKey={flagKey} reviewedKey={reviewedKey} />
       </>
@@ -433,7 +468,7 @@ export default function DetailFieldsDiv({ activePayer, selectedField, highlightM
                 </div>
               )}
               {savedField === 'qualifiedDivs' && <span className={styles.recalcBadge}>1040 updated</span>}
-              {editedFields.has('qualifiedDivs') && savedField !== 'qualifiedDivs' && <span className={styles.editedBadge}>Edited</span>}
+              {isEdited('qualifiedDivs') && savedField !== 'qualifiedDivs' && <span className={styles.editedBadge}>Edited</span>}
             </div>
             <ValidationNote fieldKey="qualifiedDivs" />
           </>

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { CircleCheck, Comment } from '@design-systems/icons'
 import Tooltip from './Tooltip'
 import { CLIENT_ADDRESS } from '../../data/clientAddress'
+import { parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
 import styles from '../../styles/data-review/DetailFields.module.css'
 
 function CheckIcon() {
@@ -53,7 +54,7 @@ const PAYER_DATA: Record<IntPayer, { ein: string; name: string; street: string; 
 }
 
 const RECIPIENT_DATA = {
-  ssn: 'XXX-XX-4699',
+  ssn: 'XXX-XX-4321',
   ...CLIENT_ADDRESS,
 }
 
@@ -122,24 +123,45 @@ interface DetailFields1099Props {
   onFieldSelect?: (field: string) => void
   fieldValues?: { withholding: number; box12: number; taxableInterest: number; qualifiedDivs: number }
   onFieldValueChange?: (key: 'withholding' | 'box12' | 'taxableInterest' | 'qualifiedDivs', value: number) => void
+  amounts?: LiveAmounts
+  onAmountChange?: (patch: Partial<LiveAmounts>, editedKey?: string) => void
   onMarkReviewed?: (field: string) => void
   onMarkReviewedBulk?: (fields: string[]) => void
   reviewedFields?: Map<string, { by: string; at: string }>
+  editedFields?: Set<string>
   verifiedDocs?: Set<string>
   onVerifyDoc?: (docKey: string) => void
   flaggedFields?: Record<string, string>
   onAddFieldNote?: (text: string, context: string) => void
 }
 
-export default function DetailFields1099({ activePayer, selectedField, highlightMode = 'blue', onFieldSelect, fieldValues, onFieldValueChange, onMarkReviewed, onMarkReviewedBulk, reviewedFields, verifiedDocs, onVerifyDoc, flaggedFields = {}, onAddFieldNote }: DetailFields1099Props) {
+export default function DetailFields1099({
+  activePayer,
+  selectedField,
+  highlightMode = 'blue',
+  onFieldSelect,
+  fieldValues,
+  onFieldValueChange,
+  amounts,
+  onAmountChange,
+  onMarkReviewed,
+  onMarkReviewedBulk,
+  reviewedFields,
+  editedFields: syncedEditedFields,
+  verifiedDocs,
+  onVerifyDoc,
+  flaggedFields = {},
+  onAddFieldNote,
+}: DetailFields1099Props) {
   const highlightedRef = useRef<HTMLDivElement>(null)
   const [editingField, setEditingField] = useState<string | null>(null)
   const [draftValue, setDraftValue] = useState('')
   const [savedField, setSavedField] = useState<string | null>(null)
-  const [editedFields, setEditedFields] = useState<Set<string>>(new Set())
+  const [localEdited, setLocalEdited] = useState<Set<string>>(new Set())
   // Local overrides for fields edited by the preparer (payer/recipient info, boxes 2-15) —
-  // these aren't part of shared fieldValues since only taxableInterest feeds the 1040
+  // per-payer Box 1 interest also updates live amounts for 1040 recalculation
   const [staticValues, setStaticValues] = useState<Record<string, string>>({})
+  const isEdited = (key: string) => syncedEditedFields?.has(key) || localEdited.has(key)
   // Field key whose comment popover is currently open + its anchor position (fixed)
   const [commentField, setCommentField] = useState<string | null>(null)
   const [commentDraft, setCommentDraft] = useState('')
@@ -161,8 +183,9 @@ export default function DetailFields1099({ activePayer, selectedField, highlight
   const commitEdit = (field: 'taxableInterest') => {
     const num = parseFloat(draftValue.replace(/,/g, '')) || 0
     onFieldValueChange?.(field, num)
+    onAmountChange?.({ interestUnwavering: num }, 'taxableInterest')
     setEditingField(null)
-    setEditedFields(prev => new Set(prev).add(field))
+    setLocalEdited(prev => new Set(prev).add(field))
     setSavedField(field)
     setTimeout(() => setSavedField(null), 3500)
     onMarkReviewed?.(field)
@@ -281,9 +304,14 @@ export default function DetailFields1099({ activePayer, selectedField, highlight
     const commitStatic = () => {
       setStaticValues(prev => ({ ...prev, [fieldKey]: draftValue }))
       setEditingField(null)
-      setEditedFields(prev => new Set(prev).add(fieldKey))
+      setLocalEdited(prev => new Set(prev).add(fieldKey))
       setSavedField(fieldKey)
       setTimeout(() => setSavedField(null), 3500)
+      const num = parseAmountDraft(draftValue)
+      if (fieldKey.startsWith('taxableInterest-')) {
+        if (activePayer === 'harborlineCredit') onAmountChange?.({ interestHarborline: num }, fieldKey)
+        else if (activePayer === 'cascadeFederal') onAmountChange?.({ interestCascade: num }, fieldKey)
+      }
       if (draftValue.trim()) onMarkReviewed?.(fieldKey)
     }
     return (
@@ -319,7 +347,7 @@ export default function DetailFields1099({ activePayer, selectedField, highlight
           </div>
         )}
         {savedField === fieldKey && <span className={styles.recalcBadge}>Saved</span>}
-        {editedFields.has(fieldKey) && savedField !== fieldKey && <span className={styles.editedBadge}>Edited</span>}
+        {isEdited(fieldKey) && savedField !== fieldKey && <span className={styles.editedBadge}>Edited</span>}
       </div>
     )
   }
@@ -417,7 +445,7 @@ export default function DetailFields1099({ activePayer, selectedField, highlight
                 </div>
               )}
               {savedField === 'taxableInterest' && <span className={styles.recalcBadge}>1040 updated</span>}
-              {editedFields.has('taxableInterest') && savedField !== 'taxableInterest' && <span className={styles.editedBadge}>Edited</span>}
+              {isEdited('taxableInterest') && savedField !== 'taxableInterest' && <span className={styles.editedBadge}>Edited</span>}
             </div>
             <ValidationNote fieldKey="taxableInterest" />
           </>

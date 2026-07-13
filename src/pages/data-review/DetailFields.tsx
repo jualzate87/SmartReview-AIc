@@ -33,9 +33,13 @@ interface DetailFieldsProps {
   onWageChange?: (employer: string, value: number) => void
   fieldValues?: { withholding: number; box12: number; taxableInterest: number; qualifiedDivs: number }
   onFieldValueChange?: (key: FieldValuesKey, value: number) => void
+  /** Synced SSN / EIN (blank at session start — planted import errors) */
+  identityValues?: { ssn: string; ein: string }
+  onIdentityChange?: (kind: 'ssn' | 'ein', value: string) => void
   onMarkReviewed?: (field: string) => void
   onMarkReviewedBulk?: (fields: string[]) => void
   reviewedFields?: Map<string, { by: string; at: string }>
+  editedFields?: Set<string>
   /** Map of doc field key → issue summary shown as a hover tooltip */
   flaggedFields?: Record<string, string>
   verifiedDocs?: Set<string>
@@ -89,9 +93,12 @@ export default function DetailFields({
   onWageChange,
   fieldValues,
   onFieldValueChange,
+  identityValues,
+  onIdentityChange,
   onMarkReviewed,
   onMarkReviewedBulk,
   reviewedFields,
+  editedFields: syncedEditedFields,
   flaggedFields = {},
   verifiedDocs,
   onVerifyDoc,
@@ -108,8 +115,9 @@ export default function DetailFields({
   const [draftValue, setDraftValue] = useState('')
   const [originalValue, setOriginalValue] = useState('')
   const [savedField, setSavedField] = useState<string | null>(null)
-  // Persistent set of fields that have been edited this session
-  const [editedFields, setEditedFields] = useState<Set<string>>(new Set())
+  // Local edits merge with synced editedFields for audit-trail badges across navigation
+  const [localEdited, setLocalEdited] = useState<Set<string>>(new Set())
+  const isEdited = (key: string) => syncedEditedFields?.has(key) || localEdited.has(key)
   // Local overrides for static (non-calculated) fields edited by the user
   const [staticValues, setStaticValues] = useState<Record<string, string>>({})
   // Field key whose comment popover is currently open + its anchor position (fixed)
@@ -139,7 +147,7 @@ export default function DetailFields({
     const num = parseFloat(draftValue.replace(/,/g, '')) || 0
     onFieldValueChange?.(field, num)
     setEditingField(null)
-    setEditedFields(prev => new Set(prev).add(field))
+    setLocalEdited(prev => new Set(prev).add(field))
     setSavedField(field)
     setTimeout(() => setSavedField(null), 3500)
     onMarkReviewed?.(field)
@@ -149,7 +157,7 @@ export default function DetailFields({
     const num = parseFloat(draftValue.replace(/,/g, '')) || 0
     onWageChange?.(activeSubTab, num)
     setEditingField(null)
-    setEditedFields(prev => new Set(prev).add(`wages-${activeSubTab}`))
+    setLocalEdited(prev => new Set(prev).add(`wages-${activeSubTab}`))
     setSavedField('wages')
     setTimeout(() => setSavedField(null), 3500)
     onMarkReviewed?.(`wages-${activeSubTab}`)
@@ -294,7 +302,13 @@ export default function DetailFields({
   // Generic editable row for fields that don't feed into a live 1040 calculation
   const renderStaticRow = (fieldKey: string, label: string, defaultValue: string, inputClass = styles.fieldInputSmall) => {
     const key = `${fieldKey}-${activeSubTab}`
-    const currentVal = staticValues[key] ?? defaultValue
+    const identitySynced =
+      fieldKey === 'ssn' && identityValues?.ssn
+        ? identityValues.ssn
+        : fieldKey === 'ein' && identityValues?.ein
+          ? identityValues.ein
+          : null
+    const currentVal = identitySynced ?? staticValues[key] ?? defaultValue
     const isEditing = editingField === key
     const isReviewed = reviewedFields?.has(key)
     const isCommentOpen = commentField === key
@@ -303,9 +317,11 @@ export default function DetailFields({
     const commitStatic = () => {
       setStaticValues(prev => ({ ...prev, [key]: draftValue }))
       setEditingField(null)
-      setEditedFields(prev => new Set(prev).add(key))
+      setLocalEdited(prev => new Set(prev).add(key))
       setSavedField(key)
       setTimeout(() => setSavedField(null), 3500)
+      if (fieldKey === 'ssn') onIdentityChange?.('ssn', draftValue.trim())
+      if (fieldKey === 'ein') onIdentityChange?.('ein', draftValue.trim())
       if (draftValue.trim()) onMarkReviewed?.(key)
     }
     return (
@@ -351,7 +367,7 @@ export default function DetailFields({
           </div>
         )}
         {savedField === key && <span className={styles.recalcBadge}>Saved</span>}
-        {editedFields.has(key) && savedField !== key && <span className={styles.editedBadge}>Edited</span>}
+        {isEdited(key) && savedField !== key && <span className={styles.editedBadge}>Edited</span>}
       </div>
       {flaggedFields[fieldKey] && !isReviewed && (
         <div className={styles.validationNote} style={isReviewed ? { color: '#1a6b35', borderBottomColor: '#e8edf0' } : {}}>
@@ -456,7 +472,7 @@ export default function DetailFields({
             </div>
           )}
           {savedField === 'wages' && <span className={styles.recalcBadge}>1040 updated</span>}
-          {editedFields.has(`wages-${activeSubTab}`) && savedField !== 'wages' && <span className={styles.editedBadge}>Edited</span>}
+          {isEdited(`wages-${activeSubTab}`) && savedField !== 'wages' && <span className={styles.editedBadge}>Edited</span>}
         </div>
         <ValidationNote fieldKey="wages" />
 
@@ -490,7 +506,7 @@ export default function DetailFields({
             </div>
           )}
           {savedField === 'withholding' && <span className={styles.recalcBadge}>1040 updated</span>}
-          {editedFields.has('withholding') && savedField !== 'withholding' && <span className={styles.editedBadge}>Edited</span>}
+          {isEdited('withholding') && savedField !== 'withholding' && <span className={styles.editedBadge}>Edited</span>}
         </div>
         {renderStaticRow('sswages', '(3) Social security wages', employer.socialSecurityWages)}
         {renderStaticRow('sstax', '(4) Social security tax withheld', employer.ssTax)}
@@ -529,13 +545,13 @@ export default function DetailFields({
                   onFieldValueChange?.('box12', num)
                   setStaticValues(prev => ({ ...prev, [amtKey]: draftValue }))
                   setEditingField(null)
-                  setEditedFields(prev => new Set(prev).add('box12'))
+                  setLocalEdited(prev => new Set(prev).add('box12'))
                   setSavedField('box12')
                   setTimeout(() => setSavedField(null), 3500)
                 } else {
                   setStaticValues(prev => ({ ...prev, [amtKey]: draftValue }))
                   setEditingField(null)
-                  setEditedFields(prev => new Set(prev).add(amtKey))
+                  setLocalEdited(prev => new Set(prev).add(amtKey))
                   setSavedField(amtKey)
                   setTimeout(() => setSavedField(null), 3500)
                 }
@@ -557,7 +573,7 @@ export default function DetailFields({
                       value={codeVal}
                       onChange={e => {
                         setStaticValues(prev => ({ ...prev, [codeKey]: e.target.value }))
-                        setEditedFields(prev => new Set(prev).add(codeKey))
+                        setLocalEdited(prev => new Set(prev).add(codeKey))
                       }}
                       style={{ width: 64, fontSize: 13, height: 32, padding: '0 4px', boxSizing: 'border-box', border: `1px solid ${isFlagged ? '#ff6a00' : '#c3ced5'}`, borderRadius: 4, background: isFlagged ? 'rgba(255,187,0,0.25)' : '#fff', color: codeVal ? '#21262a' : '#859299', fontFamily: 'var(--font-family-component)', outline: 'none', flexShrink: 0, cursor: 'pointer', appearance: 'auto' }}
                     >
@@ -594,7 +610,7 @@ export default function DetailFields({
                       </div>
                     )}
                     {savedField === amtKey && <span className={styles.recalcBadge}>{entry.sub === 'a' ? '1040 updated' : 'Saved'}</span>}
-                    {editedFields.has(amtKey) && savedField !== amtKey && <span className={styles.editedBadge}>Edited</span>}
+                    {isEdited(amtKey) && savedField !== amtKey && <span className={styles.editedBadge}>Edited</span>}
                   </div>
                   {isLast && <ValidationNote fieldKey="box12" />}
                 </div>
@@ -633,7 +649,7 @@ export default function DetailFields({
                 </div>
               )}
               {savedField === 'box12' && <span className={styles.recalcBadge}>1040 updated</span>}
-              {editedFields.has('box12') && savedField !== 'box12' && <span className={styles.editedBadge}>Edited</span>}
+              {isEdited('box12') && savedField !== 'box12' && <span className={styles.editedBadge}>Edited</span>}
             </div>
             <ValidationNote fieldKey="box12" />
           </>

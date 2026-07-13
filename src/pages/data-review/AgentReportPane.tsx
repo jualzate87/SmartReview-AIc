@@ -11,6 +11,8 @@ import taxesAndCreditsIcon from '../../assets/icons/taxes-and-credits.svg'
 import IssueDetailPane from './IssueDetailPane'
 import Tooltip from './Tooltip'
 import { FROZEN_RETURN } from '../../data/frozenReturn'
+import type { LiveReturnTotals } from '../../data/liveReturn'
+import { computeLiveReturn, SEED_AMOUNTS } from '../../data/liveReturn'
 import { RETURN_SUMMARY_INSIGHTS } from './phase1FlagMessages'
 import styles from '../../styles/data-review/AgentReportPane.module.css'
 
@@ -54,6 +56,8 @@ interface AgentReportPaneProps {
   /** Live field values for inline editing */
   fieldValues?: { withholding: number; box12: number; taxableInterest: number; qualifiedDivs: number }
   onFieldValueChange?: (key: 'withholding' | 'box12' | 'taxableInterest' | 'qualifiedDivs', value: number) => void
+  /** Live-recalculated 1040 totals — keeps Phase 2 figures in sync after Phase 1 edits */
+  liveTotals?: LiveReturnTotals
 }
 
 // ProtoC Phase 2 — diagnostics only. Import/OCR keys removed (owned by Phase 1).
@@ -76,22 +80,24 @@ const CARD_ICONS = [
 // Figures align with Loop 2 frozen return anchors (FROZEN_RETURN).
 
 const fmtUsd = (n: number) => `$${n.toLocaleString()}`
-const OWE_AMOUNT = FROZEN_RETURN.totalTax - FROZEN_RETURN.totalWithholding
 
-const BALANCE_DUE_JUMP_ISSUE = {
+/** Build Phase 2 issue cards from live totals so edits don't leave stale figures. */
+function buildBalanceDueIssue(live: LiveReturnTotals) {
+  const owe = live.oweAmount
+  return {
   issueKey: 'balanceDueJump',
   dotColor: 'red' as const,
-  title: `Balance due jumped to ${fmtUsd(OWE_AMOUNT)}`,
+  title: `Balance due jumped to ${fmtUsd(owe)}`,
   category: 'IRS compliance',
-  summary: `Line 37 rose from $22,790 in 2024 to ${fmtUsd(OWE_AMOUNT)} this year, a 378% increase. Confirm Jessica can pay this amount by the filing deadline.`,
+  summary: `Line 37 rose from $22,790 in 2024 to ${fmtUsd(owe)} this year. Confirm Jessica can pay this amount by the filing deadline.`,
   taxImpact: RETURN_SUMMARY_INSIGHTS.estTaxPenalty,
   rootCause: 'Total tax rose while federal withholding fell sharply. Capital gains dropped to $0 but dividend income surged, shifting the tax profile.',
   tableRows: [
-    { label: 'Amount you owe (line 37)', cols: [fmtUsd(OWE_AMOUNT), '$22,790', '+378%'], badge: 'red' as const, total: true },
+    { label: 'Amount you owe (line 37)', cols: [fmtUsd(owe), '$22,790', 'YoY'], badge: 'red' as const, total: true },
   ],
   tableHeaders: ['Item', '2025', '2024', 'YoY'],
   suggestedActions: [
-    `Confirm Jessica can pay ${fmtUsd(OWE_AMOUNT)} by the filing deadline.`,
+    `Confirm Jessica can pay ${fmtUsd(owe)} by the filing deadline.`,
     'Ask if any 2025 estimated payments were made but not entered on line 26.',
     'Review Form 2210 for underpayment penalty exposure.',
   ],
@@ -99,6 +105,7 @@ const BALANCE_DUE_JUMP_ISSUE = {
   viewSourceTab: undefined,
   viewSourceSubTab: undefined,
   viewSourceField: 'amountOwed',
+}
 }
 
 const TOTAL_TAX_RISE_ISSUE = {
@@ -125,21 +132,25 @@ const TOTAL_TAX_RISE_ISSUE = {
   viewSourceField: 'totalTax',
 }
 
-const WITHHOLDING_DROP_ISSUE = {
+function buildWithholdingDropIssue(live: LiveReturnTotals) {
+  const rNote = live.rWithholding > 0
+    ? `1099-R withholding of ${fmtUsd(live.rWithholding)} is included.`
+    : '1099-R withholding was not imported.'
+  return {
   issueKey: 'withholdingDrop',
   dotColor: 'red' as const,
   title: 'Federal withholding below safe harbor',
   category: 'IRS compliance',
-  summary: `Combined federal withholding on lines 25a and 25b is ${fmtUsd(FROZEN_RETURN.totalWithholding)} this year (${fmtUsd(FROZEN_RETURN.w2Withholding)} W-2 + ${fmtUsd(FROZEN_RETURN.divWithholding)} 1099-DIV). That covers only 27% of the ${fmtUsd(FROZEN_RETURN.totalTax)} total tax.`,
+  summary: `Combined federal withholding on lines 25a and 25b is ${fmtUsd(live.totalWithholding)} this year (${fmtUsd(live.w2Withholding)} W-2 + ${fmtUsd(live.withholding1099)} from 1099s). That covers ${Math.round((live.totalWithholding / live.totalTax) * 100)}% of the ${fmtUsd(live.totalTax)} total tax.`,
   taxImpact: RETURN_SUMMARY_INSIGHTS.estTaxPenalty,
-  rootCause: `W-2 Box 2 shows ${fmtUsd(FROZEN_RETURN.w2Withholding)} and 1099-DIV Box 4 shows ${fmtUsd(FROZEN_RETURN.divWithholding)} on the return. 1099-R withholding was not imported. Last year total withholding was $41,100.`,
+  rootCause: `W-2 Box 2 shows ${fmtUsd(live.w2Withholding)} and 1099 withholding on line 25b shows ${fmtUsd(live.withholding1099)} on the return. ${rNote} Last year total withholding was $41,100.`,
   tableRows: [
-    { label: 'Federal withholding (25a + 25b)', cols: [fmtUsd(FROZEN_RETURN.totalWithholding), '$41,100', '-1%'], badge: 'red' as const, total: false },
+    { label: 'Federal withholding (25a + 25b)', cols: [fmtUsd(live.totalWithholding), '$41,100', 'YoY'], badge: 'red' as const, total: false },
     { label: 'Safe harbor (110% of 2024 tax)',    cols: ['$108,779', 'Not met', '!'], badge: 'red' as const, total: true },
   ],
   tableHeaders: ['Item', '2025', '2024', 'Status'],
   suggestedActions: [
-    'Cross-check 1099-DIV Box 4 ($26,363 source vs. $24,925 on return).',
+    'Cross-check 1099-DIV Box 4 ($26,363 source vs. return amount).',
     'Run Form 2210 to estimate underpayment penalty.',
     'Ask about unrecorded estimated payments that would reduce the balance due.',
   ],
@@ -148,18 +159,20 @@ const WITHHOLDING_DROP_ISSUE = {
   viewSourceSubTab: undefined,
   viewSourceField: 'fedTaxWithheld',
 }
+}
 
-const EST_TAX_PENALTY_ISSUE = {
+function buildEstTaxPenaltyIssue(live: LiveReturnTotals) {
+  return {
   issueKey: 'estTaxPenalty',
   dotColor: 'red' as const,
   title: 'Estimated tax penalty may apply',
   category: 'IRS compliance',
   summary: RETURN_SUMMARY_INSIGHTS.estTaxPenalty,
-  taxImpact: `Withholding of ${fmtUsd(FROZEN_RETURN.totalWithholding)} is well below the $108,779 safe harbor (110% of 2024 tax). Form 2210 should be completed before filing.`,
-  rootCause: `Total payments on line 33 (${fmtUsd(FROZEN_RETURN.totalWithholding)}) fall short of both total tax (${fmtUsd(FROZEN_RETURN.totalTax)}) and the prior-year safe harbor.`,
+  taxImpact: `Withholding of ${fmtUsd(live.totalWithholding)} is below the $108,779 safe harbor (110% of 2024 tax). Form 2210 should be completed before filing.`,
+  rootCause: `Total payments on line 33 (${fmtUsd(live.totalWithholding)}) fall short of both total tax (${fmtUsd(live.totalTax)}) and the prior-year safe harbor.`,
   tableRows: [
-    { label: 'Total payments (line 33)', cols: [fmtUsd(FROZEN_RETURN.totalWithholding), '$76,100', '-46%'], badge: 'red' as const, total: false },
-    { label: 'Safe harbor shortfall',    cols: ['$68,014', 'Gap', '!'], badge: 'red' as const, total: true },
+    { label: 'Total payments (line 33)', cols: [fmtUsd(live.totalWithholding), '$76,100', 'YoY'], badge: 'red' as const, total: false },
+    { label: 'Safe harbor shortfall',    cols: [fmtUsd(Math.max(0, 108779 - live.totalWithholding)), 'Gap', '!'], badge: 'red' as const, total: true },
   ],
   tableHeaders: ['Item', '2025', '2024 / status', ''],
   suggestedActions: [
@@ -171,6 +184,7 @@ const EST_TAX_PENALTY_ISSUE = {
   viewSourceTab: undefined,
   viewSourceSubTab: undefined,
   viewSourceField: 'totalPayments',
+}
 }
 
 const QUAL_DIV_DROP_ISSUE = {
@@ -290,18 +304,19 @@ const NIIT_FORM8960_ISSUE = {
   viewSourceField: 'totalIncome',
 }
 
-const MISSING_EST_PAYMENTS_ISSUE = {
+function buildMissingEstPaymentsIssue(live: LiveReturnTotals) {
+  return {
   issueKey: 'missingEstPayments',
   dotColor: 'orange' as const,
   title: 'No estimated tax payments recorded',
   category: 'Missing information',
-  summary: `Line 26 shows $0 in 2025 estimated payments. With ${fmtUsd(OWE_AMOUNT)} owed (up from $22,790 last year) and ${fmtUsd(FROZEN_RETURN.totalWithholding)} in withholding, confirm whether Jessica made quarterly 1040-ES payments.`,
-  taxImpact: `If estimated payments were made but not entered, the ${fmtUsd(OWE_AMOUNT)} balance due on line 37 would go down. Withholding is below the $108,779 safe harbor.`,
-  rootCause: `No 1040-ES payment records were imported. Last year total payments were $76,100 (line 33) against $98,890 tax. This year ${fmtUsd(FROZEN_RETURN.totalWithholding)} is recorded against ${fmtUsd(FROZEN_RETURN.totalTax)} tax.`,
+  summary: `Line 26 shows $0 in 2025 estimated payments. With ${fmtUsd(live.oweAmount)} owed (up from $22,790 last year) and ${fmtUsd(live.totalWithholding)} in withholding, confirm whether Jessica made quarterly 1040-ES payments.`,
+  taxImpact: `If estimated payments were made but not entered, the ${fmtUsd(live.oweAmount)} balance due on line 37 would go down. Withholding is below the $108,779 safe harbor.`,
+  rootCause: `No 1040-ES payment records were imported. Last year total payments were $76,100 (line 33) against $98,890 tax. This year ${fmtUsd(live.totalWithholding)} is recorded against ${fmtUsd(live.totalTax)} tax.`,
   tableRows: [
     { label: '2025 estimated payments (line 26)', cols: ['$0', 'Unconfirmed', '?'], badge: 'orange' as const, total: false },
-    { label: 'Amount you owe (line 37)',          cols: [fmtUsd(OWE_AMOUNT), '$22,790', '+378%'], badge: 'orange' as const, total: false },
-    { label: 'Safe harbor shortfall',             cols: ['$68,014', 'Gap', '!'], badge: 'red' as const, total: true },
+    { label: 'Amount you owe (line 37)',          cols: [fmtUsd(live.oweAmount), '$22,790', 'YoY'], badge: 'orange' as const, total: false },
+    { label: 'Safe harbor shortfall',             cols: [fmtUsd(Math.max(0, 108779 - live.totalWithholding)), 'Gap', '!'], badge: 'red' as const, total: true },
   ],
   tableHeaders: ['Field', '2025', '2024 / status', ''],
   suggestedActions: [
@@ -314,19 +329,21 @@ const MISSING_EST_PAYMENTS_ISSUE = {
   viewSourceSubTab: undefined,
   viewSourceField: 'totalPayments',
 }
+}
 
 // ── Optimization Suggestions ──────────────────────────────────────────────
 
-const OPT_W4_ISSUE = {
+function buildOptW4Issue(live: LiveReturnTotals) {
+  return {
   issueKey: 'optW4Adjustment',
   dotColor: 'blue' as const,
   title: 'Plan 2026 estimated payments',
   category: 'Optimization',
-  summary: `Federal withholding is ${fmtUsd(FROZEN_RETURN.totalWithholding)} while total tax is ${fmtUsd(FROZEN_RETURN.totalTax)}. W-2 Box 2 shows ${fmtUsd(FROZEN_RETURN.w2Withholding)}. Quarterly 1040-ES payments are the main lever for 2026.`,
-  taxImpact: `The 2026 safe harbor will be 110% of this year's ${fmtUsd(FROZEN_RETURN.totalTax)} total tax: $164,813. Jessica did not meet the $108,779 safe harbor this year.`,
-  rootCause: `Federal withholding includes ${fmtUsd(FROZEN_RETURN.w2Withholding)} from W-2 and ${fmtUsd(FROZEN_RETURN.divWithholding)} from 1099-DIV. Investment income drives most of the tax at AGI of ${fmtUsd(FROZEN_RETURN.totalIncome)}.`,
+  summary: `Federal withholding is ${fmtUsd(live.totalWithholding)} while total tax is ${fmtUsd(live.totalTax)}. W-2 Box 2 shows ${fmtUsd(live.w2Withholding)}. Quarterly 1040-ES payments are the main lever for 2026.`,
+  taxImpact: `The 2026 safe harbor will be 110% of this year's ${fmtUsd(live.totalTax)} total tax: $164,813. Jessica did not meet the $108,779 safe harbor this year.`,
+  rootCause: `Federal withholding includes ${fmtUsd(live.w2Withholding)} from W-2 and ${fmtUsd(live.withholding1099)} from 1099s. Investment income drives most of the tax at AGI of ${fmtUsd(live.totalIncome)}.`,
   tableRows: [
-    { label: '2025 total withholding (25a+25b)', cols: [fmtUsd(FROZEN_RETURN.totalWithholding), '$41,100', '-1%'], badge: 'orange' as const, total: false },
+    { label: '2025 total withholding (25a+25b)', cols: [fmtUsd(live.totalWithholding), '$41,100', 'YoY'], badge: 'orange' as const, total: false },
     { label: '2026 safe-harbor target (110%)',   cols: ['$164,813', 'Plan now', ''], badge: 'blue' as const, total: false },
     { label: 'Quarterly 1040-ES needed',         cols: ['~$41,203/qtr', 'Suggestion', ''], badge: 'blue' as const, total: true },
   ],
@@ -340,6 +357,7 @@ const OPT_W4_ISSUE = {
   viewSourceTab: 'w2s' as const,
   viewSourceSubTab: 'techCircle' as const,
   viewSourceField: 'w2Withholding',
+}
 }
 
 const OPT_IRA_ISSUE = {
@@ -383,12 +401,22 @@ export const ISSUE_FIELD: Partial<Record<IssueKey, string>> = {
   optIra:              'agi',
 }
 
-const ALL_ISSUES = [
-  BALANCE_DUE_JUMP_ISSUE, TOTAL_TAX_RISE_ISSUE, WITHHOLDING_DROP_ISSUE, EST_TAX_PENALTY_ISSUE,
-  QUAL_DIV_DROP_ISSUE, ORDINARY_DIV_SURGE_ISSUE, QUAL_DIV_RATIO_ISSUE, CONFIRM_PRIOR_AGI_ISSUE,
-  NIIT_FORM8960_ISSUE, MISSING_EST_PAYMENTS_ISSUE,
-  OPT_W4_ISSUE, OPT_IRA_ISSUE,
-]
+function buildAllIssues(live: LiveReturnTotals) {
+  return [
+    buildBalanceDueIssue(live),
+    TOTAL_TAX_RISE_ISSUE,
+    buildWithholdingDropIssue(live),
+    buildEstTaxPenaltyIssue(live),
+    QUAL_DIV_DROP_ISSUE,
+    ORDINARY_DIV_SURGE_ISSUE,
+    QUAL_DIV_RATIO_ISSUE,
+    CONFIRM_PRIOR_AGI_ISSUE,
+    NIIT_FORM8960_ISSUE,
+    buildMissingEstPaymentsIssue(live),
+    buildOptW4Issue(live),
+    OPT_IRA_ISSUE,
+  ]
+}
 
 export default function AgentReportPane({
   onClose,
@@ -407,7 +435,10 @@ export default function AgentReportPane({
   onHighlightField,
   fieldValues,
   onFieldValueChange,
+  liveTotals,
 }: AgentReportPaneProps) {
+  const live = liveTotals ?? computeLiveReturn(SEED_AMOUNTS)
+  const ALL_ISSUES = buildAllIssues(live)
   // ProtoC: count ONLY the Phase 2 diagnostic keys — Phase 1 import flags share the same
   // reviewedFields map but must not inflate this counter.
   const reviewedCount = GUIDED_ORDER.filter(k => reviewedFields.has(k)).length

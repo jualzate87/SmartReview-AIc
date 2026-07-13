@@ -93,6 +93,10 @@ export function getTaxControlBreakdown(
       if (capGain !== 0) {
         components.push({ label: 'Line 7 — Capital gain (loss)', value: capGain, operator: '+' })
       }
+      const otherIncome = v('otherIncome')
+      if (otherIncome > 0) {
+        components.push({ label: 'Line 8 — Other income (1099-NEC)', value: otherIncome, operator: '+' })
+      }
       return {
         rowId,
         title: 'Total income',

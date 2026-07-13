@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { CircleCheck, Comment } from '@design-systems/icons'
 import Tooltip from './Tooltip'
 import { CLIENT_ADDRESS } from '../../data/clientAddress'
+import { parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
 import styles from '../../styles/data-review/DetailFields.module.css'
 
 function CheckIcon() {
@@ -47,26 +48,44 @@ interface DetailFields1099RProps {
   selectedField?: string | null
   highlightMode?: 'orange' | 'blue'
   onFieldSelect?: (field: string) => void
+  amounts?: LiveAmounts
+  onAmountChange?: (patch: Partial<LiveAmounts>, editedKey?: string) => void
   onMarkReviewed?: (field: string) => void
   onMarkReviewedBulk?: (fields: string[]) => void
   reviewedFields?: Map<string, { by: string; at: string }>
+  editedFields?: Set<string>
   verifiedDocs?: Set<string>
   onVerifyDoc?: (docKey: string) => void
   onAddFieldNote?: (text: string, context?: string) => void
   flaggedFields?: Record<string, string>
 }
 
-export default function DetailFields1099R({ selectedField, highlightMode = 'blue', onFieldSelect, onMarkReviewed, onMarkReviewedBulk, reviewedFields, verifiedDocs, onVerifyDoc, onAddFieldNote, flaggedFields = {} }: DetailFields1099RProps) {
+export default function DetailFields1099R({
+  selectedField,
+  highlightMode = 'blue',
+  onFieldSelect,
+  amounts,
+  onAmountChange,
+  onMarkReviewed,
+  onMarkReviewedBulk,
+  reviewedFields,
+  editedFields: syncedEditedFields,
+  verifiedDocs,
+  onVerifyDoc,
+  onAddFieldNote,
+  flaggedFields = {},
+}: DetailFields1099RProps) {
   const highlightedRef = useRef<HTMLDivElement>(null)
   const [editingField, setEditingField] = useState<string | null>(null)
   const [draftValue, setDraftValue] = useState('')
   const [savedField, setSavedField] = useState<string | null>(null)
-  const [editedFields, setEditedFields] = useState<Set<string>>(new Set())
+  const [localEdited, setLocalEdited] = useState<Set<string>>(new Set())
   const [staticValues, setStaticValues] = useState<Record<string, string>>({})
   const [commentField, setCommentField] = useState<string | null>(null)
   const [commentDraft, setCommentDraft] = useState('')
   const [commentAnchor, setCommentAnchor] = useState<{ top: number; left: number } | null>(null)
   const commentRef = useRef<HTMLDivElement>(null)
+  const isEdited = (key: string) => syncedEditedFields?.has(key) || localEdited.has(key)
 
   useEffect(() => {
     if (selectedField && highlightedRef.current) {
@@ -96,10 +115,18 @@ export default function DetailFields1099R({ selectedField, highlightMode = 'blue
   const commitStaticEdit = (fieldKey: string, resolveKey = fieldKey) => {
     setStaticValues(prev => ({ ...prev, [fieldKey]: draftValue }))
     setEditingField(null)
-    setEditedFields(prev => new Set(prev).add(fieldKey))
+    setLocalEdited(prev => new Set(prev).add(fieldKey))
     setSavedField(fieldKey)
     setTimeout(() => setSavedField(null), 3500)
-    if (draftValue.trim()) onMarkReviewed?.(resolveKey)
+    // Flow Box 4 withholding / Box 2a taxable into live 1040 amounts
+    if (fieldKey === 'r-fedTaxWithheld') {
+      onAmountChange?.({ rWithholding: parseAmountDraft(draftValue) }, 'r-fedTaxWithheld')
+    } else if (fieldKey === 'r-taxableAmt') {
+      onAmountChange?.({ taxablePension: parseAmountDraft(draftValue) }, 'r-taxableAmt')
+    }
+    if (draftValue.trim() || fieldKey === 'r-fedTaxWithheld' || fieldKey === 'r-taxableAmt') {
+      onMarkReviewed?.(resolveKey)
+    }
   }
 
   const ValidationNote = ({ issueKey, resolveKey }: { issueKey: string; resolveKey: string }) => {
@@ -191,15 +218,27 @@ export default function DetailFields1099R({ selectedField, highlightMode = 'blue
     const selectKey = selectedKey ?? fieldKey
     const issueKey = flagKey ?? fieldKey
     const resolveKey = reviewedKey ?? fieldKey
-    const currentVal = staticValues[fieldKey] ?? defaultValue
+    const syncedDisplay =
+      fieldKey === 'r-fedTaxWithheld' && amounts && (amounts.rWithholding > 0 || isEdited('r-fedTaxWithheld'))
+        ? (amounts.rWithholding ? amounts.rWithholding.toLocaleString() : '')
+        : fieldKey === 'r-taxableAmt' && amounts
+          ? amounts.taxablePension.toLocaleString()
+          : null
+    const currentVal = syncedDisplay ?? staticValues[fieldKey] ?? defaultValue
     const isEditing = editingField === fieldKey
     const isFlagged = !!flaggedFields[issueKey] && !reviewedFields?.has(resolveKey)
     const isReviewed = reviewedFields?.has(resolveKey)
     const isCommentOpen = commentField === fieldKey
-    const isSelected = selectedField === selectKey
+    const isSelected = selectedField === selectKey || selectedField === fieldKey
+    const flowsTo1040 = fieldKey === 'r-fedTaxWithheld' || fieldKey === 'r-taxableAmt'
     return (
       <>
-      <div className={`${styles.fieldRow} ${isFlagged ? styles.fieldRowHasNote : ''} ${isCommentOpen ? styles.fieldRowCommentOpen : ''} ${isSelected ? (highlightMode === 'orange' && isFlagged ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''}`} onClick={() => onFieldSelect?.(selectKey)} style={{ cursor: 'pointer' }}>
+      <div
+        ref={isSelected ? highlightedRef : undefined}
+        className={`${styles.fieldRow} ${isFlagged ? styles.fieldRowHasNote : ''} ${isCommentOpen ? styles.fieldRowCommentOpen : ''} ${isSelected ? (highlightMode === 'orange' && isFlagged ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''}`}
+        onClick={() => onFieldSelect?.(selectKey)}
+        style={{ cursor: 'pointer' }}
+      >
         {flaggedFields[issueKey] ? (
           <span className={`${styles.fieldLabel} ${isFlagged ? styles.fieldLabelFlagged : ''}`}>
             {isFlagged && <span className={styles.issueIndicator} />}
@@ -241,8 +280,8 @@ export default function DetailFields1099R({ selectedField, highlightMode = 'blue
             {renderCommentBtn(fieldKey, label)}
           </div>
         )}
-        {savedField === fieldKey && <span className={styles.recalcBadge}>Saved</span>}
-        {editedFields.has(fieldKey) && savedField !== fieldKey && <span className={styles.editedBadge}>Edited</span>}
+        {savedField === fieldKey && <span className={styles.recalcBadge}>{flowsTo1040 ? '1040 updated' : 'Saved'}</span>}
+        {isEdited(fieldKey) && savedField !== fieldKey && <span className={styles.editedBadge}>Edited</span>}
       </div>
       {flaggedFields[issueKey] && <ValidationNote issueKey={issueKey} resolveKey={resolveKey} />}
       </>

@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { FROZEN_RETURN, TOKEN_QUALIFIED_DIVS_RETURN } from '../data/frozenReturn'
+import { SEED_AMOUNTS, type LiveAmounts } from '../data/liveReturn'
 import type { W2Employer } from '../pages/data-review/DetailFields'
 import type { TopTab } from '../pages/data-review/ReviewTab'
 import type { DivPayer } from '../pages/data-review/DetailFieldsDiv'
 import type { IntPayer } from '../pages/data-review/DetailFields1099'
+import { PHASE1_TO_PHASE2_ISSUES } from '../pages/data-review/phase2FlagSync'
 
 // ProtoC: the source-doc review state (flags, reviewed fields, active tab, field
 // values) is shared live between the main window and the pop-out window via
@@ -11,6 +12,7 @@ import type { IntPayer } from '../pages/data-review/DetailFields1099'
 // copy that can drift. Every field here mirrors what DataReviewPage previously
 // held as local useState; the pop-out consumes the identical hook.
 
+/** @deprecated Prefer LiveAmounts — kept for DetailFields prop shims. */
 export interface FieldValues {
   withholding: { techCircle: number }
   box12: number
@@ -24,20 +26,19 @@ interface SyncedState {
   activeTopTab: TopTab
   activeSubTab: W2Employer
   selectedField: string | null
-  wages: { techCircle: number }
-  fieldValues: FieldValues
+  /** All editable return amounts — single source of truth for 1040 recalculation */
+  amounts: LiveAmounts
   reviewedFieldsList: [string, ReviewedEntry][]
+  /** Field keys the preparer has edited+saved this session (audit trail) */
+  editedFieldsList: string[]
   verifiedDocsList: string[]
   activeDivPayer: DivPayer
   activeIntPayer: IntPayer
 }
 
 const CHANNEL_NAME = 'protoc-data-review-sync'
-// Bump this whenever DEFAULT_STATE's seed values change — a mismatched version
-// means the cached session predates the new numbers, so it's discarded instead
-// of silently mixing old field values with the new defaults (which caused the
-// 1040 to show stale withholding/amount-owed figures after a data fix).
-const STATE_VERSION = 8
+// Bump whenever DEFAULT_STATE shape or seed values change so stale sessions reset.
+const STATE_VERSION = 9
 const STORAGE_KEY = 'protoc-data-review-state-v' + STATE_VERSION
 const PREPARER_NAME = 'Juan Alzate'
 
@@ -49,14 +50,9 @@ const DEFAULT_STATE: SyncedState = {
   activeTopTab: 'w2s',
   activeSubTab: 'techCircle',
   selectedField: null,
-  wages: { techCircle: FROZEN_RETURN.wages },
-  fieldValues: {
-    withholding: { techCircle: FROZEN_RETURN.w2Withholding },
-    box12: 0,
-    taxableInterest: 1986,
-    qualifiedDivs: TOKEN_QUALIFIED_DIVS_RETURN,
-  },
+  amounts: { ...SEED_AMOUNTS },
   reviewedFieldsList: [],
+  editedFieldsList: [],
   verifiedDocsList: [],
   activeDivPayer: 'tokenFinancial',
   activeIntPayer: 'unwaverIngFinancial',
@@ -65,7 +61,15 @@ const DEFAULT_STATE: SyncedState = {
 function loadInitialState(): SyncedState {
   try {
     const raw = sessionStorage.getItem(STORAGE_KEY)
-    if (raw) return { ...DEFAULT_STATE, ...JSON.parse(raw) as Partial<SyncedState> }
+    if (raw) {
+      const parsed = JSON.parse(raw) as Partial<SyncedState>
+      return {
+        ...DEFAULT_STATE,
+        ...parsed,
+        amounts: { ...SEED_AMOUNTS, ...(parsed.amounts ?? {}) },
+        editedFieldsList: parsed.editedFieldsList ?? [],
+      }
+    }
   } catch {
     // ignore malformed storage — fall through to defaults
   }
@@ -109,18 +113,45 @@ export function useSyncedReviewState() {
   }
 
   const reviewedFields = new Map(state.reviewedFieldsList)
+  const editedFields = new Set(state.editedFieldsList)
+
+  const markEdited = (fieldKey: string) => {
+    if (stateRef.current.editedFieldsList.includes(fieldKey)) return
+    update({ editedFieldsList: [...stateRef.current.editedFieldsList, fieldKey] })
+  }
+
+  const markEditedBulk = (fieldKeys: string[]) => {
+    const next = new Set(stateRef.current.editedFieldsList)
+    fieldKeys.forEach(k => next.add(k))
+    update({ editedFieldsList: Array.from(next) })
+  }
 
   const markReviewed = (fieldName: string) => {
     const at = formatTimestamp(new Date())
     const next = new Map(stateRef.current.reviewedFieldsList)
     next.set(fieldName, { by: PREPARER_NAME, at })
+    // Auto-dismiss linked Phase 2 insights when a Phase 1 flag is resolved
+    const linked = PHASE1_TO_PHASE2_ISSUES[fieldName]
+    if (linked) {
+      linked.forEach(issueKey => {
+        if (!next.has(issueKey)) next.set(issueKey, { by: PREPARER_NAME, at })
+      })
+    }
     update({ reviewedFieldsList: Array.from(next.entries()) })
   }
 
   const markReviewedBulk = (fieldNames: string[]) => {
     const at = formatTimestamp(new Date())
     const next = new Map(stateRef.current.reviewedFieldsList)
-    fieldNames.forEach(f => { if (!next.has(f)) next.set(f, { by: PREPARER_NAME, at }) })
+    fieldNames.forEach(f => {
+      if (!next.has(f)) next.set(f, { by: PREPARER_NAME, at })
+      const linked = PHASE1_TO_PHASE2_ISSUES[f]
+      if (linked) {
+        linked.forEach(issueKey => {
+          if (!next.has(issueKey)) next.set(issueKey, { by: PREPARER_NAME, at })
+        })
+      }
+    })
     update({ reviewedFieldsList: Array.from(next.entries()) })
   }
 
@@ -133,8 +164,46 @@ export function useSyncedReviewState() {
     update({ verifiedDocsList: Array.from(next) })
   }
 
-  const updateFieldValue = (key: keyof FieldValues, value: number | { techCircle: number }) => {
-    update({ fieldValues: { ...stateRef.current.fieldValues, [key]: value } as FieldValues })
+  const updateAmounts = (patch: Partial<LiveAmounts>) => {
+    update({ amounts: { ...stateRef.current.amounts, ...patch } })
+  }
+
+  /** Convenience — update W-2 wages object shape used by DetailFields. */
+  const setWages = (wages: { techCircle: number }) => {
+    updateAmounts({ wages: wages.techCircle })
+  }
+
+  /**
+   * Legacy FieldValues shim for DetailFields that still call onFieldValueChange
+   * with withholding / taxableInterest / qualifiedDivs / box12.
+   */
+  const updateFieldValue = (
+    key: keyof FieldValues,
+    value: number | { techCircle: number },
+  ) => {
+    const a = stateRef.current.amounts
+    if (key === 'withholding' && typeof value === 'object') {
+      updateAmounts({ w2Withholding: value.techCircle })
+      return
+    }
+    if (typeof value !== 'number') return
+    if (key === 'box12') updateAmounts({ box12: value })
+    else if (key === 'taxableInterest') updateAmounts({ interestUnwavering: value })
+    else if (key === 'qualifiedDivs') updateAmounts({ qualifiedDivsToken: value })
+    else if (key === 'withholding') {
+      // flat number — treat as W-2 Box 2
+      updateAmounts({ w2Withholding: value })
+    }
+    void a
+  }
+
+  const amounts = state.amounts
+  const wages = { techCircle: amounts.wages }
+  const fieldValues: FieldValues = {
+    withholding: { techCircle: amounts.w2Withholding },
+    box12: amounts.box12,
+    taxableInterest: amounts.interestUnwavering,
+    qualifiedDivs: amounts.qualifiedDivsToken,
   }
 
   return {
@@ -144,11 +213,16 @@ export function useSyncedReviewState() {
     setActiveSubTab: (tab: W2Employer) => update({ activeSubTab: tab }),
     selectedField: state.selectedField,
     setSelectedField: (field: string | null) => update({ selectedField: field }),
-    wages: state.wages,
-    setWages: (wages: { techCircle: number }) => update({ wages }),
-    fieldValues: state.fieldValues,
+    amounts,
+    updateAmounts,
+    wages,
+    setWages,
+    fieldValues,
     updateFieldValue,
     reviewedFields,
+    editedFields,
+    markEdited,
+    markEditedBulk,
     activeDivPayer: state.activeDivPayer,
     setActiveDivPayer: (payer: DivPayer) => update({ activeDivPayer: payer }),
     activeIntPayer: state.activeIntPayer,

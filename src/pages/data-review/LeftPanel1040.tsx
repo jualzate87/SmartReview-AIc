@@ -11,7 +11,7 @@ import TaxControlBreakdownPopover from './TaxControlBreakdownPopover'
 import { getTaxControlBreakdown } from '../../data/taxControlBreakdowns'
 import Tooltip from './Tooltip'
 import { TAX_CONTROL_ROWS, getControlSystemValues } from '../../data/sourceDocuments'
-import { FROZEN_RETURN } from '../../data/frozenReturn'
+import type { LiveReturnTotals } from '../../data/liveReturn'
 import { CLIENT_ADDRESS, formatClientCityStateZip } from '../../data/clientAddress'
 import styles from '../../styles/data-review/LeftPanel1040.module.css'
 
@@ -36,8 +36,13 @@ interface LeftPanel1040Props {
   onViewSource?: (fieldName: string, sourceLabel?: string) => void
   /** Navigate to a specific source document (tax control flyout) */
   onNavigateToSourceDoc?: (docId: string) => void
-  /** Live editable field values from source-doc entry sheets */
-  fieldValues?: { withholding: number; box12: number; taxableInterest: number; qualifiedDivs: number }
+  /**
+   * Live-computed 1040 totals from synced editable amounts.
+   * Prefer this over frozen constants so edits recalculate income / payments / owed.
+   */
+  liveTotals?: LiveReturnTotals
+  /** Audit-trail field keys that were edited+saved this session */
+  editedFields?: Set<string>
   /** Called when user posts a comment from a 1040 field */
   onAddFieldNote?: (text: string, context: string) => void
   /** When true: all Phase 1 import flags have been reviewed — unlocks the Tax control tab's dot indicator */
@@ -79,9 +84,6 @@ function fmt(n: number) {
   return n.toLocaleString()
 }
 
-// 1099-DIV Box 4 withholding on return (Token Financial); W-2 Box 2 is $15,840 per frozen return.
-const DIV_WITHHOLDING = FROZEN_RETURN.divWithholding
-
 export default function LeftPanel1040({
   selectedField,
   highlightField,
@@ -94,7 +96,8 @@ export default function LeftPanel1040({
   issueField,
   onViewSource,
   onNavigateToSourceDoc,
-  fieldValues,
+  liveTotals,
+  editedFields = new Set(),
   onAddFieldNote,
   allFlagsCleared = false,
   taxControlViewRequest = 0,
@@ -102,24 +105,31 @@ export default function LeftPanel1040({
   // Detail-field keys may differ from 1040 row keys (e.g. fedTaxWithheld ↔ withholding).
   const activeHighlight = highlightField ?? selectedField
 
-  // Derived 1040 values — Jessica Drake's frozen return (Loop 2 Build Spec anchors)
-  const taxableInterest1040 = FROZEN_RETURN.taxableInterest
-  const qualifiedDivs1040     = FROZEN_RETURN.qualifiedDivs
-  const ordinaryDivs        = FROZEN_RETURN.ordinaryDivs
-  const taxablePension      = FROZEN_RETURN.taxablePension
-  const w2Withholding       = Math.max(0, (fieldValues?.withholding ?? FROZEN_RETURN.totalWithholding) - DIV_WITHHOLDING)
-  const withholding1040     = w2Withholding + DIV_WITHHOLDING
-  const capitalGain         = FROZEN_RETURN.capitalGain
-  const totalIncome         = FROZEN_RETURN.totalIncome
-  const stdDeduction        = FROZEN_RETURN.stdDeduction
-  const taxableIncome       = totalIncome - stdDeduction
-  const totalTax            = FROZEN_RETURN.totalTax
+  // Live totals from synced edits; seeds match Build Spec frozen anchors at session start.
+  const wages1040           = liveTotals?.wages ?? total1a
+  const taxableInterest1040 = liveTotals?.taxableInterest ?? 6_336
+  const qualifiedDivs1040   = liveTotals?.qualifiedDivs ?? 343_450
+  const ordinaryDivs        = liveTotals?.ordinaryDivs ?? 350_400
+  const taxablePension      = liveTotals?.taxablePension ?? 100_000
+  const otherIncome         = liveTotals?.otherIncome ?? 0
+  const necOnReturn         = liveTotals?.necOnReturn ?? false
+  const w2Withholding       = liveTotals?.w2Withholding ?? 15_840
+  const withholding1099     = liveTotals?.withholding1099 ?? 24_925
+  const withholding1040     = liveTotals?.totalWithholding ?? (w2Withholding + withholding1099)
+  const capitalGain         = liveTotals?.capitalGain ?? 0
+  const totalIncome         = liveTotals?.totalIncome ?? (wages1040 + taxableInterest1040 + ordinaryDivs + taxablePension + capitalGain + otherIncome)
+  const stdDeduction        = liveTotals?.stdDeduction ?? 15_750
+  const taxableIncome       = liveTotals?.taxableIncome ?? (totalIncome - stdDeduction)
+  const totalTax            = liveTotals?.totalTax ?? 149_830
   const incomeTax           = totalTax
   const estimatedPayments   = 0
-  const oweAmount           = Math.max(0, totalTax - withholding1040)
+  const oweAmount           = liveTotals?.oweAmount ?? Math.max(0, totalTax - withholding1040)
+  const displaySsn          = liveTotals?.employeeSsn?.trim()
+    ? liveTotals.employeeSsn
+    : '987-65-4321'
 
   const controlSystemVals = getControlSystemValues({
-    total1a,
+    total1a: wages1040,
     taxableInterest: taxableInterest1040,
     ordinaryDivs,
     qualifiedDivs: qualifiedDivs1040,
@@ -128,15 +138,29 @@ export default function LeftPanel1040({
     taxableIncome,
     totalTax,
     w2Withholding,
-    divWithholding: DIV_WITHHOLDING,
+    divWithholding: withholding1099,
     totalWithholding: withholding1040,
     oweAmount,
     taxablePension,
+    otherIncome,
   })
 
+  /** Tax-control row ids that should show an Edited audit chip. */
+  const CONTROL_EDITED_KEYS: Record<string, string[]> = {
+    wages: ['wages', 'wages-techCircle'],
+    interest: ['taxableInterest'],
+    dividends: ['ordinaryDivs', 'ordinaryDivs-northmark'],
+    qualDivs: ['qualifiedDivs'],
+    ira: ['r-taxableAmt', 'iraDistrib'],
+    withholdingW2: ['withholding'],
+    withholding99: ['fedTaxWithheld', 'r-fedTaxWithheld', 'withholding1099'],
+  }
+  const isControlRowEdited = (rowId: string) =>
+    (CONTROL_EDITED_KEYS[rowId] ?? []).some(k => editedFields.has(k))
+
   const YOY = buildYoyMap({
-    wages: total1a,
-    wagesTotal: total1a,
+    wages: wages1040,
+    wagesTotal: wages1040,
     taxableInterest: taxableInterest1040,
     qualifiedDivs: qualifiedDivs1040,
     ordinaryDivs,
@@ -149,7 +173,7 @@ export default function LeftPanel1040({
     incomeTax,
     totalTax,
     w2Withholding,
-    withholding: DIV_WITHHOLDING,
+    withholding: withholding1099,
     totalWithholding: withholding1040,
     estimatedPayments,
     totalPayments: withholding1040,
@@ -450,13 +474,16 @@ export default function LeftPanel1040({
       key: 'income', label: 'Income', icon: '💰',
       totalField: 'totalIncome', totalCurr: totalIncome,
       rows: [
-        { line: '1a',  label: 'W-2 wages',              sub: 'Form W-2 · Box 1',              field: 'wages',            curr: total1a,         kind: 'source' as const },
+        { line: '1a',  label: 'W-2 wages',              sub: 'Form W-2 · Box 1',              field: 'wages',            curr: wages1040,         kind: 'source' as const },
         { line: '2a',  label: 'Tax-exempt interest',     sub: 'Line 2a',                       field: 'taxExemptInterest', curr: 180,                  kind: 'source' as const },
         { line: '2b',  label: 'Taxable interest',        sub: 'Line 2b',                       field: 'taxableInterest',  curr: taxableInterest1040, kind: 'source' as const },
         { line: '3a',  label: 'Qualified dividends',     sub: 'Line 3a',                       field: 'qualifiedDivs',    curr: qualifiedDivs1040,   kind: 'source' as const },
         { line: '3b',  label: 'Ordinary dividends',      sub: 'Line 3b',                       field: 'ordinaryDivs',     curr: ordinaryDivs,    kind: 'source' as const },
         { line: '4b',  label: 'IRA distributions',       sub: '1099-R · Box 2a',               field: 'iraDistrib',       curr: taxablePension,    kind: 'source' as const },
         { line: '7',   label: 'Capital gain or (loss)',  sub: 'Line 7',                        field: 'capitalGain',      curr: capitalGain,     kind: 'source' as const },
+        ...(necOnReturn
+          ? [{ line: '8', label: 'Other income', sub: '1099-NEC · Box 1', field: 'otherIncome', curr: otherIncome, kind: 'source' as const }]
+          : []),
         // 'Total income' (Line 9) omitted — same value as section header total
       ],
     },
@@ -481,7 +508,7 @@ export default function LeftPanel1040({
       totalField: 'totalPayments', totalCurr: withholding1040,
       rows: [
         { line: '25a', label: 'Federal tax withheld (W-2)', sub: 'Form W-2 · Box 2', field: 'w2Withholding', curr: w2Withholding, kind: 'source' as const },
-        { line: '25b', label: 'Federal tax withheld (1099)', sub: '1099-DIV · Box 4', field: 'withholding', curr: DIV_WITHHOLDING, kind: 'source' as const },
+        { line: '25b', label: 'Federal tax withheld (1099)', sub: '1099-DIV / 1099-R · Box 4', field: 'withholding', curr: withholding1099, kind: 'source' as const },
       ],
     },
   ]
@@ -879,6 +906,9 @@ export default function LeftPanel1040({
                           <div className={styles.controlLabelGroup}>
                             <span className={styles.controlLabelText}>
                               {row.label}
+                              {isControlRowEdited(row.id) && (
+                                <span className={styles.controlEditedBadge}>Edited</span>
+                              )}
                               {clickable && (
                                 <svg className={styles.controlNavIcon} width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true">
                                   <path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
@@ -1045,7 +1075,7 @@ export default function LeftPanel1040({
               </div>
               <div className={styles.infoField}>
                 <span className={styles.infoLabel}>Your social security number</span>
-                <span className={styles.infoValue}>987-65-4321</span>
+                <span className={styles.infoValue}>{displaySsn}</span>
               </div>
             </div>
             <div className={styles.infoRow}>
@@ -1102,10 +1132,10 @@ export default function LeftPanel1040({
             </colgroup>
             <tbody>
               <Section title="Income" />
-              <Row field="wages"           line="1a" label="Total amount from Form(s) W-2, box 1"              kind="source" value={total1a} />
+              <Row field="wages"           line="1a" label="Total amount from Form(s) W-2, box 1"              kind="source" value={wages1040} />
               <Row                         line="1b" label="Household employee wages not on Form(s) W-2"      subdued />
               <Row                         line="1c" label="Tip income not reported on line 1a"                subdued />
-              <Row field="wagesTotal"      line="1z" label="Add lines 1a through 1h"                           kind="calc"   value={total1a} bold />
+              <Row field="wagesTotal"      line="1z" label="Add lines 1a through 1h"                           kind="calc"   value={wages1040} bold />
 
               <Row field="taxExemptInterest" line="2a" label="Tax-exempt interest"                             kind="source" value={180} />
               <Row field="taxableInterest"  line="2b" label="Taxable interest"                                 kind="source" value={taxableInterest1040} />
@@ -1113,6 +1143,9 @@ export default function LeftPanel1040({
               <Row field="ordinaryDivs"    line="3b" label="Ordinary dividends"                                kind="source" value={ordinaryDivs} />
               <Row field="iraDistrib"      line="4b" label="IRA distributions"                                 kind="source" value={taxablePension} />
               <Row field="capitalGain"     line="7"  label="Capital gain or (loss)"                            kind="source" value={capitalGain} />
+              {necOnReturn && (
+                <Row field="otherIncome"   line="8"  label="Other income from Schedule 1, line 10"            kind="source" value={otherIncome} />
+              )}
 
               <Divider />
               <Row field="totalIncome"     line="9"  label="Total income. Add lines 1z, 2b, 3b, 4b, 5b, 6b, 7, and 8" kind="calc" value={totalIncome} bold />
@@ -1133,7 +1166,7 @@ export default function LeftPanel1040({
 
               <Section title="Payments" />
               <Row field="w2Withholding"   line="25a" label="Federal income tax withheld from Form(s) W-2"                 kind="source" value={w2Withholding} />
-              <Row field="withholding"     line="25b" label="Federal income tax withheld from Form(s) 1099"               kind="source" value={DIV_WITHHOLDING} />
+              <Row field="withholding"     line="25b" label="Federal income tax withheld from Form(s) 1099"               kind="source" value={withholding1099} />
               <Row field="totalWithholding" line="25d" label="Add lines 25a through 25c"                                    kind="calc"   value={withholding1040} />
               <Row field="totalPayments"   line="33"  label="Total payments"                                               kind="calc"   value={withholding1040} bold />
 

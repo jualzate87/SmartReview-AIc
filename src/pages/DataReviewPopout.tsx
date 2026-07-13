@@ -24,7 +24,7 @@ import DetailFieldsNec, { NEC_PAYER_TABS } from './data-review/DetailFieldsNec'
 import PeelTab from './data-review/PeelTab'
 import PriorYear1040Fields from './data-review/PriorYear1040Fields'
 import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
-import { FROZEN_RETURN } from '../data/frozenReturn'
+import { computeLiveReturn } from '../data/liveReturn'
 import { PHASE1_FLAG_MESSAGES } from './data-review/phase1FlagMessages'
 import img1040PriorPage1 from '../assets/jessica-1040-2024-variant-1.png'
 import img1040PriorPage2 from '../assets/jessica-1040-2024-variant-2.png'
@@ -41,8 +41,11 @@ export default function DataReviewPopout() {
     activeSubTab, setActiveSubTab,
     selectedField, setSelectedField,
     wages, setWages,
+    amounts, updateAmounts,
     fieldValues, updateFieldValue,
     reviewedFields,
+    editedFields,
+    markEdited,
     activeDivPayer, setActiveDivPayer,
     activeIntPayer, setActiveIntPayer,
     markReviewed: handleMarkReviewed,
@@ -51,9 +54,8 @@ export default function DataReviewPopout() {
     toggleVerifiedDoc,
   } = useSyncedReviewState()
 
-  // W-2 Box 2 is $15,840 (Tech Circle); 1099-DIV Box 4 ($24,925) flows to line 25b.
-  const DIV_WITHHOLDING = FROZEN_RETURN.divWithholding
-  const totalWithholding = fieldValues.withholding.techCircle + DIV_WITHHOLDING
+  const liveTotals = computeLiveReturn(amounts)
+  const totalWithholding = liveTotals.totalWithholding
   const updateField = (key: keyof typeof fieldValues, value: number | { techCircle: number }) =>
     updateFieldValue(key, value)
 
@@ -197,18 +199,30 @@ export default function DataReviewPopout() {
                 activeSubTab={activeSubTab}
                 onSubTabChange={(tab) => setActiveSubTab(tab as W2Employer)}
                 wages={{ bingEquipment: 0, techCircle: wages.techCircle }}
-                onWageChange={(employer, value) => setWages({ ...wages, [employer]: value })}
+                onWageChange={(employer, value) => {
+                  setWages({ ...wages, [employer]: value })
+                  markEdited(`wages-${employer}`)
+                }}
                 fieldValues={{ ...fieldValues, withholding: fieldValues.withholding[activeSubTab] }}
                 onFieldValueChange={(key, value) => {
                   if (key === 'withholding' && typeof value === 'number') {
                     updateField('withholding', { techCircle: value })
+                    markEdited('withholding')
                   } else {
                     updateField(key as keyof typeof fieldValues, value as number)
+                    markEdited(String(key))
                   }
                 }}
+                onIdentityChange={(kind, value) => {
+                  if (kind === 'ssn') updateAmounts({ employeeSsn: value })
+                  else updateAmounts({ employerEin: value })
+                  markEdited(kind === 'ssn' ? 'ssn-techCircle' : 'ein-techCircle')
+                }}
+                identityValues={{ ssn: amounts.employeeSsn, ein: amounts.employerEin }}
                 onMarkReviewed={handleMarkReviewed}
                 onMarkReviewedBulk={handleMarkReviewedBulk}
                 reviewedFields={reviewedFields}
+                editedFields={editedFields}
                 verifiedDocs={verifiedDocs}
                 onVerifyDoc={toggleVerifiedDoc}
                 flaggedFields={{
@@ -225,11 +239,20 @@ export default function DataReviewPopout() {
                 selectedField={selectedField}
                 highlightMode={highlightMode}
                 onFieldSelect={setSelectedField}
-                fieldValues={{ ...fieldValues, withholding: totalWithholding }}
-                onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)}
+                fieldValues={{ ...fieldValues, withholding: totalWithholding, divWithholding: amounts.divWithholding }}
+                onFieldValueChange={(key, value) => {
+                  updateField(key as keyof typeof fieldValues, value)
+                  markEdited(String(key))
+                }}
+                onAmountChange={(patch, editedKey) => {
+                  updateAmounts(patch)
+                  if (editedKey) markEdited(editedKey)
+                }}
+                amounts={amounts}
                 onMarkReviewed={handleMarkReviewed}
                 onMarkReviewedBulk={handleMarkReviewedBulk}
                 reviewedFields={reviewedFields}
+                editedFields={editedFields}
                 verifiedDocs={verifiedDocs}
                 onVerifyDoc={toggleVerifiedDoc}
                 flaggedFields={{
@@ -247,10 +270,19 @@ export default function DataReviewPopout() {
                 highlightMode={highlightMode}
                 onFieldSelect={setSelectedField}
                 fieldValues={{ ...fieldValues, withholding: totalWithholding }}
-                onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)}
+                onFieldValueChange={(key, value) => {
+                  updateField(key as keyof typeof fieldValues, value)
+                  markEdited(String(key))
+                }}
+                onAmountChange={(patch, editedKey) => {
+                  updateAmounts(patch)
+                  if (editedKey) markEdited(editedKey)
+                }}
+                amounts={amounts}
                 onMarkReviewed={handleMarkReviewed}
                 onMarkReviewedBulk={handleMarkReviewedBulk}
                 reviewedFields={reviewedFields}
+                editedFields={editedFields}
                 verifiedDocs={verifiedDocs}
                 onVerifyDoc={toggleVerifiedDoc}
                 flaggedFields={{
@@ -263,9 +295,15 @@ export default function DataReviewPopout() {
                 selectedField={selectedField}
                 highlightMode={highlightMode}
                 onFieldSelect={setSelectedField}
+                amounts={amounts}
+                onAmountChange={(patch, editedKey) => {
+                  updateAmounts(patch)
+                  if (editedKey) markEdited(editedKey)
+                }}
                 onMarkReviewed={handleMarkReviewed}
                 onMarkReviewedBulk={handleMarkReviewedBulk}
                 reviewedFields={reviewedFields}
+                editedFields={editedFields}
                 verifiedDocs={verifiedDocs}
                 onVerifyDoc={toggleVerifiedDoc}
                 flaggedFields={{
@@ -276,10 +314,17 @@ export default function DataReviewPopout() {
             {activeTopTab === '1099-necs' && (
               <DetailFieldsNec
                 selectedField={selectedField}
+                highlightMode={highlightMode}
                 onFieldSelect={setSelectedField}
+                amounts={amounts}
+                onAmountChange={(patch, editedKey) => {
+                  updateAmounts(patch)
+                  if (editedKey) markEdited(editedKey)
+                }}
                 onMarkReviewed={handleMarkReviewed}
                 onMarkReviewedBulk={handleMarkReviewedBulk}
                 reviewedFields={reviewedFields}
+                editedFields={editedFields}
                 verifiedDocs={verifiedDocs}
                 onVerifyDoc={toggleVerifiedDoc}
               />
