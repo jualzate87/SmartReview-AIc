@@ -21,8 +21,6 @@ import ReviewTab from './data-review/ReviewTab'
 import DocumentPreview from './data-review/DocumentPreview'
 import W2FormPreview from './data-review/W2FormPreview'
 import Int1099FormPreview from './data-review/Int1099FormPreview'
-import SourceDocumentList, { getActiveDocId } from './data-review/SourceDocumentList'
-import type { SourceDocument } from '../data/sourceDocuments'
 import SourcePanelLoader from './data-review/SourcePanelLoader'
 import DetailFields, { W2_PAYER_TABS } from './data-review/DetailFields'
 import type { W2Employer } from './data-review/DetailFields'
@@ -734,19 +732,6 @@ export default function DataReviewPage() {
                 flagCounts={inImportPhase ? tabFlagCounts : undefined}
                 onTopTabChange={(tab) => {
                   setActiveTopTab(tab)
-                  setFromAgent(false)
-                  setSelectedField(null)
-                  setActiveIssueField(null)
-                }}
-              />
-
-              <SourceDocumentList
-                activeDocId={getActiveDocId(activeTopTab, activeSubTab, activeDivPayer, activeIntPayer)}
-                onSelectDoc={(doc: SourceDocument) => {
-                  setActiveTopTab(doc.tab)
-                  if (doc.tab === 'w2s' && doc.subTab) setActiveSubTab(doc.subTab as W2Employer)
-                  if (doc.tab === '1099-divs' && doc.subTab) setActiveDivPayer(doc.subTab as DivPayer)
-                  if (doc.tab === '1099-ints' && doc.subTab) setActiveIntPayer(doc.subTab as IntPayer)
                   setFromAgent(false)
                   setSelectedField(null)
                   setActiveIssueField(null)
