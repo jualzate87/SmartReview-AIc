@@ -678,6 +678,8 @@
   border: 1px solid #c3ced5;
   border-radius: 4px;
   margin: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .completionHeader {
