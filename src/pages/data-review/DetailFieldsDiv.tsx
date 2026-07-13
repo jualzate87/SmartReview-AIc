@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { CircleCheck, Comment } from '@design-systems/icons'
 import Tooltip from './Tooltip'
+import { CLIENT_ADDRESS } from '../../data/clientAddress'
 import styles from '../../styles/data-review/DetailFields.module.css'
 
 function CheckIcon() {
@@ -53,11 +54,7 @@ const PAYER_DATA: Record<DivPayer, { ein: string; name: string; street: string; 
 
 const RECIPIENT_DATA = {
   ssn: 'XXX-XX-4699',
-  name: 'Jessica Drake',
-  street: '333 Easy Street',
-  city: 'Austin',
-  state: 'TX',
-  zip: '78704',
+  ...CLIENT_ADDRESS,
 }
 
 // Form 1099-DIV boxes per payer — Jessica Drake TY 2025

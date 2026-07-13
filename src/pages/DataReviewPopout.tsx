@@ -12,7 +12,7 @@ import {
   navigationForDetailField,
 } from './data-review/phase1FieldSync'
 import DocumentPreview from './data-review/DocumentPreview'
-import Int1099FormPreview from './data-review/Int1099FormPreview'
+import SourceFormPreview, { usesSourceFormPreview } from './data-review/SourceFormPreview'
 import SourcePanelLoader from './data-review/SourcePanelLoader'
 import DetailFields, { W2_PAYER_TABS } from './data-review/DetailFields'
 import type { W2Employer } from './data-review/DetailFields'
@@ -30,14 +30,6 @@ import { PHASE1_FLAG_MESSAGES } from './data-review/phase1FlagMessages'
 import w2TechCircle from '../assets/w2-tech-circle.jpg'
 import img1040PriorPage1 from '../assets/jessica-1040-2024-variant-1.png'
 import img1040PriorPage2 from '../assets/jessica-1040-2024-variant-2.png'
-import img1099Int from '../assets/jessica-1099-int.jpg'
-import img1099R from '../assets/jessica-1099-r.png'
-import img1099Nec from '../assets/jessica-1099-nec.png'
-import img1099DivToken from '../assets/jessica-1099-div-token.png'
-import img1099DivNorthmark from '../assets/jessica-1099-div-northmark.png'
-import img1099DivBeacon from '../assets/jessica-1099-div-beacon.png'
-import img1099IntHarborline from '../assets/jessica-1099-int-harborline.png'
-import img1099IntCascade from '../assets/jessica-1099-int-cascade.png'
 import dragStyles from '../styles/data-review/DragHandle.module.css'
 
 // ProtoC: the pop-out is the same view as the main window's right panel, not a
@@ -129,20 +121,8 @@ export default function DataReviewPopout() {
   }, [previewWidth])
 
   const imageSrc =
-    activeTopTab === '1099-ints' && activeIntPayer === 'unwaverIngFinancial' ? undefined :
+    usesSourceFormPreview(activeTopTab) ? undefined :
     activeTopTab === 'prior-1040' ? [img1040PriorPage1, img1040PriorPage2] :
-    activeTopTab === '1099-ints'  ? (
-      activeIntPayer === 'harborlineCredit' ? img1099IntHarborline :
-      activeIntPayer === 'cascadeFederal'   ? img1099IntCascade :
-      img1099Int
-    ) :
-    activeTopTab === '1099-divs'  ? (
-      activeDivPayer === 'northmarkIndex' ? img1099DivNorthmark :
-      activeDivPayer === 'beaconDividend' ? img1099DivBeacon :
-      img1099DivToken
-    ) :
-    activeTopTab === '1099-rs'    ? img1099R :
-    activeTopTab === '1099-necs'  ? img1099Nec :
     w2TechCircle
 
   const imageAlt =
@@ -209,8 +189,14 @@ export default function DataReviewPopout() {
           <div style={{ width: `${previewWidth}%`, flexShrink: 0, overflow: 'hidden', borderRight: '1px solid #d5dee3' }}>
             <DocumentPreview
               customContent={
-                activeTopTab === '1099-ints' && activeIntPayer === 'unwaverIngFinancial'
-                  ? <Int1099FormPreview />
+                usesSourceFormPreview(activeTopTab)
+                  ? (
+                    <SourceFormPreview
+                      activeTopTab={activeTopTab}
+                      activeIntPayer={activeIntPayer}
+                      activeDivPayer={activeDivPayer}
+                    />
+                  )
                   : undefined
               }
               imageSrc={imageSrc}

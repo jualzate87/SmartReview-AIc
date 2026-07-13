@@ -10,6 +10,7 @@ import TaxControlDocPopover, {
 import Tooltip from './Tooltip'
 import { TAX_CONTROL_ROWS, getControlSystemValues } from '../../data/sourceDocuments'
 import { FROZEN_RETURN } from '../../data/frozenReturn'
+import { CLIENT_ADDRESS, formatClientCityStateZip } from '../../data/clientAddress'
 import styles from '../../styles/data-review/LeftPanel1040.module.css'
 
 
@@ -996,11 +997,11 @@ export default function LeftPanel1040({
             <div className={styles.infoRow}>
               <div className={styles.infoField} style={{ flex: 3 }}>
                 <span className={styles.infoLabel}>Home address</span>
-                <span className={styles.infoValue}>333 Easy Street</span>
+                <span className={styles.infoValue}>{CLIENT_ADDRESS.street}</span>
               </div>
               <div className={styles.infoField}>
                 <span className={styles.infoLabel}>City, State, ZIP</span>
-                <span className={styles.infoValue}>Austin, TX  78704</span>
+                <span className={styles.infoValue}>{formatClientCityStateZip()}</span>
               </div>
             </div>
           </div>

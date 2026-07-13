@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { CircleCheck, Comment } from '@design-systems/icons'
 import Tooltip from './Tooltip'
+import { CLIENT_ADDRESS } from '../../data/clientAddress'
 import styles from '../../styles/data-review/DetailFields.module.css'
 
 function CheckIcon() {
@@ -30,11 +31,7 @@ const PAYER_DATA = {
 
 const RECIPIENT_DATA = {
   ssn: 'XXX-XX-4321',
-  name: 'Jessica Drake',
-  street: '333 Easy Street',
-  city: 'Austin',
-  state: 'TX',
-  zip: '78704',
+  ...CLIENT_ADDRESS,
 }
 
 const FORM_DATA = {
