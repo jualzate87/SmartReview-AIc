@@ -58,7 +58,7 @@ export const FIELD_META: Record<string, FieldMeta> = {
   },
   qualifiedDivs: {
     label: 'Qualified dividends',
-    prior: 219850,
+    prior: 142300,
     current: FROZEN_RETURN.qualifiedDivs,
     sources: [
       { label: 'Token Financial (1099-DIV)', value: TOKEN_QUALIFIED_DIVS_RETURN },
@@ -68,7 +68,7 @@ export const FIELD_META: Record<string, FieldMeta> = {
   },
   ordinaryDivs: {
     label: 'Ordinary dividends',
-    prior: 126750,
+    prior: 219850,
     current: FROZEN_RETURN.ordinaryDivs,
     sources: [
       { label: 'Token Financial (1099-DIV)', value: 331250 },
@@ -86,7 +86,7 @@ export const FIELD_META: Record<string, FieldMeta> = {
   },
   capitalGain: {
     label: 'Capital gain / (loss)',
-    prior: 219850,
+    prior: 126750,
     current: 0,
   },
   otherIncome: {

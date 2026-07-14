@@ -109,9 +109,9 @@ const TOTAL_TAX_RISE_ISSUE = {
   dotColor: 'red' as const,
   title: 'Total tax up 52% year over year',
   category: 'IRS compliance',
-  summary: `Total tax on line 24 rose from $98,890 in 2024 to ${fmtUsd(FROZEN_RETURN.totalTax)} in 2025 even though AGI rose 19%. The income mix changed: capital gains fell to $0 while ordinary dividends rose 177%.`,
+  summary: `Total tax on line 24 rose from $98,890 in 2024 to ${fmtUsd(FROZEN_RETURN.totalTax)} in 2025 even though AGI rose 19%. The income mix changed: capital gains fell to $0 while ordinary dividends rose 59%.`,
   taxImpact: 'Higher total tax with a shifted income mix means more income is taxed at ordinary rates. Review Schedule D and Form 8949 for missing capital gain entries.',
-  rootCause: `Capital gains fell from $219,850 to $0 on line 7. Ordinary dividends rose from $126,750 to ${fmtUsd(FROZEN_RETURN.ordinaryDivs)} on line 3b, replacing lower-rate gain income.`,
+  rootCause: `Capital gains fell from $126,750 to $0 on line 7. Ordinary dividends rose from $219,850 to ${fmtUsd(FROZEN_RETURN.ordinaryDivs)} on line 3b, replacing lower-rate gain income.`,
   tableRows: [
     { label: 'Total tax (line 24)', cols: [fmtUsd(FROZEN_RETURN.totalTax), '$98,890', '+52%'], badge: 'red' as const, total: true },
     { label: 'AGI (line 11)',       cols: [fmtUsd(FROZEN_RETURN.totalIncome), '$485,820', '+19%'], badge: 'orange' as const, total: false },
@@ -186,14 +186,14 @@ function buildEstTaxPenaltyIssue(live: LiveReturnTotals) {
 const ORDINARY_DIV_SURGE_ISSUE = {
   issueKey: 'ordinaryDivSurge',
   dotColor: 'orange' as const,
-  title: 'Ordinary dividends rose 177%',
+  title: 'Ordinary dividends rose 59%',
   category: 'IRS compliance',
-  summary: `Ordinary dividends on line 3b jumped from $126,750 in 2024 to ${fmtUsd(FROZEN_RETURN.ordinaryDivs)} this year. This is the largest single income line change on the return.`,
+  summary: `Ordinary dividends on line 3b jumped from $219,850 in 2024 to ${fmtUsd(FROZEN_RETURN.ordinaryDivs)} this year. This is the largest single income line change on the return.`,
   taxImpact: 'Ordinary dividends are taxed at regular rates up to 37%. The increase adds significant tax at Jessica\'s marginal rate.',
   rootCause: '1099-DIV Box 1a totals $350,400 across all payers. Capital gains on line 7 fell to $0, suggesting gains may have been distributed as dividends instead.',
   tableRows: [
-    { label: 'Ordinary dividends (line 3b)', cols: [fmtUsd(FROZEN_RETURN.ordinaryDivs), '$126,750', '+177%'], badge: 'red' as const, total: false },
-    { label: 'Capital gain (line 7)',        cols: ['$0', '$219,850', '-100%'],     badge: 'red' as const, total: true },
+    { label: 'Ordinary dividends (line 3b)', cols: [fmtUsd(FROZEN_RETURN.ordinaryDivs), '$219,850', '+59%'], badge: 'red' as const, total: false },
+    { label: 'Capital gain (line 7)',        cols: ['$0', '$126,750', '-100%'],     badge: 'red' as const, total: true },
   ],
   tableHeaders: ['Field', '2025', '2024', 'YoY'],
   suggestedActions: [

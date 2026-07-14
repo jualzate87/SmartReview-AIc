@@ -53,7 +53,7 @@ export const SOURCE_AMOUNTS = {
   divWithholding: 26_363,
   rWithholding: 30_000,
   /** Prior-year ordinary dividends — surge dismissed when current line falls near this. */
-  priorOrdinaryDivs: 126_750,
+  priorOrdinaryDivs: 219_850,
 } as const
 
 /** Single-filer NIIT AGI threshold (Form 8960). */
