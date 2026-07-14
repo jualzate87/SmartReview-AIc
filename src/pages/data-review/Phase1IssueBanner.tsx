@@ -5,7 +5,7 @@ interface Phase1IssueBannerProps {
   onVerify: () => void
 }
 
-/** Yellow issue banner with Verify pill — ProtoA parity for Phase 1 import flags. */
+/** Yellow issue banner — jumps to the next unresolved Phase 1 flag. */
 export default function Phase1IssueBanner({ unresolvedCount, onVerify }: Phase1IssueBannerProps) {
   if (unresolvedCount === 0) return null
 
@@ -20,7 +20,7 @@ export default function Phase1IssueBanner({ unresolvedCount, onVerify }: Phase1I
         {unresolvedCount} {unresolvedCount === 1 ? 'field needs' : 'fields need'} your attention
       </span>
       <button type="button" className={styles.issueBannerPill} onClick={onVerify}>
-        Verify
+        Review next issue
       </button>
     </div>
   )

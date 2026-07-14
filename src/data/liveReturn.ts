@@ -41,8 +41,15 @@ export type LiveAmounts = {
   employeeSsn: string
   /** W-2 Box b — blank at session start (planted error 2) */
   employerEin: string
-  /** Aggregate Box 12 amounts placeholder (0 until entered) */
+  /** Aggregate Box 12 amounts placeholder (0 until entered) — sum of box12Rows amounts */
   box12: number
+  /** W-2 Box 12 a–d codes + amounts — persists across Save / refresh */
+  box12Rows: {
+    a: { code: string; amount: number }
+    b: { code: string; amount: number }
+    c: { code: string; amount: number }
+    d: { code: string; amount: number }
+  }
 }
 
 /** Build Spec INITIAL seeds — verification anchors at session start. */
@@ -66,6 +73,13 @@ export const SEED_AMOUNTS: LiveAmounts = {
   employeeSsn: '',
   employerEin: '',
   box12: 0,
+  // Codes seeded from Tech Circle W-2 PDF; amounts blank (planted import gap) until Save
+  box12Rows: {
+    a: { code: 'C', amount: 0 },
+    b: { code: 'AA', amount: 0 },
+    c: { code: 'DD', amount: 0 },
+    d: { code: '', amount: 0 },
+  },
 }
 
 /** Source-true NEC Box 1 on the Summit PDF — not seeded onto the return/detail panel. */

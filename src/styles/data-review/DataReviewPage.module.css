@@ -369,27 +369,32 @@
   white-space: nowrap;
 }
 
-/* ProtoC — Phase 1: Hide 1040 button pinned at top of the left panel */
+/* ProtoC — Phase 1: Hide Summary button — blue / clearly visible */
 .form1040HideBtn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   margin: 10px 0 0 12px;
   padding: 6px 12px;
-  background: #f0f4f7;
-  border: 1px solid #C3CED5;
+  background: var(--color-action-primary, #0077c5);
+  border: 1px solid var(--color-action-primary, #0077c5);
   border-radius: 8px;
-  color: #393a3d;
+  color: #ffffff;
   font-family: var(--font-family-component, sans-serif);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 120ms ease, border-color 120ms ease;
+  transition: background 120ms ease, border-color 120ms ease, filter-brightness 120ms ease;
   width: fit-content;
 }
 
 .form1040HideBtn:hover {
-  background: #e4ebf0;
-  border-color: #93a3ab;
+  background: var(--color-action-hover, #0265ac);
+  border-color: var(--color-action-hover, #0265ac);
+  filter: brightness(1.05);
+}
+
+.startImportsBtn {
+  margin-right: 8px;
 }

@@ -1,4 +1,4 @@
-import { PopOut, PopIn } from '@design-systems/icons'
+import { CircleCheck, PopOut, PopIn } from '@design-systems/icons'
 import sparklesIcon from '../../assets/icons/sparkles.svg'
 import styles from '../../styles/data-review/ReviewTab.module.css'
 
@@ -22,15 +22,50 @@ interface ReviewTabProps {
   isPopout?: boolean
   /** ProtoC: per-tab count of unresolved import flags — drives dynamic tab badges */
   flagCounts?: Record<string, number>
+  /** Initial flag totals — used to show green check when a tab’s flags are cleared */
+  initialFlagCounts?: Record<string, number>
+  /** Docs the preparer marked verified — also qualifies for green check when count is 0 */
+  verifiedDocs?: Set<string>
+  /** Map top-tab key → verified doc key(s) for green-check qualification */
+  tabVerifiedKeys?: Record<string, string[]>
 }
 
-export default function ReviewTab({ activeTopTab = 'w2s', onTopTabChange, onTabChange, onPopOut, isPopout = false, flagCounts }: ReviewTabProps) {
+export default function ReviewTab({
+  activeTopTab = 'w2s',
+  onTopTabChange,
+  onTabChange,
+  onPopOut,
+  isPopout = false,
+  flagCounts,
+  initialFlagCounts,
+  verifiedDocs,
+  tabVerifiedKeys,
+}: ReviewTabProps) {
 
   const handleTabClick = (key: string, label: string) => {
     if (key === 'w2s' || key === '1099-divs' || key === '1099-ints' || key === '1099-rs' || key === '1099-necs' || key === 'prior-1040') {
       onTopTabChange?.(key as TopTab)
     }
     onTabChange?.(label)
+  }
+
+  const renderBadge = (tabKey: string) => {
+    if (!flagCounts) return null
+    const count = flagCounts[tabKey] ?? 0
+    if (count > 0) {
+      return <span className={styles.tabFlagBadge}>{count}</span>
+    }
+    const initial = initialFlagCounts?.[tabKey] ?? 0
+    const verifiedKeys = tabVerifiedKeys?.[tabKey] ?? []
+    const isVerified = verifiedKeys.some(k => verifiedDocs?.has(k))
+    if (initial > 0 || isVerified) {
+      return (
+        <span className={styles.tabClearedCheck} aria-label="All flags cleared">
+          <CircleCheck size="small" />
+        </span>
+      )
+    }
+    return null
   }
 
   return (
@@ -47,9 +82,7 @@ export default function ReviewTab({ activeTopTab = 'w2s', onTopTabChange, onTabC
               <span className={`${styles.tabLabel} ${tab.key === activeTopTab ? styles.tabLabelActive : styles.tabLabelInactive}`}>
                 {tab.label}
               </span>
-              {flagCounts && flagCounts[tab.key] > 0 && (
-                <span className={styles.tabFlagBadge}>{flagCounts[tab.key]}</span>
-              )}
+              {renderBadge(tab.key)}
             </div>
             <div className={styles.tabUnderline}>
               <div className={tab.key === activeTopTab ? styles.tabUnderlineActive : styles.tabUnderlineInactive} />

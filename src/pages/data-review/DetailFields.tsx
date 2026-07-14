@@ -22,6 +22,9 @@ export const W2_PAYER_TABS: { key: W2Employer; label: string }[] = [
 
 type FieldValuesKey = 'withholding' | 'box12' | 'taxableInterest' | 'qualifiedDivs'
 
+export type Box12Sub = 'a' | 'b' | 'c' | 'd'
+export type Box12RowsState = Record<Box12Sub, { code: string; amount: number }>
+
 interface DetailFieldsProps {
   formTitle: string
   selectedField?: string | null
@@ -33,6 +36,9 @@ interface DetailFieldsProps {
   onWageChange?: (employer: string, value: number) => void
   fieldValues?: { withholding: number; box12: number; taxableInterest: number; qualifiedDivs: number }
   onFieldValueChange?: (key: FieldValuesKey, value: number) => void
+  /** Synced Box 12 a–d codes + amounts (persists across Save / refresh) */
+  box12Rows?: Box12RowsState
+  onBox12RowChange?: (sub: Box12Sub, patch: { code?: string; amount?: number }) => void
   /** Synced SSN / EIN (blank at session start — planted import errors) */
   identityValues?: { ssn: string; ein: string }
   onIdentityChange?: (kind: 'ssn' | 'ein', value: string) => void
@@ -93,6 +99,8 @@ export default function DetailFields({
   onWageChange,
   fieldValues,
   onFieldValueChange,
+  box12Rows,
+  onBox12RowChange,
   identityValues,
   onIdentityChange,
   onMarkReviewed,
@@ -530,32 +538,34 @@ export default function DetailFields({
             </div>
             {(employer.box12Entries as { sub: string; code: string; amount: string }[]).map((entry, i) => {
               const isLast = i === (employer.box12Entries as unknown[]).length - 1
+              const sub = entry.sub as Box12Sub
               const codeKey = `box12${entry.sub}-code-${activeSubTab}`
               const amtKey = `box12${entry.sub}-amt-${activeSubTab}`
               const rowKey = `box12${entry.sub}-${activeSubTab}`
               const isFlagged = !!(flaggedFields['box12'] && !box12Resolved)
               const isEditingAmt = editingField === amtKey
               const isRowReviewed = reviewedFields?.has(rowKey)
-              const codeVal = staticValues[codeKey] ?? entry.code
-              // Seed box12=0 must stay blank (codes shown, amounts missing) — only show once > 0
-              const amtVal = staticValues[amtKey] ?? (entry.sub === 'a' && fieldValues?.box12 ? fieldValues.box12.toLocaleString() : entry.amount)
+              const syncedRow = box12Rows?.[sub]
+              const codeVal = syncedRow?.code ?? staticValues[codeKey] ?? entry.code
+              // Seed amount 0 must stay blank (codes shown, amounts missing) — only show once > 0
+              const syncedAmt = syncedRow?.amount ?? 0
+              const amtVal = syncedAmt > 0
+                ? syncedAmt.toLocaleString()
+                : (staticValues[amtKey] ?? (entry.sub === 'a' && fieldValues?.box12 ? fieldValues.box12.toLocaleString() : entry.amount))
               const BOX12_CODES = ['', 'A','B','C','D','E','F','G','H','J','K','L','M','N','P','Q','R','S','T','V','W','AA','BB','DD','EE','FF','GG','HH']
               const commitAmt = () => {
-                if (entry.sub === 'a') {
-                  const num = parseFloat(draftValue.replace(/,/g, '')) || 0
+                const num = parseFloat(draftValue.replace(/,/g, '')) || 0
+                if (onBox12RowChange) {
+                  onBox12RowChange(sub, { amount: num, code: codeVal })
+                } else if (entry.sub === 'a') {
                   onFieldValueChange?.('box12', num)
-                  setStaticValues(prev => ({ ...prev, [amtKey]: draftValue }))
-                  setEditingField(null)
-                  setLocalEdited(prev => new Set(prev).add('box12'))
-                  setSavedField('box12')
-                  setTimeout(() => setSavedField(null), 3500)
-                } else {
-                  setStaticValues(prev => ({ ...prev, [amtKey]: draftValue }))
-                  setEditingField(null)
-                  setLocalEdited(prev => new Set(prev).add(amtKey))
-                  setSavedField(amtKey)
-                  setTimeout(() => setSavedField(null), 3500)
                 }
+                setStaticValues(prev => ({ ...prev, [amtKey]: draftValue }))
+                setEditingField(null)
+                setLocalEdited(prev => new Set(prev).add(amtKey))
+                if (entry.sub === 'a') setLocalEdited(prev => new Set(prev).add('box12'))
+                setSavedField(amtKey)
+                setTimeout(() => setSavedField(null), 3500)
                 markBox12RowReviewed(rowKey)
               }
               return (
@@ -573,7 +583,12 @@ export default function DetailFields({
                     <select
                       value={codeVal}
                       onChange={e => {
-                        setStaticValues(prev => ({ ...prev, [codeKey]: e.target.value }))
+                        const nextCode = e.target.value
+                        if (onBox12RowChange) {
+                          onBox12RowChange(sub, { code: nextCode })
+                        } else {
+                          setStaticValues(prev => ({ ...prev, [codeKey]: nextCode }))
+                        }
                         setLocalEdited(prev => new Set(prev).add(codeKey))
                       }}
                       style={{ width: 64, fontSize: 13, height: 32, padding: '0 4px', boxSizing: 'border-box', border: `1px solid ${isFlagged ? '#ff6a00' : '#c3ced5'}`, borderRadius: 4, background: isFlagged ? 'rgba(255,187,0,0.25)' : '#fff', color: codeVal ? '#21262a' : '#859299', fontFamily: 'var(--font-family-component)', outline: 'none', flexShrink: 0, cursor: 'pointer', appearance: 'auto' }}
@@ -610,7 +625,7 @@ export default function DetailFields({
                         {renderCommentBtn(rowKey, `(12${entry.sub}) Box 12 code`, employer.name)}
                       </div>
                     )}
-                    {savedField === amtKey && <span className={styles.recalcBadge}>{entry.sub === 'a' ? '1040 updated' : 'Saved'}</span>}
+                    {savedField === amtKey && <span className={styles.recalcBadge}>Saved</span>}
                     {isEdited(amtKey) && savedField !== amtKey && <span className={styles.editedBadge}>Edited</span>}
                   </div>
                   {isLast && <ValidationNote fieldKey="box12" />}

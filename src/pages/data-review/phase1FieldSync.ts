@@ -235,6 +235,47 @@ export function getTabFlagCounts(reviewedFields: Map<string, unknown>): Record<s
   }
 }
 
+/** Initial unresolved counts (empty reviewed map) — distinguishes “never had flags” from “cleared”. */
+export function getTabInitialFlagCounts(): Record<string, number> {
+  return getTabFlagCounts(new Map())
+}
+
+/** Summary 1040 field → related Phase 1 import flags (attention cue on Summary rows). */
+const SUMMARY_FIELD_PHASE1_FLAGS: Record<string, Phase1FlagKey[]> = {
+  wages: ['wages-techCircle', 'ssn-techCircle', 'ein-techCircle', 'box12'],
+  taxableInterest: ['taxableInterest'],
+  ordinaryDivs: ['ordinaryDivs-northmark'],
+  qualifiedDivs: ['divCollectibles', 'divNonDiv'],
+  withholding: ['fedTaxWithheld'],
+  iraDistrib: ['grossDistrib-meridian'],
+}
+
+/** True when any Phase 1 flag tied to this Summary row is still unresolved. */
+export function summaryFieldHasUnresolvedFlags(
+  field: string,
+  reviewedFields: Map<string, unknown>,
+): boolean {
+  const keys = SUMMARY_FIELD_PHASE1_FLAGS[field]
+  if (!keys?.length) return false
+  return keys.some(k => !isPhase1FlagResolved(k, reviewedFields))
+}
+
+export function getInitialW2PayerFlagCount(employer: W2Employer): number {
+  return W2_PAYER_FLAG_KEYS[employer].length
+}
+
+export function getInitialDivPayerFlagCount(payer: DivPayer): number {
+  return DIV_PAYER_FLAG_KEYS[payer].length
+}
+
+export function getInitialIntPayerFlagCount(payer: IntPayer): number {
+  return INT_PAYER_FLAG_KEYS[payer].length
+}
+
+export function getInitialRPayerFlagCount(): number {
+  return R_PAYER_FLAG_KEYS.meridian.length
+}
+
 export function countPhase1FlagsForDivPayer(
   payer: DivPayer,
   reviewedFields: Map<string, unknown>,

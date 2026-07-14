@@ -917,6 +917,63 @@
 }
 .summaryCurrValClickable:hover { background: #e0ecf8; }
 
+/* Info icon — always-visible affordance for source / breakdown flyouts */
+.summaryInfoBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-left: 2px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-action-standard, #0077c5);
+  cursor: pointer;
+}
+.summaryInfoBtn:hover,
+.summaryInfoBtnActive {
+  background: #e0ecf8;
+  color: #0265ac;
+}
+
+/* End-of-row check + attention flag (independent of import mark-reviewed) */
+.summaryRowEndActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  width: 48px;
+  flex-shrink: 0;
+}
+.summaryAttentionFlag {
+  display: inline-flex;
+  align-items: center;
+  color: #c9500f;
+}
+.summaryRowCheckVisible {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #859299;
+  cursor: pointer;
+}
+.summaryRowCheckVisible:hover {
+  background: #e0ecf8;
+  color: #0265ac;
+}
+.summaryRowCheckVisibleActive {
+  color: var(--color-action-success, #00856d);
+}
+
 /* Action buttons — absolutely positioned at right edge, slide in on hover */
 .summaryRowActions {
   position: absolute;

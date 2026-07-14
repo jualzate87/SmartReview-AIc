@@ -175,3 +175,12 @@
   font-weight: 700;
   line-height: 1;
 }
+
+/* ProtoC — green check when a tab’s import flags are cleared */
+.tabClearedCheck {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  color: var(--color-action-success, #00856d);
+}

@@ -81,3 +81,14 @@
   background: #c9500f;
   color: #ffffff;
 }
+
+.clearedCheck {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  color: var(--color-action-success, #00856d);
+}
+
+.clearedCheckActive {
+  color: #ffffff;
+}

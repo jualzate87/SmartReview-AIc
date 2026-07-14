@@ -8,6 +8,11 @@ import {
   countPhase1FlagsForIntPayer,
   countPhase1FlagsForW2Payer,
   getTabFlagCounts,
+  getTabInitialFlagCounts,
+  getInitialW2PayerFlagCount,
+  getInitialDivPayerFlagCount,
+  getInitialIntPayerFlagCount,
+  getInitialRPayerFlagCount,
   getNextVerifyItem,
   navigationForDetailField,
 } from './data-review/phase1FieldSync'
@@ -84,6 +89,7 @@ export default function DataReviewPopout() {
   }, [reviewedFields, selectedField, applyVerifyNavigation])
 
   const tabFlagCounts = getTabFlagCounts(reviewedFields)
+  const tabInitialFlagCounts = getTabInitialFlagCounts()
   const divPayerFieldCounts: Record<DivPayer, number> = Object.fromEntries(
     DIV_PAYER_TABS.map(({ key: p }) => [p, countPhase1FlagsForDivPayer(p, reviewedFields)])
   ) as Record<DivPayer, number>
@@ -134,6 +140,15 @@ export default function DataReviewPopout() {
         isPopout
         activeTopTab={activeTopTab}
         flagCounts={tabFlagCounts}
+        initialFlagCounts={tabInitialFlagCounts}
+        verifiedDocs={verifiedDocs}
+        tabVerifiedKeys={{
+          w2s: ['techCircle'],
+          '1099-divs': ['tokenFinancial', 'northmarkIndex', 'beaconDividend'],
+          '1099-ints': ['unwaverIngFinancial', 'harborlineCredit', 'cascadeFederal'],
+          '1099-rs': ['1099-r'],
+          '1099-necs': ['1099-nec'],
+        }}
         onTopTabChange={(tab) => { setActiveTopTab(tab); setSelectedField(null) }}
       />
 
@@ -144,35 +159,63 @@ export default function DataReviewPopout() {
       {/* Peel tabs — payer switcher for multi-payer doc types */}
       {activeTopTab === '1099-divs' && (
         <PeelTab
-          tabs={DIV_PAYER_TABS.map(t => ({ ...t, badge: divPayerFieldCounts[t.key] }))}
+          tabs={DIV_PAYER_TABS.map(t => ({
+            ...t,
+            badge: divPayerFieldCounts[t.key],
+            showClearedCheck:
+              divPayerFieldCounts[t.key] === 0 &&
+              (getInitialDivPayerFlagCount(t.key) > 0 || verifiedDocs.has(t.key)),
+          }))}
           activeKey={activeDivPayer}
           onChange={key => setActiveDivPayer(key as DivPayer)}
         />
       )}
       {activeTopTab === '1099-ints' && (
         <PeelTab
-          tabs={INT_PAYER_TABS.map(t => ({ ...t, badge: intPayerFieldCounts[t.key] }))}
+          tabs={INT_PAYER_TABS.map(t => ({
+            ...t,
+            badge: intPayerFieldCounts[t.key],
+            showClearedCheck:
+              intPayerFieldCounts[t.key] === 0 &&
+              (getInitialIntPayerFlagCount(t.key) > 0 || verifiedDocs.has(t.key)),
+          }))}
           activeKey={activeIntPayer}
           onChange={key => setActiveIntPayer(key as IntPayer)}
         />
       )}
       {activeTopTab === 'w2s' && (
         <PeelTab
-          tabs={W2_PAYER_TABS.map(t => ({ ...t, badge: w2PayerFieldCounts[t.key] }))}
+          tabs={W2_PAYER_TABS.map(t => ({
+            ...t,
+            badge: w2PayerFieldCounts[t.key],
+            showClearedCheck:
+              w2PayerFieldCounts[t.key] === 0 &&
+              (getInitialW2PayerFlagCount(t.key) > 0 || verifiedDocs.has(t.key)),
+          }))}
           activeKey={activeSubTab}
           onChange={key => setActiveSubTab(key as W2Employer)}
         />
       )}
       {activeTopTab === '1099-rs' && (
         <PeelTab
-          tabs={R_PAYER_TABS.map(t => ({ ...t, badge: tabFlagCounts['1099-rs'] }))}
+          tabs={R_PAYER_TABS.map(t => ({
+            ...t,
+            badge: tabFlagCounts['1099-rs'],
+            showClearedCheck:
+              tabFlagCounts['1099-rs'] === 0 &&
+              (getInitialRPayerFlagCount() > 0 || verifiedDocs.has('1099-r')),
+          }))}
           activeKey="meridian"
           onChange={() => {}}
         />
       )}
       {activeTopTab === '1099-necs' && (
         <PeelTab
-          tabs={NEC_PAYER_TABS.map(t => ({ ...t, badge: 0 }))}
+          tabs={NEC_PAYER_TABS.map(t => ({
+            ...t,
+            badge: 0,
+            showClearedCheck: verifiedDocs.has('1099-nec'),
+          }))}
           activeKey="summit"
           onChange={() => {}}
         />
@@ -218,6 +261,16 @@ export default function DataReviewPopout() {
                     updateField(key as keyof typeof fieldValues, value as number)
                     markEdited(String(key))
                   }
+                }}
+                box12Rows={amounts.box12Rows}
+                onBox12RowChange={(sub, patch) => {
+                  updateAmounts({
+                    box12Rows: {
+                      ...amounts.box12Rows,
+                      [sub]: { ...amounts.box12Rows[sub], ...patch },
+                    },
+                  })
+                  markEdited(`box12${sub}-${activeSubTab}`)
                 }}
                 onIdentityChange={(kind, value) => {
                   if (kind === 'ssn') updateAmounts({ employeeSsn: value })

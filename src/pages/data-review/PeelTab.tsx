@@ -1,7 +1,14 @@
+import { CircleCheck } from '@design-systems/icons'
 import styles from '../../styles/data-review/PeelTab.module.css'
 
 interface PeelTabProps {
-  tabs: { key: string; label: string; badge?: number }[]
+  tabs: {
+    key: string
+    label: string
+    badge?: number
+    /** True when this payer originally had flags (or is verified) and count is 0 */
+    showClearedCheck?: boolean
+  }[]
   activeKey: string
   onChange: (key: string) => void
 }
@@ -11,6 +18,7 @@ export default function PeelTab({ tabs, activeKey, onChange }: PeelTabProps) {
     <div className={styles.container}>
       {tabs.map(tab => {
         const isActive = tab.key === activeKey
+        const count = tab.badge ?? 0
         return (
           <button
             key={tab.key}
@@ -18,9 +26,17 @@ export default function PeelTab({ tabs, activeKey, onChange }: PeelTabProps) {
             onClick={() => onChange(tab.key)}
           >
             {tab.label}
-            {tab.badge !== undefined && tab.badge > 0 && (
+            {count > 0 && (
               <span className={`${styles.badge} ${isActive ? styles.badgeActive : styles.badgeInactive}`}>
-                {tab.badge}
+                {count}
+              </span>
+            )}
+            {count === 0 && tab.showClearedCheck && (
+              <span
+                className={`${styles.clearedCheck} ${isActive ? styles.clearedCheckActive : ''}`}
+                aria-label="All flags cleared"
+              >
+                <CircleCheck size="small" />
               </span>
             )}
           </button>

@@ -28,22 +28,21 @@ import WelcomePane from './data-review/WelcomePane'
 import Phase1Banner from './data-review/Phase1Banner'
 import Phase1IssueBanner from './data-review/Phase1IssueBanner'
 import Phase2Banner from './data-review/Phase2Banner'
-import TaxControlUnlockModal, {
-  dismissTaxControlModalForSession,
-  readTaxControlModalDismissed,
-  resetTaxControlModalDismiss,
-} from './data-review/TaxControlUnlockModal'
 import {
   PHASE1_FLAG_KEYS,
   countPhase1Remaining,
   countPhase1FlagsForDivPayer,
   countPhase1FlagsForIntPayer,
   countPhase1FlagsForW2Payer,
-  detailTo1040Field,
   field1040ToDetail,
   get1040HighlightField,
   getNextVerifyItem,
   getTabFlagCounts,
+  getTabInitialFlagCounts,
+  getInitialW2PayerFlagCount,
+  getInitialDivPayerFlagCount,
+  getInitialIntPayerFlagCount,
+  getInitialRPayerFlagCount,
   isPhase1FlagResolved,
   navigationForDetailField,
 } from './data-review/phase1FieldSync'
@@ -86,6 +85,8 @@ export default function DataReviewPage() {
     markReviewedBulk: handleMarkReviewedBulk,
     verifiedDocs,
     toggleVerifiedDoc,
+    summaryCheckedFields,
+    toggleSummaryChecked,
   } = useSyncedReviewState()
   const liveTotals = computeLiveReturn(amounts)
   const total1a = liveTotals.wages
@@ -96,14 +97,16 @@ export default function DataReviewPage() {
   const [leftWidth, setLeftWidth] = useState(50)
   // Agent panel width in px when open (default 588px, user-resizable)
   const [agentPanelWidth, setAgentPanelWidth] = useState(588)
-  // Right panel width in px (default 700px, user-resizable)
-  const [rightPanelWidth, setRightPanelWidth] = useState(920)
+  // Right panel width in px (default ~65% viewport once imports start)
+  const [rightPanelWidth, setRightPanelWidth] = useState(() =>
+    typeof window !== 'undefined' ? Math.round(window.innerWidth * 0.65) : 920,
+  )
   // Top/bottom section height ratio in right panel (0-100, where value = preview percentage)
   const [previewHeight, setPreviewHeight] = useState(40)
   // Whether right panel is popped out
   const [poppedOut, setPoppedOut] = useState(false)
-  // Whether the right document panel is visible (toggle with Panel button)
-  const [rightPanelVisible, setRightPanelVisible] = useState(true)
+  // Whether the right document panel is visible — hidden until "Start reviewing imports"
+  const [rightPanelVisible, setRightPanelVisible] = useState(false)
   // Whether the right panel is animating out (slide-out before display:none)
   const [rightPanelExiting, setRightPanelExiting] = useState(false)
   // Agent panel view state: idle → loading → report → closing → idle
@@ -117,8 +120,6 @@ export default function DataReviewPage() {
   // Which agent subview to restore when going back to agent insights
   // 'overview' = report overview, 'yoyDetail' = YoY detail pane open
   const [agentSubView, setAgentSubView] = useState<'overview' | 'yoyDetail'>('overview')
-  // Set of 1040 field names manually checked off by the preparer (independent of AI review)
-  const [checkedFields, setCheckedFields] = useState<Set<string>>(new Set())
   // Notes / comments
   const [notes, setNotes] = useState<Note[]>([])
   const [notesOpen, setNotesOpen] = useState(false)
@@ -130,13 +131,9 @@ export default function DataReviewPage() {
   // 'diagnostics' → Phase 2: AI Diagnostics (agent panel primary)
   type ReviewPhase = 'welcome' | 'import' | 'diagnostics'
   const [phase, setPhase] = useState<ReviewPhase>('welcome')
-  // Phase 1: whether the 1040 panel is expanded (minimized by default in import phase)
-  const [show1040, setShow1040] = useState(false)
-  // Tax control unlock modal — page-level so it fires even when 1040 is collapsed
-  const [showTaxControlModal, setShowTaxControlModal] = useState(false)
-  const [taxModalDismissed, setTaxModalDismissed] = useState(readTaxControlModalDismissed)
-  const [taxControlViewRequest, setTaxControlViewRequest] = useState(0)
-  const prevPhase1Complete = useRef(false)
+  // Phase 1: Summary visible by default; sources hidden until Start reviewing imports
+  const [show1040, setShow1040] = useState(true)
+  const [importsStarted, setImportsStarted] = useState(false)
 
   // The import/OCR flags owned by Phase 1. Each key matches the reviewed-field key
   // emitted by the DetailFields "Edit+Save" / "Mark as correct" controls.
@@ -147,6 +144,7 @@ export default function DataReviewPage() {
   const phase1Complete = phase1Remaining === 0
   // Per-document unresolved counts for dynamic tab badges
   const tabFlagCounts = getTabFlagCounts(reviewedFields)
+  const tabInitialFlagCounts = getTabInitialFlagCounts()
   // PeelTab per-payer badges — unresolved Phase 1 import flags only (mirrors tabFlagCounts)
   const divPayerFieldCounts: Record<DivPayer, number> = Object.fromEntries(
     DIV_PAYER_TABS.map(({ key: p }) => [p, countPhase1FlagsForDivPayer(p, reviewedFields)])
@@ -169,14 +167,34 @@ export default function DataReviewPage() {
   const phase2Complete = phase2Progress.complete
   // ---------------------------------------------------------------------------
 
-  const handleToggleChecked = (fieldName: string) => {
-    setCheckedFields(prev => {
-      const next = new Set(prev)
-      if (next.has(fieldName)) next.delete(fieldName)
-      else next.add(fieldName)
-      return next
-    })
-  }
+  const bodyRef = useRef<HTMLDivElement>(null)
+  const rightRef = useRef<HTMLDivElement>(null)
+
+  const ensureSourcePanelVisible = useCallback(() => {
+    if (!rightPanelVisible) {
+      setRightPanelVisible(true)
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        setRightPanelAnimating(true)
+        setTimeout(() => setRightPanelAnimating(false), 350)
+      }))
+    }
+  }, [rightPanelVisible])
+
+  const startReviewingImports = useCallback(() => {
+    setImportsStarted(true)
+    setShow1040(true)
+    const body = bodyRef.current
+    const width = body
+      ? Math.round(body.getBoundingClientRect().width * 0.65)
+      : Math.round(window.innerWidth * 0.65)
+    setRightPanelWidth(Math.max(480, width))
+    setRightPanelVisible(true)
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      setRightPanelAnimating(true)
+      setTimeout(() => setRightPanelAnimating(false), 350)
+    }))
+  }, [])
+
   // Field that the agent flagged as an issue — drives orange highlight mode
   // Set when navigating to source docs from any issue detail pane
   const [activeIssueField, setActiveIssueField] = useState<string | null>(null)
@@ -206,26 +224,27 @@ export default function DataReviewPage() {
       if (nav.intPayer) setActiveIntPayer(nav.intPayer)
     }
     setSelectedField(field)
-    if (detailTo1040Field(field)) setShow1040(true)
-  }, [setActiveTopTab, setActiveDivPayer, setActiveIntPayer, setSelectedField])
+    if (!importsStarted) startReviewingImports()
+    else ensureSourcePanelVisible()
+  }, [
+    setActiveTopTab, setActiveDivPayer, setActiveIntPayer, setSelectedField,
+    importsStarted, startReviewingImports, ensureSourcePanelVisible,
+  ])
 
   const handleVerifyNext = useCallback(() => {
+    if (!importsStarted) startReviewingImports()
     const next = getNextVerifyItem(reviewedFields, selectedField)
     if (!next) return
     applyVerifyNavigation(next.field)
-  }, [reviewedFields, selectedField, applyVerifyNavigation])
+  }, [importsStarted, startReviewingImports, reviewedFields, selectedField, applyVerifyNavigation])
 
   const handleFieldSelect = useCallback((field: string | null) => {
     setSelectedField(field)
-    if (phase === 'import' && field && detailTo1040Field(field)) {
-      setShow1040(true)
+    if (phase === 'import' && field) {
+      if (!importsStarted) startReviewingImports()
+      else ensureSourcePanelVisible()
     }
-  }, [phase, setSelectedField])
-
-  const handleOpenTaxControl = useCallback(() => {
-    setShow1040(true)
-    setTaxControlViewRequest(n => n + 1)
-  }, [])
+  }, [phase, setSelectedField, importsStarted, startReviewingImports, ensureSourcePanelVisible])
 
   const handleNavigateToSourceDoc = useCallback((docId: string) => {
     const nav = navigationForSourceDoc(docId)
@@ -235,22 +254,22 @@ export default function DataReviewPage() {
     if (nav.divPayer) setActiveDivPayer(nav.divPayer)
     if (nav.intPayer) setActiveIntPayer(nav.intPayer)
 
-    if (agentView !== 'idle') {
+    if (!importsStarted) {
+      startReviewingImports()
+    } else if (agentView !== 'idle') {
       setFromAgent(true)
       setAgentSubView('overview')
       setAgentView('closing')
       setYoyExpanded(false)
       setTimeout(() => setAgentView('idle'), 350)
-    } else if (!rightPanelVisible) {
-      setRightPanelVisible(true)
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        setRightPanelAnimating(true)
-        setTimeout(() => setRightPanelAnimating(false), 350)
-      }))
+    } else {
+      ensureSourcePanelVisible()
     }
   }, [
     agentView,
-    rightPanelVisible,
+    importsStarted,
+    startReviewingImports,
+    ensureSourcePanelVisible,
     setActiveTopTab,
     setActiveSubTab,
     setActiveDivPayer,
@@ -265,36 +284,7 @@ export default function DataReviewPage() {
   }) => {
     handleNavigateToSourceDoc(source.docId)
     setSelectedField(source.detailFieldId)
-    if (detailTo1040Field(source.detailFieldId)) setShow1040(true)
   }, [handleNavigateToSourceDoc, setSelectedField])
-
-  const dismissTaxControlModal = useCallback(() => {
-    setShowTaxControlModal(false)
-    setTaxModalDismissed(true)
-    dismissTaxControlModalForSession()
-  }, [])
-
-  // Show tax control unlock modal the instant Phase 1 flags hit zero (false → true).
-  useEffect(() => {
-    if (phase !== 'import') {
-      setShowTaxControlModal(false)
-      return
-    }
-
-    if (!phase1Complete) {
-      prevPhase1Complete.current = false
-      setTaxModalDismissed(false)
-      setShowTaxControlModal(false)
-      resetTaxControlModalDismiss()
-      return
-    }
-
-    const justCompleted = !prevPhase1Complete.current
-    prevPhase1Complete.current = true
-    if (justCompleted && !taxModalDismissed) {
-      setShowTaxControlModal(true)
-    }
-  }, [phase, phase1Complete, taxModalDismissed])
 
   const handle1040FieldClick = useCallback((field1040: string | null) => {
     if (!field1040) {
@@ -355,7 +345,7 @@ export default function DataReviewPage() {
   const handleReturnToImport = () => {
     if (agentView !== 'idle') handleAgentClose()
     setPhase('import')
-    setShow1040(false)
+    setShow1040(true)
     setSelectedField(null)
   }
 
@@ -398,9 +388,6 @@ export default function DataReviewPage() {
   const handleEditNote = (id: string, text: string) => {
     setNotes(prev => prev.map(n => n.id === id ? { ...n, text, at: formatNoteAt() } : n))
   }
-
-  const bodyRef = useRef<HTMLDivElement>(null)
-  const rightRef = useRef<HTMLDivElement>(null)
 
   // Horizontal drag (left/right resize)
   const handleHorizontalDrag = useCallback((e: React.MouseEvent) => {
@@ -524,7 +511,12 @@ export default function DataReviewPage() {
         <WelcomePane
           clientName="Jessica Drake"
           flagCount={phase1Total}
-          onBegin={() => setPhase('import')}
+          onBegin={() => {
+            setPhase('import')
+            setShow1040(true)
+            setRightPanelVisible(false)
+            setImportsStarted(false)
+          }}
         />
       </div>
     )
@@ -545,6 +537,17 @@ export default function DataReviewPage() {
           <span className={styles.headerTitle}>Data Review - Form 1040</span>
         </div>
         <div className={styles.headerRight}>
+
+          {inImportPhase && !importsStarted && (
+            <Button
+              priority="primary"
+              size="medium"
+              className={styles.startImportsBtn}
+              onClick={startReviewingImports}
+            >
+              Start reviewing imports
+            </Button>
+          )}
 
           <button
             className={`${styles.intuitIntelBtn} ${notesOpen ? styles.intuitIntelBtnActive : ''}`}
@@ -637,22 +640,22 @@ export default function DataReviewPage() {
               aria-label="Show 1040"
             >
               <ChevronRight size="small" className={styles.form1040HandleIcon} />
-              <span className={styles.form1040HandleLabel}>Show 1040</span>
+              <span className={styles.form1040HandleLabel}>Show Summary</span>
             </button>
           </div>
         )}
         <div
           className={styles.leftPanel}
           style={{
-            flex: (inImportPhase && !show1040) ? '0 0 0px' : 1,
+            flex: (inImportPhase && !show1040) ? '0 0 0px' : (inImportPhase && importsStarted && rightPanelVisible) ? '0 0 35%' : 1,
             width: (inImportPhase && !show1040) ? 0 : undefined,
             opacity: (inImportPhase && !show1040) ? 0 : 1,
             minWidth: 0,
           }}
         >
           {inImportPhase && (
-            <button className={styles.form1040HideBtn} onClick={() => setShow1040(false)} aria-label="Hide 1040">
-              <ChevronLeft size="small" /> <span>Hide 1040</span>
+            <button className={styles.form1040HideBtn} onClick={() => setShow1040(false)} aria-label="Hide Summary">
+              <ChevronLeft size="small" /> <span>Hide Summary</span>
             </button>
           )}
           <LeftPanel1040
@@ -663,14 +666,12 @@ export default function DataReviewPage() {
             wages={wages}
             yoyExpanded={yoyExpanded || agentSubView === 'yoyDetail' || activeTopTab === 'prior-1040' || phase === 'diagnostics'}
             reviewedFields={reviewedFields}
-            checkedFields={checkedFields}
-            onToggleChecked={handleToggleChecked}
+            checkedFields={summaryCheckedFields}
+            onToggleChecked={toggleSummaryChecked}
             issueField={issueField}
             liveTotals={liveTotals}
             liveAmounts={amounts}
             editedFields={editedFields}
-            allFlagsCleared={phase1Complete}
-            taxControlViewRequest={taxControlViewRequest}
             onAddFieldNote={(text, context) => handleAddNote(text, context)}
             onNavigateToSourceDoc={handleNavigateToSourceDoc}
             onNavigateSource={handleNavigateSource}
@@ -702,18 +703,15 @@ export default function DataReviewPage() {
                 if (lc.includes('tech circle')) setActiveSubTab('techCircle')
               }
 
-              if (agentView !== 'idle') {
+              if (!importsStarted) {
+                startReviewingImports()
+              } else if (agentView !== 'idle') {
                 // Agent is open — close it preserving the field selection
                 setFromAgent(true)
                 setAgentSubView('overview')
                 handleAgentClose(true)
-              } else if (!rightPanelVisible) {
-                // Agent idle, panel hidden — slide it in
-                setRightPanelVisible(true)
-                requestAnimationFrame(() => requestAnimationFrame(() => {
-                  setRightPanelAnimating(true)
-                  setTimeout(() => setRightPanelAnimating(false), 350)
-                }))
+              } else {
+                ensureSourcePanelVisible()
               }
             }}
           />
@@ -739,7 +737,11 @@ export default function DataReviewPage() {
                 width: (agentView === 'loading' || agentView === 'report' || agentView === 'closing' || (!rightPanelVisible && !rightPanelExiting))
                   ? 0
                   : (inImportPhase && !show1040) ? undefined : rightPanelWidth,
-                flex: (inImportPhase && !show1040 && rightPanelVisible) ? '1 1 0%' : '0 0 auto',
+                flex: (inImportPhase && !show1040 && rightPanelVisible)
+                  ? '1 1 0%'
+                  : (inImportPhase && importsStarted && rightPanelVisible && show1040)
+                    ? '0 0 65%'
+                    : '0 0 auto',
                 overflow: 'hidden',
                 opacity: (agentView === 'loading' || agentView === 'report' || agentView === 'closing' || (!rightPanelVisible && !rightPanelExiting)) ? 0 : 1,
               }}
@@ -788,6 +790,15 @@ export default function DataReviewPage() {
               <ReviewTab
                 activeTopTab={activeTopTab}
                 flagCounts={inImportPhase ? tabFlagCounts : undefined}
+                initialFlagCounts={inImportPhase ? tabInitialFlagCounts : undefined}
+                verifiedDocs={verifiedDocs}
+                tabVerifiedKeys={{
+                  w2s: ['techCircle'],
+                  '1099-divs': ['tokenFinancial', 'northmarkIndex', 'beaconDividend'],
+                  '1099-ints': ['unwaverIngFinancial', 'harborlineCredit', 'cascadeFederal'],
+                  '1099-rs': ['1099-r'],
+                  '1099-necs': ['1099-nec'],
+                }}
                 onTopTabChange={(tab) => {
                   setActiveTopTab(tab)
                   setFromAgent(false)
@@ -799,35 +810,63 @@ export default function DataReviewPage() {
               {/* Peel tabs — payer switcher for multi-payer doc types */}
               {activeTopTab === '1099-divs' && (
                 <PeelTab
-                  tabs={DIV_PAYER_TABS.map(t => ({ ...t, badge: divPayerFieldCounts[t.key] }))}
+                  tabs={DIV_PAYER_TABS.map(t => ({
+                    ...t,
+                    badge: divPayerFieldCounts[t.key],
+                    showClearedCheck:
+                      divPayerFieldCounts[t.key] === 0 &&
+                      (getInitialDivPayerFlagCount(t.key) > 0 || verifiedDocs.has(t.key)),
+                  }))}
                   activeKey={activeDivPayer}
                   onChange={key => setActiveDivPayer(key as DivPayer)}
                 />
               )}
               {activeTopTab === '1099-ints' && (
                 <PeelTab
-                  tabs={INT_PAYER_TABS.map(t => ({ ...t, badge: intPayerFieldCounts[t.key] }))}
+                  tabs={INT_PAYER_TABS.map(t => ({
+                    ...t,
+                    badge: intPayerFieldCounts[t.key],
+                    showClearedCheck:
+                      intPayerFieldCounts[t.key] === 0 &&
+                      (getInitialIntPayerFlagCount(t.key) > 0 || verifiedDocs.has(t.key)),
+                  }))}
                   activeKey={activeIntPayer}
                   onChange={key => setActiveIntPayer(key as IntPayer)}
                 />
               )}
               {activeTopTab === 'w2s' && (
                 <PeelTab
-                  tabs={W2_PAYER_TABS.map(t => ({ ...t, badge: w2PayerFieldCounts[t.key] }))}
+                  tabs={W2_PAYER_TABS.map(t => ({
+                    ...t,
+                    badge: w2PayerFieldCounts[t.key],
+                    showClearedCheck:
+                      w2PayerFieldCounts[t.key] === 0 &&
+                      (getInitialW2PayerFlagCount(t.key) > 0 || verifiedDocs.has(t.key)),
+                  }))}
                   activeKey={activeSubTab}
                   onChange={key => setActiveSubTab(key as W2Employer)}
                 />
               )}
               {activeTopTab === '1099-rs' && (
                 <PeelTab
-                  tabs={R_PAYER_TABS.map(t => ({ ...t, badge: tabFlagCounts['1099-rs'] }))}
+                  tabs={R_PAYER_TABS.map(t => ({
+                    ...t,
+                    badge: tabFlagCounts['1099-rs'],
+                    showClearedCheck:
+                      tabFlagCounts['1099-rs'] === 0 &&
+                      (getInitialRPayerFlagCount() > 0 || verifiedDocs.has('1099-r')),
+                  }))}
                   activeKey="meridian"
                   onChange={() => {}}
                 />
               )}
               {activeTopTab === '1099-necs' && (
                 <PeelTab
-                  tabs={NEC_PAYER_TABS.map(t => ({ ...t, badge: 0 }))}
+                  tabs={NEC_PAYER_TABS.map(t => ({
+                    ...t,
+                    badge: 0,
+                    showClearedCheck: verifiedDocs.has('1099-nec'),
+                  }))}
                   activeKey="summit"
                   onChange={() => {}}
                 />
@@ -888,6 +927,16 @@ export default function DataReviewPage() {
                       updateField(key as keyof typeof fieldValues, value as number)
                       markEdited(String(key))
                     }
+                  }}
+                  box12Rows={amounts.box12Rows}
+                  onBox12RowChange={(sub, patch) => {
+                    updateAmounts({
+                      box12Rows: {
+                        ...amounts.box12Rows,
+                        [sub]: { ...amounts.box12Rows[sub], ...patch },
+                      },
+                    })
+                    markEdited(`box12${sub}-${activeSubTab}`)
                   }}
                   onIdentityChange={(kind, value) => {
                     if (kind === 'ssn') updateAmounts({ employeeSsn: value })
@@ -1103,15 +1152,6 @@ export default function DataReviewPage() {
           onEdit={handleEditNote}
           onClose={handleCloseNotes}
           closing={notesClosing}
-        />
-      )}
-
-      {/* Tax control unlock — page-level so it appears even when 1040 is collapsed */}
-      {inImportPhase && (
-        <TaxControlUnlockModal
-          open={showTaxControlModal}
-          onClose={dismissTaxControlModal}
-          onCheckTotals={handleOpenTaxControl}
         />
       )}
     </div>

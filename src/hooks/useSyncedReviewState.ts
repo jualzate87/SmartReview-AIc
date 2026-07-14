@@ -32,13 +32,15 @@ interface SyncedState {
   /** Field keys the preparer has edited+saved this session (audit trail) */
   editedFieldsList: string[]
   verifiedDocsList: string[]
+  /** Summary-row checks (preparer) — independent of import mark-reviewed */
+  summaryCheckedFieldsList: string[]
   activeDivPayer: DivPayer
   activeIntPayer: IntPayer
 }
 
 const CHANNEL_NAME = 'protoc-data-review-sync'
 // Bump whenever DEFAULT_STATE shape or seed values change so stale sessions reset.
-const STATE_VERSION = 11
+const STATE_VERSION = 12
 const STORAGE_KEY = 'protoc-data-review-state-v' + STATE_VERSION
 const PREPARER_NAME = 'Sara Chen'
 
@@ -54,6 +56,7 @@ const DEFAULT_STATE: SyncedState = {
   reviewedFieldsList: [],
   editedFieldsList: [],
   verifiedDocsList: [],
+  summaryCheckedFieldsList: [],
   activeDivPayer: 'tokenFinancial',
   activeIntPayer: 'unwaverIngFinancial',
 }
@@ -66,8 +69,16 @@ function loadInitialState(): SyncedState {
       return {
         ...DEFAULT_STATE,
         ...parsed,
-        amounts: { ...SEED_AMOUNTS, ...(parsed.amounts ?? {}) },
+        amounts: {
+          ...SEED_AMOUNTS,
+          ...(parsed.amounts ?? {}),
+          box12Rows: {
+            ...SEED_AMOUNTS.box12Rows,
+            ...(parsed.amounts?.box12Rows ?? {}),
+          },
+        },
         editedFieldsList: parsed.editedFieldsList ?? [],
+        summaryCheckedFieldsList: parsed.summaryCheckedFieldsList ?? [],
       }
     }
   } catch {
@@ -156,6 +167,7 @@ export function useSyncedReviewState() {
   }
 
   const verifiedDocs = new Set(state.verifiedDocsList)
+  const summaryCheckedFields = new Set(state.summaryCheckedFieldsList)
 
   const toggleVerifiedDoc = (docKey: string) => {
     const next = new Set(stateRef.current.verifiedDocsList)
@@ -164,8 +176,29 @@ export function useSyncedReviewState() {
     update({ verifiedDocsList: Array.from(next) })
   }
 
+  const toggleSummaryChecked = (fieldName: string) => {
+    const next = new Set(stateRef.current.summaryCheckedFieldsList)
+    if (next.has(fieldName)) next.delete(fieldName)
+    else next.add(fieldName)
+    update({ summaryCheckedFieldsList: Array.from(next) })
+  }
+
   const updateAmounts = (patch: Partial<LiveAmounts>) => {
-    update({ amounts: { ...stateRef.current.amounts, ...patch } })
+    const prev = stateRef.current.amounts
+    const nextAmounts = { ...prev, ...patch }
+    // Keep aggregate box12 in sync when rows are patched (deep-merge per letter)
+    if (patch.box12Rows) {
+      const rows = {
+        a: { ...prev.box12Rows.a, ...patch.box12Rows.a },
+        b: { ...prev.box12Rows.b, ...patch.box12Rows.b },
+        c: { ...prev.box12Rows.c, ...patch.box12Rows.c },
+        d: { ...prev.box12Rows.d, ...patch.box12Rows.d },
+      }
+      nextAmounts.box12Rows = rows
+      nextAmounts.box12 =
+        rows.a.amount + rows.b.amount + rows.c.amount + rows.d.amount
+    }
+    update({ amounts: nextAmounts })
   }
 
   /** Convenience — update W-2 wages object shape used by DetailFields. */
@@ -187,14 +220,20 @@ export function useSyncedReviewState() {
       return
     }
     if (typeof value !== 'number') return
-    if (key === 'box12') updateAmounts({ box12: value })
-    else if (key === 'taxableInterest') updateAmounts({ interestUnwavering: value })
+    if (key === 'box12') {
+      // Legacy single-amount shim — write into row a; aggregate recomputed in updateAmounts
+      updateAmounts({
+        box12Rows: {
+          ...a.box12Rows,
+          a: { ...a.box12Rows.a, amount: value },
+        },
+      })
+    } else if (key === 'taxableInterest') updateAmounts({ interestUnwavering: value })
     else if (key === 'qualifiedDivs') updateAmounts({ qualifiedDivsToken: value })
     else if (key === 'withholding') {
       // flat number — treat as W-2 Box 2
       updateAmounts({ w2Withholding: value })
     }
-    void a
   }
 
   const amounts = state.amounts
@@ -231,5 +270,7 @@ export function useSyncedReviewState() {
     markReviewedBulk,
     verifiedDocs,
     toggleVerifiedDoc,
+    summaryCheckedFields,
+    toggleSummaryChecked,
   }
 }
