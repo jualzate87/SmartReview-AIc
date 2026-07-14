@@ -10,6 +10,7 @@ import intuitAssistIcon from '../assets/icons/intuit-assist.svg'
 import LeftPanel1040 from './data-review/LeftPanel1040'
 import ReviewTab from './data-review/ReviewTab'
 import DocumentPreview from './data-review/DocumentPreview'
+import Int1099FormPreview from './data-review/Int1099FormPreview'
 import { getSourceDocPreview } from './data-review/sourceDocImages'
 import DetailFields, { W2_PAYER_TABS } from './data-review/DetailFields'
 import type { W2Employer } from './data-review/DetailFields'
@@ -850,6 +851,11 @@ export default function DataReviewPage() {
                 <DocumentPreview
                   imageSrc={sourceDocPreview.imageSrc}
                   alt={sourceDocPreview.alt}
+                  customContent={
+                    sourceDocPreview.useInt1099UnwaveringHtml
+                      ? <Int1099FormPreview />
+                      : undefined
+                  }
                 />
               </div>
 

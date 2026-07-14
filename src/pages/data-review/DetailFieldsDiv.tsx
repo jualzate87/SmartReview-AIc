@@ -415,6 +415,8 @@ export default function DetailFieldsDiv({
                 `payerEin-${p}`, `payerName-${p}`, `payerStreet-${p}`, `payerCityStateZip-${p}`, `payerPhone-${p}`,
                 `recipientSsn-${p}`, `recipientName-${p}`, `recipientStreet-${p}`, `recipientCityStateZip-${p}`,
                 `ordinaryDivs-${p}`,
+                // Phase 1 flag key (reviewedKeyOverride) — not the same as ordinaryDivs-northmarkIndex
+                ...(p === 'northmarkIndex' ? ['ordinaryDivs-northmark'] : []),
                 ...(isPrimary ? ['qualifiedDivs', 'divCollectibles', 'divNonDiv', 'fedTaxWithheld'] : [`qualifiedDivs-${p}`, `divCollectibles-${p}`, `divNonDiv-${p}`, `fedTaxWithheld-${p}`]),
                 `totalCapGain-${p}`, `unrecap1250-${p}`, `sec1202-${p}`, `sec199A-${p}`, `investExpenses-${p}`,
                 `foreignTaxPaid-${p}`, `foreignCountry-${p}`, `cashLiquidation-${p}`, `nonCashLiquidation-${p}`,

@@ -303,7 +303,10 @@ export default function DetailFields1099R({
               const docFieldKeys = [
                 'r-ein', 'r-payerName', 'r-street', 'r-cityStateZip',
                 'r-ssn', 'r-recipientName', 'r-recipientStreet', 'r-recipientCityStateZip',
-                'r-grossDistrib', 'r-taxableAmt', 'r-capitalGain', 'r-fedTaxWithheld',
+                'r-grossDistrib',
+                // Phase 1 flag resolveKey for Box 1 — required to clear orange
+                'grossDistrib-meridian',
+                'r-taxableAmt', 'r-capitalGain', 'r-fedTaxWithheld',
                 'r-employeeContrib', 'r-distCode',
               ]
               onMarkReviewedBulk?.(docFieldKeys)
