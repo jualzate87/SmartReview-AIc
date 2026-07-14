@@ -4,7 +4,7 @@ import { CircleCheck, CircleInfo, Comment } from '@design-systems/icons'
 import FieldPopover, { FIELD_META } from './FieldPopover'
 import TaxControlDocPopover, {
   getDocValuesForRow,
-  setDocValueForRow,
+  setDocValuesForRow,
   sumControlDocInputs,
 } from './TaxControlDocPopover'
 import TaxControlBreakdownPopover from './TaxControlBreakdownPopover'
@@ -916,7 +916,7 @@ export default function LeftPanel1040({
                   </svg>
                 </div>
                 <div className={styles.controlInstructionBody}>
-                  <strong>Enter the totals from your source documents in the column on the right.</strong> The system total is shown for comparison. If both match, your extraction is confirmed correct. Small rounding differences (±$1) are normal.
+                  <strong>Enter amounts from your source documents, then Save.</strong> Totals appear in the Source docs column for comparison with System. If both match, your extraction is confirmed correct. Small rounding differences (±$1) are normal.
                 </div>
               </div>
 
@@ -958,7 +958,7 @@ export default function LeftPanel1040({
                       const matchResult = getMatch(row.id)
                       const diff = hasInput && systemVal !== null ? enteredTotal! - systemVal : null
                       const clickable = !!row.sourceTab
-                      const docCountLabel = `${row.docs.length} doc${row.docs.length === 1 ? '' : 's'}`
+                      const needsEntry = hasSourceDocs && !hasInput
 
                       return (
                         <div
@@ -1028,8 +1028,10 @@ export default function LeftPanel1040({
 
                           {hasSourceDocs ? (
                             <button
+                              type="button"
                               className={[
                                 styles.controlMultiBtn,
+                                needsEntry ? styles.controlMultiBtnNeedsEntry : '',
                                 hasInput && matchResult === true  ? styles.controlInputOk   : '',
                                 hasInput && matchResult === false ? styles.controlInputFail : '',
                               ].filter(Boolean).join(' ')}
@@ -1037,10 +1039,10 @@ export default function LeftPanel1040({
                                 e.stopPropagation()
                                 openControlPopover(row.id, e.currentTarget)
                               }}
-                              aria-label={`Enter ${row.label} from ${docCountLabel}`}
+                              aria-label={needsEntry ? `Enter ${row.label} from sources` : `Edit ${row.label} from sources`}
                               aria-expanded={controlPopoverRow === row.id}
                             >
-                              {hasInput ? `$${fmt(enteredTotal!)}` : docCountLabel}
+                              {hasInput ? `$${fmt(enteredTotal!)}` : 'Enter from sources'}
                             </button>
                           ) : (
                             <input
@@ -1095,7 +1097,7 @@ export default function LeftPanel1040({
             rowLabel={cfg.label}
             docs={cfg.docs}
             values={getDocValuesForRow(cfg.id, cfg.docs, controlInputs)}
-            onChange={(docId, value) => setControlInputs(prev => setDocValueForRow(cfg.id, docId, value, prev))}
+            onSave={(draft) => setControlInputs(prev => setDocValuesForRow(cfg.id, draft, prev))}
             onNavigateToDoc={onNavigateToSourceDoc}
             anchorRect={controlPopoverRect}
             onClose={() => { setControlPopoverRow(null); setControlPopoverRect(null) }}

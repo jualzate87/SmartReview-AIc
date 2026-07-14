@@ -1,5 +1,7 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Close } from '@design-systems/icons'
+import { Button } from '@ids-ts/button'
+import '@ids-ts/button/dist/main.css'
 import type { TaxControlDocEntry } from '../../data/sourceDocuments'
 import { parseCurrency } from '../../data/sourceDocuments'
 import styles from '../../styles/data-review/TaxControlDocPopover.module.css'
@@ -7,9 +9,10 @@ import styles from '../../styles/data-review/TaxControlDocPopover.module.css'
 interface TaxControlDocPopoverProps {
   rowLabel: string
   docs: TaxControlDocEntry[]
-  /** Current per-doc input values keyed by docId */
+  /** Saved per-doc values keyed by docId (committed on last Save) */
   values: Record<string, string>
-  onChange: (docId: string, value: string) => void
+  /** Commit draft values to the System / Source docs column */
+  onSave: (values: Record<string, string>) => void
   /** Navigate to the source document for a specific doc field */
   onNavigateToDoc?: (docId: string) => void
   anchorRect: DOMRect
@@ -24,12 +27,13 @@ export default function TaxControlDocPopover({
   rowLabel,
   docs,
   values,
-  onChange,
+  onSave,
   onNavigateToDoc,
   anchorRect,
   onClose,
 }: TaxControlDocPopoverProps) {
   const ref = useRef<HTMLDivElement>(null)
+  const [draft, setDraft] = useState<Record<string, string>>(() => ({ ...values }))
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -45,11 +49,18 @@ export default function TaxControlDocPopover({
     return () => document.removeEventListener('keydown', handler)
   }, [onClose])
 
-  const docSums = docs.map(d => parseCurrency(values[d.docId] ?? ''))
+  const docSums = docs.map(d => parseCurrency(draft[d.docId] ?? ''))
   const enteredSum = docSums.every(v => v !== null)
     ? docSums.reduce((a, b) => (a ?? 0) + (b ?? 0), 0)!
     : null
-  const hasAnyInput = docs.some(d => values[d.docId]?.trim())
+  const hasAnyInput = docs.some(d => draft[d.docId]?.trim())
+  const canSave = docs.every(d => parseCurrency(draft[d.docId] ?? '') !== null)
+
+  const handleSave = () => {
+    if (!canSave) return
+    onSave(draft)
+    onClose()
+  }
 
   const top = anchorRect.top + anchorRect.height / 2
   const left = anchorRect.right + 8
@@ -64,12 +75,12 @@ export default function TaxControlDocPopover({
     >
       <div className={styles.header}>
         <span className={styles.title}>{rowLabel}</span>
-        <button className={styles.closeBtn} onClick={onClose} aria-label="Close">
+        <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Close">
           <Close size="small" />
         </button>
       </div>
       <p className={styles.subtitle}>
-        Enter the value from each source document. The total is the sum of all fields below.
+        Enter amounts from each source document, then Save to update the Source docs column.
       </p>
 
       <div className={styles.docFields}>
@@ -88,8 +99,8 @@ export default function TaxControlDocPopover({
               type="text"
               inputMode="numeric"
               placeholder={doc.hint !== undefined ? `$${fmt(doc.hint)}` : '$0'}
-              value={values[doc.docId] ?? ''}
-              onChange={e => onChange(doc.docId, e.target.value)}
+              value={draft[doc.docId] ?? ''}
+              onChange={e => setDraft(prev => ({ ...prev, [doc.docId]: e.target.value }))}
               onFocus={() => onNavigateToDoc?.(doc.docId)}
               aria-label={`${doc.label} amount`}
             />
@@ -103,6 +114,28 @@ export default function TaxControlDocPopover({
           <span className={styles.sumValue}>${fmt(enteredSum)}</span>
         </div>
       )}
+
+      <div className={styles.actions}>
+        <Button
+          type="button"
+          size="small"
+          priority="secondary"
+          purpose="passive"
+          onClick={onClose}
+        >
+          Cancel
+        </Button>
+        <Button
+          type="button"
+          size="small"
+          priority="primary"
+          purpose="standard"
+          disabled={!canSave}
+          onClick={handleSave}
+        >
+          Save
+        </Button>
+      </div>
     </div>
   )
 }
@@ -139,4 +172,17 @@ export function setDocValueForRow(
   prev: Record<string, string>,
 ): Record<string, string> {
   return { ...prev, [`${rowId}::${docId}`]: value }
+}
+
+/** Merge all per-doc values for a row into the flat controlInputs map. */
+export function setDocValuesForRow(
+  rowId: string,
+  values: Record<string, string>,
+  prev: Record<string, string>,
+): Record<string, string> {
+  const next = { ...prev }
+  for (const [docId, value] of Object.entries(values)) {
+    next[`${rowId}::${docId}`] = value
+  }
+  return next
 }

@@ -1292,22 +1292,30 @@
 
 /* Multi-doc popover trigger button */
 .controlMultiBtn {
-  width: 96px;
-  margin-left: 60px;
+  width: 120px;
+  margin-left: 36px;
   padding: 5px 8px;
-  border: 1.5px solid #0077c5;
+  border: 1.5px solid var(--color-border-accent, #0077c5);
   border-radius: 5px;
   font-family: var(--font-family-component);
-  font-size: 13px;
+  font-size: var(--font-size-component-x-small, 12px);
   text-align: right;
-  color: #0077c5;
-  background: #f0f8ff;
+  color: var(--color-text-accent, #0077c5);
+  background: var(--color-container-background-accent, #f0f8ff);
   cursor: pointer;
   flex-shrink: 0;
   transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .controlMultiBtn:hover {
   background: #dceef9;
+}
+.controlMultiBtnNeedsEntry {
+  text-align: center;
+  font-weight: var(--font-weight-component-semibold, 500);
+  border-style: dashed;
 }
 
 /* Match indicator */

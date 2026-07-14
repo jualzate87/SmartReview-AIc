@@ -98,5 +98,15 @@
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-medium, 16px);
   font-weight: var(--font-weight-component-bold, 600);
-  color: #1a3347;
+  color: var(--color-text-primary, #1a3347);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--space-small, 8px);
+  margin-top: var(--space-small, 12px);
+  padding-top: var(--space-small, 10px);
+  border-top: 1px solid var(--color-divider-tertiary, #e3e8eb);
 }
