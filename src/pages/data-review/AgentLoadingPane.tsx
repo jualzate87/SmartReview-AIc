@@ -3,6 +3,10 @@ import { Close } from '@design-systems/icons'
 import intuitAssistIcon from '../../assets/icons/intuit-assist.svg'
 import styles from '../../styles/data-review/AgentLoadingPane.module.css'
 
+/** Preparer (logged-in user) — greet the preparer, not the client (Jessica Drake). */
+const PREPARER_NAME = 'Sara Chen'
+const PREPARER_FIRST_NAME = PREPARER_NAME.split(' ')[0]
+
 interface AgentLoadingPaneProps {
   onClose: () => void
   /** True only while agentView === 'loading' — timers start here, not on mount */
@@ -17,7 +21,7 @@ interface AgentLoadingPaneProps {
 
 // Loading phases (timers only run while isLoading — not while idle/mounted):
 //   'spinning'  0–700ms    — centered rotating Intuit Assist icon
-//   'greeting'  700–2400ms — icon + "Hi, Jessica" + subtext
+//   'greeting'  700–2400ms — icon + "Hi, Sara" (preparer) + subtext
 //   'exiting'   2400ms+    — greeting fades out
 // Parent keeps isLoading ~3200ms then sets showReport=true
 export default function AgentLoadingPane({
@@ -83,7 +87,7 @@ export default function AgentLoadingPane({
                   <img src={intuitAssistIcon} alt="" className={styles.greetingIconImg} />
                 </div>
                 <div className={styles.greetingText}>
-                  <h2 className={styles.greetingTitle}>Hi, Jessica</h2>
+                  <h2 className={styles.greetingTitle}>Hi, {PREPARER_FIRST_NAME}</h2>
                   <p className={styles.greetingSubtext}>
                     We're checking the accuracy and integrity of your return.
                   </p>
