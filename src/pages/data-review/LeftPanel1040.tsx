@@ -623,7 +623,7 @@ export default function LeftPanel1040({
                 <div className={styles.summaryColLabel} style={{ width: 80 }}>Prior year</div>
                 <div className={styles.summaryColLabel} style={{ width: 72 }}>Change $</div>
                 <div className={styles.summaryColLabel} style={{ width: 52 }}>Change %</div>
-                <div className={styles.summaryColLabel} style={{ width: 48 }} />
+                <div className={styles.summaryColLabel} style={{ width: 96 }} />
               </div>
             </div>
 
@@ -653,7 +653,9 @@ export default function LeftPanel1040({
                         const neg = d !== null && d < 0
                         return (
                           <div className={styles.summaryRowRight}>
-                            <div className={styles.summaryCurrVal}><span className={styles.summaryCurrValText}>${fmt(cat.totalCurr)}</span></div>
+                            <div className={styles.summaryCurrVal} style={{ width: 108 }}>
+                              <span className={styles.summaryCurrValText}>${fmt(cat.totalCurr)}</span>
+                            </div>
                             <span className={styles.summaryPriorVal}>{p !== null ? `$${fmt(p)}` : ''}</span>
                             <span className={`${styles.summaryDiffVal} ${pos ? styles.summaryDiffPos : ''} ${neg ? styles.summaryDiffNeg : ''}`}>
                               {d !== null ? (d >= 0 ? `$${fmt(d)}` : `−$${fmt(Math.abs(d))}`) : ''}
@@ -661,6 +663,7 @@ export default function LeftPanel1040({
                             <span className={`${styles.summaryPctVal} ${pos ? styles.summaryDiffPos : ''} ${neg ? styles.summaryDiffNeg : ''}`}>
                               {pct !== null ? `${pct < 0 ? '−' : ''}${Math.abs(pct)}%` : ''}
                             </span>
+                            <div className={styles.summaryRowEndActions} aria-hidden="true" />
                           </div>
                         )
                       })()}
@@ -676,7 +679,6 @@ export default function LeftPanel1040({
                       const isChecked  = !!row.field && checkedFields.has(row.field)
                       const isSelected = !!row.field && activeHighlight === row.field
                       const isIssue    = !!row.field && row.field === issueField
-                      const isHov      = !!row.field && hoveredField === row.field
                       const isBlue     = isSelected && !isIssue
                       const isOrange   = isSelected && !!isIssue
                       const clickable  = !!row.field
@@ -727,7 +729,7 @@ export default function LeftPanel1040({
                             </div>
                           </div>
                           <div className={styles.summaryRowRight}>
-                            {/* Current year — value + info affordance */}
+                            {/* Current year — value + info affordance (info stays here for drilldown) */}
                             <div className={styles.summaryCurrVal} style={{ width: 108 }}>
                               <span
                                 className={`${styles.summaryCurrValText} ${row.kind === 'calc' ? styles.summaryCurrValCalc : ''} ${isBlue ? styles.summaryCurrValBlue : ''} ${isOrange ? styles.summaryCurrValOrange : ''} ${clickable ? styles.summaryCurrValClickable : ''}`}
@@ -763,22 +765,6 @@ export default function LeftPanel1040({
                                   </button>
                                 </Tooltip>
                               )}
-                              {/* Comment on hover */}
-                              {!!row.field && !!onAddFieldNote && (isHov || commentField === row.field) && (
-                                <div className={`${styles.summaryRowActions} ${styles.summaryRowActionsVisible}`}>
-                                  <Tooltip text="Add a comment" placement="top">
-                                    <button
-                                      className={`${styles.commentBtn1040} ${commentField === row.field ? styles.commentBtn1040Active : ''}`}
-                                      aria-label="Add comment"
-                                      onClick={e => {
-                                        e.stopPropagation()
-                                        if (commentField === row.field) { setCommentField(null); setCommentDraft(''); setCommentAnchor(null) }
-                                        else openComment1040(row.field!, row.label, e.currentTarget)
-                                      }}
-                                    ><Comment size="small" /></button>
-                                  </Tooltip>
-                                </div>
-                              )}
                             </div>
                             <span className={styles.summaryPriorVal}>
                               {hasPrior ? `$${fmt(prior!)}` : ''}
@@ -793,24 +779,51 @@ export default function LeftPanel1040({
                                 ? `${pctChg < 0 ? '−' : ''}${Math.abs(pctChg)}%`
                                 : ''}
                             </span>
-                            {/* Independent summary check + attention flag */}
+                            {/* Comment + attention flag + check — equal-size action buttons */}
                             <div className={styles.summaryRowEndActions}>
-                              {hasAttention && (
-                                <span className={styles.summaryAttentionFlag} title="Import flags still need review">
+                              {!!row.field && !!onAddFieldNote ? (
+                                <Tooltip text="Add a comment" placement="top">
+                                  <button
+                                    type="button"
+                                    className={`${styles.summaryActionBtn} ${commentField === row.field ? styles.summaryActionBtnActive : ''}`}
+                                    aria-label={`Add comment for ${row.label}`}
+                                    onClick={e => {
+                                      e.stopPropagation()
+                                      if (commentField === row.field) { setCommentField(null); setCommentDraft(''); setCommentAnchor(null) }
+                                      else openComment1040(row.field!, row.label, e.currentTarget)
+                                    }}
+                                  >
+                                    <Comment size="small" />
+                                  </button>
+                                </Tooltip>
+                              ) : (
+                                <span className={styles.summaryActionBtnSlot} aria-hidden="true" />
+                              )}
+                              {hasAttention ? (
+                                <span
+                                  className={`${styles.summaryActionBtn} ${styles.summaryActionBtnFlag}`}
+                                  title="Import flags still need review"
+                                  role="img"
+                                  aria-label="Import flags still need review"
+                                >
                                   <Flag size="small" />
                                 </span>
+                              ) : (
+                                <span className={styles.summaryActionBtnSlot} aria-hidden="true" />
                               )}
-                              {!!row.field && !!onToggleChecked && (
+                              {!!row.field && !!onToggleChecked ? (
                                 <Tooltip text={isChecked ? 'Unmark as reviewed' : 'Mark row as reviewed'} placement="top">
                                   <button
                                     type="button"
-                                    className={`${styles.summaryRowCheckVisible} ${isChecked ? styles.summaryRowCheckVisibleActive : ''}`}
+                                    className={`${styles.summaryActionBtn} ${isChecked ? styles.summaryActionBtnChecked : ''}`}
                                     aria-label={isChecked ? 'Unmark' : 'Mark as reviewed'}
                                     onClick={e => { e.stopPropagation(); onToggleChecked(row.field!) }}
                                   >
                                     <CircleCheck size="small" />
                                   </button>
                                 </Tooltip>
+                              ) : (
+                                <span className={styles.summaryActionBtnSlot} aria-hidden="true" />
                               )}
                             </div>
                           </div>
@@ -842,7 +855,9 @@ export default function LeftPanel1040({
                   <span className={styles.summaryOweLabel}>Amount you owe · Line 37</span>
                 </div>
                 <div className={styles.summaryRowRight}>
-                  <div className={styles.summaryCurrVal}><span className={`${styles.summaryCurrValText} ${styles.summaryOweAmt}`}>${fmt(oweAmount)}</span></div>
+                  <div className={styles.summaryCurrVal} style={{ width: 108 }}>
+                    <span className={`${styles.summaryCurrValText} ${styles.summaryOweAmt}`}>${fmt(oweAmount)}</span>
+                  </div>
                   <span className={styles.summaryPriorVal}>${fmt(priorOwed)}</span>
                   <span className={`${styles.summaryDiffVal} ${diffPos ? styles.summaryDiffPos : ''} ${diffNeg ? styles.summaryDiffNeg : ''}`}>
                     {diff >= 0 ? `$${fmt(diff)}` : `−$${fmt(Math.abs(diff))}`}
@@ -850,6 +865,7 @@ export default function LeftPanel1040({
                   <span className={`${styles.summaryPctVal} ${diffPos ? styles.summaryDiffPos : ''} ${diffNeg ? styles.summaryDiffNeg : ''}`}>
                     {pctChg >= 0 ? '' : '−'}{Math.abs(pctChg)}%
                   </span>
+                  <div className={styles.summaryRowEndActions} aria-hidden="true" />
                 </div>
               </div>
                 )

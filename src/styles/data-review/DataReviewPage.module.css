@@ -369,32 +369,12 @@
   white-space: nowrap;
 }
 
-/* ProtoC — Phase 1: Hide Summary button — blue / clearly visible */
+/* ProtoC — Phase 1: Hide Summary — layout only; IDS Button secondary supplies look */
 .form1040HideBtn {
-  display: inline-flex;
+  display: inline-flex !important;
   align-items: center;
   gap: 6px;
   margin: 10px 0 0 12px;
-  padding: 6px 12px;
-  background: var(--color-action-primary, #0077c5);
-  border: 1px solid var(--color-action-primary, #0077c5);
-  border-radius: 8px;
-  color: #ffffff;
-  font-family: var(--font-family-component, sans-serif);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background 120ms ease, border-color 120ms ease, filter-brightness 120ms ease;
   width: fit-content;
-}
-
-.form1040HideBtn:hover {
-  background: var(--color-action-hover, #0265ac);
-  border-color: var(--color-action-hover, #0265ac);
-  filter: brightness(1.05);
-}
-
-.startImportsBtn {
-  margin-right: 8px;
+  flex-shrink: 0;
 }

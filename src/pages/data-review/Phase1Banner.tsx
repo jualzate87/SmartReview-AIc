@@ -10,6 +10,10 @@ interface Phase1BannerProps {
   complete: boolean
   /** Continue to Phase 2 — AI Diagnostics (only enabled when complete) */
   onContinue: () => void
+  /** Whether the CPA has started opening source docs for import review */
+  importsStarted?: boolean
+  /** Begin import review — reveals source documents on the right */
+  onStartImports?: () => void
 }
 
 /**
@@ -18,7 +22,14 @@ interface Phase1BannerProps {
  * hard-locked (visible + explained) until the counter reaches 0 — this keeps the
  * diagnostics accurate rather than hand-holding.
  */
-export default function Phase1Banner({ resolved, total, complete, onContinue }: Phase1BannerProps) {
+export default function Phase1Banner({
+  resolved,
+  total,
+  complete,
+  onContinue,
+  importsStarted = false,
+  onStartImports,
+}: Phase1BannerProps) {
   return (
     <div className={`${styles.banner} ${complete ? styles.bannerComplete : ''}`}>
       <div className={styles.left}>
@@ -45,6 +56,18 @@ export default function Phase1Banner({ resolved, total, complete, onContinue }: 
           <span className={styles.counter}>
             <strong className={styles.counterNum}>{resolved}</strong> of {total} flags resolved
           </span>
+        )}
+
+        {/* Start reviewing imports sits immediately before AI diagnostics so the
+            sequence reads: resolve imports → then unlock AI. */}
+        {!complete && !importsStarted && onStartImports && (
+          <Button
+            priority="primary"
+            size="medium"
+            onClick={onStartImports}
+          >
+            Start reviewing imports
+          </Button>
         )}
 
         {complete ? (

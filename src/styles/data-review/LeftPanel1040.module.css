@@ -780,10 +780,9 @@
  * Typography rule: ALL value columns use the same font-size and weight.
  * Only COLOR differentiates them — current year = dark, prior = muted, diff = colored.
  *
- * Column widths (fixed, px):
- *   current year: 96  prior year: 88  change $: 76  change %: 52
- *
- * Both header and data rows share these widths exactly.
+ * Column widths (fixed, px) + ~80px gap so numeric cols use available width
+ * instead of clustering on the right.
+ * Both header and data rows share these widths/gaps exactly.
  */
 .summaryColHeaders {
   display: flex;
@@ -804,7 +803,7 @@
 .summaryColValues {
   display: flex;
   align-items: center;
-  gap: 40px; /* matches .summaryRowRight gap */
+  gap: 80px; /* matches .summaryRowRight gap */
   flex-shrink: 0;
 }
 
@@ -839,6 +838,7 @@
   text-align: left;
   gap: 40px;
 }
+/* Section totals share the same value-col gap as sub-rows */
 .summarySectionRow:first-child { border-top: none; }
 .summarySectionRow:hover { background: #f0f2f5; }
 
@@ -870,17 +870,18 @@
 .summaryRowRight {
   display: flex;
   align-items: center;
-  gap: 40px;
+  gap: 80px;
   flex-shrink: 0;
 }
 
-/* Current year — relative container; buttons slide in from the right on hover */
+/* Current year — value + info icon; comments live in end actions */
 .summaryCurrVal {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  width: 88px;
+  gap: 2px;
+  width: 108px;
   flex-shrink: 0;
   overflow: visible;
 }
@@ -894,11 +895,6 @@
   text-align: right;
   white-space: nowrap;
   line-height: var(--line-height-component);
-  transition: transform 130ms ease;
-}
-/* On row hover: slide value left to make room for 2 buttons (56px = 2×26px + 4px gap) */
-.summarySubRow:hover .summaryCurrValText {
-  transform: translateX(-60px);
 }
 
 /* Modifiers apply to the inner text span */
@@ -913,7 +909,7 @@
   cursor: pointer;
   border-radius: 4px;
   padding: 1px 4px;
-  transition: background 80ms, transform 130ms ease;
+  transition: background 80ms ease;
 }
 .summaryCurrValClickable:hover { background: #e0ecf8; }
 
@@ -939,64 +935,66 @@
   color: #0265ac;
 }
 
-/* End-of-row check + attention flag (independent of import mark-reviewed) */
+/* End-of-row actions: comment + flag + check — equal-size icon buttons */
 .summaryRowEndActions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 4px;
-  width: 48px;
+  gap: 6px;
+  width: 96px; /* 3 × 28px + 2 × 6px gap — always reserved */
   flex-shrink: 0;
 }
-.summaryAttentionFlag {
-  display: inline-flex;
-  align-items: center;
-  color: #c9500f;
-}
-.summaryRowCheckVisible {
+
+/* Shared secondary icon-button look for comment / flag / check */
+.summaryActionBtn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   padding: 0;
-  border: none;
-  border-radius: 4px;
-  background: transparent;
-  color: #859299;
+  flex-shrink: 0;
+  border: 1px solid var(--color-border-secondary, #c3ced5);
+  border-radius: 6px;
+  background: var(--color-container-background-primary, #ffffff);
+  color: var(--color-text-secondary, #6b6c72);
   cursor: pointer;
+  transition: background 100ms ease, border-color 100ms ease, color 100ms ease;
 }
-.summaryRowCheckVisible:hover {
+.summaryActionBtn:hover {
   background: #e0ecf8;
-  color: #0265ac;
+  border-color: var(--color-action-standard, #0077c5);
+  color: var(--color-action-standard, #0077c5);
 }
-.summaryRowCheckVisibleActive {
+.summaryActionBtnActive {
+  background: #e0ecf8;
+  border-color: var(--color-action-standard, #0077c5);
+  color: var(--color-action-standard, #0077c5);
+}
+.summaryActionBtnChecked {
+  border-color: var(--color-action-success, #00856d);
   color: var(--color-action-success, #00856d);
+  background: #e6f6ef;
 }
-
-/* Action buttons — absolutely positioned at right edge, slide in on hover */
-.summaryRowActions {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%) translateX(8px);
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  opacity: 0;
+.summaryActionBtnFlag {
+  border-color: #f0c4a0;
+  color: #c9500f;
+  background: #fff8f3;
+  cursor: default;
+}
+.summaryActionBtnFlag:hover {
+  background: #fff8f3;
+  border-color: #f0c4a0;
+  color: #c9500f;
+}
+/* Invisible equal-size slot when flag/comment/check is absent */
+.summaryActionBtnSlot {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  visibility: hidden;
   pointer-events: none;
-  transition: opacity 130ms ease, transform 130ms ease;
-}
-.summarySubRow:hover .summaryRowActions {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateY(-50%) translateX(0);
-}
-/* Keep visible when active (checked or comment open) */
-.summaryRowActionsVisible {
-  opacity: 1 !important;
-  pointer-events: auto !important;
-  transform: translateY(-50%) translateX(0) !important;
 }
 
 /* Prior year — same size/weight as current, secondary text color */

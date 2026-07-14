@@ -538,17 +538,6 @@ export default function DataReviewPage() {
         </div>
         <div className={styles.headerRight}>
 
-          {inImportPhase && !importsStarted && (
-            <Button
-              priority="primary"
-              size="medium"
-              className={styles.startImportsBtn}
-              onClick={startReviewingImports}
-            >
-              Start reviewing imports
-            </Button>
-          )}
-
           <button
             className={`${styles.intuitIntelBtn} ${notesOpen ? styles.intuitIntelBtnActive : ''}`}
             aria-label="Comments"
@@ -608,6 +597,8 @@ export default function DataReviewPage() {
           total={phase1Total}
           complete={phase1Complete}
           onContinue={handleBeginDiagnostics}
+          importsStarted={importsStarted}
+          onStartImports={startReviewingImports}
         />
       )}
 
@@ -653,10 +644,16 @@ export default function DataReviewPage() {
             minWidth: 0,
           }}
         >
-          {inImportPhase && (
-            <button className={styles.form1040HideBtn} onClick={() => setShow1040(false)} aria-label="Hide Summary">
-              <ChevronLeft size="small" /> <span>Hide Summary</span>
-            </button>
+          {inImportPhase && show1040 && (rightPanelVisible || notesOpen) && (
+            <Button
+              priority="secondary"
+              size="small"
+              className={styles.form1040HideBtn}
+              onClick={() => setShow1040(false)}
+              aria-label="Hide Summary"
+            >
+              <ChevronLeft size="small" /> Hide Summary
+            </Button>
           )}
           <LeftPanel1040
             selectedField={selectedField}
