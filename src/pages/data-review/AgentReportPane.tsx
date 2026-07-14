@@ -56,11 +56,12 @@ interface AgentReportPaneProps {
 }
 
 // ProtoC Phase 2 — diagnostics only. Import/OCR keys removed (owned by Phase 1).
-// Key order within each card matches GUIDED_ORDER so the "N of 7" badges are
-// consecutive within the card (e.g. Critical always reads 1, 2 — never 2, 5).
+// BuildSpec silent error #6 (Token Box 1b / line 3a qual-div miscode) stays unflagged.
+// Key order within each card matches GUIDED_ORDER so the "N of 10" badges are
+// consecutive within the card (e.g. Critical always reads 1–4 — never 2, 5).
 const REPORT_CARDS = [
   { label: 'Critical',        keys: ['balanceDueJump', 'totalTaxRise', 'withholdingDrop', 'estTaxPenalty'], badgeColor: 'red'    as const, position: 'first' },
-  { label: 'Review required', keys: ['qualDivDrop', 'ordinaryDivSurge', 'qualDivRatio', 'confirmPriorAgi', 'missingEstPayments', 'niitForm8960'], badgeColor: 'orange' as const, position: 'middle' },
+  { label: 'Review required', keys: ['ordinaryDivSurge', 'confirmPriorAgi', 'missingEstPayments', 'niitForm8960'], badgeColor: 'orange' as const, position: 'middle' },
   { label: 'Opportunities',   keys: ['optW4Adjustment', 'optIra'], badgeColor: 'blue'   as const, position: 'last' },
 ]
 
@@ -182,29 +183,6 @@ function buildEstTaxPenaltyIssue(live: LiveReturnTotals) {
 }
 }
 
-const QUAL_DIV_DROP_ISSUE = {
-  issueKey: 'qualDivDrop',
-  dotColor: 'orange' as const,
-  title: 'Qualified dividends may be misclassified',
-  category: 'IRS compliance',
-  summary: `Return line 3a shows ${fmtUsd(FROZEN_RETURN.qualifiedDivs)} but Token Financial 1099-DIV Box 1b shows only $187,500 qualified. Token's return value may overstate qualified dividends.`,
-  taxImpact: RETURN_SUMMARY_INSIGHTS.niit,
-  rootCause: 'Source Box 1b is $187,500 qualified out of $331,250 ordinary (Box 1a) for Token. Return aggregates qualified dividends across all payers on line 3a.',
-  tableRows: [
-    { label: 'Return line 3a (qualified)', cols: [fmtUsd(FROZEN_RETURN.qualifiedDivs), '$219,850', '+56%'], badge: 'red' as const, total: false },
-    { label: 'Token source Box 1b',        cols: ['$187,500', 'Should match', '!'], badge: 'red' as const, total: true },
-  ],
-  tableHeaders: ['Field', '2025', '2024', 'YoY'],
-  suggestedActions: [
-    'Confirm shares backing the $187,500 qualified amount were held 61+ days.',
-    'Cross-check Box 1b against Box 1a on the Token Financial 1099-DIV.',
-  ],
-  viewSourceLabel: 'View 1099-DIV',
-  viewSourceTab: '1099-divs' as const,
-  viewSourceSubTab: undefined,
-  viewSourceField: 'qualifiedDivs',
-}
-
 const ORDINARY_DIV_SURGE_ISSUE = {
   issueKey: 'ordinaryDivSurge',
   dotColor: 'orange' as const,
@@ -226,29 +204,6 @@ const ORDINARY_DIV_SURGE_ISSUE = {
   viewSourceTab: '1099-divs' as const,
   viewSourceSubTab: undefined,
   viewSourceField: 'ordinaryDivs',
-}
-
-const QUAL_DIV_RATIO_ISSUE = {
-  issueKey: 'qualDivRatio',
-  dotColor: 'orange' as const,
-  title: 'Qualified dividend ratio dropped to 57%',
-  category: 'IRS compliance',
-  summary: `The qualified share of dividends should be reviewed. Return line 3a shows ${fmtUsd(FROZEN_RETURN.qualifiedDivs)} across all payers.`,
-  taxImpact: RETURN_SUMMARY_INSIGHTS.niit,
-  rootCause: 'Token Financial Box 1b ($187,500) is 57% of Box 1a ($331,250). Aggregate qualified dividends on line 3a include all payers.',
-  tableRows: [
-    { label: 'Qualified share (Token)', cols: ['57%', '63% last year', 'Check'], badge: 'orange' as const, total: false },
-    { label: 'Return line 3a total', cols: [fmtUsd(FROZEN_RETURN.qualifiedDivs), '$219,850', '+56%'], badge: 'red' as const, total: true },
-  ],
-  tableHeaders: ['Metric', '2025', '2024', 'Change'],
-  suggestedActions: [
-    'Review brokerage statements for shares sold within 60 days of ex-dividend dates.',
-    'Confirm whether any Box 1a amount was misclassified between qualified and ordinary.',
-  ],
-  viewSourceLabel: 'View 1099-DIV',
-  viewSourceTab: '1099-divs' as const,
-  viewSourceSubTab: undefined,
-  viewSourceField: 'qualifiedDivs',
 }
 
 const CONFIRM_PRIOR_AGI_ISSUE = {
@@ -386,9 +341,7 @@ export const ISSUE_FIELD: Partial<Record<IssueKey, string>> = {
   totalTaxRise:        'totalTax',
   withholdingDrop:     'withholding',
   estTaxPenalty:       'totalPayments',
-  qualDivDrop:         'qualifiedDivs',
   ordinaryDivSurge:    'ordinaryDivs',
-  qualDivRatio:        'qualifiedDivs',
   confirmPriorAgi:     'agi',
   missingEstPayments:  'totalPayments',
   niitForm8960:        'totalIncome',
@@ -402,12 +355,10 @@ function buildAllIssues(live: LiveReturnTotals) {
     TOTAL_TAX_RISE_ISSUE,
     buildWithholdingDropIssue(live),
     buildEstTaxPenaltyIssue(live),
-    QUAL_DIV_DROP_ISSUE,
     ORDINARY_DIV_SURGE_ISSUE,
-    QUAL_DIV_RATIO_ISSUE,
     CONFIRM_PRIOR_AGI_ISSUE,
-    NIIT_FORM8960_ISSUE,
     buildMissingEstPaymentsIssue(live),
+    NIIT_FORM8960_ISSUE,
     buildOptW4Issue(live),
     OPT_IRA_ISSUE,
   ]

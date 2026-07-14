@@ -20,9 +20,7 @@ export type Phase2IssueKey =
   | 'totalTaxRise'
   | 'withholdingDrop'
   | 'estTaxPenalty'
-  | 'qualDivDrop'
   | 'ordinaryDivSurge'
-  | 'qualDivRatio'
   | 'confirmPriorAgi'
   | 'missingEstPayments'
   | 'niitForm8960'
@@ -35,9 +33,7 @@ export const PHASE2_DIAGNOSTIC_ORDER: readonly Phase2IssueKey[] = [
   'totalTaxRise',
   'withholdingDrop',
   'estTaxPenalty',
-  'qualDivDrop',
   'ordinaryDivSurge',
-  'qualDivRatio',
   'confirmPriorAgi',
   'missingEstPayments',
   'niitForm8960',
@@ -56,7 +52,6 @@ export const SOURCE_AMOUNTS = {
   wages: 148_940,
   divWithholding: 26_363,
   rWithholding: 30_000,
-  tokenQualifiedDivs: 187_500,
   /** Prior-year ordinary dividends — surge dismissed when current line falls near this. */
   priorOrdinaryDivs: 126_750,
 } as const
@@ -95,9 +90,7 @@ export type DiagnosticDismissRule = {
  * | withholdingDrop   | fedTaxWithheld                 | DIV Box 4 ≥ source, OR 1099-R WH restored, OR |
  * |                   |                                | total WH ≥ safe harbor                        |
  * | estTaxPenalty     | —                              | total WH ≥ safe harbor (Form 2210)            |
- * | qualDivDrop       | —                              | Token Box 1b ≤ source $187,500                |
  * | ordinaryDivSurge  | —                              | ordinary divs ≤ 1.2× prior-year               |
- * | qualDivRatio      | —                              | Token Box 1b ≤ source $187,500                |
  * | confirmPriorAgi   | — (study-static verify step)   | —                                             |
  * | missingEstPayments| —                              | total WH ≥ safe harbor                        |
  * | niitForm8960      | —                              | AGI < $200k NIIT threshold                    |
@@ -128,20 +121,10 @@ export const DIAGNOSTIC_DISMISS_RULES: Record<Phase2IssueKey, DiagnosticDismissR
     dismissWhenAmounts: ({ live }) => live.totalWithholding >= SAFE_HARBOR_2024,
     notes: 'Form 2210 — dismissed only when live payments meet the prior-year safe harbor.',
   },
-  qualDivDrop: {
-    dismissWhenReviewed: [],
-    dismissWhenAmounts: ({ amounts }) =>
-      amounts.qualifiedDivsToken <= SOURCE_AMOUNTS.tokenQualifiedDivs,
-  },
   ordinaryDivSurge: {
     dismissWhenReviewed: [],
     dismissWhenAmounts: ({ live }) =>
       live.ordinaryDivs <= SOURCE_AMOUNTS.priorOrdinaryDivs * 1.2,
-  },
-  qualDivRatio: {
-    dismissWhenReviewed: [],
-    dismissWhenAmounts: ({ amounts }) =>
-      amounts.qualifiedDivsToken <= SOURCE_AMOUNTS.tokenQualifiedDivs,
   },
   confirmPriorAgi: {
     dismissWhenReviewed: [],

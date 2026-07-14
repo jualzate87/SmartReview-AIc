@@ -104,12 +104,6 @@ describe('isDiagnosticAutoDismissed — amount edits', () => {
     expect(isDiagnosticAutoDismissed('balanceDueJump', c)).toBe(true)
   })
 
-  it('dismisses qualDivDrop and qualDivRatio when Token Box 1b corrected to source', () => {
-    const c = ctx({ amounts: { qualifiedDivsToken: SOURCE_AMOUNTS.tokenQualifiedDivs } })
-    expect(isDiagnosticAutoDismissed('qualDivDrop', c)).toBe(true)
-    expect(isDiagnosticAutoDismissed('qualDivRatio', c)).toBe(true)
-  })
-
   it('dismisses ordinaryDivSurge when ordinary dividends drop near prior year', () => {
     const c = ctx({
       amounts: {

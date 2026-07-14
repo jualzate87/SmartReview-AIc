@@ -124,12 +124,13 @@ CPA reviews compliance issues, YoY anomalies, and planning opportunities — now
 - Estimated tax penalty — Form 2210
 
 **Review Required:**
-- Qualified dividend classification (line 3a vs source Box 1b)
 - Ordinary dividend surge (line 3b YoY)
-- Qualified dividend ratio drop
 - Confirm prior-year AGI matches imported 1040
 - No estimated tax payments recorded (line 26)
 - Net investment income tax — Form 8960 (NIIT)
+
+**Silent (unflagged) — BuildSpec planted error #6:**
+- Token Box 1b / line 3a qualified-dividend miscode stays in the return data but is **not** surfaced as a Phase 1 flag or Phase 2 diagnostic
 
 **Opportunities:**
 - Plan 2026 estimated payments (1040-ES)
