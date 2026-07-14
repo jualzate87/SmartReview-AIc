@@ -916,7 +916,7 @@ export default function LeftPanel1040({
                   </svg>
                 </div>
                 <div className={styles.controlInstructionBody}>
-                  <strong>Enter amounts from your source documents, then Save.</strong> Totals appear in the Source docs column for comparison with System. If both match, your extraction is confirmed correct. Small rounding differences (±$1) are normal.
+                  <strong>Enter each source amount, then Save.</strong> Totals update in the Source docs column for comparison with System. If both match, your extraction is confirmed correct. Small rounding differences (±$1) are normal.
                 </div>
               </div>
 

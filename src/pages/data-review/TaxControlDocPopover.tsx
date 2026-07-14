@@ -80,7 +80,7 @@ export default function TaxControlDocPopover({
         </button>
       </div>
       <p className={styles.subtitle}>
-        Enter amounts from each source document, then Save to update the Source docs column.
+        Enter each source amount, then Save to update the Source docs column.
       </p>
 
       <div className={styles.docFields}>
