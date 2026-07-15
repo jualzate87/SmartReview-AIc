@@ -10,7 +10,7 @@ interface DocumentPreviewProps {
 }
 
 const ZOOM_LEVELS = [50, 60, 65, 70, 75, 85, 100, 125, 150, 200]
-const LOUPE_DIAMETER = 140
+const LOUPE_DIAMETER = 210
 const LOUPE_ZOOM = 2
 
 type LoupeState = {
