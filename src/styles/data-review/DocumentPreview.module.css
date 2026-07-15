@@ -95,3 +95,29 @@
   opacity: 0.3;
   cursor: not-allowed;
 }
+
+.toolbarBtnActive {
+  background: var(--color-container-background-tertiary);
+  border-radius: var(--radius-action, 4px);
+  box-shadow: inset 0 0 0 1px var(--color-container-border-primary);
+  opacity: 1;
+}
+
+.toolbarBtnActive:hover {
+  opacity: 1;
+}
+
+/* Loupe — fixed so it tracks the pointer over the scrollable preview */
+.loupe {
+  position: fixed;
+  z-index: 40;
+  border-radius: 50%;
+  border: 2px solid var(--color-text-primary, #21262a);
+  box-shadow:
+    0 0 0 2px var(--color-container-background-primary, #ffffff),
+    0 4px 16px rgba(0, 0, 0, 0.28);
+  background-color: var(--color-container-background-primary, #ffffff);
+  background-repeat: no-repeat;
+  pointer-events: none;
+  overflow: hidden;
+}

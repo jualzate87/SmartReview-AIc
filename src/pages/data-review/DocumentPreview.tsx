@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { ZoomOut, ZoomIn } from '@design-systems/icons'
+import { ZoomOut, ZoomIn, Search } from '@design-systems/icons'
 import styles from '../../styles/data-review/DocumentPreview.module.css'
 
 interface DocumentPreviewProps {
@@ -10,11 +10,35 @@ interface DocumentPreviewProps {
 }
 
 const ZOOM_LEVELS = [50, 60, 65, 70, 75, 85, 100, 125, 150, 200]
+const LOUPE_DIAMETER = 140
+const LOUPE_ZOOM = 2
+
+type LoupeState = {
+  visible: boolean
+  left: number
+  top: number
+  backgroundImage: string
+  backgroundSize: string
+  backgroundPosition: string
+}
+
+const HIDDEN_LOUPE: LoupeState = {
+  visible: false,
+  left: 0,
+  top: 0,
+  backgroundImage: 'none',
+  backgroundSize: '0 0',
+  backgroundPosition: '0 0',
+}
 
 export default function DocumentPreview({ imageSrc, alt, customContent }: DocumentPreviewProps) {
   const [zoomIndex, setZoomIndex] = useState(5) // default 85%
   const zoom = ZOOM_LEVELS[zoomIndex]
   const images = imageSrc ? (Array.isArray(imageSrc) ? imageSrc : [imageSrc]) : []
+  const canMagnify = !customContent && images.length > 0
+
+  const [magnifyOn, setMagnifyOn] = useState(false)
+  const [loupe, setLoupe] = useState<LoupeState>(HIDDEN_LOUPE)
 
   const zoomOut = () => setZoomIndex(i => Math.max(0, i - 1))
   const zoomIn  = () => setZoomIndex(i => Math.min(ZOOM_LEVELS.length - 1, i + 1))
@@ -25,12 +49,13 @@ export default function DocumentPreview({ imageSrc, alt, customContent }: Docume
   const [isDragging, setIsDragging] = useState(false)
 
   const onMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (magnifyOn) return
     if (e.button !== 0) return
     const el = imageAreaRef.current
     if (!el) return
     dragState.current = { active: true, startX: e.clientX, startY: e.clientY, scrollLeft: el.scrollLeft, scrollTop: el.scrollTop }
     setIsDragging(false)
-  }, [])
+  }, [magnifyOn])
 
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
@@ -70,14 +95,87 @@ export default function DocumentPreview({ imageSrc, alt, customContent }: Docume
     return () => el.removeEventListener('wheel', handleWheel)
   }, [])
 
+  // Clear loupe whenever magnify is turned off; disable when no image preview
+  useEffect(() => {
+    if (!magnifyOn) setLoupe(HIDDEN_LOUPE)
+  }, [magnifyOn])
+
+  useEffect(() => {
+    if (!canMagnify && magnifyOn) {
+      setMagnifyOn(false)
+      setLoupe(HIDDEN_LOUPE)
+    }
+  }, [canMagnify, magnifyOn])
+
+  const updateLoupe = useCallback((clientX: number, clientY: number) => {
+    const area = imageAreaRef.current
+    if (!area) {
+      setLoupe(HIDDEN_LOUPE)
+      return
+    }
+
+    const imgs = area.querySelectorAll<HTMLImageElement>('img')
+    let hit: HTMLImageElement | null = null
+    for (const img of imgs) {
+      const r = img.getBoundingClientRect()
+      if (clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom) {
+        hit = img
+        break
+      }
+    }
+
+    if (!hit) {
+      setLoupe(HIDDEN_LOUPE)
+      return
+    }
+
+    const rect = hit.getBoundingClientRect()
+    const x = clientX - rect.left
+    const y = clientY - rect.top
+    const bgW = rect.width * LOUPE_ZOOM
+    const bgH = rect.height * LOUPE_ZOOM
+    const bgPosX = -(x * LOUPE_ZOOM - LOUPE_DIAMETER / 2)
+    const bgPosY = -(y * LOUPE_ZOOM - LOUPE_DIAMETER / 2)
+    const src = hit.currentSrc || hit.src
+
+    setLoupe({
+      visible: true,
+      left: clientX - LOUPE_DIAMETER / 2,
+      top: clientY - LOUPE_DIAMETER / 2,
+      backgroundImage: `url("${src}")`,
+      backgroundSize: `${bgW}px ${bgH}px`,
+      backgroundPosition: `${bgPosX}px ${bgPosY}px`,
+    })
+  }, [])
+
+  const onPointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (!magnifyOn) return
+    updateLoupe(e.clientX, e.clientY)
+  }, [magnifyOn, updateLoupe])
+
+  const onPointerLeave = useCallback(() => {
+    if (!magnifyOn) return
+    setLoupe(HIDDEN_LOUPE)
+  }, [magnifyOn])
+
+  const toggleMagnify = () => {
+    setMagnifyOn(on => !on)
+  }
+
+  const areaCursor = magnifyOn
+    ? (loupe.visible ? 'none' : 'crosshair')
+    : (isDragging ? 'grabbing' : 'grab')
+
   return (
     <div className={styles.container}>
       {/* Scrollable image area */}
       <div
         ref={imageAreaRef}
         className={styles.imageArea}
-        style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+        style={{ cursor: areaCursor }}
         onMouseDown={onMouseDown}
+        onPointerMove={onPointerMove}
+        onPointerLeave={onPointerLeave}
       >
         <div className={styles.imageAreaInner}>
           <div style={{ position: 'relative', width: customContent ? '100%' : `${zoom}%`, lineHeight: 0, flexShrink: 0 }}>
@@ -94,11 +192,28 @@ export default function DocumentPreview({ imageSrc, alt, customContent }: Docume
         </div>
       </div>
 
+      {magnifyOn && loupe.visible && (
+        <div
+          className={styles.loupe}
+          aria-hidden="true"
+          style={{
+            left: loupe.left,
+            top: loupe.top,
+            width: LOUPE_DIAMETER,
+            height: LOUPE_DIAMETER,
+            backgroundImage: loupe.backgroundImage,
+            backgroundSize: loupe.backgroundSize,
+            backgroundPosition: loupe.backgroundPosition,
+          }}
+        />
+      )}
+
       {/* Zoom toolbar */}
       <div className={styles.toolbar}>
         <div className={styles.toolbarControls}>
           <span className={styles.zoomLevel}>{zoom}%</span>
           <button
+            type="button"
             className={styles.toolbarBtn}
             aria-label="Zoom out"
             onClick={zoomOut}
@@ -107,6 +222,7 @@ export default function DocumentPreview({ imageSrc, alt, customContent }: Docume
             <ZoomOut size="medium" />
           </button>
           <button
+            type="button"
             className={styles.toolbarBtn}
             aria-label="Zoom in"
             onClick={zoomIn}
@@ -114,6 +230,18 @@ export default function DocumentPreview({ imageSrc, alt, customContent }: Docume
           >
             <ZoomIn size="medium" />
           </button>
+          {canMagnify && (
+            <button
+              type="button"
+              className={`${styles.toolbarBtn} ${magnifyOn ? styles.toolbarBtnActive : ''}`}
+              aria-label="Magnify"
+              aria-pressed={magnifyOn}
+              title="Magnify"
+              onClick={toggleMagnify}
+            >
+              <Search size="medium" />
+            </button>
+          )}
         </div>
       </div>
     </div>
