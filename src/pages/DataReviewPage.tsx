@@ -66,6 +66,10 @@ function VerticalGripIcon() {
   )
 }
 
+/** Source-doc panel slide timing — matches --duration-appear/disappear-emphasize-fast */
+const SOURCE_PANEL_ENTER_MS = 500
+const SOURCE_PANEL_EXIT_MS = 500
+
 export default function DataReviewPage() {
   // Source-doc review state — flags, reviewed fields, active tab, editable field
   // values — is shared live with the pop-out window via BroadcastChannel so the
@@ -180,7 +184,7 @@ export default function DataReviewPage() {
       setRightPanelVisible(true)
       requestAnimationFrame(() => requestAnimationFrame(() => {
         setRightPanelAnimating(true)
-        setTimeout(() => setRightPanelAnimating(false), 350)
+        setTimeout(() => setRightPanelAnimating(false), SOURCE_PANEL_ENTER_MS)
       }))
     }
   }, [rightPanelVisible])
@@ -192,7 +196,7 @@ export default function DataReviewPage() {
     setTimeout(() => {
       setRightPanelExiting(false)
       setRightPanelVisible(false)
-    }, 280)
+    }, SOURCE_PANEL_EXIT_MS)
   }, [rightPanelVisible, rightPanelExiting])
 
   const startReviewingImports = useCallback(() => {
@@ -206,7 +210,7 @@ export default function DataReviewPage() {
     setRightPanelVisible(true)
     requestAnimationFrame(() => requestAnimationFrame(() => {
       setRightPanelAnimating(true)
-      setTimeout(() => setRightPanelAnimating(false), 350)
+      setTimeout(() => setRightPanelAnimating(false), SOURCE_PANEL_ENTER_MS)
     }))
   }, [])
 
@@ -379,7 +383,7 @@ export default function DataReviewPage() {
       requestAnimationFrame(() => {
         requestAnimationFrame(() => { // second rAF: browser has rendered the flex layout
           setRightPanelAnimating(true)
-          setTimeout(() => setRightPanelAnimating(false), 420)
+          setTimeout(() => setRightPanelAnimating(false), SOURCE_PANEL_ENTER_MS)
         })
       })
     }, 350)
@@ -578,7 +582,7 @@ export default function DataReviewPage() {
                 setRightPanelVisible(true)
                 requestAnimationFrame(() => requestAnimationFrame(() => {
                   setRightPanelAnimating(true)
-                  setTimeout(() => setRightPanelAnimating(false), 350)
+                  setTimeout(() => setRightPanelAnimating(false), SOURCE_PANEL_ENTER_MS)
                 }))
               }
             }}
