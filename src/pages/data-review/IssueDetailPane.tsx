@@ -4,6 +4,7 @@ import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import { Link } from '@ids-ts/link'
 import '@ids-ts/link/dist/main.css'
+import brandBallsIcon from '../../assets/icons/brand-balls.svg'
 import Tooltip from './Tooltip'
 import styles from '../../styles/data-review/YoYDetailPane.module.css'
 
@@ -12,6 +13,28 @@ export type IssueAction = {
   label: string
   /** Short note for form placeholders (e.g. not in prototype) */
   note?: string
+  /** Optional per-action navigation overrides */
+  tab?: string
+  field?: string
+  questionnaireResponseId?: string
+}
+
+/** Figma Source card (node 32554:101249) — used in See details Sources section */
+export type IssueSourceCard = {
+  id: string
+  /** Top chip label, e.g. "1099-DIV" or "Form 8960" */
+  sourceName: string
+  /** Primary title (payer, form, or summary line) */
+  title: string
+  /** Amount or short meta line */
+  description?: string
+  /** Footer meta (date, "Not in packet", etc.) */
+  meta?: string
+  /** When true: non-navigating placeholder (form not in prototype) */
+  placeholder?: boolean
+  tab?: string
+  field?: string
+  questionnaireResponseId?: string
 }
 
 interface IssueDetailPaneProps {
@@ -24,9 +47,10 @@ interface IssueDetailPaneProps {
   tableRows: { label: string; cols: string[]; total?: boolean; badge?: 'red' | 'orange' | 'grey' | 'green' | 'blue' }[]
   tableHeaders: string[]
   suggestedActions: string[]
-  /** @deprecated prefer `actions` — kept for label fallback */
+  /** @deprecated prefer `actions` - kept for label fallback */
   viewSourceLabel?: string
   actions?: IssueAction[]
+  sources?: IssueSourceCard[]
   /** Shown when a diagnostic is based on Tax Organizer Q&A */
   clientResponseNote?: string
   /** Official IRS page for related tax law / form guidance */
@@ -40,10 +64,11 @@ interface IssueDetailPaneProps {
   category?: string
   onClose?: () => void
   onBack?: () => void
-  onViewSource?: () => void
-  onGoToInput?: () => void
-  onViewClientResponse?: () => void
-  onOpenForm?: () => void
+  onViewSource?: (action?: IssueAction) => void
+  onGoToInput?: (action?: IssueAction) => void
+  onViewClientResponse?: (action?: IssueAction) => void
+  onOpenForm?: (action?: IssueAction) => void
+  onSourceClick?: (source: IssueSourceCard) => void
   onMarkReviewed?: (fieldName: string) => void
   onPrev?: () => void
   onNext?: () => void
@@ -62,6 +87,7 @@ export default function IssueDetailPane({
   suggestedActions,
   viewSourceLabel = 'Review source',
   actions,
+  sources,
   clientResponseNote,
   irsGuidanceUrl,
   irsGuidanceLabel = 'Learn more on IRS.gov',
@@ -77,6 +103,7 @@ export default function IssueDetailPane({
   onGoToInput,
   onViewClientResponse,
   onOpenForm,
+  onSourceClick,
   onMarkReviewed,
   onPrev,
   onNext,
@@ -111,17 +138,17 @@ export default function IssueDetailPane({
   const runAction = (action: IssueAction) => {
     switch (action.type) {
       case 'goToInput':
-        onGoToInput?.()
+        onGoToInput?.(action)
         break
       case 'reviewSource':
-        onViewSource?.()
+        onViewSource?.(action)
         break
       case 'viewClientResponse':
-        onViewClientResponse?.()
+        onViewClientResponse?.(action)
         break
       case 'openForm':
         setFormNote(action.note ?? 'Not available in this prototype.')
-        onOpenForm?.()
+        onOpenForm?.(action)
         break
     }
   }
@@ -244,6 +271,61 @@ export default function IssueDetailPane({
               )
             })()}
           </div>
+
+          {sources && sources.length > 0 && (
+            <div className={styles.section}>
+              <p className={styles.sectionTitle}>Sources</p>
+              <div className={styles.sourcesGrid}>
+                {sources.map(source => {
+                  const isPlaceholder = !!source.placeholder
+                  const cardClass = [
+                    styles.sourceCard,
+                    isPlaceholder ? styles.sourceCardPlaceholder : '',
+                  ].filter(Boolean).join(' ')
+                  const content = (
+                    <>
+                      <div className={styles.sourceCardHeader}>
+                        <img src={brandBallsIcon} alt="" className={styles.sourceCardIcon} width={16} height={16} />
+                        <span className={styles.sourceCardName}>{source.sourceName}</span>
+                      </div>
+                      <div className={styles.sourceCardCopy}>
+                        <p className={styles.sourceCardTitle}>{source.title}</p>
+                        {source.description && (
+                          <p className={styles.sourceCardDesc}>{source.description}</p>
+                        )}
+                      </div>
+                      {source.meta && (
+                        <p className={styles.sourceCardMeta}>{source.meta}</p>
+                      )}
+                    </>
+                  )
+                  if (isPlaceholder) {
+                    return (
+                      <div
+                        key={source.id}
+                        className={cardClass}
+                        role="group"
+                        aria-label={`${source.sourceName}: ${source.title}. Not available in this prototype.`}
+                      >
+                        {content}
+                      </div>
+                    )
+                  }
+                  return (
+                    <button
+                      key={source.id}
+                      type="button"
+                      className={cardClass}
+                      onClick={() => onSourceClick?.(source)}
+                      aria-label={`Open ${source.sourceName}: ${source.title}`}
+                    >
+                      {content}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
           <div className={styles.section}>
             <p className={styles.sectionTitle}>Suggested action</p>

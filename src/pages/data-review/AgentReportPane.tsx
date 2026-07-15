@@ -8,7 +8,7 @@ import intuitAssistIcon from '../../assets/icons/intuit-assist.svg'
 import compareOthersIcon from '../../assets/icons/compare-others.svg'
 import federalTaxesIcon from '../../assets/icons/federal-taxes.svg'
 import scannerIcon from '../../assets/icons/scanner.svg'
-import IssueDetailPane, { type IssueAction } from './IssueDetailPane'
+import IssueDetailPane, { type IssueAction, type IssueSourceCard } from './IssueDetailPane'
 import Tooltip from './Tooltip'
 import { FROZEN_RETURN } from '../../data/frozenReturn'
 import type { LiveAmounts, LiveReturnTotals } from '../../data/liveReturn'
@@ -17,7 +17,6 @@ import { RETURN_SUMMARY_INSIGHTS } from './phase1FlagMessages'
 import {
   getPhase2Progress,
   PHASE2_DIAGNOSTIC_ORDER,
-  PRIOR_YEAR_OWE,
   SAFE_HARBOR_2024,
   type Phase2IssueKey,
 } from './phase2FlagSync'
@@ -85,10 +84,13 @@ type IssueCard = {
   tableHeaders: string[]
   suggestedActions: string[]
   actions: IssueAction[]
+  sources: IssueSourceCard[]
+  /** Default destination for reviewSource / goToInput when action omits overrides */
   viewSourceTab?: NavigateTab
   viewSourceSubTab?: 'techCircle'
   viewSourceField?: string
-  /** Official IRS guidance page for this diagnostic topic */
+  /** When true, goToInput highlights Summary only (no source-tab switch) */
+  summaryOnlyGoToInput?: boolean
   irsGuidanceUrl?: string
   irsGuidanceLabel?: string
 }
@@ -99,11 +101,11 @@ const CONFIRM_PRIOR_AGI_ISSUE: IssueCard = {
   title: 'Prior-year AGI required for e-file authentication',
   category: 'Critical',
   summary:
-    'The imported 2024 Form 1040 shows AGI of $485,820 on line 11. Confirm this matches Jessica’s signed return before e-filing — prior-year AGI is required for IRS identity / PIN validation.',
+    'The imported 2024 Form 1040 shows AGI of $485,820 on line 11. Confirm this matches Jessica\'s signed return before e-filing. Prior-year AGI is required for IRS identity / PIN validation.',
   taxImpact:
     'Wrong prior-year AGI is a top reason for e-file rejections. The IRS uses it to authenticate the taxpayer.',
   rootCause:
-    'The Prior Year 1040 tab is populated from the imported 2024 return. Verify line 11 against Jessica’s signed copy or an IRS transcript before submission.',
+    'The Prior Year 1040 tab is populated from the imported 2024 return. Verify line 11 against Jessica\'s signed copy or an IRS transcript before submission.',
   tableRows: [
     { label: '2024 AGI (line 11)', cols: ['$485,820', 'Imported', 'Verify'], badge: 'red', total: false },
     { label: '2024 total tax (line 24)', cols: ['$102,754', 'Imported', 'Verify'], badge: 'orange', total: true },
@@ -111,23 +113,34 @@ const CONFIRM_PRIOR_AGI_ISSUE: IssueCard = {
   tableHeaders: ['Field', 'Value', 'Source', 'Action'],
   suggestedActions: [
     'Open Prior Year 1040 and confirm line 11 shows $485,820.',
-    'Compare against Jessica’s signed 2024 return or IRS Get Transcript.',
+    'Compare against Jessica\'s signed 2024 return or IRS Get Transcript.',
     'Enter the confirmed AGI in the e-file section before submission.',
   ],
   actions: [
-    { type: 'reviewSource', label: 'Review Prior Year 1040' },
-    { type: 'goToInput', label: 'Go to AGI input' },
+    { type: 'reviewSource', label: 'Review Prior Year 1040', tab: 'prior-1040', field: 'agi' },
+    { type: 'goToInput', label: 'Go to AGI input', tab: 'prior-1040', field: 'agi' },
+  ],
+  sources: [
+    {
+      id: 'py-1040',
+      sourceName: 'Prior Year 1040',
+      title: 'Jessica Drake',
+      description: '2024 AGI $485,820',
+      meta: 'Imported',
+      tab: 'prior-1040',
+      field: 'agi',
+    },
   ],
   viewSourceTab: 'prior-1040',
   viewSourceField: 'agi',
   irsGuidanceUrl: 'https://www.irs.gov/individuals/validating-your-electronically-filed-tax-return',
-  irsGuidanceLabel: 'IRS guidance — e-file prior-year AGI',
+  irsGuidanceLabel: 'IRS guidance: e-file prior-year AGI',
 }
 
 const NIIT_FORM8960_ISSUE: IssueCard = {
   issueKey: 'niitForm8960',
   dotColor: 'red',
-  title: 'Required Form 8960 — Net Investment Income Tax',
+  title: 'Required Form 8960, Net Investment Income Tax',
   category: 'Critical',
   summary: RETURN_SUMMARY_INSIGHTS.niit,
   taxImpact:
@@ -144,16 +157,62 @@ const NIIT_FORM8960_ISSUE: IssueCard = {
     'Cross-check qualified vs. ordinary dividend classifications.',
   ],
   actions: [
-    { type: 'goToInput', label: 'Go to investment income' },
+    { type: 'goToInput', label: 'Go to investment income', field: 'ordinaryDivs' },
     {
       type: 'openForm',
       label: 'Open Form 8960',
-      note: 'Form 8960 is not in this prototype — complete it in the full product.',
+      note: 'Form 8960 is not in this prototype. Complete it in the full product.',
     },
   ],
-  viewSourceField: 'totalIncome',
+  sources: [
+    {
+      id: 'niit-ord-div',
+      sourceName: 'Summary',
+      title: 'Ordinary dividends',
+      description: `${fmtUsd(FROZEN_RETURN.ordinaryDivs)} · Line 3b`,
+      meta: 'Current year',
+      field: 'ordinaryDivs',
+    },
+    {
+      id: 'niit-qual-div',
+      sourceName: 'Summary',
+      title: 'Qualified dividends',
+      description: `${fmtUsd(FROZEN_RETURN.qualifiedDivs)} · Line 3a`,
+      meta: 'Current year',
+      field: 'qualifiedDivs',
+    },
+    {
+      id: 'niit-1099-div',
+      sourceName: '1099-DIV',
+      title: 'Token Financial',
+      description: `Ordinary divs ${fmtUsd(FROZEN_RETURN.ordinaryDivs)}`,
+      meta: 'In packet',
+      tab: '1099-divs',
+      field: 'ordinaryDivs',
+    },
+    {
+      id: 'niit-1099-int',
+      sourceName: '1099-INT',
+      title: 'Unwavering Financial',
+      description: `Taxable interest ${fmtUsd(FROZEN_RETURN.taxableInterest)}`,
+      meta: 'In packet',
+      tab: '1099-ints',
+      field: 'taxableInterest',
+    },
+    {
+      id: 'niit-8960',
+      sourceName: 'Form 8960',
+      title: 'Net Investment Income Tax',
+      description: 'Required at this AGI level',
+      meta: 'Not in packet',
+      placeholder: true,
+    },
+  ],
+  // Summary CY investment lines only — never prior-1040
+  viewSourceField: 'ordinaryDivs',
+  summaryOnlyGoToInput: true,
   irsGuidanceUrl: 'https://www.irs.gov/forms-pubs/about-form-8960',
-  irsGuidanceLabel: 'IRS guidance — About Form 8960 (NIIT)',
+  irsGuidanceLabel: 'IRS guidance: About Form 8960 (NIIT)',
 }
 
 function buildUnderpaymentRiskIssue(live: LiveReturnTotals): IssueCard {
@@ -161,13 +220,13 @@ function buildUnderpaymentRiskIssue(live: LiveReturnTotals): IssueCard {
   return {
     issueKey: 'underpaymentRisk',
     dotColor: 'orange',
-    title: 'Underpayment risk — low withholding and no estimated payments',
+    title: 'Underpayment risk: low withholding and no estimated payments',
     category: 'Compliance',
-    summary: `Combined federal withholding is ${fmtUsd(live.totalWithholding)} against ${fmtUsd(live.totalTax)} total tax. Line 26 shows $0 estimated payments. Jessica’s Tax Organizer says she did not make quarterly 1040-ES payments.`,
+    summary: `Combined federal withholding is ${fmtUsd(live.totalWithholding)} against ${fmtUsd(live.totalTax)} total tax. Line 26 shows $0 estimated payments. Jessica's Tax Organizer says she did not make quarterly 1040-ES payments.`,
     taxImpact: RETURN_SUMMARY_INSIGHTS.estTaxPenalty,
     rootCause: `Withholding covers ${Math.round((live.totalWithholding / live.totalTax) * 100)}% of tax and is below the ${fmtUsd(SAFE_HARBOR_2024)} safe harbor (110% of 2024 tax). Client confirmed no ES payments were made.`,
     clientResponseNote:
-      'Jessica Drake (Mar 2, 2025): “No. I didn’t make any estimated payments this year. I figured my W-2 and 1099 withholding would cover everything like usual.”',
+      'Jessica Drake (Mar 2, 2025): "No. I didn\'t make any estimated payments this year. I figured my W-2 and 1099 withholding would cover everything like usual."',
     questionnaireResponseId: 'estimatedPayments',
     tableRows: [
       { label: 'Federal withholding (25a + 25b)', cols: [fmtUsd(live.totalWithholding), '$41,100', 'YoY'], badge: 'orange', total: false },
@@ -178,22 +237,50 @@ function buildUnderpaymentRiskIssue(live: LiveReturnTotals): IssueCard {
     suggestedActions: [
       'Restore or confirm DIV / 1099-R withholding on the return.',
       'Review Form 2210 for underpayment penalty exposure.',
-      'Confirm the Tax Organizer “no ES payments” answer matches her records.',
+      'Confirm the Tax Organizer "no ES payments" answer matches her records.',
     ],
     actions: [
-      { type: 'goToInput', label: 'Go to withholding' },
-      { type: 'reviewSource', label: 'Review 1099-DIV' },
-      { type: 'viewClientResponse', label: 'View client response' },
+      { type: 'goToInput', label: 'Go to withholding', tab: '1099-divs', field: 'fedTaxWithheld' },
+      { type: 'reviewSource', label: 'Review 1099-DIV', tab: '1099-divs', field: 'fedTaxWithheld' },
+      { type: 'viewClientResponse', label: 'View client response', questionnaireResponseId: 'estimatedPayments' },
       {
         type: 'openForm',
         label: 'Open Form 2210',
-        note: 'Form 2210 is not in this prototype — estimate underpayment in the full product.',
+        note: 'Form 2210 is not in this prototype. Estimate underpayment in the full product.',
+      },
+    ],
+    sources: [
+      {
+        id: 'up-1099-div',
+        sourceName: '1099-DIV',
+        title: 'Token Financial',
+        description: `Fed. tax withheld ${fmtUsd(FROZEN_RETURN.divWithholding)}`,
+        meta: 'Box 4',
+        tab: '1099-divs',
+        field: 'fedTaxWithheld',
+      },
+      {
+        id: 'up-questionnaire',
+        sourceName: 'Questionnaire',
+        title: 'Estimated payments',
+        description: 'Client: no 1040-ES payments',
+        meta: 'Tax Organizer',
+        tab: 'questionnaire',
+        questionnaireResponseId: 'estimatedPayments',
+      },
+      {
+        id: 'up-2210',
+        sourceName: 'Form 2210',
+        title: 'Underpayment of Estimated Tax',
+        description: `Shortfall ${fmtUsd(shortfall)}`,
+        meta: 'Not in packet',
+        placeholder: true,
       },
     ],
     viewSourceTab: '1099-divs',
     viewSourceField: 'fedTaxWithheld',
     irsGuidanceUrl: 'https://www.irs.gov/forms-pubs/about-form-2210',
-    irsGuidanceLabel: 'IRS guidance — About Form 2210',
+    irsGuidanceLabel: 'IRS guidance: About Form 2210',
   }
 }
 
@@ -210,7 +297,7 @@ function buildNecScheduleCIssue(): IssueCard {
     rootCause:
       'Packet includes a 1099-NEC, but the return has no business schedule. Client said she had software, supplies, and travel expenses and is unsure what to claim.',
     clientResponseNote:
-      'Jessica Drake (Mar 5, 2025): “Yes — I had expenses for software, home office supplies, and some travel… Nothing for expenses is on the return yet.”',
+      'Jessica Drake (Mar 5, 2025): "Yes. I had expenses for software, home office supplies, and some travel… Nothing for expenses is on the return yet."',
     questionnaireResponseId: 'necExpenses',
     tableRows: [
       { label: '1099-NEC (Summit)', cols: ['On return', 'Box 1', '!'], badge: 'orange', total: false },
@@ -223,25 +310,53 @@ function buildNecScheduleCIssue(): IssueCard {
       'Review the Tax Organizer NEC expenses response.',
     ],
     actions: [
-      { type: 'reviewSource', label: 'Review 1099-NEC' },
-      { type: 'viewClientResponse', label: 'View client response' },
+      { type: 'reviewSource', label: 'Review 1099-NEC', tab: '1099-necs', field: 'nec-box1' },
+      { type: 'viewClientResponse', label: 'View client response', questionnaireResponseId: 'necExpenses' },
       {
         type: 'openForm',
         label: 'Open Schedule C',
-        note: 'Schedule C is not in this prototype — add business expenses in the full product.',
+        note: 'Schedule C is not in this prototype. Add business expenses in the full product.',
+      },
+    ],
+    sources: [
+      {
+        id: 'nec-1099',
+        sourceName: '1099-NEC',
+        title: 'Summit Advisory Partners',
+        description: 'Nonemployee compensation',
+        meta: 'Box 1',
+        tab: '1099-necs',
+        field: 'nec-box1',
+      },
+      {
+        id: 'nec-q',
+        sourceName: 'Questionnaire',
+        title: 'Business expenses',
+        description: 'Client confirmed deductible costs',
+        meta: 'Tax Organizer',
+        tab: 'questionnaire',
+        questionnaireResponseId: 'necExpenses',
+      },
+      {
+        id: 'nec-sched-c',
+        sourceName: 'Schedule C',
+        title: 'Profit or Loss From Business',
+        description: 'Not applied on return',
+        meta: 'Not in packet',
+        placeholder: true,
       },
     ],
     viewSourceTab: '1099-necs',
     viewSourceField: 'nec-box1',
     irsGuidanceUrl: 'https://www.irs.gov/forms-pubs/about-schedule-c-form-1040',
-    irsGuidanceLabel: 'IRS guidance — About Schedule C',
+    irsGuidanceLabel: 'IRS guidance: About Schedule C',
   }
 }
 
 const OPT_ITEMIZE_ISSUE: IssueCard = {
   issueKey: 'optItemize',
   dotColor: 'blue',
-  title: 'Standard deduction vs itemizing — mortgage interest',
+  title: 'Standard deduction vs itemizing: mortgage interest',
   category: 'Opportunities',
   summary:
     'The return is on the standard deduction, but Jessica said she owns a home, pays mortgage interest, and may have an unuploaded Form 1098. Itemizing could reduce taxable income.',
@@ -250,7 +365,7 @@ const OPT_ITEMIZE_ISSUE: IssueCard = {
   rootCause:
     'No Form 1098 is in the import packet. Tax Organizer confirms mortgage interest was paid in 2025; the exact amount still needs the 1098.',
   clientResponseNote:
-    'Jessica Drake (Feb 28, 2025): “Yes — I own my home and paid mortgage interest in 2025… I think I got a Form 1098 from my lender but I haven’t uploaded it yet.”',
+    'Jessica Drake (Feb 28, 2025): "Yes. I own my home and paid mortgage interest in 2025… I think I got a Form 1098 from my lender but I haven\'t uploaded it yet."',
   questionnaireResponseId: 'mortgage',
   tableRows: [
     { label: 'Deduction method', cols: ['Standard', 'On return', ''], badge: 'blue', total: false },
@@ -263,22 +378,50 @@ const OPT_ITEMIZE_ISSUE: IssueCard = {
     'If itemizing wins, switch to Schedule A before filing.',
   ],
   actions: [
-    { type: 'viewClientResponse', label: 'View client response' },
-    { type: 'goToInput', label: 'Go to deductions' },
+    { type: 'viewClientResponse', label: 'View client response', questionnaireResponseId: 'mortgage' },
+    { type: 'goToInput', label: 'Go to deductions', field: 'stdDeduction' },
     {
       type: 'openForm',
       label: 'Open Form 1098',
-      note: 'Form 1098 is not in this packet yet — request upload from the client.',
+      note: 'Form 1098 is not in this packet yet. Request upload from the client.',
+    },
+  ],
+  sources: [
+    {
+      id: 'item-std',
+      sourceName: 'Summary',
+      title: 'Standard deduction',
+      description: `${fmtUsd(FROZEN_RETURN.stdDeduction)} · On return`,
+      meta: 'Current year',
+      field: 'stdDeduction',
+    },
+    {
+      id: 'item-q',
+      sourceName: 'Questionnaire',
+      title: 'Mortgage interest',
+      description: 'Client confirmed 2025 payments',
+      meta: 'Tax Organizer',
+      tab: 'questionnaire',
+      questionnaireResponseId: 'mortgage',
+    },
+    {
+      id: 'item-1098',
+      sourceName: 'Form 1098',
+      title: 'Mortgage Interest Statement',
+      description: 'Not uploaded by client',
+      meta: 'Not in packet',
+      placeholder: true,
     },
   ],
   viewSourceField: 'stdDeduction',
+  summaryOnlyGoToInput: true,
   irsGuidanceUrl: 'https://www.irs.gov/taxtopics/tc501',
-  irsGuidanceLabel: 'IRS guidance — Should I itemize?',
+  irsGuidanceLabel: 'IRS guidance: Should I itemize?',
 }
 
 export const ISSUE_FIELD: Partial<Record<IssueKey, string>> = {
   confirmPriorAgi: 'agi',
-  niitForm8960: 'totalIncome',
+  niitForm8960: 'ordinaryDivs',
   underpaymentRisk: 'fedTaxWithheld',
   necScheduleC: 'nec-box1',
   optItemize: 'stdDeduction',
@@ -390,6 +533,60 @@ export default function AgentReportPane({
 
   const getIssueConfig = (key: string) => ALL_ISSUES.find(i => i.issueKey === key) ?? null
   const activeIssue = issueDetailOpen ? getIssueConfig(issueDetailOpen) : null
+
+  const navigateFromAction = (action?: IssueAction, fallback?: {
+    tab?: NavigateTab
+    field?: string
+    questionnaireResponseId?: QuestionnaireResponseId
+    summaryOnly?: boolean
+  }) => {
+    const tab = (action?.tab as NavigateTab | undefined) ?? fallback?.tab
+    const field = action?.field ?? fallback?.field
+    const qId = (action?.questionnaireResponseId as QuestionnaireResponseId | undefined)
+      ?? fallback?.questionnaireResponseId
+    const summaryOnly = fallback?.summaryOnly && !tab
+
+    if (summaryOnly && field) {
+      // Highlight Summary only — never switch source tabs (avoids sticky prior-1040)
+      onHighlightField?.(field)
+      onNavigateToTab?.(undefined, undefined, field)
+      return
+    }
+
+    if (action?.type === 'viewClientResponse' || tab === 'questionnaire') {
+      onNavigateToTab?.(
+        'questionnaire',
+        undefined,
+        undefined,
+        qId ?? activeIssue?.questionnaireResponseId,
+      )
+      return
+    }
+
+    onNavigateToTab?.(tab, activeIssue?.viewSourceSubTab, field, qId)
+  }
+
+  const handleSourceClick = (source: IssueSourceCard) => {
+    if (source.placeholder) return
+    if (source.tab === 'questionnaire' || source.questionnaireResponseId) {
+      onNavigateToTab?.(
+        'questionnaire',
+        undefined,
+        undefined,
+        source.questionnaireResponseId as QuestionnaireResponseId | undefined,
+      )
+      return
+    }
+    if (source.tab) {
+      onNavigateToTab?.(source.tab as NavigateTab, undefined, source.field)
+      return
+    }
+    if (source.field) {
+      // Summary-only source card
+      onHighlightField?.(source.field)
+      onNavigateToTab?.(undefined, undefined, source.field)
+    }
+  }
 
   return (
     <div className={`${embedded ? styles.panelEmbedded : styles.panel} ${closing && !embedded ? styles.panelClosing : ''}`}>
@@ -595,33 +792,32 @@ export default function AgentReportPane({
           tableHeaders={activeIssue.tableHeaders}
           suggestedActions={activeIssue.suggestedActions}
           actions={activeIssue.actions}
+          sources={activeIssue.sources}
           reviewedCount={reviewedCount}
           totalItems={totalActive}
           reviewedFields={reviewedFields}
           onBack={handleCloseIssueDetail}
           onClose={() => { handleCloseIssueDetail(); onClose?.() }}
-          onGoToInput={() => {
-            onNavigateToTab?.(
-              activeIssue.viewSourceTab,
-              activeIssue.viewSourceSubTab,
-              activeIssue.viewSourceField,
-            )
+          onGoToInput={(action) => {
+            navigateFromAction(action, {
+              tab: activeIssue.summaryOnlyGoToInput ? undefined : activeIssue.viewSourceTab,
+              field: action?.field ?? activeIssue.viewSourceField,
+              summaryOnly: activeIssue.summaryOnlyGoToInput,
+            })
           }}
-          onViewSource={() => {
-            onNavigateToTab?.(
-              activeIssue.viewSourceTab,
-              activeIssue.viewSourceSubTab,
-              activeIssue.viewSourceField,
-            )
+          onViewSource={(action) => {
+            navigateFromAction(action, {
+              tab: activeIssue.viewSourceTab,
+              field: action?.field ?? activeIssue.viewSourceField,
+            })
           }}
-          onViewClientResponse={() => {
-            onNavigateToTab?.(
-              'questionnaire',
-              undefined,
-              undefined,
-              activeIssue.questionnaireResponseId,
-            )
+          onViewClientResponse={(action) => {
+            navigateFromAction(action, {
+              tab: 'questionnaire',
+              questionnaireResponseId: activeIssue.questionnaireResponseId,
+            })
           }}
+          onSourceClick={handleSourceClick}
           onMarkReviewed={onMarkReviewed}
           issueNumber={activeOrder.indexOf(activeIssue.issueKey as IssueKey) + 1}
           category={activeIssue.category}

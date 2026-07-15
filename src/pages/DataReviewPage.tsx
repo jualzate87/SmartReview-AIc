@@ -1303,6 +1303,14 @@ export default function DataReviewPage() {
                         setActiveTopTab('w2s')
                       }}
                       onNavigateToTab={(tab, subTab, field, questionnaireResponseId) => {
+                        // Summary-only CTAs (e.g. NIIT investment income): highlight CY
+                        // Summary without opening Sources on a stale tab like prior-1040.
+                        if (!tab && field) {
+                          setSelectedField(field)
+                          setActiveIssueField(field)
+                          setQuestionnaireHighlightId(null)
+                          return
+                        }
                         if (tab) {
                           setActiveTopTab(tab)
                           if (subTab) setActiveSubTab(subTab)
