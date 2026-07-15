@@ -122,6 +122,10 @@ export default function DataReviewPage() {
   const [rightPanelWidth, setRightPanelWidth] = useState(() =>
     typeof window !== 'undefined' ? Math.round(window.innerWidth * 0.65) : 920,
   )
+  // Body width for Sources-panel share of the row (drives auto side-by-side).
+  const [bodyWidth, setBodyWidth] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth : 1400,
+  )
   // Suppress panel width CSS transitions while the user is dragging a resize handle
   const [panelResizing, setPanelResizing] = useState(false)
   // Top/bottom section height ratio in right panel (0-100, where value = preview percentage)
@@ -227,10 +231,10 @@ export default function DataReviewPage() {
     setImportsStarted(true)
     setShow1040(true)
     const body = bodyRef.current
-    const width = body
-      ? Math.round(body.getBoundingClientRect().width * 0.65)
-      : Math.round(window.innerWidth * 0.65)
-    setRightPanelWidth(Math.max(480, width))
+    const bodyW = body ? body.getBoundingClientRect().width : window.innerWidth
+    setBodyWidth(bodyW)
+    // ~65% of body → sourcesPanelWide (>0.6) → auto side-by-side on open
+    setRightPanelWidth(Math.max(480, Math.round(bodyW * 0.65)))
     setRightPanelVisible(true)
     requestAnimationFrame(() => requestAnimationFrame(() => {
       setRightPanelAnimating(true)
@@ -507,10 +511,30 @@ export default function DataReviewPage() {
     })
   }, [rightPanelWidth, beginPanelDrag])
 
-  // Preview + Details: stacked (column) when Summary is shown and preview ≤60%;
-  // side-by-side (row) when Hide Summary OR preview grows past 60% — same CSS
-  // pattern as Hide Summary. Same previewHeight % drives either axis.
-  const previewSideBySide = !show1040 || previewHeight > 60
+  // Keep bodyWidth in sync (Sources share of row uses rightPanelWidth / bodyWidth).
+  // Re-bind when phase changes so ProtoC attaches after leaving welcome (body mounts).
+  useEffect(() => {
+    const body = bodyRef.current
+    if (!body || typeof ResizeObserver === 'undefined') return
+    const update = () => setBodyWidth(body.getBoundingClientRect().width)
+    update()
+    const ro = new ResizeObserver(update)
+    ro.observe(body)
+    return () => ro.disconnect()
+  }, [phase])
+
+  // Side-by-side (doc LEFT / Details RIGHT) when ANY of:
+  //   1. Hide Summary (!show1040)
+  //   2. Preview occupies >60% of the docs split (previewHeight)
+  //   3. Sources panel is >60% of the body row (typical after Start reviewing imports)
+  // Stacked (preview TOP / Details BOTTOM) only when Summary is visible AND
+  // preview ≤60% AND Sources panel is ≤60% of the row.
+  const sourcesPanelWide =
+    rightPanelVisible &&
+    !rightPanelExiting &&
+    bodyWidth > 0 &&
+    rightPanelWidth / bodyWidth > 0.6
+  const previewSideBySide = !show1040 || previewHeight > 60 || sourcesPanelWide
 
   // Resize drag between the document preview and detail fields. Axis is frozen
   // for the gesture so crossing 60% mid-drag only flips layout (via
@@ -519,7 +543,8 @@ export default function DataReviewPage() {
     const split = splitPaneRef.current ?? rightRef.current
     if (!split) return
 
-    const stacked = show1040 && previewHeight <= 60
+    // Freeze axis to the layout at pointer-down (matches flexDirection).
+    const stacked = !previewSideBySide
     const startPos = stacked ? e.clientY : e.clientX
     const startSize = previewHeight
     beginPanelDrag(e, stacked ? 'row-resize' : 'col-resize', (clientX, clientY) => {
@@ -530,7 +555,7 @@ export default function DataReviewPage() {
       if (splitSize <= 0) return
       setPreviewHeight(Math.max(20, Math.min(75, startSize + (delta / splitSize) * 100)))
     })
-  }, [previewHeight, show1040, beginPanelDrag])
+  }, [previewHeight, previewSideBySide, beginPanelDrag])
 
   // ProtoC: welcome/orientation screen is the entry point (no header chrome)
   if (phase === 'welcome') {
