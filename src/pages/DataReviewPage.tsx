@@ -490,16 +490,19 @@ export default function DataReviewPage() {
     })
   }, [rightPanelWidth, beginPanelDrag])
 
-  // Resize drag between the document preview and detail fields. Side by side
-  // (like the pop-out window) when the 1040 is collapsed and there's room; when
-  // the 1040 is expanded, the pair stacks vertically instead so the source
-  // document isn't squeezed into a narrow column — same drag handle, same
-  // previewHeight value, just measuring along the other axis.
+  // Preview + Details: stacked (column) when Summary is shown and preview ≤60%;
+  // side-by-side (row) when Hide Summary OR preview grows past 60% — same CSS
+  // pattern as Hide Summary. Same previewHeight % drives either axis.
+  const previewSideBySide = !show1040 || previewHeight > 60
+
+  // Resize drag between the document preview and detail fields. Axis is frozen
+  // for the gesture so crossing 60% mid-drag only flips layout (via
+  // previewSideBySide), not the math. Same handle + previewHeight either way.
   const handlePreviewDrag = useCallback((e: React.PointerEvent) => {
     const split = splitPaneRef.current ?? rightRef.current
     if (!split) return
 
-    const stacked = show1040
+    const stacked = show1040 && previewHeight <= 60
     const startPos = stacked ? e.clientY : e.clientX
     const startSize = previewHeight
     beginPanelDrag(e, stacked ? 'row-resize' : 'col-resize', (clientX, clientY) => {
@@ -916,14 +919,14 @@ export default function DataReviewPage() {
                   minHeight: 0,
                   minWidth: 0,
                   overflow: 'hidden',
-                  flexDirection: show1040 ? 'column' : 'row',
+                  flexDirection: previewSideBySide ? 'row' : 'column',
                 }}
               >
-              <div style={show1040
+              <div style={previewSideBySide
                 ? {
                     flex: `0 0 ${previewHeight}%`,
                     overflow: 'hidden',
-                    borderBottom: '1px solid #D5DEE3',
+                    borderRight: '1px solid #D5DEE3',
                     display: 'flex',
                     flexDirection: 'column',
                     minHeight: 0,
@@ -932,7 +935,7 @@ export default function DataReviewPage() {
                 : {
                     flex: `0 0 ${previewHeight}%`,
                     overflow: 'hidden',
-                    borderRight: '1px solid #D5DEE3',
+                    borderBottom: '1px solid #D5DEE3',
                     display: 'flex',
                     flexDirection: 'column',
                     minHeight: 0,
@@ -952,13 +955,13 @@ export default function DataReviewPage() {
 
               {/* Drag handle — vertical (col-resize) side by side, horizontal (row-resize) stacked */}
               <div
-                className={show1040 ? dragStyles.handleHorizontal : dragStyles.handleVertical}
+                className={previewSideBySide ? dragStyles.handleVertical : dragStyles.handleHorizontal}
                 onPointerDown={handlePreviewDrag}
                 role="separator"
-                aria-orientation={show1040 ? 'horizontal' : 'vertical'}
+                aria-orientation={previewSideBySide ? 'vertical' : 'horizontal'}
                 aria-label="Resize document preview and Details"
               >
-                <DotsSix size="small" className={`${dragStyles.handleIcon} ${show1040 ? dragStyles.rotated90 : ''}`} />
+                <DotsSix size="small" className={`${dragStyles.handleIcon} ${previewSideBySide ? '' : dragStyles.rotated90}`} />
               </div>
 
               {/* Detail fields — switches based on active tab */}
