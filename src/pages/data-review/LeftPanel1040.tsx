@@ -2,8 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { CircleCheck, CircleInfo, Comment, Flag } from '@design-systems/icons'
 import FieldPopover, { FIELD_META } from './FieldPopover'
-import TaxControlDocPopover from './TaxControlDocPopover'
-import TaxControlBreakdownPopover from './TaxControlBreakdownPopover'
+import TaxControlDocPopover, {
+  docsToSummaryItems,
+  type SummaryInfoItem,
+  type SummaryInfoMode,
+} from './TaxControlDocPopover'
 import { getTaxControlBreakdown } from '../../data/taxControlBreakdowns'
 import { getFieldLiveCurrent, getFieldOrigin } from '../../data/fieldOrigins'
 import type { FieldOriginSource } from '../../data/fieldOrigins'
@@ -233,18 +236,19 @@ export default function LeftPanel1040({
   const [view, setView] = useState<'form' | 'table'>('table')
   // Table view: which categories are expanded
   const [expanded, setExpanded] = useState<Set<string>>(new Set(['income', 'deductions', 'tax', 'payments']))
-  /** Summary source flyout — Interest-style cards; doc opens only on card click */
-  const [sourceFlyout, setSourceFlyout] = useState<{
+  /** Unified Summary info flyout — Interest-style chrome for source / calc / note */
+  const [summaryFlyout, setSummaryFlyout] = useState<{
     field: string
     label: string
-    docs: TaxControlDocEntry[]
+    mode: SummaryInfoMode
+    items: SummaryInfoItem[]
     detailByDocId?: Record<string, string>
+    sumLabel?: string
+    sumValue?: number
+    subtitle?: string
+    footnote?: string
   } | null>(null)
-  const [sourceFlyoutRect, setSourceFlyoutRect] = useState<DOMRect | null>(null)
-  // Read-only calculation breakdown popover
-  const [breakdownRow, setBreakdownRow] = useState<string | null>(null)
-  const [breakdownRect, setBreakdownRect] = useState<DOMRect | null>(null)
-  const [breakdownField, setBreakdownField] = useState<string | null>(null)
+  const [summaryFlyoutRect, setSummaryFlyoutRect] = useState<DOMRect | null>(null)
 
   const toggleExpanded = (key: string) =>
     setExpanded(prev => { const s = new Set(prev); s.has(key) ? s.delete(key) : s.add(key); return s })
@@ -334,6 +338,7 @@ export default function LeftPanel1040({
 
   /** Anchor popover to the Amount cell of a form row (Form view only). */
   const openPopoverForRow = (field: string, rowEl: HTMLElement) => {
+    clearSummaryFlyouts()
     const cells = rowEl.querySelectorAll('td')
     const valueCell = cells[cells.length - 1] as HTMLElement | undefined
     const anchor = valueCell ?? rowEl
@@ -342,42 +347,46 @@ export default function LeftPanel1040({
   }
 
   const clearSummaryFlyouts = () => {
-    setSourceFlyout(null)
-    setSourceFlyoutRect(null)
-    setBreakdownRow(null)
-    setBreakdownRect(null)
-    setBreakdownField(null)
-    setPopoverField(null)
-    setPopoverRect(null)
+    setSummaryFlyout(null)
+    setSummaryFlyoutRect(null)
   }
 
   /**
    * Open Summary CY info flyout only — never navigates to / shows a source document.
    * Document open is reserved for a source-card click inside TaxControlDocPopover.
+   * All modes share Interest-style chrome (source / calc / note).
    */
   const openSummaryInfo = (field: string, el: HTMLElement) => {
     // Toggle closed if the same flyout is already open
-    if (
-      sourceFlyout?.field === field ||
-      breakdownField === field ||
-      popoverField === field
-    ) {
+    if (summaryFlyout?.field === field) {
       clearSummaryFlyouts()
       return
     }
 
     clearSummaryFlyouts()
+    // Don't leave a Form FieldPopover overlapping Summary flyouts
+    setPopoverField(null)
+    setPopoverRect(null)
 
     const rect = el.getBoundingClientRect()
     const controlId = SUMMARY_TO_CONTROL[field]
     const cfg = controlId ? TAX_CONTROL_ROWS.find(r => r.id === controlId) : undefined
     const breakdown = controlId ? getTaxControlBreakdown(controlId, controlSystemVals) : null
     const origin = getFieldOrigin(field, originTotals, liveAmounts)
+    const meta = FIELD_META[field]
+    const liveCurrent = getFieldLiveCurrent(field, originTotals)
 
-    // Source rows → Interest-style TaxControlDocPopover (control docs or origin sources)
+    // 1) Source-backed → Interest cards with View source + doc open on card click
     if (cfg && cfg.docs.length > 0 && breakdown?.kind === 'source') {
-      setSourceFlyout({ field, label: cfg.label, docs: cfg.docs })
-      setSourceFlyoutRect(rect)
+      setSummaryFlyout({
+        field,
+        label: cfg.label,
+        mode: 'source',
+        items: docsToSummaryItems(cfg.docs),
+        sumLabel: 'Total from sources',
+        sumValue: breakdown.total,
+      })
+      setSummaryFlyoutRect(rect)
       return
     }
     if (origin?.sources && origin.sources.length > 0) {
@@ -390,23 +399,79 @@ export default function LeftPanel1040({
           hint: s.amount,
         }
       })
-      setSourceFlyout({ field, label: origin.label, docs, detailByDocId })
-      setSourceFlyoutRect(rect)
+      setSummaryFlyout({
+        field,
+        label: origin.label,
+        mode: 'source',
+        items: docsToSummaryItems(docs),
+        detailByDocId,
+        sumLabel: 'Total from sources',
+      })
+      setSummaryFlyoutRect(rect)
       return
     }
 
-    // Calc / formula rows → TaxControlBreakdownPopover
-    if (breakdown?.kind === 'calc' && controlId) {
-      setBreakdownRect(rect)
-      setBreakdownRow(controlId)
-      setBreakdownField(field)
+    // 2) Totals / calc → same card chrome; contributing lines only (no doc open)
+    const calcComponents =
+      breakdown?.kind === 'calc'
+        ? breakdown.components.map((c, i) => ({
+            id: `calc-${i}`,
+            label: c.label,
+            amount: c.value,
+          }))
+        : origin?.calc?.components.map((c, i) => ({
+            id: `calc-${i}`,
+            label: c.label,
+            amount: c.amount,
+          }))
+    if (calcComponents && calcComponents.length > 0) {
+      const total = breakdown?.kind === 'calc' ? breakdown.total : origin!.calc!.total
+      const noteFoot =
+        meta?.note ??
+        origin?.note ??
+        (breakdown?.kind === 'calc' ? breakdown.footnote : undefined) ??
+        origin?.calc?.footnote
+      setSummaryFlyout({
+        field,
+        label: breakdown?.title ?? origin?.label ?? meta?.label ?? field,
+        mode: 'calc',
+        items: calcComponents,
+        sumLabel: 'Total from lines',
+        sumValue: total,
+        footnote: noteFoot,
+      })
+      setSummaryFlyoutRect(rect)
       return
     }
 
-    // Fallback — FieldPopover (notes / YoY-only lines with no source cards)
-    if (fieldHasPopover(field)) {
-      setPopoverRect(rect)
-      setPopoverField(field)
+    // 3) Note-only / capital gain — Interest chrome, no FieldPopover YoY / flair
+    if (fieldHasPopover(field) || origin?.note || meta?.note) {
+      const items: SummaryInfoItem[] = []
+      const note = origin?.note ?? meta?.note
+      if (note) {
+        items.push({ id: 'note', label: 'Note', note })
+      }
+      if (meta) {
+        items.push({ id: 'py', label: 'Prior year (2024)', amount: meta.prior })
+        items.push({
+          id: 'cy',
+          label: 'Current year (2025)',
+          amount: liveCurrent ?? meta.current,
+        })
+      } else if (liveCurrent !== undefined) {
+        items.push({ id: 'cy', label: 'Current year (2025)', amount: liveCurrent })
+      }
+      if (items.length === 0) return
+      setSummaryFlyout({
+        field,
+        label: origin?.label ?? meta?.label ?? field,
+        mode: 'info',
+        items,
+        sumLabel: 'Total',
+        sumValue: liveCurrent ?? meta?.current,
+        subtitle: note ? 'About this amount.' : undefined,
+      })
+      setSummaryFlyoutRect(rect)
     }
   }
 
@@ -766,7 +831,7 @@ export default function LeftPanel1040({
                                 <Tooltip text="View subtotals" placement="top">
                                   <button
                                     type="button"
-                                    className={`${styles.summaryInfoBtn} ${breakdownField === cat.totalField ? styles.summaryInfoBtnActive : ''}`}
+                                    className={`${styles.summaryInfoBtn} ${summaryFlyout?.field === cat.totalField ? styles.summaryInfoBtnActive : ''}`}
                                     aria-label={`View subtotals for ${cat.label}`}
                                     onClick={e => {
                                       e.stopPropagation()
@@ -874,7 +939,7 @@ export default function LeftPanel1040({
                                 >
                                   <button
                                     type="button"
-                                    className={`${styles.summaryInfoBtn} ${(sourceFlyout?.field === row.field || breakdownField === row.field || popoverField === row.field) ? styles.summaryInfoBtnActive : ''}`}
+                                    className={`${styles.summaryInfoBtn} ${summaryFlyout?.field === row.field ? styles.summaryInfoBtnActive : ''}`}
                                     aria-label={row.kind === 'calc' ? `View subtotals for ${row.label}` : `View sources for ${row.label}`}
                                     onClick={e => {
                                       e.stopPropagation()
@@ -996,7 +1061,7 @@ export default function LeftPanel1040({
                     <Tooltip text="View subtotals" placement="top">
                       <button
                         type="button"
-                        className={`${styles.summaryInfoBtn} ${breakdownField === 'amountOwed' ? styles.summaryInfoBtnActive : ''}`}
+                        className={`${styles.summaryInfoBtn} ${summaryFlyout?.field === 'amountOwed' ? styles.summaryInfoBtnActive : ''}`}
                         aria-label="View subtotals for amount you owe"
                         onClick={e => {
                           e.stopPropagation()
@@ -1025,42 +1090,40 @@ export default function LeftPanel1040({
       )}
 
 
-      {/* Summary source flyout — Interest card style; doc opens only on card click */}
-      {sourceFlyout && sourceFlyoutRect && (
+      {/* Summary info flyout — Interest card style for source / calc / note */}
+      {summaryFlyout && summaryFlyoutRect && (
         <TaxControlDocPopover
-          rowLabel={sourceFlyout.label}
-          docs={sourceFlyout.docs}
-          onNavigateToDoc={docId => {
-            const detailFieldId = sourceFlyout.detailByDocId?.[docId]
-            if (detailFieldId && onNavigateSource) {
-              onNavigateSource({
-                docId,
-                detailFieldId,
-                label: sourceFlyout.docs.find(d => d.docId === docId)?.label ?? docId,
-              })
-            } else {
-              onNavigateToSourceDoc?.(docId)
-            }
-            setSourceFlyout(null)
-            setSourceFlyoutRect(null)
-          }}
-          anchorRect={sourceFlyoutRect}
-          onClose={() => { setSourceFlyout(null); setSourceFlyoutRect(null) }}
+          rowLabel={summaryFlyout.label}
+          mode={summaryFlyout.mode}
+          items={summaryFlyout.items}
+          subtitle={summaryFlyout.subtitle}
+          sumLabel={summaryFlyout.sumLabel}
+          sumValue={summaryFlyout.sumValue}
+          footnote={summaryFlyout.footnote}
+          onNavigateToDoc={
+            summaryFlyout.mode === 'source'
+              ? docId => {
+                  const detailFieldId = summaryFlyout.detailByDocId?.[docId]
+                  const item = summaryFlyout.items.find(d => d.docId === docId)
+                  if (detailFieldId && onNavigateSource) {
+                    onNavigateSource({
+                      docId,
+                      detailFieldId,
+                      label: item?.label ?? docId,
+                      box: '',
+                      amount: item?.amount ?? 0,
+                    })
+                  } else {
+                    onNavigateToSourceDoc?.(docId)
+                  }
+                  clearSummaryFlyouts()
+                }
+              : undefined
+          }
+          anchorRect={summaryFlyoutRect}
+          onClose={clearSummaryFlyouts}
         />
       )}
-
-      {/* Summary calculation breakdown popover */}
-      {breakdownRow && breakdownRect && (() => {
-        const breakdown = getTaxControlBreakdown(breakdownRow, controlSystemVals)
-        if (!breakdown) return null
-        return (
-          <TaxControlBreakdownPopover
-            breakdown={breakdown}
-            anchorRect={breakdownRect}
-            onClose={() => { setBreakdownRow(null); setBreakdownRect(null); setBreakdownField(null) }}
-          />
-        )
-      })()}
 
       <div className={styles.documentViewer} style={{ display: view === 'table' ? 'none' : undefined }}>
         <div className={styles.formDoc}>
