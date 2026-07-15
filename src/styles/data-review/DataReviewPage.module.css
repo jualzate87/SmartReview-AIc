@@ -139,6 +139,9 @@
   display: flex;
   flex: 1;
   min-height: 0;
+  /* Allow shrink below content min so overflow-x scrolls instead of growing
+     the row (grown bodyWidth was breaking the >60% Sources side-by-side rule). */
+  min-width: 0;
   /* Horizontal scroll when Summary min (956.4) + source min exceeds viewport */
   overflow-x: auto;
   overflow-y: hidden;

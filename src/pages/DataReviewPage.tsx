@@ -231,7 +231,9 @@ export default function DataReviewPage() {
     setImportsStarted(true)
     setShow1040(true)
     const body = bodyRef.current
-    const bodyW = body ? body.getBoundingClientRect().width : window.innerWidth
+    const bodyW = body
+      ? (body.clientWidth || body.getBoundingClientRect().width)
+      : window.innerWidth
     setBodyWidth(bodyW)
     // ~65% of body → sourcesPanelWide (>0.6) → auto side-by-side on open
     setRightPanelWidth(Math.max(480, Math.round(bodyW * 0.65)))
@@ -512,11 +514,12 @@ export default function DataReviewPage() {
   }, [rightPanelWidth, beginPanelDrag])
 
   // Keep bodyWidth in sync (Sources share of row uses rightPanelWidth / bodyWidth).
+  // Prefer clientWidth (scrollport) so overflowed content min-sizes don't inflate the ratio.
   // Re-bind when phase changes so ProtoC attaches after leaving welcome (body mounts).
   useEffect(() => {
     const body = bodyRef.current
     if (!body || typeof ResizeObserver === 'undefined') return
-    const update = () => setBodyWidth(body.getBoundingClientRect().width)
+    const update = () => setBodyWidth(body.clientWidth || body.getBoundingClientRect().width)
     update()
     const ro = new ResizeObserver(update)
     ro.observe(body)
@@ -529,6 +532,7 @@ export default function DataReviewPage() {
   //   3. Sources panel is >60% of the body row (typical after Start reviewing imports)
   // Stacked (preview TOP / Details BOTTOM) only when Summary is visible AND
   // preview ≤60% AND Sources panel is ≤60% of the row.
+  // Equivalent: sideBySide = !show1040 || previewHeight > 60 || (sourcesOpen && rightPanelWidth / bodyWidth > 0.6)
   const sourcesPanelWide =
     rightPanelVisible &&
     !rightPanelExiting &&
