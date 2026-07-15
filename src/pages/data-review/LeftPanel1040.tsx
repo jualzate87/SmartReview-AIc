@@ -27,10 +27,18 @@ interface LeftPanel1040Props {
   /** When true: clicking a field shows YoY badge, not blue popover */
   yoyExpanded?: boolean
   reviewedFields?: Set<string> | Map<string, unknown>
-  /** Summary-row checks — independent of import mark-reviewed */
+  /** Summary-row checks — independent of import mark-reviewed and of user flags */
   checkedFields?: Set<string>
   /** Toggle a field's summary-checked state */
   onToggleChecked?: (fieldName: string) => void
+  /** Summary-row user flags — independent of checks and Phase 1 import attention */
+  flaggedFields?: Set<string>
+  /** Toggle a field's summary user-flag (does not affect check) */
+  onToggleFlagged?: (fieldName: string) => void
+  /** Optional notes stored with user flags (kept when flag is turned off) */
+  flagNotes?: Record<string, string>
+  /** Persist / clear the short note for a flagged Summary row */
+  onSetFlagNote?: (fieldName: string, note: string) => void
   /** When true: this field is highlighted orange (active agent issue card) — takes precedence over blue */
   issueField?: string | null
   /** Called when user clicks a source link in the field popover */
@@ -94,6 +102,10 @@ export default function LeftPanel1040({
   reviewedFields = new Set(),
   checkedFields = new Set(),
   onToggleChecked,
+  flaggedFields = new Set(),
+  onToggleFlagged,
+  flagNotes = {},
+  onSetFlagNote,
   issueField,
   onViewSource,
   onNavigateSource,
@@ -248,6 +260,12 @@ export default function LeftPanel1040({
   const [commentAnchor, setCommentAnchor] = useState<{ top: number; left: number } | null>(null)
   const commentRef = useRef<HTMLDivElement>(null)
 
+  // Flag-note popover (optional short note when turning a Summary flag on)
+  const [flagNoteField, setFlagNoteField] = useState<string | null>(null)
+  const [flagNoteDraft, setFlagNoteDraft] = useState('')
+  const [flagNoteAnchor, setFlagNoteAnchor] = useState<{ top: number; left: number } | null>(null)
+  const flagNoteRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     if (!commentField) return
     const onDown = (e: MouseEvent) => {
@@ -258,6 +276,17 @@ export default function LeftPanel1040({
     document.addEventListener('mousedown', onDown)
     return () => document.removeEventListener('mousedown', onDown)
   }, [commentField])
+
+  useEffect(() => {
+    if (!flagNoteField) return
+    const onDown = (e: MouseEvent) => {
+      if (flagNoteRef.current && !flagNoteRef.current.contains(e.target as Node)) {
+        setFlagNoteField(null); setFlagNoteDraft(''); setFlagNoteAnchor(null)
+      }
+    }
+    document.addEventListener('mousedown', onDown)
+    return () => document.removeEventListener('mousedown', onDown)
+  }, [flagNoteField])
 
   const openComment1040 = (fieldKey: string, label: string, btn: HTMLElement) => {
     const btnRect = btn.getBoundingClientRect()
@@ -270,6 +299,37 @@ export default function LeftPanel1040({
     if (!commentDraft.trim()) return
     onAddFieldNote?.(commentDraft.trim(), context)
     setCommentField(null); setCommentDraft(''); setCommentAnchor(null)
+  }
+
+  const openFlagNotePopover = (fieldKey: string, btn: HTMLElement) => {
+    const btnRect = btn.getBoundingClientRect()
+    setFlagNoteAnchor({ top: btnRect.top + btnRect.height / 2, left: btnRect.left - 292 })
+    setFlagNoteField(fieldKey)
+    setFlagNoteDraft(flagNotes[fieldKey] ?? '')
+    // Close comment popover if open — one floaty at a time
+    setCommentField(null); setCommentDraft(''); setCommentAnchor(null)
+  }
+
+  const closeFlagNotePopover = () => {
+    setFlagNoteField(null); setFlagNoteDraft(''); setFlagNoteAnchor(null)
+  }
+
+  const saveFlagNote = () => {
+    if (!flagNoteField) return
+    onSetFlagNote?.(flagNoteField, flagNoteDraft)
+    closeFlagNotePopover()
+  }
+
+  /** Toggle user flag; opening note prompt only when turning on. Never touches check. */
+  const handleFlagClick = (fieldKey: string, btn: HTMLElement) => {
+    if (!onToggleFlagged) return
+    const turningOn = !flaggedFields.has(fieldKey)
+    onToggleFlagged(fieldKey)
+    if (turningOn) openFlagNotePopover(fieldKey, btn)
+    else {
+      // Turning off — keep note stored; just close editor if open for this row
+      if (flagNoteField === fieldKey) closeFlagNotePopover()
+    }
   }
 
   /** Anchor popover to the Amount cell of a form row (Form view only). */
@@ -739,16 +799,26 @@ export default function LeftPanel1040({
                       const pctChg = hasPrior && prior !== 0 ? Math.round((row.curr - prior!) / Math.abs(prior!) * 100) : null
                       const isReviewed = !!row.field && reviewedHas(row.field)
                       const isChecked  = !!row.field && checkedFields.has(row.field)
+                      const isFlagged  = !!row.field && flaggedFields.has(row.field)
+                      const flagNote   = row.field ? (flagNotes[row.field] ?? '') : ''
                       const isSelected = !!row.field && activeHighlight === row.field
                       const isIssue    = !!row.field && row.field === issueField
                       const isBlue     = isSelected && !isIssue
                       const isOrange   = isSelected && !!isIssue
                       const clickable  = !!row.field
                       const hasPopover = !!row.field && fieldHasPopover(row.field)
-                      const hasAttention = !!row.field && summaryFieldHasUnresolvedFlags(
+                      // System Phase 1 import attention — informational only; not the user flag
+                      const hasImportAttention = !!row.field && summaryFieldHasUnresolvedFlags(
                         row.field,
                         reviewedFields instanceof Map ? reviewedFields : new Map([...reviewedFields].map(k => [k, true])),
                       )
+                      const flagTooltip = isFlagged
+                        ? (flagNote
+                          ? `Flagged: ${flagNote}`
+                          : 'Flagged for follow-up — click to remove flag')
+                        : (hasImportAttention
+                          ? 'Flag this row for follow-up (import issues still need review)'
+                          : 'Flag this row for follow-up')
                       const diffPos = diff !== null && diff > 0
                       const diffNeg = diff !== null && diff < 0
 
@@ -849,18 +919,30 @@ export default function LeftPanel1040({
                               ) : (
                                 <span className={styles.summaryActionBtnSlot} aria-hidden="true" />
                               )}
-                              {!!row.field ? (
-                                <Tooltip
-                                  text={hasAttention ? 'Import flags still need review' : 'No import flags on this row'}
-                                  placement="top"
-                                >
-                                  <span
-                                    className={`${styles.summaryActionBtn} ${hasAttention ? styles.summaryActionBtnFlag : styles.summaryActionBtnFlagMuted}`}
-                                    role="img"
-                                    aria-label={hasAttention ? 'Import flags still need review' : 'No import flags on this row'}
+                              {!!row.field && !!onToggleFlagged ? (
+                                <Tooltip text={flagTooltip} placement="top">
+                                  <button
+                                    type="button"
+                                    className={`${styles.summaryActionBtn} ${isFlagged ? styles.summaryActionBtnFlag : ''} ${flagNoteField === row.field ? styles.summaryActionBtnActive : ''}`}
+                                    aria-label={isFlagged ? `Remove flag from ${row.label}` : `Flag ${row.label} for follow-up`}
+                                    aria-pressed={isFlagged}
+                                    onClick={e => {
+                                      e.stopPropagation()
+                                      // Already on + note editor open → treat as edit (keep flagged)
+                                      if (isFlagged && flagNoteField === row.field) {
+                                        closeFlagNotePopover()
+                                        return
+                                      }
+                                      // Already on → second click turns off (note kept in storage)
+                                      // Off → turn on + open optional note prompt
+                                      handleFlagClick(row.field!, e.currentTarget)
+                                    }}
                                   >
                                     <Flag size="small" />
-                                  </span>
+                                    {isFlagged && !!flagNote && (
+                                      <span className={styles.summaryFlagNoteDot} aria-hidden="true" />
+                                    )}
+                                  </button>
                                 </Tooltip>
                               ) : (
                                 <span className={styles.summaryActionBtnSlot} aria-hidden="true" />
@@ -1172,6 +1254,51 @@ export default function LeftPanel1040({
               }}
             >
               Post
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* ── Flag note popover (portal) — optional; flag already toggled on ── */}
+      {flagNoteField && flagNoteAnchor && createPortal(
+        <div
+          className={styles.commentPopover1040}
+          style={{ top: flagNoteAnchor.top, left: flagNoteAnchor.left, transform: 'translateY(-50%)' }}
+          ref={flagNoteRef}
+          onClick={e => e.stopPropagation()}
+        >
+          <div className={styles.commentPopoverCtx}>
+            <span className={`${styles.commentPopoverChip} ${styles.flagNoteChip}`}>
+              Flag note · {FIELD_META[flagNoteField]?.label ?? flagNoteField}
+            </span>
+          </div>
+          <textarea
+            autoFocus
+            className={styles.commentPopoverInput}
+            placeholder="Why does this need a double-check? (optional)"
+            value={flagNoteDraft}
+            onChange={e => setFlagNoteDraft(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) saveFlagNote()
+              if (e.key === 'Escape') closeFlagNotePopover()
+            }}
+            rows={2}
+          />
+          <div className={styles.commentPopoverActions}>
+            <button
+              type="button"
+              className={styles.commentPopoverCancel}
+              onClick={e => { e.stopPropagation(); closeFlagNotePopover() }}
+            >
+              Skip
+            </button>
+            <button
+              type="button"
+              className={`${styles.commentPopoverPost} ${styles.commentPopoverPostActive}`}
+              onClick={e => { e.stopPropagation(); saveFlagNote() }}
+            >
+              Done
             </button>
           </div>
         </div>,

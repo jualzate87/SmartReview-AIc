@@ -88,6 +88,10 @@ export default function DataReviewPage() {
     toggleVerifiedDoc,
     summaryCheckedFields,
     toggleSummaryChecked,
+    summaryFlaggedFields,
+    toggleSummaryFlagged,
+    summaryFlagNotes,
+    setSummaryFlagNote,
   } = useSyncedReviewState()
   const liveTotals = computeLiveReturn(amounts)
   const total1a = liveTotals.wages
@@ -671,6 +675,10 @@ export default function DataReviewPage() {
             reviewedFields={reviewedFields}
             checkedFields={summaryCheckedFields}
             onToggleChecked={toggleSummaryChecked}
+            flaggedFields={summaryFlaggedFields}
+            onToggleFlagged={toggleSummaryFlagged}
+            flagNotes={summaryFlagNotes}
+            onSetFlagNote={setSummaryFlagNote}
             issueField={issueField}
             liveTotals={liveTotals}
             liveAmounts={amounts}

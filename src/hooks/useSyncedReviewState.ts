@@ -34,13 +34,20 @@ interface SyncedState {
   verifiedDocsList: string[]
   /** Summary-row checks (preparer) — independent of import mark-reviewed */
   summaryCheckedFieldsList: string[]
+  /**
+   * Summary-row user flags (preparer attention markers).
+   * Independent of checks and of Phase 1 import-issue attention.
+   */
+  summaryFlaggedFieldsList: string[]
+  /** Optional short notes keyed by Summary field id — kept when flag is turned off */
+  summaryFlagNotes: Record<string, string>
   activeDivPayer: DivPayer
   activeIntPayer: IntPayer
 }
 
 const CHANNEL_NAME = 'protoc-data-review-sync'
 // Bump whenever DEFAULT_STATE shape or seed values change so stale sessions reset.
-const STATE_VERSION = 12
+const STATE_VERSION = 13
 const STORAGE_KEY = 'protoc-data-review-state-v' + STATE_VERSION
 const PREPARER_NAME = 'Sara Chen'
 
@@ -57,6 +64,8 @@ const DEFAULT_STATE: SyncedState = {
   editedFieldsList: [],
   verifiedDocsList: [],
   summaryCheckedFieldsList: [],
+  summaryFlaggedFieldsList: [],
+  summaryFlagNotes: {},
   activeDivPayer: 'tokenFinancial',
   activeIntPayer: 'unwaverIngFinancial',
 }
@@ -79,6 +88,8 @@ function loadInitialState(): SyncedState {
         },
         editedFieldsList: parsed.editedFieldsList ?? [],
         summaryCheckedFieldsList: parsed.summaryCheckedFieldsList ?? [],
+        summaryFlaggedFieldsList: parsed.summaryFlaggedFieldsList ?? [],
+        summaryFlagNotes: parsed.summaryFlagNotes ?? {},
       }
     }
   } catch {
@@ -168,6 +179,8 @@ export function useSyncedReviewState() {
 
   const verifiedDocs = new Set(state.verifiedDocsList)
   const summaryCheckedFields = new Set(state.summaryCheckedFieldsList)
+  const summaryFlaggedFields = new Set(state.summaryFlaggedFieldsList)
+  const summaryFlagNotes = state.summaryFlagNotes
 
   const toggleVerifiedDoc = (docKey: string) => {
     const next = new Set(stateRef.current.verifiedDocsList)
@@ -176,11 +189,31 @@ export function useSyncedReviewState() {
     update({ verifiedDocsList: Array.from(next) })
   }
 
+  /** Toggle Summary check — does not affect flags or import reviewed state. */
   const toggleSummaryChecked = (fieldName: string) => {
     const next = new Set(stateRef.current.summaryCheckedFieldsList)
     if (next.has(fieldName)) next.delete(fieldName)
     else next.add(fieldName)
     update({ summaryCheckedFieldsList: Array.from(next) })
+  }
+
+  /**
+   * Toggle Summary user flag — does not affect checks or import reviewed state.
+   * Notes are kept when flagging off so re-flagging can restore them.
+   */
+  const toggleSummaryFlagged = (fieldName: string) => {
+    const next = new Set(stateRef.current.summaryFlaggedFieldsList)
+    if (next.has(fieldName)) next.delete(fieldName)
+    else next.add(fieldName)
+    update({ summaryFlaggedFieldsList: Array.from(next) })
+  }
+
+  const setSummaryFlagNote = (fieldName: string, note: string) => {
+    const trimmed = note.trim()
+    const next = { ...stateRef.current.summaryFlagNotes }
+    if (trimmed) next[fieldName] = trimmed
+    else delete next[fieldName]
+    update({ summaryFlagNotes: next })
   }
 
   const updateAmounts = (patch: Partial<LiveAmounts>) => {
@@ -272,5 +305,9 @@ export function useSyncedReviewState() {
     toggleVerifiedDoc,
     summaryCheckedFields,
     toggleSummaryChecked,
+    summaryFlaggedFields,
+    toggleSummaryFlagged,
+    summaryFlagNotes,
+    setSummaryFlagNote,
   }
 }
