@@ -598,7 +598,9 @@ export default function AgentReportPane({
                             <Tooltip text="See the root cause, tax impact, and suggested next steps for this finding">
                               <Button priority="primary" size="small" onClick={() => openDetail(key)}>See details <ChevronRight size="small" /></Button>
                             </Tooltip>
-                            <Tooltip text={isReviewed ? 'Click to unmark' : 'Mark as reviewed'}>
+                            <Tooltip text={isReviewed && signOff
+                              ? `Reviewed · ${signOff.by} · ${signOff.at}`
+                              : (isReviewed ? 'Click to unmark' : 'Mark as reviewed')}>
                               <button
                                 className={`${styles.findingMarkReviewedBtn} ${isReviewed ? styles.findingMarkReviewedBtnActive : ''}`}
                                 aria-label={isReviewed ? `Unmark ${issue.title} as reviewed` : `Mark ${issue.title} as reviewed`}

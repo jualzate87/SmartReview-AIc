@@ -22,12 +22,17 @@ interface ReviewTabProps {
   isPopout?: boolean
   /** ProtoC: per-tab count of unresolved import flags — drives dynamic tab badges */
   flagCounts?: Record<string, number>
-  /** Initial flag totals — used to show green check when a tab’s flags are cleared */
+  /** Initial flag totals — used when combining with verified semantics */
   initialFlagCounts?: Record<string, number>
-  /** Docs the preparer marked verified — also qualifies for green check when count is 0 */
+  /** Docs the preparer marked verified */
   verifiedDocs?: Set<string>
-  /** Map top-tab key → verified doc key(s) for green-check qualification */
+  /** Map top-tab key → verified doc key(s) for type-level green check */
   tabVerifiedKeys?: Record<string, string[]>
+  /**
+   * Per-tab: true when every L2 doc in that type is reviewed/verified.
+   * When provided, drives the L1 green check (preferred over internal heuristics).
+   */
+  typeReviewed?: Record<string, boolean>
 }
 
 export default function ReviewTab({
@@ -40,6 +45,7 @@ export default function ReviewTab({
   initialFlagCounts,
   verifiedDocs,
   tabVerifiedKeys,
+  typeReviewed,
 }: ReviewTabProps) {
 
   const handleTabClick = (key: string, label: string) => {
@@ -50,17 +56,29 @@ export default function ReviewTab({
   }
 
   const renderBadge = (tabKey: string) => {
-    if (!flagCounts) return null
-    const count = flagCounts[tabKey] ?? 0
+    if (!flagCounts && !typeReviewed && !verifiedDocs) return null
+    const count = flagCounts?.[tabKey] ?? 0
     if (count > 0) {
       return <span className={styles.tabFlagBadge}>{count}</span>
     }
-    const initial = initialFlagCounts?.[tabKey] ?? 0
-    const verifiedKeys = tabVerifiedKeys?.[tabKey] ?? []
-    const isVerified = verifiedKeys.some(k => verifiedDocs?.has(k))
-    if (initial > 0 || isVerified) {
+    // Prefer explicit type-level reviewed signal from parent
+    if (typeReviewed?.[tabKey]) {
       return (
-        <span className={styles.tabClearedCheck} aria-label="All flags cleared">
+        <span className={styles.tabClearedCheck} aria-label="All documents reviewed">
+          <CircleCheck size="small" />
+        </span>
+      )
+    }
+    // Fallback: all verified-doc keys for this type are marked verified
+    const verifiedKeys = tabVerifiedKeys?.[tabKey] ?? []
+    const allVerified =
+      verifiedKeys.length > 0 && verifiedKeys.every(k => verifiedDocs?.has(k))
+    const initial = initialFlagCounts?.[tabKey] ?? 0
+    // Legacy: flags existed and are now cleared (single-doc types)
+    const flagsCleared = initial > 0 && count === 0 && verifiedKeys.length <= 1
+    if (allVerified || flagsCleared) {
+      return (
+        <span className={styles.tabClearedCheck} aria-label="All documents reviewed">
           <CircleCheck size="small" />
         </span>
       )

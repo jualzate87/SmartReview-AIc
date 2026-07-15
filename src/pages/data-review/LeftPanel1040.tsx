@@ -17,8 +17,17 @@ import { TAX_CONTROL_ROWS, getControlSystemValues, type TaxControlDocEntry } fro
 import type { LiveReturnTotals } from '../../data/liveReturn'
 import { CLIENT_ADDRESS, formatClientCityStateZip } from '../../data/clientAddress'
 import { summaryFieldHasUnresolvedFlags } from './phase1FieldSync'
+import {
+  formatActivityMeta,
+  type ActivityEntry,
+} from '../../hooks/useSyncedReviewState'
 import styles from '../../styles/data-review/LeftPanel1040.module.css'
 
+/** Tooltip body with optional who/when meta line */
+function activityTooltip(primary: string, entry?: ActivityEntry | null): string {
+  const meta = formatActivityMeta(entry)
+  return meta ? `${primary}\n${meta}` : primary
+}
 
 interface LeftPanel1040Props {
   selectedField?: string | null
@@ -30,16 +39,22 @@ interface LeftPanel1040Props {
   /** When true: clicking a field shows YoY badge, not blue popover */
   yoyExpanded?: boolean
   reviewedFields?: Set<string> | Map<string, unknown>
-  /** Summary-row checks — independent of import mark-reviewed and of user flags */
+  /** Summary-row checks — mutually exclusive with user flags */
   checkedFields?: Set<string>
+  /** Who/when for last check on each field */
+  checkedMeta?: Map<string, ActivityEntry>
   /** Toggle a field's summary-checked state */
   onToggleChecked?: (fieldName: string) => void
-  /** Summary-row user flags — independent of checks and Phase 1 import attention */
+  /** Summary-row user flags — mutually exclusive with checks */
   flaggedFields?: Set<string>
-  /** Toggle a field's summary user-flag (does not affect check) */
+  /** Who/when for currently active flags */
+  flaggedMeta?: Map<string, ActivityEntry>
+  /** Toggle a field's summary user-flag (clears check when turning on) */
   onToggleFlagged?: (fieldName: string) => void
   /** Optional notes stored with user flags (kept when flag is turned off) */
   flagNotes?: Record<string, string>
+  /** Last flag set / note Done activity (survives flag off) */
+  flagActivity?: Record<string, ActivityEntry>
   /** Persist / clear the short note for a flagged Summary row */
   onSetFlagNote?: (fieldName: string, note: string) => void
   /** When true: this field is highlighted orange (active agent issue card) — takes precedence over blue */
@@ -104,10 +119,13 @@ export default function LeftPanel1040({
   yoyExpanded = false,
   reviewedFields = new Set(),
   checkedFields = new Set(),
+  checkedMeta = new Map(),
   onToggleChecked,
   flaggedFields = new Set(),
+  flaggedMeta = new Map(),
   onToggleFlagged,
   flagNotes = {},
+  flagActivity = {},
   onSetFlagNote,
   issueField,
   onViewSource,
@@ -324,7 +342,7 @@ export default function LeftPanel1040({
     closeFlagNotePopover()
   }
 
-  /** Toggle user flag; opening note prompt only when turning on. Never touches check. */
+  /** Toggle user flag; opening note prompt only when turning on. Clears check off via store. */
   const handleFlagClick = (fieldKey: string, btn: HTMLElement) => {
     if (!onToggleFlagged) return
     const turningOn = !flaggedFields.has(fieldKey)
@@ -658,7 +676,13 @@ export default function LeftPanel1040({
 
             {/* Check button — outside value box, shown on hover */}
             {showCheckBtn && !isReviewed && (
-              <Tooltip text={isChecked ? 'Unmark as correct' : 'Mark as correct'} placement="top"><button
+              <Tooltip
+                text={activityTooltip(
+                  isChecked ? 'Unmark as correct' : 'Mark as correct',
+                  isChecked ? checkedMeta.get(field!) : undefined,
+                )}
+                placement="top"
+              ><button
                 className={`${styles.checkBtn} ${isChecked ? styles.checkBtnActive : ''}`}
                 aria-label={isChecked ? `Unmark ${field} as verified` : `Mark ${field} as verified`}
                 onClick={(e) => { e.stopPropagation(); onToggleChecked?.(field!) }}
@@ -891,13 +915,23 @@ export default function LeftPanel1040({
                         row.field,
                         reviewedFields instanceof Map ? reviewedFields : new Map([...reviewedFields].map(k => [k, true])),
                       )
-                      const flagTooltip = isFlagged
+                      const flagActivityEntry =
+                        (row.field && (flaggedMeta.get(row.field) ?? flagActivity[row.field])) || undefined
+                      const flagTooltipPrimary = isFlagged
                         ? (flagNote
                           ? `Flagged: ${flagNote}`
                           : 'Flagged for follow-up — click to remove flag')
                         : (hasImportAttention
                           ? 'Flag this row for follow-up (import issues still need review)'
                           : 'Flag this row for follow-up')
+                      const flagTooltip = activityTooltip(
+                        flagTooltipPrimary,
+                        isFlagged ? flagActivityEntry : undefined,
+                      )
+                      const checkTooltip = activityTooltip(
+                        isChecked ? 'Unmark as reviewed' : 'Mark row as reviewed',
+                        isChecked && row.field ? checkedMeta.get(row.field) : undefined,
+                      )
                       const diffPos = diff !== null && diff > 0
                       const diffNeg = diff !== null && diff < 0
 
@@ -1005,7 +1039,7 @@ export default function LeftPanel1040({
                                         return
                                       }
                                       // Already on → second click turns off (note kept in storage)
-                                      // Off → turn on + open optional note prompt
+                                      // Off → turn on + open optional note prompt (clears check)
                                       handleFlagClick(row.field!, e.currentTarget)
                                     }}
                                   >
@@ -1016,7 +1050,7 @@ export default function LeftPanel1040({
                                 <span className={styles.summaryActionBtnSlot} aria-hidden="true" />
                               )}
                               {!!row.field && !!onToggleChecked ? (
-                                <Tooltip text={isChecked ? 'Unmark as reviewed' : 'Mark row as reviewed'} placement="top">
+                                <Tooltip text={checkTooltip} placement="top">
                                   <button
                                     type="button"
                                     className={`${styles.summaryActionBtn} ${isChecked ? styles.summaryActionBtnChecked : ''}`}
@@ -1351,6 +1385,16 @@ export default function LeftPanel1040({
             }}
             rows={2}
           />
+          {(() => {
+            const meta = formatActivityMeta(
+              flagNoteField
+                ? (flaggedMeta.get(flagNoteField) ?? flagActivity[flagNoteField])
+                : undefined,
+            )
+            return meta ? (
+              <div className={styles.flagNoteMeta}>{meta}</div>
+            ) : null
+          })()}
           <div className={styles.commentPopoverActions}>
             <button
               type="button"

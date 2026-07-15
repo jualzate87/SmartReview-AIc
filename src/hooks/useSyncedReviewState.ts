@@ -21,6 +21,8 @@ export interface FieldValues {
 }
 
 export interface ReviewedEntry { by: string; at: string }
+/** Who/when for last check, flag, edit, or doc verify — same shape as reviewed. */
+export type ActivityEntry = ReviewedEntry
 
 interface SyncedState {
   activeTopTab: TopTab
@@ -29,30 +31,66 @@ interface SyncedState {
   /** All editable return amounts — single source of truth for 1040 recalculation */
   amounts: LiveAmounts
   reviewedFieldsList: [string, ReviewedEntry][]
-  /** Field keys the preparer has edited+saved this session (audit trail) */
-  editedFieldsList: string[]
-  verifiedDocsList: string[]
-  /** Summary-row checks (preparer) — independent of import mark-reviewed */
-  summaryCheckedFieldsList: string[]
+  /** Field keys the preparer has edited+saved this session (with who/when) */
+  editedFieldsList: [string, ActivityEntry][]
+  /** Docs marked verified — with who/when */
+  verifiedDocsList: [string, ActivityEntry][]
+  /** Summary-row checks (preparer) — mutually exclusive with flags */
+  summaryCheckedFieldsList: [string, ActivityEntry][]
   /**
    * Summary-row user flags (preparer attention markers).
-   * Independent of checks and of Phase 1 import-issue attention.
+   * Mutually exclusive with checks. Notes may remain when flag is off.
    */
-  summaryFlaggedFieldsList: string[]
+  summaryFlaggedFieldsList: [string, ActivityEntry][]
   /** Optional short notes keyed by Summary field id — kept when flag is turned off */
   summaryFlagNotes: Record<string, string>
+  /**
+   * Last flag activity (set/note Done) even after flag is cleared —
+   * used for lightweight meta display.
+   */
+  summaryFlagActivity: Record<string, ActivityEntry>
   activeDivPayer: DivPayer
   activeIntPayer: IntPayer
 }
 
 const CHANNEL_NAME = 'protoc-data-review-sync'
 // Bump whenever DEFAULT_STATE shape or seed values change so stale sessions reset.
-const STATE_VERSION = 13
+const STATE_VERSION = 14
 const STORAGE_KEY = 'protoc-data-review-state-v' + STATE_VERSION
-const PREPARER_NAME = 'Sara Chen'
+export const PREPARER_NAME = 'Sara Chen'
 
-function formatTimestamp(date: Date): string {
+export function formatActivityTimestamp(date: Date = new Date()): string {
   return date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })
+}
+
+export function formatActivityMeta(entry?: ActivityEntry | null): string {
+  if (!entry) return ''
+  return `${entry.by} · ${entry.at}`
+}
+
+function nowEntry(): ActivityEntry {
+  return { by: PREPARER_NAME, at: formatActivityTimestamp() }
+}
+
+/** Migrate legacy string[] lists → [key, ActivityEntry][] */
+function migrateActivityList(
+  raw: unknown,
+  fallbackAt = 'earlier',
+): [string, ActivityEntry][] {
+  if (!Array.isArray(raw)) return []
+  return raw.map((item): [string, ActivityEntry] | null => {
+    if (typeof item === 'string') {
+      return [item, { by: PREPARER_NAME, at: fallbackAt }]
+    }
+    if (Array.isArray(item) && typeof item[0] === 'string') {
+      const entry = item[1]
+      if (entry && typeof entry === 'object' && 'by' in entry && 'at' in entry) {
+        return [item[0], entry as ActivityEntry]
+      }
+      return [item[0], { by: PREPARER_NAME, at: fallbackAt }]
+    }
+    return null
+  }).filter((x): x is [string, ActivityEntry] => x !== null)
 }
 
 const DEFAULT_STATE: SyncedState = {
@@ -66,16 +104,30 @@ const DEFAULT_STATE: SyncedState = {
   summaryCheckedFieldsList: [],
   summaryFlaggedFieldsList: [],
   summaryFlagNotes: {},
+  summaryFlagActivity: {},
   activeDivPayer: 'tokenFinancial',
   activeIntPayer: 'unwaverIngFinancial',
+}
+
+/** Ensure check and flag never coexist for the same field (check wins if both present). */
+function enforceMutualExclusion(state: SyncedState): SyncedState {
+  const checked = new Set(state.summaryCheckedFieldsList.map(([k]) => k))
+  const flagged = state.summaryFlaggedFieldsList.filter(([k]) => !checked.has(k))
+  if (flagged.length === state.summaryFlaggedFieldsList.length) return state
+  return { ...state, summaryFlaggedFieldsList: flagged }
 }
 
 function loadInitialState(): SyncedState {
   try {
     const raw = sessionStorage.getItem(STORAGE_KEY)
     if (raw) {
-      const parsed = JSON.parse(raw) as Partial<SyncedState>
-      return {
+      const parsed = JSON.parse(raw) as Partial<SyncedState> & {
+        verifiedDocsList?: unknown
+        editedFieldsList?: unknown
+        summaryCheckedFieldsList?: unknown
+        summaryFlaggedFieldsList?: unknown
+      }
+      const loaded: SyncedState = {
         ...DEFAULT_STATE,
         ...parsed,
         amounts: {
@@ -86,11 +138,14 @@ function loadInitialState(): SyncedState {
             ...(parsed.amounts?.box12Rows ?? {}),
           },
         },
-        editedFieldsList: parsed.editedFieldsList ?? [],
-        summaryCheckedFieldsList: parsed.summaryCheckedFieldsList ?? [],
-        summaryFlaggedFieldsList: parsed.summaryFlaggedFieldsList ?? [],
+        editedFieldsList: migrateActivityList(parsed.editedFieldsList),
+        verifiedDocsList: migrateActivityList(parsed.verifiedDocsList),
+        summaryCheckedFieldsList: migrateActivityList(parsed.summaryCheckedFieldsList),
+        summaryFlaggedFieldsList: migrateActivityList(parsed.summaryFlaggedFieldsList),
         summaryFlagNotes: parsed.summaryFlagNotes ?? {},
+        summaryFlagActivity: parsed.summaryFlagActivity ?? {},
       }
+      return enforceMutualExclusion(loaded)
     }
   } catch {
     // ignore malformed storage — fall through to defaults
@@ -113,8 +168,9 @@ export function useSyncedReviewState() {
     const channel = new BroadcastChannel(CHANNEL_NAME)
     channelRef.current = channel
     channel.onmessage = (e: MessageEvent<SyncedState>) => {
-      setState(e.data)
-      try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(e.data)) } catch { /* ignore */ }
+      const next = enforceMutualExclusion(e.data)
+      setState(next)
+      try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(next)) } catch { /* ignore */ }
     }
     return () => channel.close()
   }, [])
@@ -124,10 +180,11 @@ export function useSyncedReviewState() {
     // fieldKeys.forEach(k => markReviewed(k))) each see the previous call's
     // write instead of all reading the same stale snapshot and clobbering
     // each other. setState is still what actually triggers the re-render.
-    stateRef.current = next
-    setState(next)
-    try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(next)) } catch { /* ignore */ }
-    channelRef.current?.postMessage(next)
+    const safe = enforceMutualExclusion(next)
+    stateRef.current = safe
+    setState(safe)
+    try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(safe)) } catch { /* ignore */ }
+    channelRef.current?.postMessage(safe)
   }
 
   const update = (patch: Partial<SyncedState>) => {
@@ -135,21 +192,24 @@ export function useSyncedReviewState() {
   }
 
   const reviewedFields = new Map(state.reviewedFieldsList)
-  const editedFields = new Set(state.editedFieldsList)
+  const editedFields = new Map(state.editedFieldsList)
+  const editedFieldKeys = new Set(state.editedFieldsList.map(([k]) => k))
 
   const markEdited = (fieldKey: string) => {
-    if (stateRef.current.editedFieldsList.includes(fieldKey)) return
-    update({ editedFieldsList: [...stateRef.current.editedFieldsList, fieldKey] })
+    const next = new Map(stateRef.current.editedFieldsList)
+    next.set(fieldKey, nowEntry())
+    update({ editedFieldsList: Array.from(next.entries()) })
   }
 
   const markEditedBulk = (fieldKeys: string[]) => {
-    const next = new Set(stateRef.current.editedFieldsList)
-    fieldKeys.forEach(k => next.add(k))
-    update({ editedFieldsList: Array.from(next) })
+    const next = new Map(stateRef.current.editedFieldsList)
+    const entry = nowEntry()
+    fieldKeys.forEach(k => next.set(k, entry))
+    update({ editedFieldsList: Array.from(next.entries()) })
   }
 
   const markReviewed = (fieldName: string) => {
-    const at = formatTimestamp(new Date())
+    const at = formatActivityTimestamp()
     const next = new Map(stateRef.current.reviewedFieldsList)
     next.set(fieldName, { by: PREPARER_NAME, at })
     // Auto-dismiss linked Phase 2 insights when a Phase 1 flag is resolved
@@ -163,7 +223,7 @@ export function useSyncedReviewState() {
   }
 
   const markReviewedBulk = (fieldNames: string[]) => {
-    const at = formatTimestamp(new Date())
+    const at = formatActivityTimestamp()
     const next = new Map(stateRef.current.reviewedFieldsList)
     fieldNames.forEach(f => {
       if (!next.has(f)) next.set(f, { by: PREPARER_NAME, at })
@@ -177,35 +237,59 @@ export function useSyncedReviewState() {
     update({ reviewedFieldsList: Array.from(next.entries()) })
   }
 
-  const verifiedDocs = new Set(state.verifiedDocsList)
-  const summaryCheckedFields = new Set(state.summaryCheckedFieldsList)
-  const summaryFlaggedFields = new Set(state.summaryFlaggedFieldsList)
+  const verifiedDocs = new Map(state.verifiedDocsList)
+  const verifiedDocKeys = new Set(state.verifiedDocsList.map(([k]) => k))
+  const summaryCheckedFields = new Map(state.summaryCheckedFieldsList)
+  const summaryCheckedKeys = new Set(state.summaryCheckedFieldsList.map(([k]) => k))
+  const summaryFlaggedFields = new Map(state.summaryFlaggedFieldsList)
+  const summaryFlaggedKeys = new Set(state.summaryFlaggedFieldsList.map(([k]) => k))
   const summaryFlagNotes = state.summaryFlagNotes
+  const summaryFlagActivity = state.summaryFlagActivity
 
   const toggleVerifiedDoc = (docKey: string) => {
-    const next = new Set(stateRef.current.verifiedDocsList)
+    const next = new Map(stateRef.current.verifiedDocsList)
     if (next.has(docKey)) next.delete(docKey)
-    else next.add(docKey)
-    update({ verifiedDocsList: Array.from(next) })
+    else next.set(docKey, nowEntry())
+    update({ verifiedDocsList: Array.from(next.entries()) })
   }
 
-  /** Toggle Summary check — does not affect flags or import reviewed state. */
+  /** Toggle Summary check — clearing flag if turning check on. */
   const toggleSummaryChecked = (fieldName: string) => {
-    const next = new Set(stateRef.current.summaryCheckedFieldsList)
-    if (next.has(fieldName)) next.delete(fieldName)
-    else next.add(fieldName)
-    update({ summaryCheckedFieldsList: Array.from(next) })
+    const nextChecked = new Map(stateRef.current.summaryCheckedFieldsList)
+    const nextFlagged = new Map(stateRef.current.summaryFlaggedFieldsList)
+    if (nextChecked.has(fieldName)) {
+      nextChecked.delete(fieldName)
+    } else {
+      nextChecked.set(fieldName, nowEntry())
+      nextFlagged.delete(fieldName) // mutual exclusion: check supersedes flag
+    }
+    update({
+      summaryCheckedFieldsList: Array.from(nextChecked.entries()),
+      summaryFlaggedFieldsList: Array.from(nextFlagged.entries()),
+    })
   }
 
   /**
-   * Toggle Summary user flag — does not affect checks or import reviewed state.
+   * Toggle Summary user flag — clearing check if turning flag on.
    * Notes are kept when flagging off so re-flagging can restore them.
    */
   const toggleSummaryFlagged = (fieldName: string) => {
-    const next = new Set(stateRef.current.summaryFlaggedFieldsList)
-    if (next.has(fieldName)) next.delete(fieldName)
-    else next.add(fieldName)
-    update({ summaryFlaggedFieldsList: Array.from(next) })
+    const nextFlagged = new Map(stateRef.current.summaryFlaggedFieldsList)
+    const nextChecked = new Map(stateRef.current.summaryCheckedFieldsList)
+    const nextActivity = { ...stateRef.current.summaryFlagActivity }
+    if (nextFlagged.has(fieldName)) {
+      nextFlagged.delete(fieldName)
+    } else {
+      const entry = nowEntry()
+      nextFlagged.set(fieldName, entry)
+      nextActivity[fieldName] = entry
+      nextChecked.delete(fieldName) // mutual exclusion: flag supersedes check
+    }
+    update({
+      summaryFlaggedFieldsList: Array.from(nextFlagged.entries()),
+      summaryCheckedFieldsList: Array.from(nextChecked.entries()),
+      summaryFlagActivity: nextActivity,
+    })
   }
 
   const setSummaryFlagNote = (fieldName: string, note: string) => {
@@ -213,7 +297,16 @@ export function useSyncedReviewState() {
     const next = { ...stateRef.current.summaryFlagNotes }
     if (trimmed) next[fieldName] = trimmed
     else delete next[fieldName]
-    update({ summaryFlagNotes: next })
+    const entry = nowEntry()
+    const nextActivity = { ...stateRef.current.summaryFlagActivity, [fieldName]: entry }
+    // Refresh flag activity timestamp when note is saved (flag already on)
+    const nextFlagged = new Map(stateRef.current.summaryFlaggedFieldsList)
+    if (nextFlagged.has(fieldName)) nextFlagged.set(fieldName, entry)
+    update({
+      summaryFlagNotes: next,
+      summaryFlagActivity: nextActivity,
+      summaryFlaggedFieldsList: Array.from(nextFlagged.entries()),
+    })
   }
 
   const updateAmounts = (patch: Partial<LiveAmounts>) => {
@@ -292,7 +385,10 @@ export function useSyncedReviewState() {
     fieldValues,
     updateFieldValue,
     reviewedFields,
-    editedFields,
+    /** Set of field keys for components that only need presence */
+    editedFields: editedFieldKeys,
+    /** Full who/when map for edited fields */
+    editedFieldsMeta: editedFields,
     markEdited,
     markEditedBulk,
     activeDivPayer: state.activeDivPayer,
@@ -301,13 +397,20 @@ export function useSyncedReviewState() {
     setActiveIntPayer: (payer: IntPayer) => update({ activeIntPayer: payer }),
     markReviewed,
     markReviewedBulk,
-    verifiedDocs,
+    /** Set of verified doc keys (presence) — matches prior API */
+    verifiedDocs: verifiedDocKeys,
+    verifiedDocsMeta: verifiedDocs,
     toggleVerifiedDoc,
-    summaryCheckedFields,
+    /** Set of checked summary field keys (presence) */
+    summaryCheckedFields: summaryCheckedKeys,
+    summaryCheckedMeta: summaryCheckedFields,
     toggleSummaryChecked,
-    summaryFlaggedFields,
+    /** Set of flagged summary field keys (presence) */
+    summaryFlaggedFields: summaryFlaggedKeys,
+    summaryFlaggedMeta: summaryFlaggedFields,
     toggleSummaryFlagged,
     summaryFlagNotes,
+    summaryFlagActivity,
     setSummaryFlagNote,
   }
 }

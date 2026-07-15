@@ -26,15 +26,15 @@ export default function PeelTab({ tabs, activeKey, onChange }: PeelTabProps) {
             onClick={() => onChange(tab.key)}
           >
             {tab.label}
-            {count > 0 && (
+            {count > 0 && !tab.showClearedCheck && (
               <span className={`${styles.badge} ${isActive ? styles.badgeActive : styles.badgeInactive}`}>
                 {count}
               </span>
             )}
-            {count === 0 && tab.showClearedCheck && (
+            {tab.showClearedCheck && (
               <span
                 className={`${styles.clearedCheck} ${isActive ? styles.clearedCheckActive : ''}`}
-                aria-label="All flags cleared"
+                aria-label="Document reviewed"
               >
                 <CircleCheck size="small" />
               </span>

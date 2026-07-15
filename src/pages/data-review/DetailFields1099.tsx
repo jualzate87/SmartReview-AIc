@@ -22,6 +22,11 @@ export const INT_PAYER_TABS: { key: IntPayer; label: string }[] = [
   { key: 'cascadeFederal',      label: 'Cascade Federal Savings' },
 ]
 
+/** Verified-docs key used by Mark as verified — keep PeelTab / ReviewTab in sync */
+export function intVerifiedDocKey(payer: IntPayer): string {
+  return `1099-int-${payer}`
+}
+
 // 1099-INT payers — Jessica Drake TY 2025
 const PAYER_DATA: Record<IntPayer, { ein: string; name: string; street: string; city: string; state: string; zip: string; payerPhone: string }> = {
   unwaverIngFinancial: {
@@ -129,7 +134,9 @@ interface DetailFields1099Props {
   onMarkReviewedBulk?: (fields: string[]) => void
   reviewedFields?: Map<string, { by: string; at: string }>
   editedFields?: Set<string>
+  editedFieldsMeta?: Map<string, { by: string; at: string }>
   verifiedDocs?: Set<string>
+  verifiedDocsMeta?: Map<string, { by: string; at: string }>
   onVerifyDoc?: (docKey: string) => void
   flaggedFields?: Record<string, string>
   onAddFieldNote?: (text: string, context: string) => void
@@ -148,7 +155,9 @@ export default function DetailFields1099({
   onMarkReviewedBulk,
   reviewedFields,
   editedFields: syncedEditedFields,
+  editedFieldsMeta,
   verifiedDocs,
+  verifiedDocsMeta,
   onVerifyDoc,
   flaggedFields = {},
   onAddFieldNote,
@@ -162,6 +171,15 @@ export default function DetailFields1099({
   // per-payer Box 1 interest also updates live amounts for 1040 recalculation
   const [staticValues, setStaticValues] = useState<Record<string, string>>({})
   const isEdited = (key: string) => syncedEditedFields?.has(key) || localEdited.has(key)
+  const editMetaText = (key: string) => {
+    const m = editedFieldsMeta?.get(key)
+    return m ? `Edited · ${m.by} · ${m.at}` : 'Edited'
+  }
+  const reviewedTip = (key: string, active: boolean) => {
+    if (!active) return 'Mark as correct'
+    const m = reviewedFields?.get(key)
+    return m ? `Marked correct · ${m.by} · ${m.at}` : 'Click to unmark'
+  }
   // Field key whose comment popover is currently open + its anchor position (fixed)
   const [commentField, setCommentField] = useState<string | null>(null)
   const [commentDraft, setCommentDraft] = useState('')
@@ -347,25 +365,33 @@ export default function DetailFields1099({
             <button className={styles.undoBtn} onClick={cancelEdit}>Undo</button>
           </div>
         ) : isReviewed ? (
-          <Tooltip text="Click to unmark" placement="top">
+          <Tooltip text={reviewedTip(fieldKey, true)} placement="top">
             <button className={styles.reviewedBadge} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'inline-flex', alignItems: 'center' }} onClick={e => { e.stopPropagation(); onMarkReviewed?.(fieldKey) }}><CircleCheck size="small" /></button>
           </Tooltip>
         ) : (
           <div className={styles.fieldActions}>
-            <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.(fieldKey) }}><CircleCheck size="small" /></button></Tooltip>
+            <Tooltip text={reviewedTip(fieldKey, false)} placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.(fieldKey) }}><CircleCheck size="small" /></button></Tooltip>
             {renderCommentBtn(fieldKey, label)}
           </div>
         )}
         {savedField === fieldKey && <span className={styles.recalcBadge}>{flowsTo1040 ? '1040 updated' : 'Saved'}</span>}
-        {isEdited(fieldKey) && savedField !== fieldKey && <span className={styles.editedBadge}>Edited</span>}
+        {isEdited(fieldKey) && savedField !== fieldKey && (
+          <Tooltip text={editMetaText(fieldKey)} placement="top">
+            <span className={styles.editedBadge}>Edited</span>
+          </Tooltip>
+        )}
       </div>
     )
   }
 
   const payer = PAYER_DATA[activePayer]
   const form = FORM_DATA[activePayer]
-  const docKey = `1099-int-${activePayer}`
+  const docKey = intVerifiedDocKey(activePayer)
   const intVerified = verifiedDocs?.has(docKey)
+  const verifiedMeta = verifiedDocsMeta?.get(docKey)
+  const verifiedTooltip = verifiedMeta
+    ? `Verified · ${verifiedMeta.by} · ${verifiedMeta.at}`
+    : 'Click to unmark verified'
   const isPrimary = activePayer === 'unwaverIngFinancial'
 
   return (
@@ -375,7 +401,9 @@ export default function DetailFields1099({
         <div className={styles.headerActions}>
           <h2 style={{ fontFamily: 'var(--font-family-component)', fontSize: 18, fontWeight: 500, color: '#21262a', margin: 0, flex: 1, textAlign: 'left' }}>Details: Interest Income (1099-INT)</h2>
           {intVerified ? (
-            <button className={styles.verifiedBadge} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, gap: 4, display: 'flex', alignItems: 'center' }} onClick={() => onVerifyDoc?.(docKey)}><CheckIcon /> Verified</button>
+            <Tooltip text={verifiedTooltip} placement="top">
+              <button className={styles.verifiedBadge} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, gap: 4, display: 'flex', alignItems: 'center' }} onClick={() => onVerifyDoc?.(docKey)}><CheckIcon /> Verified</button>
+            </Tooltip>
           ) : (
             <button className={styles.markVerifiedBtn} onClick={() => {
               onVerifyDoc?.(docKey)

@@ -15,10 +15,15 @@ import Int1099FormPreview from './data-review/Int1099FormPreview'
 import { getSourceDocPreview } from './data-review/sourceDocImages'
 import DetailFields, { W2_PAYER_TABS } from './data-review/DetailFields'
 import type { W2Employer } from './data-review/DetailFields'
-import DetailFields1099, { INT_PAYER_TABS } from './data-review/DetailFields1099'
+import DetailFields1099, { INT_PAYER_TABS, intVerifiedDocKey } from './data-review/DetailFields1099'
 import type { IntPayer } from './data-review/DetailFields1099'
-import DetailFieldsDiv, { DIV_PAYER_TABS } from './data-review/DetailFieldsDiv'
+import DetailFieldsDiv, { DIV_PAYER_TABS, divVerifiedDocKey } from './data-review/DetailFieldsDiv'
 import type { DivPayer } from './data-review/DetailFieldsDiv'
+import {
+  buildTabVerifiedKeys,
+  buildTypeReviewed,
+  isDocReviewed,
+} from './data-review/docReviewStatus'
 import DetailFields1099R, { R_PAYER_TABS } from './data-review/DetailFields1099R'
 import DetailFieldsNec, { NEC_PAYER_TABS } from './data-review/DetailFieldsNec'
 import PeelTab from './data-review/PeelTab'
@@ -89,13 +94,18 @@ export default function DataReviewPage() {
     markReviewed: handleMarkReviewed,
     markReviewedBulk: handleMarkReviewedBulk,
     verifiedDocs,
+    verifiedDocsMeta,
     toggleVerifiedDoc,
     summaryCheckedFields,
+    summaryCheckedMeta,
     toggleSummaryChecked,
     summaryFlaggedFields,
+    summaryFlaggedMeta,
     toggleSummaryFlagged,
     summaryFlagNotes,
+    summaryFlagActivity,
     setSummaryFlagNote,
+    editedFieldsMeta,
   } = useSyncedReviewState()
   const liveTotals = computeLiveReturn(amounts)
   const total1a = liveTotals.wages
@@ -164,6 +174,14 @@ export default function DataReviewPage() {
   const w2PayerFieldCounts: Record<W2Employer, number> = Object.fromEntries(
     W2_PAYER_TABS.map(({ key: p }) => [p, countPhase1FlagsForW2Payer(p, reviewedFields)])
   ) as Record<W2Employer, number>
+  const tabVerifiedKeys = buildTabVerifiedKeys()
+  const typeReviewed = buildTypeReviewed({
+    verifiedDocs,
+    w2Counts: w2PayerFieldCounts,
+    divCounts: divPayerFieldCounts,
+    intCounts: intPayerFieldCounts,
+    rRemaining: tabFlagCounts['1099-rs'] ?? 0,
+  })
   // Phase 2 diagnostics progress — same dismiss rules AgentReportPane uses, so
   // resolving Phase 1 flags / editing amounts that fix an insight keeps the banner in sync.
   const phase2Progress = getPhase2Progress({
@@ -652,10 +670,13 @@ export default function DataReviewPage() {
             yoyExpanded={yoyExpanded || agentSubView === 'yoyDetail' || activeTopTab === 'prior-1040' || phase === 'diagnostics'}
             reviewedFields={reviewedFields}
             checkedFields={summaryCheckedFields}
+            checkedMeta={summaryCheckedMeta}
             onToggleChecked={toggleSummaryChecked}
             flaggedFields={summaryFlaggedFields}
+            flaggedMeta={summaryFlaggedMeta}
             onToggleFlagged={toggleSummaryFlagged}
             flagNotes={summaryFlagNotes}
+            flagActivity={summaryFlagActivity}
             onSetFlagNote={setSummaryFlagNote}
             issueField={issueField}
             liveTotals={liveTotals}
@@ -797,13 +818,8 @@ export default function DataReviewPage() {
                 flagCounts={inImportPhase ? tabFlagCounts : undefined}
                 initialFlagCounts={inImportPhase ? tabInitialFlagCounts : undefined}
                 verifiedDocs={verifiedDocs}
-                tabVerifiedKeys={{
-                  w2s: ['techCircle'],
-                  '1099-divs': ['tokenFinancial', 'northmarkIndex', 'beaconDividend'],
-                  '1099-ints': ['unwaverIngFinancial', 'harborlineCredit', 'cascadeFederal'],
-                  '1099-rs': ['1099-r'],
-                  '1099-necs': ['1099-nec'],
-                }}
+                tabVerifiedKeys={tabVerifiedKeys}
+                typeReviewed={inImportPhase ? typeReviewed : undefined}
                 onTopTabChange={(tab) => {
                   setActiveTopTab(tab)
                   setFromAgent(false)
@@ -818,9 +834,12 @@ export default function DataReviewPage() {
                   tabs={DIV_PAYER_TABS.map(t => ({
                     ...t,
                     badge: divPayerFieldCounts[t.key],
-                    showClearedCheck:
-                      divPayerFieldCounts[t.key] === 0 &&
-                      (getInitialDivPayerFlagCount(t.key) > 0 || verifiedDocs.has(t.key)),
+                    showClearedCheck: isDocReviewed(
+                      verifiedDocs,
+                      divVerifiedDocKey(t.key),
+                      divPayerFieldCounts[t.key],
+                      getInitialDivPayerFlagCount(t.key),
+                    ),
                   }))}
                   activeKey={activeDivPayer}
                   onChange={key => setActiveDivPayer(key as DivPayer)}
@@ -831,9 +850,12 @@ export default function DataReviewPage() {
                   tabs={INT_PAYER_TABS.map(t => ({
                     ...t,
                     badge: intPayerFieldCounts[t.key],
-                    showClearedCheck:
-                      intPayerFieldCounts[t.key] === 0 &&
-                      (getInitialIntPayerFlagCount(t.key) > 0 || verifiedDocs.has(t.key)),
+                    showClearedCheck: isDocReviewed(
+                      verifiedDocs,
+                      intVerifiedDocKey(t.key),
+                      intPayerFieldCounts[t.key],
+                      getInitialIntPayerFlagCount(t.key),
+                    ),
                   }))}
                   activeKey={activeIntPayer}
                   onChange={key => setActiveIntPayer(key as IntPayer)}
@@ -844,9 +866,12 @@ export default function DataReviewPage() {
                   tabs={W2_PAYER_TABS.map(t => ({
                     ...t,
                     badge: w2PayerFieldCounts[t.key],
-                    showClearedCheck:
-                      w2PayerFieldCounts[t.key] === 0 &&
-                      (getInitialW2PayerFlagCount(t.key) > 0 || verifiedDocs.has(t.key)),
+                    showClearedCheck: isDocReviewed(
+                      verifiedDocs,
+                      t.key,
+                      w2PayerFieldCounts[t.key],
+                      getInitialW2PayerFlagCount(t.key),
+                    ),
                   }))}
                   activeKey={activeSubTab}
                   onChange={key => setActiveSubTab(key as W2Employer)}
@@ -857,9 +882,12 @@ export default function DataReviewPage() {
                   tabs={R_PAYER_TABS.map(t => ({
                     ...t,
                     badge: tabFlagCounts['1099-rs'],
-                    showClearedCheck:
-                      tabFlagCounts['1099-rs'] === 0 &&
-                      (getInitialRPayerFlagCount() > 0 || verifiedDocs.has('1099-r')),
+                    showClearedCheck: isDocReviewed(
+                      verifiedDocs,
+                      '1099-r',
+                      tabFlagCounts['1099-rs'],
+                      getInitialRPayerFlagCount(),
+                    ),
                   }))}
                   activeKey="meridian"
                   onChange={() => {}}
@@ -978,7 +1006,9 @@ export default function DataReviewPage() {
                   onMarkReviewedBulk={handleMarkReviewedBulk}
                   reviewedFields={reviewedFields}
                   editedFields={editedFields}
+                  editedFieldsMeta={editedFieldsMeta}
                   verifiedDocs={verifiedDocs}
+                  verifiedDocsMeta={verifiedDocsMeta}
                   onVerifyDoc={toggleVerifiedDoc}
                   flaggedFields={{
                     ssn: PHASE1_FLAG_MESSAGES.w2.ssn,
@@ -1039,7 +1069,9 @@ export default function DataReviewPage() {
                   onMarkReviewedBulk={handleMarkReviewedBulk}
                   reviewedFields={reviewedFields}
                   editedFields={editedFields}
+                  editedFieldsMeta={editedFieldsMeta}
                   verifiedDocs={verifiedDocs}
+                  verifiedDocsMeta={verifiedDocsMeta}
                   onVerifyDoc={toggleVerifiedDoc}
                   flaggedFields={{ taxableInterest: PHASE1_FLAG_MESSAGES.int.taxableInterest }}
                   onAddFieldNote={(text, context) => handleAddNote(text, context)}

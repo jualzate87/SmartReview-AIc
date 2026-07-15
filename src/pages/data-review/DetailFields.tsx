@@ -46,9 +46,13 @@ interface DetailFieldsProps {
   onMarkReviewedBulk?: (fields: string[]) => void
   reviewedFields?: Map<string, { by: string; at: string }>
   editedFields?: Set<string>
+  /** Who/when for last edit — optional; shown on Edited badge tooltip */
+  editedFieldsMeta?: Map<string, { by: string; at: string }>
   /** Map of doc field key → issue summary shown as a hover tooltip */
   flaggedFields?: Record<string, string>
   verifiedDocs?: Set<string>
+  /** Who/when for Mark as verified */
+  verifiedDocsMeta?: Map<string, { by: string; at: string }>
   onVerifyDoc?: (docKey: string) => void
   /** Called when user posts a note from a field popover: (text, contextLabel) */
   onAddFieldNote?: (text: string, context: string) => void
@@ -107,8 +111,10 @@ export default function DetailFields({
   onMarkReviewedBulk,
   reviewedFields,
   editedFields: syncedEditedFields,
+  editedFieldsMeta,
   flaggedFields = {},
   verifiedDocs,
+  verifiedDocsMeta,
   onVerifyDoc,
   onAddFieldNote,
 }: DetailFieldsProps) {
@@ -126,6 +132,15 @@ export default function DetailFields({
   // Local edits merge with synced editedFields for audit-trail badges across navigation
   const [localEdited, setLocalEdited] = useState<Set<string>>(new Set())
   const isEdited = (key: string) => syncedEditedFields?.has(key) || localEdited.has(key)
+  const editMetaText = (key: string) => {
+    const m = editedFieldsMeta?.get(key)
+    return m ? `Edited · ${m.by} · ${m.at}` : 'Edited'
+  }
+  const reviewedTip = (key: string, active: boolean) => {
+    if (!active) return 'Mark as correct'
+    const m = reviewedFields?.get(key)
+    return m ? `Marked correct · ${m.by} · ${m.at}` : 'Click to unmark'
+  }
   // Local overrides for static (non-calculated) fields edited by the user
   const [staticValues, setStaticValues] = useState<Record<string, string>>({})
   // Field key whose comment popover is currently open + its anchor position (fixed)
@@ -365,17 +380,21 @@ export default function DetailFields({
             <button className={styles.undoBtn} onClick={cancelEdit}>Undo</button>
           </div>
         ) : isReviewed ? (
-          <Tooltip text="Click to unmark" placement="top">
+          <Tooltip text={reviewedTip(key, true)} placement="top">
             <button className={styles.reviewedBadge} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'inline-flex', alignItems: 'center' }} onClick={e => { e.stopPropagation(); onMarkReviewed?.(key) }}><CircleCheck size="small" /></button>
           </Tooltip>
         ) : (
           <div className={styles.fieldActions}>
-            <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.(key) }}><CircleCheck size="small" /></button></Tooltip>
+            <Tooltip text={reviewedTip(key, false)} placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.(key) }}><CircleCheck size="small" /></button></Tooltip>
             {renderCommentBtn(key, label, employer.name)}
           </div>
         )}
         {savedField === key && <span className={styles.recalcBadge}>Saved</span>}
-        {isEdited(key) && savedField !== key && <span className={styles.editedBadge}>Edited</span>}
+        {isEdited(key) && savedField !== key && (
+          <Tooltip text={editMetaText(key)} placement="top">
+            <span className={styles.editedBadge}>Edited</span>
+          </Tooltip>
+        )}
       </div>
       {flaggedFields[fieldKey] && !isReviewed && (
         <div className={styles.validationNote} style={isReviewed ? { color: '#1a6b35', borderBottomColor: '#e8edf0' } : {}}>
@@ -396,6 +415,10 @@ export default function DetailFields({
   }
 
   const isVerified = verifiedDocs?.has(activeSubTab) ?? false
+  const verifiedMeta = verifiedDocsMeta?.get(activeSubTab)
+  const verifiedTooltip = verifiedMeta
+    ? `Verified · ${verifiedMeta.by} · ${verifiedMeta.at}`
+    : 'Click to unmark verified'
 
   return (
     <div className={styles.container}>
@@ -404,7 +427,9 @@ export default function DetailFields({
         <div className={styles.headerActions}>
           <h2 style={{ fontFamily: 'var(--font-family-component)', fontSize: 18, fontWeight: 500, color: '#21262a', margin: 0, flex: 1, textAlign: 'left' }}>{formTitle}</h2>
           {isVerified ? (
-            <button className={styles.verifiedBadge} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, gap: 4, display: 'flex', alignItems: 'center' }} onClick={() => onVerifyDoc?.(activeSubTab)}><CheckIcon size={14} /> Verified</button>
+            <Tooltip text={verifiedTooltip} placement="top">
+              <button className={styles.verifiedBadge} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, gap: 4, display: 'flex', alignItems: 'center' }} onClick={() => onVerifyDoc?.(activeSubTab)}><CheckIcon size={14} /> Verified</button>
+            </Tooltip>
           ) : (
             <button
               className={styles.markVerifiedBtn}

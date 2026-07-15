@@ -21,10 +21,15 @@ import Int1099FormPreview from './data-review/Int1099FormPreview'
 import { getSourceDocPreview } from './data-review/sourceDocImages'
 import DetailFields, { W2_PAYER_TABS } from './data-review/DetailFields'
 import type { W2Employer } from './data-review/DetailFields'
-import DetailFields1099, { INT_PAYER_TABS } from './data-review/DetailFields1099'
+import DetailFields1099, { INT_PAYER_TABS, intVerifiedDocKey } from './data-review/DetailFields1099'
 import type { IntPayer } from './data-review/DetailFields1099'
-import DetailFieldsDiv, { DIV_PAYER_TABS } from './data-review/DetailFieldsDiv'
+import DetailFieldsDiv, { DIV_PAYER_TABS, divVerifiedDocKey } from './data-review/DetailFieldsDiv'
 import type { DivPayer } from './data-review/DetailFieldsDiv'
+import {
+  buildTabVerifiedKeys,
+  buildTypeReviewed,
+  isDocReviewed,
+} from './data-review/docReviewStatus'
 import DetailFields1099R, { R_PAYER_TABS } from './data-review/DetailFields1099R'
 import DetailFieldsNec, { NEC_PAYER_TABS } from './data-review/DetailFieldsNec'
 import PeelTab from './data-review/PeelTab'
@@ -99,6 +104,14 @@ export default function DataReviewPopout() {
   const w2PayerFieldCounts: Record<W2Employer, number> = Object.fromEntries(
     W2_PAYER_TABS.map(({ key: p }) => [p, countPhase1FlagsForW2Payer(p, reviewedFields)])
   ) as Record<W2Employer, number>
+  const tabVerifiedKeys = buildTabVerifiedKeys()
+  const typeReviewed = buildTypeReviewed({
+    verifiedDocs,
+    w2Counts: w2PayerFieldCounts,
+    divCounts: divPayerFieldCounts,
+    intCounts: intPayerFieldCounts,
+    rRemaining: tabFlagCounts['1099-rs'] ?? 0,
+  })
 
   const rightRef = useRef<HTMLDivElement>(null)
   const [previewWidth, setPreviewWidth] = useState(40)
@@ -150,13 +163,8 @@ export default function DataReviewPopout() {
         flagCounts={tabFlagCounts}
         initialFlagCounts={tabInitialFlagCounts}
         verifiedDocs={verifiedDocs}
-        tabVerifiedKeys={{
-          w2s: ['techCircle'],
-          '1099-divs': ['tokenFinancial', 'northmarkIndex', 'beaconDividend'],
-          '1099-ints': ['unwaverIngFinancial', 'harborlineCredit', 'cascadeFederal'],
-          '1099-rs': ['1099-r'],
-          '1099-necs': ['1099-nec'],
-        }}
+        tabVerifiedKeys={tabVerifiedKeys}
+        typeReviewed={typeReviewed}
         onTopTabChange={(tab) => { setActiveTopTab(tab); setSelectedField(null) }}
       />
 
@@ -170,9 +178,12 @@ export default function DataReviewPopout() {
           tabs={DIV_PAYER_TABS.map(t => ({
             ...t,
             badge: divPayerFieldCounts[t.key],
-            showClearedCheck:
-              divPayerFieldCounts[t.key] === 0 &&
-              (getInitialDivPayerFlagCount(t.key) > 0 || verifiedDocs.has(t.key)),
+            showClearedCheck: isDocReviewed(
+              verifiedDocs,
+              divVerifiedDocKey(t.key),
+              divPayerFieldCounts[t.key],
+              getInitialDivPayerFlagCount(t.key),
+            ),
           }))}
           activeKey={activeDivPayer}
           onChange={key => setActiveDivPayer(key as DivPayer)}
@@ -183,9 +194,12 @@ export default function DataReviewPopout() {
           tabs={INT_PAYER_TABS.map(t => ({
             ...t,
             badge: intPayerFieldCounts[t.key],
-            showClearedCheck:
-              intPayerFieldCounts[t.key] === 0 &&
-              (getInitialIntPayerFlagCount(t.key) > 0 || verifiedDocs.has(t.key)),
+            showClearedCheck: isDocReviewed(
+              verifiedDocs,
+              intVerifiedDocKey(t.key),
+              intPayerFieldCounts[t.key],
+              getInitialIntPayerFlagCount(t.key),
+            ),
           }))}
           activeKey={activeIntPayer}
           onChange={key => setActiveIntPayer(key as IntPayer)}
@@ -196,9 +210,12 @@ export default function DataReviewPopout() {
           tabs={W2_PAYER_TABS.map(t => ({
             ...t,
             badge: w2PayerFieldCounts[t.key],
-            showClearedCheck:
-              w2PayerFieldCounts[t.key] === 0 &&
-              (getInitialW2PayerFlagCount(t.key) > 0 || verifiedDocs.has(t.key)),
+            showClearedCheck: isDocReviewed(
+              verifiedDocs,
+              t.key,
+              w2PayerFieldCounts[t.key],
+              getInitialW2PayerFlagCount(t.key),
+            ),
           }))}
           activeKey={activeSubTab}
           onChange={key => setActiveSubTab(key as W2Employer)}
@@ -209,9 +226,12 @@ export default function DataReviewPopout() {
           tabs={R_PAYER_TABS.map(t => ({
             ...t,
             badge: tabFlagCounts['1099-rs'],
-            showClearedCheck:
-              tabFlagCounts['1099-rs'] === 0 &&
-              (getInitialRPayerFlagCount() > 0 || verifiedDocs.has('1099-r')),
+            showClearedCheck: isDocReviewed(
+              verifiedDocs,
+              '1099-r',
+              tabFlagCounts['1099-rs'],
+              getInitialRPayerFlagCount(),
+            ),
           }))}
           activeKey="meridian"
           onChange={() => {}}
