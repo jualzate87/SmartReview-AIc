@@ -10,7 +10,7 @@ import type { FieldOriginSource } from '../../data/fieldOrigins'
 import type { LiveAmounts } from '../../data/liveReturn'
 import { SEED_AMOUNTS } from '../../data/liveReturn'
 import Tooltip from './Tooltip'
-import { TAX_CONTROL_ROWS, getControlSystemValues } from '../../data/sourceDocuments'
+import { TAX_CONTROL_ROWS, getControlSystemValues, type TaxControlDocEntry } from '../../data/sourceDocuments'
 import type { LiveReturnTotals } from '../../data/liveReturn'
 import { CLIENT_ADDRESS, formatClientCityStateZip } from '../../data/clientAddress'
 import { summaryFieldHasUnresolvedFlags } from './phase1FieldSync'
@@ -221,12 +221,18 @@ export default function LeftPanel1040({
   const [view, setView] = useState<'form' | 'table'>('table')
   // Table view: which categories are expanded
   const [expanded, setExpanded] = useState<Set<string>>(new Set(['income', 'deductions', 'tax', 'payments']))
-  // Multi-doc popover state for Summary CY flyouts (display-only source breakdown)
-  const [controlPopoverRow, setControlPopoverRow] = useState<string | null>(null)
-  const [controlPopoverRect, setControlPopoverRect] = useState<DOMRect | null>(null)
-  // Read-only calculation / source breakdown popover
+  /** Summary source flyout — Interest-style cards; doc opens only on card click */
+  const [sourceFlyout, setSourceFlyout] = useState<{
+    field: string
+    label: string
+    docs: TaxControlDocEntry[]
+    detailByDocId?: Record<string, string>
+  } | null>(null)
+  const [sourceFlyoutRect, setSourceFlyoutRect] = useState<DOMRect | null>(null)
+  // Read-only calculation breakdown popover
   const [breakdownRow, setBreakdownRow] = useState<string | null>(null)
   const [breakdownRect, setBreakdownRect] = useState<DOMRect | null>(null)
+  const [breakdownField, setBreakdownField] = useState<string | null>(null)
 
   const toggleExpanded = (key: string) =>
     setExpanded(prev => { const s = new Set(prev); s.has(key) ? s.delete(key) : s.add(key); return s })
@@ -266,7 +272,7 @@ export default function LeftPanel1040({
     setCommentField(null); setCommentDraft(''); setCommentAnchor(null)
   }
 
-  /** Anchor popover to the Amount cell of a form row. */
+  /** Anchor popover to the Amount cell of a form row (Form view only). */
   const openPopoverForRow = (field: string, rowEl: HTMLElement) => {
     const cells = rowEl.querySelectorAll('td')
     const valueCell = cells[cells.length - 1] as HTMLElement | undefined
@@ -275,34 +281,71 @@ export default function LeftPanel1040({
     setPopoverField(field)
   }
 
-  /** Open Summary CY info flyout only — does not navigate to / show the source document. */
-  const openSummaryInfo = (field: string, el: HTMLElement) => {
-    setControlPopoverRow(null)
-    setControlPopoverRect(null)
+  const clearSummaryFlyouts = () => {
+    setSourceFlyout(null)
+    setSourceFlyoutRect(null)
     setBreakdownRow(null)
     setBreakdownRect(null)
+    setBreakdownField(null)
     setPopoverField(null)
     setPopoverRect(null)
+  }
 
+  /**
+   * Open Summary CY info flyout only — never navigates to / shows a source document.
+   * Document open is reserved for a source-card click inside TaxControlDocPopover.
+   */
+  const openSummaryInfo = (field: string, el: HTMLElement) => {
+    // Toggle closed if the same flyout is already open
+    if (
+      sourceFlyout?.field === field ||
+      breakdownField === field ||
+      popoverField === field
+    ) {
+      clearSummaryFlyouts()
+      return
+    }
+
+    clearSummaryFlyouts()
+
+    const rect = el.getBoundingClientRect()
     const controlId = SUMMARY_TO_CONTROL[field]
     const cfg = controlId ? TAX_CONTROL_ROWS.find(r => r.id === controlId) : undefined
     const breakdown = controlId ? getTaxControlBreakdown(controlId, controlSystemVals) : null
+    const origin = getFieldOrigin(field, originTotals, liveAmounts)
 
-    // Source rows → TaxControlDocPopover (display-only; row click opens source doc)
+    // Source rows → Interest-style TaxControlDocPopover (control docs or origin sources)
     if (cfg && cfg.docs.length > 0 && breakdown?.kind === 'source') {
-      setControlPopoverRect(el.getBoundingClientRect())
-      setControlPopoverRow(controlId!)
+      setSourceFlyout({ field, label: cfg.label, docs: cfg.docs })
+      setSourceFlyoutRect(rect)
       return
     }
+    if (origin?.sources && origin.sources.length > 0) {
+      const detailByDocId: Record<string, string> = {}
+      const docs: TaxControlDocEntry[] = origin.sources.map(s => {
+        detailByDocId[s.docId] = s.detailFieldId
+        return {
+          docId: s.docId,
+          label: s.box ? `${s.label} · ${s.box}` : s.label,
+          hint: s.amount,
+        }
+      })
+      setSourceFlyout({ field, label: origin.label, docs, detailByDocId })
+      setSourceFlyoutRect(rect)
+      return
+    }
+
     // Calc / formula rows → TaxControlBreakdownPopover
-    if (breakdown?.kind === 'calc') {
-      setBreakdownRect(el.getBoundingClientRect())
-      setBreakdownRow(controlId!)
+    if (breakdown?.kind === 'calc' && controlId) {
+      setBreakdownRect(rect)
+      setBreakdownRow(controlId)
+      setBreakdownField(field)
       return
     }
-    // Fallback — FieldPopover (Sources + Calculated-from; source links navigate)
+
+    // Fallback — FieldPopover (notes / YoY-only lines with no source cards)
     if (fieldHasPopover(field)) {
-      setPopoverRect(el.getBoundingClientRect())
+      setPopoverRect(rect)
       setPopoverField(field)
     }
   }
@@ -698,18 +741,10 @@ export default function LeftPanel1040({
                           className={subRowCls}
                           data-field-row={row.field || undefined}
                           onMouseDown={clickable ? (e) => e.stopPropagation() : undefined}
-                          onClick={clickable ? (e) => {
-                            if (activeHighlight === row.field && popoverField === row.field) {
-                              onFieldClick?.(null)
-                              setPopoverField(null); setPopoverRect(null)
-                            } else {
-                              onFieldClick?.(row.field!)
-                              if (hasPopover) {
-                                const el = (e.currentTarget as HTMLElement).querySelector(`.${styles.summaryCurrValText}`) as HTMLElement | null
-                                setPopoverRect((el ?? e.currentTarget).getBoundingClientRect())
-                                setPopoverField(row.field!)
-                              }
-                            }
+                          onClick={clickable && hasPopover ? (e) => {
+                            // Open Interest-style flyout only — never auto-open a source document
+                            const el = (e.currentTarget as HTMLElement).querySelector(`.${styles.summaryCurrValText}`) as HTMLElement | null
+                            openSummaryInfo(row.field!, el ?? e.currentTarget)
                           } : undefined}
                           onMouseEnter={row.field ? () => setHoveredField(row.field!) : undefined}
                           onMouseLeave={row.field ? () => setHoveredField(null) : undefined}
@@ -729,16 +764,9 @@ export default function LeftPanel1040({
                                 className={`${styles.summaryCurrValText} ${row.kind === 'calc' ? styles.summaryCurrValCalc : ''} ${isBlue ? styles.summaryCurrValBlue : ''} ${isOrange ? styles.summaryCurrValOrange : ''} ${clickable ? styles.summaryCurrValClickable : ''}`}
                                 onClick={clickable ? e => {
                                   e.stopPropagation()
-                                  const el = e.currentTarget as HTMLElement
-                                  if (activeHighlight === row.field && popoverField === row.field) {
-                                    onFieldClick?.(null)
-                                    setPopoverField(null); setPopoverRect(null)
-                                  } else {
-                                    onFieldClick?.(row.field!)
-                                    if (hasPopover) {
-                                      setPopoverRect(el.getBoundingClientRect())
-                                      setPopoverField(row.field!)
-                                    }
+                                  // Summary CY click opens flyout only — never auto-opens a document
+                                  if (hasPopover) {
+                                    openSummaryInfo(row.field!, e.currentTarget)
                                   }
                                 } : undefined}
                               >
@@ -748,7 +776,7 @@ export default function LeftPanel1040({
                                 <Tooltip text="View sources / calculation" placement="top">
                                   <button
                                     type="button"
-                                    className={`${styles.summaryInfoBtn} ${(breakdownRow === SUMMARY_TO_CONTROL[row.field!] || controlPopoverRow === SUMMARY_TO_CONTROL[row.field!] || popoverField === row.field) ? styles.summaryInfoBtnActive : ''}`}
+                                    className={`${styles.summaryInfoBtn} ${(sourceFlyout?.field === row.field || breakdownField === row.field || popoverField === row.field) ? styles.summaryInfoBtnActive : ''}`}
                                     aria-label={`View sources for ${row.label}`}
                                     onClick={e => {
                                       e.stopPropagation()
@@ -874,22 +902,31 @@ export default function LeftPanel1040({
       )}
 
 
-      {/* Tax control multi-doc popover */}
-      {controlPopoverRow && controlPopoverRect && (() => {
-        const cfg = TAX_CONTROL_ROWS.find(r => r.id === controlPopoverRow)
-        if (!cfg || cfg.docs.length === 0) return null
-        return (
-          <TaxControlDocPopover
-            rowLabel={cfg.label}
-            docs={cfg.docs}
-            onNavigateToDoc={onNavigateToSourceDoc}
-            anchorRect={controlPopoverRect}
-            onClose={() => { setControlPopoverRow(null); setControlPopoverRect(null) }}
-          />
-        )
-      })()}
+      {/* Summary source flyout — Interest card style; doc opens only on card click */}
+      {sourceFlyout && sourceFlyoutRect && (
+        <TaxControlDocPopover
+          rowLabel={sourceFlyout.label}
+          docs={sourceFlyout.docs}
+          onNavigateToDoc={docId => {
+            const detailFieldId = sourceFlyout.detailByDocId?.[docId]
+            if (detailFieldId && onNavigateSource) {
+              onNavigateSource({
+                docId,
+                detailFieldId,
+                label: sourceFlyout.docs.find(d => d.docId === docId)?.label ?? docId,
+              })
+            } else {
+              onNavigateToSourceDoc?.(docId)
+            }
+            setSourceFlyout(null)
+            setSourceFlyoutRect(null)
+          }}
+          anchorRect={sourceFlyoutRect}
+          onClose={() => { setSourceFlyout(null); setSourceFlyoutRect(null) }}
+        />
+      )}
 
-      {/* Tax control calculation / source breakdown popover */}
+      {/* Summary calculation breakdown popover */}
       {breakdownRow && breakdownRect && (() => {
         const breakdown = getTaxControlBreakdown(breakdownRow, controlSystemVals)
         if (!breakdown) return null
@@ -897,7 +934,7 @@ export default function LeftPanel1040({
           <TaxControlBreakdownPopover
             breakdown={breakdown}
             anchorRect={breakdownRect}
-            onClose={() => { setBreakdownRow(null); setBreakdownRect(null) }}
+            onClose={() => { setBreakdownRow(null); setBreakdownRect(null); setBreakdownField(null) }}
           />
         )
       })()}

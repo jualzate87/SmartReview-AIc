@@ -87,12 +87,10 @@ export default function TaxControlDocPopover({
         })}
       </div>
 
-      {docs.length > 1 && (
-        <div className={styles.sumRow}>
-          <span className={styles.sumLabel}>Total from sources</span>
-          <span className={styles.sumValue}>${fmt(total)}</span>
-        </div>
-      )}
+      <div className={styles.sumRow}>
+        <span className={styles.sumLabel}>Total from sources</span>
+        <span className={styles.sumValue}>${fmt(total)}</span>
+      </div>
     </div>
   )
 }
