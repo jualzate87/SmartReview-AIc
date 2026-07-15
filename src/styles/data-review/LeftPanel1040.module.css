@@ -837,6 +837,11 @@
   cursor: pointer;
   text-align: left;
   gap: 40px;
+  box-sizing: border-box;
+}
+.summarySectionRow:focus-visible {
+  outline: 2px solid var(--color-action-standard, #0077c5);
+  outline-offset: -2px;
 }
 /* Section totals share the same value-col gap as sub-rows */
 .summarySectionRow:first-child { border-top: none; }

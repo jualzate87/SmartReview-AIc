@@ -670,11 +670,19 @@ export default function LeftPanel1040({
                 const isOpen = expanded.has(cat.key)
                 return (
                   <div key={cat.key}>
-                    {/* Section header row */}
-                    <button
+                    {/* Section header row — div (not button) so info (i) can nest without invalid HTML */}
+                    <div
                       className={styles.summarySectionRow}
-                      onClick={() => toggleExpanded(cat.key)}
+                      role="button"
+                      tabIndex={0}
                       aria-expanded={isOpen}
+                      onClick={() => toggleExpanded(cat.key)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          toggleExpanded(cat.key)
+                        }
+                      }}
                     >
                       <div className={styles.summaryRowLeft}>
                         <span className={`${styles.summaryChevron} ${isOpen ? styles.summaryChevronOpen : ''}`}>
@@ -688,10 +696,27 @@ export default function LeftPanel1040({
                         const pct = p !== null && p !== 0 ? Math.round((cat.totalCurr - p) / Math.abs(p) * 100) : null
                         const pos = d !== null && d > 0
                         const neg = d !== null && d < 0
+                        const totalHasBreakdown = !!cat.totalField && !!SUMMARY_TO_CONTROL[cat.totalField]
+                          && getTaxControlBreakdown(SUMMARY_TO_CONTROL[cat.totalField], controlSystemVals)?.kind === 'calc'
                         return (
                           <div className={styles.summaryRowRight}>
                             <div className={styles.summaryCurrVal} style={{ width: 108 }}>
                               <span className={styles.summaryCurrValText}>${fmt(cat.totalCurr)}</span>
+                              {totalHasBreakdown && (
+                                <Tooltip text="View subtotals" placement="top">
+                                  <button
+                                    type="button"
+                                    className={`${styles.summaryInfoBtn} ${breakdownField === cat.totalField ? styles.summaryInfoBtnActive : ''}`}
+                                    aria-label={`View subtotals for ${cat.label}`}
+                                    onClick={e => {
+                                      e.stopPropagation()
+                                      openSummaryInfo(cat.totalField!, e.currentTarget)
+                                    }}
+                                  >
+                                    <CircleInfo size="small" />
+                                  </button>
+                                </Tooltip>
+                              )}
                             </div>
                             <span className={styles.summaryPriorVal}>{p !== null ? `$${fmt(p)}` : ''}</span>
                             <span className={`${styles.summaryDiffVal} ${pos ? styles.summaryDiffPos : ''} ${neg ? styles.summaryDiffNeg : ''}`}>
@@ -704,7 +729,7 @@ export default function LeftPanel1040({
                           </div>
                         )
                       })()}
-                    </button>
+                    </div>
 
                     {/* Sub-rows */}
                     {isOpen && cat.rows.map(row => {
@@ -773,11 +798,14 @@ export default function LeftPanel1040({
                                 ${fmt(row.curr)}
                               </span>
                               {hasPopover && (
-                                <Tooltip text="View sources / calculation" placement="top">
+                                <Tooltip
+                                  text={row.kind === 'calc' ? 'View subtotals' : 'View sources'}
+                                  placement="top"
+                                >
                                   <button
                                     type="button"
                                     className={`${styles.summaryInfoBtn} ${(sourceFlyout?.field === row.field || breakdownField === row.field || popoverField === row.field) ? styles.summaryInfoBtnActive : ''}`}
-                                    aria-label={`View sources for ${row.label}`}
+                                    aria-label={row.kind === 'calc' ? `View subtotals for ${row.label}` : `View sources for ${row.label}`}
                                     onClick={e => {
                                       e.stopPropagation()
                                       openSummaryInfo(row.field!, e.currentTarget)
@@ -883,6 +911,19 @@ export default function LeftPanel1040({
                 <div className={styles.summaryRowRight}>
                   <div className={styles.summaryCurrVal} style={{ width: 108 }}>
                     <span className={`${styles.summaryCurrValText} ${styles.summaryOweAmt}`}>${fmt(oweAmount)}</span>
+                    <Tooltip text="View subtotals" placement="top">
+                      <button
+                        type="button"
+                        className={`${styles.summaryInfoBtn} ${breakdownField === 'amountOwed' ? styles.summaryInfoBtnActive : ''}`}
+                        aria-label="View subtotals for amount you owe"
+                        onClick={e => {
+                          e.stopPropagation()
+                          openSummaryInfo('amountOwed', e.currentTarget)
+                        }}
+                      >
+                        <CircleInfo size="small" />
+                      </button>
+                    </Tooltip>
                   </div>
                   <span className={styles.summaryPriorVal}>${fmt(priorOwed)}</span>
                   <span className={`${styles.summaryDiffVal} ${diffPos ? styles.summaryDiffPos : ''} ${diffNeg ? styles.summaryDiffNeg : ''}`}>

@@ -84,26 +84,26 @@ export function getTaxControlBreakdown(
 
     case 'totalIncome': {
       const components: BreakdownComponent[] = [
-        { label: 'Line 1z — Wages (1a–1h)', value: v('wages'), operator: '=' },
-        { label: 'Line 2b — Taxable interest', value: v('interest'), operator: '+' },
-        { label: 'Line 3b — Ordinary dividends', value: v('dividends'), operator: '+' },
-        { label: 'Line 4b — IRA distributions', value: v('ira'), operator: '+' },
+        { label: 'W-2 wages', value: v('wages'), operator: '=' },
+        { label: 'Taxable interest', value: v('interest'), operator: '+' },
+        { label: 'Ordinary dividends', value: v('dividends'), operator: '+' },
+        { label: 'IRA distributions', value: v('ira'), operator: '+' },
       ]
       const capGain = FROZEN_RETURN.capitalGain
       if (capGain !== 0) {
-        components.push({ label: 'Line 7 — Capital gain (loss)', value: capGain, operator: '+' })
+        components.push({ label: 'Capital gain (loss)', value: capGain, operator: '+' })
       }
       const otherIncome = v('otherIncome')
       if (otherIncome > 0) {
-        components.push({ label: 'Line 8 — Other income (1099-NEC)', value: otherIncome, operator: '+' })
+        components.push({ label: 'Other income', value: otherIncome, operator: '+' })
       }
       return {
         rowId,
         title: 'Total income',
-        formula: 'Line 9 — Add lines 1z, 2b, 3b, 4b, 5b, 6b, 7, and 8',
+        formula: 'Includes these subtotals',
         components,
         total: v('totalIncome'),
-        totalLabel: 'Line 9 total',
+        totalLabel: 'Total',
         kind: 'calc',
       }
     }
@@ -112,12 +112,12 @@ export function getTaxControlBreakdown(
       return {
         rowId,
         title: 'Standard deduction',
-        formula: 'Line 12 — Standard deduction for filing status',
+        formula: 'Includes these subtotals',
         components: [
           { label: 'Single filer (2025)', value: v('stdDeduction'), operator: '=' },
         ],
         total: v('stdDeduction'),
-        totalLabel: 'Line 12',
+        totalLabel: 'Total',
         footnote: 'Amount from IRS standard deduction table for Single filing status.',
         kind: 'calc',
       }
@@ -126,13 +126,13 @@ export function getTaxControlBreakdown(
       return {
         rowId,
         title: 'Taxable income',
-        formula: 'Line 15 — Adjusted gross income minus deductions (lines 12 + 13)',
+        formula: 'Amounts from the lines above',
         components: [
-          { label: 'Line 11 — Adjusted gross income', value: v('totalIncome'), operator: '=' },
-          { label: 'Line 14 — Deductions (lines 12 + 13)', value: v('stdDeduction'), operator: '−' },
+          { label: 'Adjusted gross income', value: v('totalIncome'), operator: '=' },
+          { label: 'Standard deduction', value: v('stdDeduction'), operator: '−' },
         ],
         total: v('taxableIncome'),
-        totalLabel: 'Line 15',
+        totalLabel: 'Total',
         kind: 'calc',
       }
 
@@ -140,13 +140,12 @@ export function getTaxControlBreakdown(
       return {
         rowId,
         title: 'Total tax',
-        formula: 'Line 24 — Tax on taxable income per IRS rate schedules',
+        formula: 'Includes these subtotals',
         components: [
-          { label: 'Line 15 — Taxable income', value: v('taxableIncome'), operator: '=' },
-          { label: 'Tax computed from rate schedules', value: v('totalTax'), operator: '=' },
+          { label: 'Tax', value: v('totalTax'), operator: '=' },
         ],
         total: v('totalTax'),
-        totalLabel: 'Line 24',
+        totalLabel: 'Total',
         footnote: `Tax on $${fmt(v('taxableIncome'))} taxable income.`,
         kind: 'calc',
       }
@@ -155,27 +154,27 @@ export function getTaxControlBreakdown(
       return {
         rowId,
         title: 'Total payments',
-        formula: 'Line 33 — Federal tax withheld (lines 25a + 25b + 25c)',
+        formula: 'Includes these subtotals',
         components: [
-          { label: 'Line 25a — W-2 withholding', value: v('withholdingW2'), operator: '=' },
-          { label: 'Line 25b — 1099 withholding', value: v('withholding99'), operator: '+' },
+          { label: 'Federal tax withheld (W-2)', value: v('withholdingW2'), operator: '=' },
+          { label: 'Federal tax withheld (1099)', value: v('withholding99'), operator: '+' },
         ],
         total: v('totalPayments'),
-        totalLabel: 'Line 33',
+        totalLabel: 'Total',
         kind: 'calc',
       }
 
     case 'amountOwed':
       return {
         rowId,
-        title: 'Amount owed',
-        formula: 'Line 37 — Total tax minus total payments',
+        title: 'Amount you owe',
+        formula: 'Amounts from the lines above',
         components: [
-          { label: 'Line 24 — Total tax', value: v('totalTax'), operator: '=' },
-          { label: 'Line 33 — Total payments', value: v('totalPayments'), operator: '−' },
+          { label: 'Total tax', value: v('totalTax'), operator: '=' },
+          { label: 'Total payments', value: v('totalPayments'), operator: '−' },
         ],
         total: v('amountOwed'),
-        totalLabel: 'Line 37',
+        totalLabel: 'Total',
         kind: 'calc',
       }
 

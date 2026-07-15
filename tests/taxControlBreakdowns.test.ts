@@ -34,8 +34,9 @@ describe('getTaxControlBreakdown', () => {
   it('total income sums component lines from frozen return', () => {
     const b = getTaxControlBreakdown('totalIncome', systemVals)!
     expect(b.total).toBe(575_676)
-    expect(b.components.find(c => c.label.includes('2b'))?.value).toBe(6_336)
-    expect(b.components.find(c => c.label.includes('3b'))?.value).toBe(350_400)
+    expect(b.formula).toBe('Includes these subtotals')
+    expect(b.components.find(c => c.label.includes('interest'))?.value).toBe(6_336)
+    expect(b.components.find(c => c.label.includes('dividends'))?.value).toBe(350_400)
   })
 
   it('amount owed equals total tax minus payments', () => {
