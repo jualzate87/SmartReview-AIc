@@ -526,23 +526,23 @@ export default function DataReviewPage() {
     return () => ro.disconnect()
   }, [phase])
 
-  // Side-by-side (doc LEFT / Details RIGHT) when ANY of:
-  //   1. Hide Summary (!show1040)
-  //   2. Preview occupies >60% of the docs split (previewHeight)
-  //   3. Sources panel is >60% of the body row (typical after Start reviewing imports)
-  // Stacked (preview TOP / Details BOTTOM) only when Summary is visible AND
-  // preview ≤60% AND Sources panel is ≤60% of the row.
-  // Equivalent: sideBySide = !show1040 || previewHeight > 60 || (sourcesOpen && rightPanelWidth / bodyWidth > 0.6)
+  // Side-by-side (doc LEFT / Details RIGHT) when:
+  //   1. Hide Summary (!show1040), OR
+  //   2. Sources (right) panel is >60% of review body width
+  // Stacked (preview TOP / Details BOTTOM) when Summary is visible AND
+  // Sources panel is ≤60% of body. Uses measured body.clientWidth so Summary
+  // min-width (956.4) doesn't distort the ratio. Do NOT use previewHeight.
+  // Equivalent: sideBySide = !show1040 || (sourcesOpen && rightPanelWidth / bodyClientWidth > 0.6)
   const sourcesPanelWide =
     rightPanelVisible &&
     !rightPanelExiting &&
     bodyWidth > 0 &&
     rightPanelWidth / bodyWidth > 0.6
-  const previewSideBySide = !show1040 || previewHeight > 60 || sourcesPanelWide
+  const previewSideBySide = !show1040 || sourcesPanelWide
 
   // Resize drag between the document preview and detail fields. Axis is frozen
-  // for the gesture so crossing 60% mid-drag only flips layout (via
-  // previewSideBySide), not the math. Same handle + previewHeight either way.
+  // for the gesture (matches flexDirection at pointer-down). previewHeight
+  // only controls the split ratio — never orientation.
   const handlePreviewDrag = useCallback((e: React.PointerEvent) => {
     const split = splitPaneRef.current ?? rightRef.current
     if (!split) return
