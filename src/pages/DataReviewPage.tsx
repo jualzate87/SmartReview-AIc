@@ -102,8 +102,6 @@ export default function DataReviewPage() {
   const totalWithholding = liveTotals.totalWithholding
   const updateField = (key: keyof typeof fieldValues, value: number | { techCircle: number }) =>
     updateFieldValue(key, value)
-  // Left panel width in px when idle (950px default); as % when agent open
-  const [leftWidth, setLeftWidth] = useState(50)
   // Agent panel width in px when open (default 588px, user-resizable)
   const [agentPanelWidth, setAgentPanelWidth] = useState(588)
   // Right panel width in px (default ~65% viewport once imports start)
@@ -180,6 +178,8 @@ export default function DataReviewPage() {
 
   const bodyRef = useRef<HTMLDivElement>(null)
   const rightRef = useRef<HTMLDivElement>(null)
+  /** Split container for document preview ↔ Details (not the whole right panel). */
+  const splitPaneRef = useRef<HTMLDivElement>(null)
 
   const ensureSourcePanelVisible = useCallback(() => {
     if (!rightPanelVisible) {
@@ -410,124 +410,89 @@ export default function DataReviewPage() {
     setNotes(prev => prev.map(n => n.id === id ? { ...n, text, at: formatNoteAt() } : n))
   }
 
-  // Horizontal drag (left/right resize)
-  const handleHorizontalDrag = useCallback((e: React.MouseEvent) => {
+  /**
+   * Shared drag bootstrap: pointer events + document-level move/up while dragging.
+   * Falls back cleanly if the gesture was not a primary button press.
+   */
+  const beginPanelDrag = useCallback((
+    e: React.PointerEvent,
+    cursor: string,
+    onMove: (clientX: number, clientY: number) => void,
+  ) => {
+    if (e.button !== 0) return
     e.preventDefault()
-    const body = bodyRef.current
-    if (!body) return
+    e.stopPropagation()
+    const target = e.currentTarget as HTMLElement
+    target.setPointerCapture?.(e.pointerId)
+    setPanelResizing(true)
+    document.body.style.cursor = cursor
+    document.body.style.userSelect = 'none'
 
-    const startX = e.clientX
-    const startWidth = leftWidth
-
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      const delta = moveEvent.clientX - startX
-      const bodyWidth = body.getBoundingClientRect().width
-      const newWidth = startWidth + (delta / bodyWidth) * 100
-      setLeftWidth(Math.max(20, Math.min(80, newWidth)))
+    const onPointerMove = (moveEvent: PointerEvent) => {
+      onMove(moveEvent.clientX, moveEvent.clientY)
     }
-
-    const onMouseUp = () => {
-      document.removeEventListener('mousemove', onMouseMove)
-      document.removeEventListener('mouseup', onMouseUp)
+    const onPointerUp = (upEvent: PointerEvent) => {
+      try { target.releasePointerCapture?.(upEvent.pointerId) } catch { /* already released */ }
+      document.removeEventListener('pointermove', onPointerMove)
+      document.removeEventListener('pointerup', onPointerUp)
+      document.removeEventListener('pointercancel', onPointerUp)
       document.body.style.cursor = ''
       document.body.style.userSelect = ''
+      setPanelResizing(false)
     }
 
-    document.body.style.cursor = 'col-resize'
-    document.body.style.userSelect = 'none'
-    document.addEventListener('mousemove', onMouseMove)
-    document.addEventListener('mouseup', onMouseUp)
-  }, [leftWidth])
+    document.addEventListener('pointermove', onPointerMove)
+    document.addEventListener('pointerup', onPointerUp)
+    document.addEventListener('pointercancel', onPointerUp)
+  }, [])
 
   // Horizontal drag between left panel and agent panel (resizes agent panel px width)
-  const handleAgentDrag = useCallback((e: React.MouseEvent) => {
-    e.preventDefault()
+  const handleAgentDrag = useCallback((e: React.PointerEvent) => {
     const body = bodyRef.current
     if (!body) return
     const startX = e.clientX
     const startPanelWidth = agentPanelWidth
-    setPanelResizing(true)
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      const delta = startX - moveEvent.clientX // dragging left = wider agent panel
+    beginPanelDrag(e, 'col-resize', (clientX) => {
+      const delta = startX - clientX // dragging left = wider agent panel
       const bodyWidth = body.getBoundingClientRect().width
-      const newWidth = Math.max(360, Math.min(bodyWidth * 0.7, startPanelWidth + delta))
-      setAgentPanelWidth(newWidth)
-    }
-    const onMouseUp = () => {
-      document.removeEventListener('mousemove', onMouseMove)
-      document.removeEventListener('mouseup', onMouseUp)
-      document.body.style.cursor = ''
-      document.body.style.userSelect = ''
-      setPanelResizing(false)
-    }
-    document.body.style.cursor = 'col-resize'
-    document.body.style.userSelect = 'none'
-    document.addEventListener('mousemove', onMouseMove)
-    document.addEventListener('mouseup', onMouseUp)
-  }, [agentPanelWidth])
+      setAgentPanelWidth(Math.max(360, Math.min(bodyWidth * 0.7, startPanelWidth + delta)))
+    })
+  }, [agentPanelWidth, beginPanelDrag])
 
   // Horizontal drag between left panel and right panel (resizes rightPanelWidth)
-  const handleRightPanelDrag = useCallback((e: React.MouseEvent) => {
-    e.preventDefault()
+  const handleRightPanelDrag = useCallback((e: React.PointerEvent) => {
     const body = bodyRef.current
     if (!body) return
     const startX = e.clientX
     const startPanelWidth = rightPanelWidth
-    setPanelResizing(true)
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      const delta = startX - moveEvent.clientX // dragging left = wider right panel
+    beginPanelDrag(e, 'col-resize', (clientX) => {
+      const delta = startX - clientX // dragging left = wider right panel
       const bodyWidth = body.getBoundingClientRect().width
-      const newWidth = Math.max(400, Math.min(bodyWidth * 0.75, startPanelWidth + delta))
-      setRightPanelWidth(newWidth)
-    }
-    const onMouseUp = () => {
-      document.removeEventListener('mousemove', onMouseMove)
-      document.removeEventListener('mouseup', onMouseUp)
-      document.body.style.cursor = ''
-      document.body.style.userSelect = ''
-      setPanelResizing(false)
-    }
-    document.body.style.cursor = 'col-resize'
-    document.body.style.userSelect = 'none'
-    document.addEventListener('mousemove', onMouseMove)
-    document.addEventListener('mouseup', onMouseUp)
-  }, [rightPanelWidth])
+      setRightPanelWidth(Math.max(400, Math.min(bodyWidth * 0.75, startPanelWidth + delta)))
+    })
+  }, [rightPanelWidth, beginPanelDrag])
 
   // Resize drag between the document preview and detail fields. Side by side
   // (like the pop-out window) when the 1040 is collapsed and there's room; when
   // the 1040 is expanded, the pair stacks vertically instead so the source
   // document isn't squeezed into a narrow column — same drag handle, same
   // previewHeight value, just measuring along the other axis.
-  const handlePreviewDrag = useCallback((e: React.MouseEvent) => {
-    e.preventDefault()
-    const right = rightRef.current
-    if (!right) return
+  const handlePreviewDrag = useCallback((e: React.PointerEvent) => {
+    const split = splitPaneRef.current ?? rightRef.current
+    if (!split) return
 
     const stacked = show1040
     const startPos = stacked ? e.clientY : e.clientX
     const startSize = previewHeight
-
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      const pos = stacked ? moveEvent.clientY : moveEvent.clientX
+    beginPanelDrag(e, stacked ? 'row-resize' : 'col-resize', (clientX, clientY) => {
+      const pos = stacked ? clientY : clientX
       const delta = pos - startPos
-      const rect = right.getBoundingClientRect()
-      const rightSize = stacked ? rect.height : rect.width
-      const newSize = startSize + (delta / rightSize) * 100
-      setPreviewHeight(Math.max(20, Math.min(75, newSize)))
-    }
-
-    const onMouseUp = () => {
-      document.removeEventListener('mousemove', onMouseMove)
-      document.removeEventListener('mouseup', onMouseUp)
-      document.body.style.cursor = ''
-      document.body.style.userSelect = ''
-    }
-
-    document.body.style.cursor = stacked ? 'row-resize' : 'col-resize'
-    document.body.style.userSelect = 'none'
-    document.addEventListener('mousemove', onMouseMove)
-    document.addEventListener('mouseup', onMouseUp)
-  }, [previewHeight, show1040])
+      const rect = split.getBoundingClientRect()
+      const splitSize = stacked ? rect.height : rect.width
+      if (splitSize <= 0) return
+      setPreviewHeight(Math.max(20, Math.min(75, startSize + (delta / splitSize) * 100)))
+    })
+  }, [previewHeight, show1040, beginPanelDrag])
 
   // ProtoC: welcome/orientation screen is the entry point (no header chrome)
   if (phase === 'welcome') {
@@ -746,7 +711,13 @@ export default function DataReviewPage() {
             {/* Left/right drag handle — hidden when the 1040 is collapsed (nothing to drag
                 against) or when the right panel/agent isn't visible */}
             {agentView === 'idle' && rightPanelVisible && !rightPanelExiting && !(inImportPhase && !show1040) && (
-              <div className={dragStyles.handleVertical} onMouseDown={handleRightPanelDrag}>
+              <div
+                className={dragStyles.handleVertical}
+                onPointerDown={handleRightPanelDrag}
+                role="separator"
+                aria-orientation="vertical"
+                aria-label="Resize Summary and Source Documents"
+              >
                 <VerticalGripIcon />
               </div>
             )}
@@ -906,20 +877,39 @@ export default function DataReviewPage() {
                 />
               )}
 
-              {/* Document preview (left) + detail fields (right) — same side-by-side
-                 layout as the pop-out window, so docking back and forth doesn't
-                 reflow the content the CPA is looking at. */}
-              <div style={{
-                display: 'flex',
-                flex: 1,
-                minHeight: 0,
-                minWidth: 0,
-                overflow: 'hidden',
-                flexDirection: show1040 ? 'column' : 'row',
-              }}>
+              {/* Document preview + detail fields. flex-basis % (not width/height alone)
+                  so the six-dot handle can shrink the preview even when the document
+                  image has a large intrinsic min-size. */}
+              <div
+                ref={splitPaneRef}
+                style={{
+                  display: 'flex',
+                  flex: 1,
+                  minHeight: 0,
+                  minWidth: 0,
+                  overflow: 'hidden',
+                  flexDirection: show1040 ? 'column' : 'row',
+                }}
+              >
               <div style={show1040
-                ? { height: `${previewHeight}%`, flexShrink: 0, overflow: 'hidden', borderBottom: '1px solid #D5DEE3', display: 'flex', flexDirection: 'column', minHeight: 0 }
-                : { width: `${previewHeight}%`, flexShrink: 0, overflow: 'hidden', borderRight: '1px solid #D5DEE3', display: 'flex', flexDirection: 'column', minHeight: 0 }
+                ? {
+                    flex: `0 0 ${previewHeight}%`,
+                    overflow: 'hidden',
+                    borderBottom: '1px solid #D5DEE3',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    minHeight: 0,
+                    minWidth: 0,
+                  }
+                : {
+                    flex: `0 0 ${previewHeight}%`,
+                    overflow: 'hidden',
+                    borderRight: '1px solid #D5DEE3',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    minHeight: 0,
+                    minWidth: 0,
+                  }
               }>
                 <DocumentPreview
                   imageSrc={sourceDocPreview.imageSrc}
@@ -933,7 +923,13 @@ export default function DataReviewPage() {
               </div>
 
               {/* Drag handle — vertical (col-resize) side by side, horizontal (row-resize) stacked */}
-              <div className={show1040 ? dragStyles.handleHorizontal : dragStyles.handleVertical} onMouseDown={handlePreviewDrag}>
+              <div
+                className={show1040 ? dragStyles.handleHorizontal : dragStyles.handleVertical}
+                onPointerDown={handlePreviewDrag}
+                role="separator"
+                aria-orientation={show1040 ? 'horizontal' : 'vertical'}
+                aria-label="Resize document preview and Details"
+              >
                 <DotsSix size="small" className={`${dragStyles.handleIcon} ${show1040 ? dragStyles.rotated90 : ''}`} />
               </div>
 
@@ -1095,7 +1091,13 @@ export default function DataReviewPage() {
 
             {/* Drag handle between left panel and agent panel — only when agent open */}
             {agentView !== 'idle' && (
-              <div className={dragStyles.handleVertical} onMouseDown={handleAgentDrag}>
+              <div
+                className={dragStyles.handleVertical}
+                onPointerDown={handleAgentDrag}
+                role="separator"
+                aria-orientation="vertical"
+                aria-label="Resize AI panel"
+              >
                 <VerticalGripIcon />
               </div>
             )}

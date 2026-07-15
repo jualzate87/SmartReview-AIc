@@ -1,52 +1,71 @@
 /* Drag handle — shared styles for both vertical and horizontal */
-.handleHorizontal {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 24px;
-  width: 100%;
-  cursor: row-resize;
-  background: var(--color-container-background-primary, #ffffff);
-  border-top: 1px solid #D5DEE3;
-  border-bottom: 1px solid #D5DEE3;
-  flex-shrink: 0;
-  z-index: 2;
-  user-select: none;
-}
-
-.handleHorizontal:hover {
-  background: #f0f4f6;
-}
-
+.handleHorizontal,
 .handleVertical {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 12px;
-  cursor: col-resize;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 6;
   background: var(--color-container-background-primary, #ffffff);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  /* Children (icons/SVGs) must never steal the drag gesture */
+  pointer-events: auto;
+}
+
+.handleHorizontal *,
+.handleVertical * {
+  pointer-events: none;
+}
+
+.handleHorizontal {
+  height: 16px;
+  width: 100%;
+  cursor: row-resize;
+  border-top: 1px solid #D5DEE3;
+  border-bottom: 1px solid #D5DEE3;
+}
+
+/* Expand hit area above/below the visible gutter */
+.handleHorizontal::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -6px;
+  bottom: -6px;
+}
+
+.handleVertical {
+  width: 16px;
+  align-self: stretch;
+  cursor: col-resize;
   border-left: 1px solid #D5DEE3;
   border-right: 1px solid #D5DEE3;
-  flex-shrink: 0;
-  z-index: 5;
-  position: relative;
-  user-select: none;
-  /* Wider hit target without changing visual gutter width */
-  touch-action: none;
 }
+
+/* Expand hit area left/right of the visible gutter */
 .handleVertical::before {
   content: '';
   position: absolute;
-  inset: 0 -4px;
+  top: 0;
+  bottom: 0;
+  left: -6px;
+  right: -6px;
 }
 
-.handleVertical:hover {
+.handleHorizontal:hover,
+.handleVertical:hover,
+.handleHorizontal:active,
+.handleVertical:active {
   background: #f0f4f6;
 }
 
 .handleIcon {
   color: #5D686F;
-  pointer-events: none;
+  flex-shrink: 0;
 }
 
 /* Rotate DotsSix 90° for horizontal drag */

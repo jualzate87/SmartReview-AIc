@@ -103,27 +103,35 @@ export default function DataReviewPopout() {
   const rightRef = useRef<HTMLDivElement>(null)
   const [previewWidth, setPreviewWidth] = useState(40)
 
-  const handlePreviewDrag = useCallback((e: React.MouseEvent) => {
+  const handlePreviewDrag = useCallback((e: React.PointerEvent) => {
+    if (e.button !== 0) return
     e.preventDefault()
+    e.stopPropagation()
     const right = rightRef.current
     if (!right) return
+    const target = e.currentTarget as HTMLElement
+    target.setPointerCapture?.(e.pointerId)
     const startX = e.clientX
     const startWidth = previewWidth
-    const onMouseMove = (moveEvent: MouseEvent) => {
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+    const onPointerMove = (moveEvent: PointerEvent) => {
       const delta = moveEvent.clientX - startX
       const rightWidth = right.getBoundingClientRect().width
+      if (rightWidth <= 0) return
       setPreviewWidth(Math.max(20, Math.min(75, startWidth + (delta / rightWidth) * 100)))
     }
-    const onMouseUp = () => {
-      document.removeEventListener('mousemove', onMouseMove)
-      document.removeEventListener('mouseup', onMouseUp)
+    const onPointerUp = (upEvent: PointerEvent) => {
+      try { target.releasePointerCapture?.(upEvent.pointerId) } catch { /* already released */ }
+      document.removeEventListener('pointermove', onPointerMove)
+      document.removeEventListener('pointerup', onPointerUp)
+      document.removeEventListener('pointercancel', onPointerUp)
       document.body.style.cursor = ''
       document.body.style.userSelect = ''
     }
-    document.body.style.cursor = 'col-resize'
-    document.body.style.userSelect = 'none'
-    document.addEventListener('mousemove', onMouseMove)
-    document.addEventListener('mouseup', onMouseUp)
+    document.addEventListener('pointermove', onPointerMove)
+    document.addEventListener('pointerup', onPointerUp)
+    document.addEventListener('pointercancel', onPointerUp)
   }, [previewWidth])
 
   const sourceDocPreview = getSourceDocPreview({
@@ -222,7 +230,7 @@ export default function DataReviewPopout() {
       )}
 
       <div ref={rightRef} style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
-          <div style={{ width: `${previewWidth}%`, flexShrink: 0, overflow: 'hidden', borderRight: '1px solid #d5dee3' }}>
+          <div style={{ flex: `0 0 ${previewWidth}%`, minWidth: 0, minHeight: 0, overflow: 'hidden', borderRight: '1px solid #d5dee3' }}>
             <DocumentPreview
               imageSrc={sourceDocPreview.imageSrc}
               alt={sourceDocPreview.alt}
@@ -234,7 +242,13 @@ export default function DataReviewPopout() {
             />
           </div>
 
-          <div className={dragStyles.handleVertical} onMouseDown={handlePreviewDrag}>
+          <div
+            className={dragStyles.handleVertical}
+            onPointerDown={handlePreviewDrag}
+            role="separator"
+            aria-orientation="vertical"
+            aria-label="Resize document preview and Details"
+          >
             <DotsSix size="small" className={dragStyles.handleIcon} />
           </div>
 
