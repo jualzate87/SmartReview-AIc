@@ -660,6 +660,7 @@ export default function LeftPanel1040({
               <Tooltip
                 text={kind === 'calc' ? 'View subtotals' : 'View sources'}
                 placement="top"
+                disabled={isPopoverOpen}
               >
                 <button
                   type="button"
@@ -699,7 +700,7 @@ export default function LeftPanel1040({
 
             {/* Comment button — outside value box, shown on hover */}
             {commentable && (isHovered || commentField === field) && (
-              <Tooltip text="Add a comment" placement="top"><button
+              <Tooltip text="Add a comment" placement="top" disabled={isCommentOpen}><button
                 className={`${styles.commentBtn1040} ${commentField === field ? styles.commentBtn1040Active : ''}`}
                 aria-label={`Add comment for ${label}`}
                 onClick={e => {
@@ -867,7 +868,11 @@ export default function LeftPanel1040({
                             <div className={styles.summaryCurrVal} style={{ width: 108 }}>
                               <span className={styles.summaryCurrValText}>${fmt(cat.totalCurr)}</span>
                               {totalHasBreakdown && (
-                                <Tooltip text="View subtotals" placement="top">
+                                <Tooltip
+                                  text="View subtotals"
+                                  placement="top"
+                                  disabled={summaryFlyout?.field === cat.totalField}
+                                >
                                   <button
                                     type="button"
                                     className={`${styles.summaryInfoBtn} ${summaryFlyout?.field === cat.totalField ? styles.summaryInfoBtnActive : ''}`}
@@ -977,6 +982,7 @@ export default function LeftPanel1040({
                                 <Tooltip
                                   text={row.kind === 'calc' ? 'View subtotals' : 'View sources'}
                                   placement="top"
+                                  disabled={summaryFlyout?.field === row.field}
                                 >
                                   <button
                                     type="button"
@@ -1008,7 +1014,11 @@ export default function LeftPanel1040({
                             {/* Comment + flag + check — always three equal slots on data rows */}
                             <div className={styles.summaryRowEndActions}>
                               {!!row.field && !!onAddFieldNote ? (
-                                <Tooltip text="Add a comment" placement="top">
+                                <Tooltip
+                                  text="Add a comment"
+                                  placement="top"
+                                  disabled={commentField === row.field}
+                                >
                                   <button
                                     type="button"
                                     className={`${styles.summaryActionBtn} ${commentField === row.field ? styles.summaryActionBtnActive : ''}`}
@@ -1026,7 +1036,11 @@ export default function LeftPanel1040({
                                 <span className={styles.summaryActionBtnSlot} aria-hidden="true" />
                               )}
                               {!!row.field && !!onToggleFlagged ? (
-                                <Tooltip text={flagTooltip} placement="top">
+                                <Tooltip
+                                  text={flagTooltip}
+                                  placement="top"
+                                  disabled={flagNoteField === row.field}
+                                >
                                   <button
                                     type="button"
                                     className={`${styles.summaryActionBtn} ${isFlagged ? styles.summaryActionBtnFlag : ''} ${flagNoteField === row.field ? styles.summaryActionBtnActive : ''}`}
@@ -1096,7 +1110,11 @@ export default function LeftPanel1040({
                 <div className={styles.summaryRowRight}>
                   <div className={styles.summaryCurrVal} style={{ width: 108 }}>
                     <span className={`${styles.summaryCurrValText} ${styles.summaryOweAmt}`}>${fmt(oweAmount)}</span>
-                    <Tooltip text="View subtotals" placement="top">
+                    <Tooltip
+                      text="View subtotals"
+                      placement="top"
+                      disabled={summaryFlyout?.field === 'amountOwed'}
+                    >
                       <button
                         type="button"
                         className={`${styles.summaryInfoBtn} ${summaryFlyout?.field === 'amountOwed' ? styles.summaryInfoBtnActive : ''}`}
