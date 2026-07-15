@@ -2,10 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { CircleCheck, CircleInfo, Comment, Flag } from '@design-systems/icons'
 import FieldPopover, { FIELD_META } from './FieldPopover'
-import TaxControlDocPopover, {
-  getDocValuesForRow,
-  setDocValuesForRow,
-} from './TaxControlDocPopover'
+import TaxControlDocPopover from './TaxControlDocPopover'
 import TaxControlBreakdownPopover from './TaxControlBreakdownPopover'
 import { getTaxControlBreakdown } from '../../data/taxControlBreakdowns'
 import { getFieldLiveCurrent, getFieldOrigin } from '../../data/fieldOrigins'
@@ -224,9 +221,7 @@ export default function LeftPanel1040({
   const [view, setView] = useState<'form' | 'table'>('table')
   // Table view: which categories are expanded
   const [expanded, setExpanded] = useState<Set<string>>(new Set(['income', 'deductions', 'tax', 'payments']))
-  // Control-sheet input values (kept for TaxControlDocPopover Save drafts from Summary)
-  const [controlInputs, setControlInputs] = useState<Record<string, string>>({})
-  // Multi-doc popover state for Summary CY flyouts
+  // Multi-doc popover state for Summary CY flyouts (display-only source breakdown)
   const [controlPopoverRow, setControlPopoverRow] = useState<string | null>(null)
   const [controlPopoverRect, setControlPopoverRect] = useState<DOMRect | null>(null)
   // Read-only calculation / source breakdown popover
@@ -280,33 +275,32 @@ export default function LeftPanel1040({
     setPopoverField(field)
   }
 
-  /** Open Summary CY info flyout — FieldPopover (sources/navigate) or tax-control breakdown/docs. */
+  /** Open Summary CY info flyout only — does not navigate to / show the source document. */
   const openSummaryInfo = (field: string, el: HTMLElement) => {
     setControlPopoverRow(null)
     setControlPopoverRect(null)
     setBreakdownRow(null)
     setBreakdownRect(null)
+    setPopoverField(null)
+    setPopoverRect(null)
 
     const controlId = SUMMARY_TO_CONTROL[field]
     const cfg = controlId ? TAX_CONTROL_ROWS.find(r => r.id === controlId) : undefined
     const breakdown = controlId ? getTaxControlBreakdown(controlId, controlSystemVals) : null
 
-    // Source rows with enter-from-docs UX → TaxControlDocPopover (navigate + Save)
+    // Source rows → TaxControlDocPopover (display-only; row click opens source doc)
     if (cfg && cfg.docs.length > 0 && breakdown?.kind === 'source') {
       setControlPopoverRect(el.getBoundingClientRect())
       setControlPopoverRow(controlId!)
-      onFieldClick?.(field)
       return
     }
     // Calc / formula rows → TaxControlBreakdownPopover
     if (breakdown?.kind === 'calc') {
       setBreakdownRect(el.getBoundingClientRect())
       setBreakdownRow(controlId!)
-      onFieldClick?.(field)
       return
     }
-    // Fallback — FieldPopover (Sources + Calculated-from + navigate)
-    onFieldClick?.(field)
+    // Fallback — FieldPopover (Sources + Calculated-from; source links navigate)
     if (fieldHasPopover(field)) {
       setPopoverRect(el.getBoundingClientRect())
       setPopoverField(field)
@@ -779,7 +773,7 @@ export default function LeftPanel1040({
                                 ? `${pctChg < 0 ? '−' : ''}${Math.abs(pctChg)}%`
                                 : ''}
                             </span>
-                            {/* Comment + attention flag + check — equal-size action buttons */}
+                            {/* Comment + flag + check — always three equal slots on data rows */}
                             <div className={styles.summaryRowEndActions}>
                               {!!row.field && !!onAddFieldNote ? (
                                 <Tooltip text="Add a comment" placement="top">
@@ -799,15 +793,19 @@ export default function LeftPanel1040({
                               ) : (
                                 <span className={styles.summaryActionBtnSlot} aria-hidden="true" />
                               )}
-                              {hasAttention ? (
-                                <span
-                                  className={`${styles.summaryActionBtn} ${styles.summaryActionBtnFlag}`}
-                                  title="Import flags still need review"
-                                  role="img"
-                                  aria-label="Import flags still need review"
+                              {!!row.field ? (
+                                <Tooltip
+                                  text={hasAttention ? 'Import flags still need review' : 'No import flags on this row'}
+                                  placement="top"
                                 >
-                                  <Flag size="small" />
-                                </span>
+                                  <span
+                                    className={`${styles.summaryActionBtn} ${hasAttention ? styles.summaryActionBtnFlag : styles.summaryActionBtnFlagMuted}`}
+                                    role="img"
+                                    aria-label={hasAttention ? 'Import flags still need review' : 'No import flags on this row'}
+                                  >
+                                    <Flag size="small" />
+                                  </span>
+                                </Tooltip>
                               ) : (
                                 <span className={styles.summaryActionBtnSlot} aria-hidden="true" />
                               )}
@@ -884,8 +882,6 @@ export default function LeftPanel1040({
           <TaxControlDocPopover
             rowLabel={cfg.label}
             docs={cfg.docs}
-            values={getDocValuesForRow(cfg.id, cfg.docs, controlInputs)}
-            onSave={(draft) => setControlInputs(prev => setDocValuesForRow(cfg.id, draft, prev))}
             onNavigateToDoc={onNavigateToSourceDoc}
             anchorRect={controlPopoverRect}
             onClose={() => { setControlPopoverRow(null); setControlPopoverRect(null) }}

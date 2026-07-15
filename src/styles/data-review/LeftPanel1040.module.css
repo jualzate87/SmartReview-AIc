@@ -987,6 +987,19 @@
   border-color: #f0c4a0;
   color: #c9500f;
 }
+/* Always-visible flag slot when this Summary row has no unresolved import flags */
+.summaryActionBtnFlagMuted {
+  border-color: var(--color-border-secondary, #c3ced5);
+  color: var(--color-text-disabled, #8a9ba5);
+  background: transparent;
+  cursor: default;
+  opacity: 0.55;
+}
+.summaryActionBtnFlagMuted:hover {
+  background: transparent;
+  border-color: var(--color-border-secondary, #c3ced5);
+  color: var(--color-text-disabled, #8a9ba5);
+}
 /* Invisible equal-size slot when flag/comment/check is absent */
 .summaryActionBtnSlot {
   display: inline-flex;

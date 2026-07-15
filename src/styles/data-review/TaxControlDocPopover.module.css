@@ -1,5 +1,5 @@
 .popover {
-  width: 280px;
+  width: 300px;
   background: var(--color-container-background-primary, #fff);
   border: 1px solid var(--color-divider-tertiary, #d5dee3);
   border-radius: 8px;
@@ -27,7 +27,7 @@
   border: none;
   cursor: pointer;
   padding: 2px;
-  color: #6b7a82;
+  color: var(--color-text-secondary, #6b7a82);
   display: flex;
   align-items: center;
 }
@@ -35,7 +35,7 @@
 .subtitle {
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-x-small, 12px);
-  color: #6b7a82;
+  color: var(--color-text-secondary, #6b7a82);
   margin: 0 0 10px;
   line-height: 1.4;
 }
@@ -43,39 +43,67 @@
 .docFields {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
-.docField {
+.docRow {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--color-divider-tertiary, #d5dee3);
+  border-radius: 6px;
+  background: var(--color-container-background-primary, #fff);
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-family-component);
+  box-sizing: border-box;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.docRow:hover {
+  background: var(--color-container-background-secondary, #f4f5f8);
+  border-color: var(--color-action-standard, #0077c5);
+}
+
+.docRow:focus-visible {
+  outline: 2px solid var(--color-action-standard, #0077c5);
+  outline-offset: 2px;
+}
+
+.docRowMain {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
 }
 
 .docLabel {
-  font-family: var(--font-family-component);
   font-size: var(--font-size-component-x-small, 12px);
   font-weight: var(--font-weight-component-semibold, 500);
-  color: #2d4a5e;
+  color: var(--color-action-standard, #0365ac);
+  line-height: 1.35;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
-.docInput {
-  padding: 6px 8px;
-  border: 1.5px solid #c5d3db;
-  border-radius: 5px;
-  font-family: var(--font-family-component);
+.docAmount {
   font-size: var(--font-size-component-small, 14px);
-  text-align: right;
-  color: #1a3347;
-  background: #fff;
-  outline: none;
-  width: 100%;
-  box-sizing: border-box;
+  font-weight: var(--font-weight-component-bold, 600);
+  color: var(--color-text-primary, #1a3347);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.docInput:focus {
-  border-color: #0077c5;
-  box-shadow: 0 0 0 2px rgba(0, 119, 197, 0.15);
+.viewSource {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-component-x-small, 12px);
+  font-weight: var(--font-weight-component-semibold, 500);
+  color: var(--color-action-standard, #0077c5);
 }
 
 .sumRow {
@@ -84,14 +112,14 @@
   align-items: center;
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px solid #e3e8eb;
+  border-top: 1px solid var(--color-divider-tertiary, #e3e8eb);
 }
 
 .sumLabel {
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-x-small, 12px);
   font-weight: var(--font-weight-component-bold, 600);
-  color: #2d4a5e;
+  color: var(--color-text-secondary, #2d4a5e);
 }
 
 .sumValue {
@@ -99,14 +127,4 @@
   font-size: var(--font-size-component-medium, 16px);
   font-weight: var(--font-weight-component-bold, 600);
   color: var(--color-text-primary, #1a3347);
-}
-
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: var(--space-small, 8px);
-  margin-top: var(--space-small, 12px);
-  padding-top: var(--space-small, 10px);
-  border-top: 1px solid var(--color-divider-tertiary, #e3e8eb);
 }
