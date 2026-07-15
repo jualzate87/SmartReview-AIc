@@ -40,7 +40,7 @@ describe('Phase 2 insights — no state return references', () => {
       join(process.cwd(), 'src/pages/data-review/AgentReportPane.tsx'),
       'utf8',
     )
-    expect(src).toMatch(/estTaxPenalty/)
+    expect(src).toMatch(/underpaymentRisk/)
     expect(src).toMatch(/niitForm8960/)
     expect(src).toMatch(/Form 2210/)
     expect(src).toMatch(/Form 8960/)

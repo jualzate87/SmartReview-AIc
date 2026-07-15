@@ -13,9 +13,13 @@ interface PriorYear1040FieldsProps {
   onMarkReviewed?: (field: string) => void
   reviewedFields?: Map<string, { by: string; at: string }>
   onAddFieldNote?: (text: string, context: string) => void
+  verifiedDocs?: Set<string>
+  onVerifyDoc?: (docKey: string) => void
 }
 
-export default function PriorYear1040Fields({ onMarkReviewed, reviewedFields, onAddFieldNote }: PriorYear1040FieldsProps) {
+const DOC_KEY = 'prior-1040'
+
+export default function PriorYear1040Fields({ onMarkReviewed, reviewedFields, onAddFieldNote, verifiedDocs, onVerifyDoc }: PriorYear1040FieldsProps) {
   const [commentField, setCommentField] = useState<string | null>(null)
   const [commentDraft, setCommentDraft] = useState('')
   const [commentAnchor, setCommentAnchor] = useState<{ top: number; right: number } | null>(null)
@@ -99,10 +103,19 @@ export default function PriorYear1040Fields({ onMarkReviewed, reviewedFields, on
     )
   }
 
+  const docVerified = verifiedDocs?.has(DOC_KEY) ?? false
+
   return (
     <div className={styles.container}>
       <div className={styles.pageHeader}>
-        <h2 className={styles.title}>Prior Year 1040 (2024) — Jessica Drake</h2>
+        <div className={styles.headerActions}>
+          <h2 className={styles.title} style={{ flex: 1, textAlign: 'left' }}>Prior Year 1040 (2024) — Jessica Drake</h2>
+          {docVerified ? (
+            <button className={styles.verifiedBadge} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, gap: 4, display: 'flex', alignItems: 'center' }} onClick={() => onVerifyDoc?.(DOC_KEY)}><CircleCheck size="small" /> Verified</button>
+          ) : (
+            <button className={styles.markVerifiedBtn} onClick={() => onVerifyDoc?.(DOC_KEY)}>Mark as verified</button>
+          )}
+        </div>
       </div>
       <div className={styles.inputContainer}>
         {FIELDS.map((row, i) => {

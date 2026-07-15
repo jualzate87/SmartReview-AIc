@@ -8,11 +8,6 @@ interface Phase2BannerProps {
   complete: boolean
 }
 
-/**
- * ProtoC Phase 2 banner. Reuses Phase1Banner's visual language (Intuit Assist icon,
- * title/subtitle, right-aligned progress) so the two phases read as one continuous
- * guided experience rather than two disconnected screens.
- */
 export default function Phase2Banner({ reviewed, total, complete }: Phase2BannerProps) {
   return (
     <div className={`${styles.banner} ${complete ? styles.bannerComplete : ''}`}>
@@ -28,7 +23,7 @@ export default function Phase2Banner({ reviewed, total, complete }: Phase2Banner
             <>
               <span className={styles.title}>Step 2 — AI diagnostics</span>
               <span className={styles.subtitle}>
-                Review compliance flags, year-over-year changes, and planning opportunities.
+                Filing stoppers, compliance checks, and opportunities for this return.
               </span>
             </>
           )}

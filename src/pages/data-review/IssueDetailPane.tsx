@@ -1,9 +1,17 @@
-import { useState, useEffect } from 'react'
-import { Plus, ChevronLeft, ChevronRight, CircleCheck, Panel, Send } from '@design-systems/icons'
+import { useEffect, useState } from 'react'
+import { ChevronLeft, ChevronRight, CircleCheck, Panel, Document } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import Tooltip from './Tooltip'
 import styles from '../../styles/data-review/YoYDetailPane.module.css'
+
+export type IssueAction = {
+  type: 'goToInput' | 'reviewSource' | 'viewClientResponse' | 'openForm'
+  label: string
+  /** Short note for form placeholders (e.g. not in prototype) */
+  note?: string
+}
+
 interface IssueDetailPaneProps {
   issueKey: string
   dotColor: 'red' | 'blue' | 'orange'
@@ -14,7 +22,11 @@ interface IssueDetailPaneProps {
   tableRows: { label: string; cols: string[]; total?: boolean; badge?: 'red' | 'orange' | 'grey' | 'green' | 'blue' }[]
   tableHeaders: string[]
   suggestedActions: string[]
-  viewSourceLabel: string
+  /** @deprecated prefer `actions` — kept for label fallback */
+  viewSourceLabel?: string
+  actions?: IssueAction[]
+  /** Shown when a diagnostic is based on Tax Organizer Q&A */
+  clientResponseNote?: string
   reviewedCount?: number
   totalItems?: number
   closing?: boolean
@@ -24,6 +36,9 @@ interface IssueDetailPaneProps {
   onClose?: () => void
   onBack?: () => void
   onViewSource?: () => void
+  onGoToInput?: () => void
+  onViewClientResponse?: () => void
+  onOpenForm?: () => void
   onMarkReviewed?: (fieldName: string) => void
   onPrev?: () => void
   onNext?: () => void
@@ -40,47 +55,73 @@ export default function IssueDetailPane({
   tableRows,
   tableHeaders,
   suggestedActions,
-  viewSourceLabel,
+  viewSourceLabel = 'Review source',
+  actions,
+  clientResponseNote,
   reviewedCount = 0,
   totalItems = 5,
   closing = false,
   reviewedFields,
   issueNumber,
   category,
-  onClose,
+  onClose: _onClose,
   onBack,
   onViewSource,
+  onGoToInput,
+  onViewClientResponse,
+  onOpenForm,
   onMarkReviewed,
   onPrev,
   onNext,
   totalIssues = 6,
 }: IssueDetailPaneProps) {
-  const [inputValue, setInputValue] = useState('')
+  const [formNote, setFormNote] = useState<string | null>(null)
   const signOff = reviewedFields?.get(issueKey)
   const isReviewed = !!signOff
-
-  const handleSend = () => {
-    if (!inputValue.trim()) return
-    setInputValue('')
-  }
 
   const handleMarkReviewed = () => {
     if (!isReviewed) onMarkReviewed?.(issueKey)
   }
 
-  // Dismiss any lingering tooltips from the pane that just slid out
   useEffect(() => {
     document.querySelectorAll(':hover').forEach(el =>
       el.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }))
     )
   }, [])
 
+  useEffect(() => {
+    if (!formNote) return
+    const t = setTimeout(() => setFormNote(null), 4000)
+    return () => clearTimeout(t)
+  }, [formNote])
+
   const dotStyle = dotColor === 'blue' ? { background: '#205ea3' } : dotColor === 'orange' ? { background: '#d68000' } : {}
+
+  const resolvedActions: IssueAction[] = actions?.length
+    ? actions
+    : [{ type: 'reviewSource', label: viewSourceLabel }]
+
+  const runAction = (action: IssueAction) => {
+    switch (action.type) {
+      case 'goToInput':
+        onGoToInput?.()
+        break
+      case 'reviewSource':
+        onViewSource?.()
+        break
+      case 'viewClientResponse':
+        onViewClientResponse?.()
+        break
+      case 'openForm':
+        setFormNote(action.note ?? 'Not available in this prototype.')
+        onOpenForm?.()
+        break
+    }
+  }
 
   return (
     <div className={`${styles.panel} ${closing ? styles.panelClosing : ''}`}>
 
-      {/* ── Sticky nav (outside scroll area) ── */}
       <div className={styles.stickyNav}>
         <div className={styles.navRow}>
           <button className={styles.backLink} onClick={onBack}>
@@ -114,11 +155,9 @@ export default function IssueDetailPane({
         )}
       </div>
 
-      {/* ── Scrollable pane ── */}
       <div className={styles.pane}>
         <div className={styles.chat}>
 
-          {/* Issue subheader */}
           <div className={styles.issueHero}>
             {category && <span className={styles.categoryChip}>{category}</span>}
             <div className={styles.titleRow}>
@@ -133,13 +172,23 @@ export default function IssueDetailPane({
             <p className={styles.summary}>{summary}</p>
           </div>
 
-          {/* Root cause */}
           <div className={styles.section}>
             <p className={styles.sectionTitle}>Root cause</p>
             <p className={styles.sectionBody}>{rootCause}</p>
           </div>
 
-          {/* Calculations */}
+          {clientResponseNote && (
+            <div className={styles.section}>
+              <p className={styles.sectionTitle}>Based on Tax Organizer response</p>
+              <p className={styles.sectionBody}>{clientResponseNote}</p>
+            </div>
+          )}
+
+          <div className={styles.section}>
+            <p className={styles.sectionTitle}>Impact</p>
+            <p className={styles.sectionBody}>{taxImpact}</p>
+          </div>
+
           <div className={styles.section}>
             <p className={styles.sectionTitle}>Calculations</p>
             {(() => {
@@ -176,7 +225,6 @@ export default function IssueDetailPane({
             })()}
           </div>
 
-          {/* Suggested Action */}
           <div className={styles.section}>
             <p className={styles.sectionTitle}>Suggested action</p>
             <ul className={styles.actionList}>
@@ -186,18 +234,26 @@ export default function IssueDetailPane({
             </ul>
           </div>
 
-          {/* Action buttons + sign-off stamp.
-              "View Form 1040" is omitted — the 1040 is already on screen, so that
-              CTA is misleading. Keep real source-doc CTAs (W-2, 1099, etc.). */}
           <div className={styles.actionButtonsWrap}>
             <div className={styles.actionButtons}>
-              {viewSourceLabel !== 'View Form 1040' && (
-                <Tooltip text="Open the source document alongside the 1040 to verify or correct this value">
-                  <Button priority="primary" size="small" onClick={onViewSource}>
-                    <Panel size="small" /> {viewSourceLabel}
-                  </Button>
-                </Tooltip>
-              )}
+              {resolvedActions.map((action, i) => {
+                const primary = i === 0
+                const icon =
+                  action.type === 'viewClientResponse' || action.type === 'openForm'
+                    ? <Document size="small" />
+                    : <Panel size="small" />
+                return (
+                  <Tooltip key={`${action.type}-${action.label}`} text={action.note ?? action.label}>
+                    <Button
+                      priority={primary ? 'primary' : 'secondary'}
+                      size="small"
+                      onClick={() => runAction(action)}
+                    >
+                      {icon} {action.label}
+                    </Button>
+                  </Tooltip>
+                )
+              })}
               {isReviewed ? (
                 <Tooltip text="You've already marked this finding as reviewed">
                   <button className={styles.reviewedBtn} disabled>
@@ -207,66 +263,20 @@ export default function IssueDetailPane({
                 </Tooltip>
               ) : (
                 <Tooltip text="Confirm you've checked this finding. Progress is tracked automatically.">
-                  <Button
-                    priority={viewSourceLabel === 'View Form 1040' ? 'primary' : 'secondary'}
-                    size="small"
-                    onClick={handleMarkReviewed}
-                  >
+                  <Button priority="secondary" size="small" onClick={handleMarkReviewed}>
                     <CircleCheck size="small" /> Mark as reviewed
                   </Button>
                 </Tooltip>
               )}
             </div>
+            {formNote && <span className={styles.signOffStamp}>{formNote}</span>}
             {signOff && (
               <span className={styles.signOffStamp}>{signOff.by} · {signOff.at}</span>
             )}
           </div>
 
-
         </div>
       </div>
-
-      {/* ── Input area ── */}
-      <div className={styles.inputArea}>
-        <div className={styles.inputFade} />
-        <div className={styles.inputBox}>
-          <div className={styles.inputTextField}>
-            <textarea
-              className={styles.textarea}
-              placeholder="Ask anything"
-              value={inputValue}
-              onChange={e => setInputValue(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault()
-                  handleSend()
-                }
-              }}
-              rows={1}
-            />
-          </div>
-          <div className={styles.inputActions}>
-            <div className={styles.inputActionsLeft}>
-              <button className={styles.attachBtn} aria-label="Attach">
-                <Plus size="medium" />
-              </button>
-            </div>
-            <div className={styles.inputActionsRight}>
-              <button
-                type="button"
-                className={`${styles.sendBtn} ${inputValue.trim() ? styles.sendBtnActive : ''}`}
-                aria-label="Send"
-                disabled={!inputValue.trim()}
-                onClick={handleSend}
-              >
-                <Send size="medium" />
-              </button>
-            </div>
-          </div>
-        </div>
-        <span className={styles.legal}>How we use generative AI</span>
-      </div>
-
     </div>
   )
 }

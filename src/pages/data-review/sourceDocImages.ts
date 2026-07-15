@@ -51,6 +51,8 @@ export function getSourceDocPreview({
   prior1040Images,
 }: SourceDocPreviewParams): SourceDocPreview {
   switch (activeTopTab) {
+    case 'questionnaire':
+      return { alt: 'Questionnaire — Jessica Drake' }
     case 'prior-1040':
       return { imageSrc: prior1040Images, alt: 'Form 1040 (2024) — Jessica Drake' }
     case '1099-ints':

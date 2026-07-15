@@ -3,6 +3,8 @@ import { DotsSix } from '@design-systems/icons'
 import ReviewTab from './data-review/ReviewTab'
 import Phase1IssueBanner from './data-review/Phase1IssueBanner'
 import {
+  PHASE1_FLAG_KEYS,
+  isPhase1FlagResolved,
   countPhase1Remaining,
   countPhase1FlagsForDivPayer,
   countPhase1FlagsForIntPayer,
@@ -28,12 +30,16 @@ import type { DivPayer } from './data-review/DetailFieldsDiv'
 import {
   buildTabVerifiedKeys,
   buildTypeReviewed,
+  getNextUnreviewedSourceDoc,
+  getUnreviewedSourceDocs,
   isDocReviewed,
 } from './data-review/docReviewStatus'
 import DetailFields1099R, { R_PAYER_TABS } from './data-review/DetailFields1099R'
 import DetailFieldsNec, { NEC_PAYER_TABS } from './data-review/DetailFieldsNec'
 import PeelTab from './data-review/PeelTab'
 import PriorYear1040Fields from './data-review/PriorYear1040Fields'
+import QuestionnaireResponsesPanel from './data-review/QuestionnaireResponsesPanel'
+import Phase1Banner from './data-review/Phase1Banner'
 import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
 import { computeLiveReturn } from '../data/liveReturn'
 import { PHASE1_FLAG_MESSAGES } from './data-review/phase1FlagMessages'
@@ -95,6 +101,24 @@ export default function DataReviewPopout() {
     applyVerifyNavigation(next.field)
   }, [reviewedFields, selectedField, applyVerifyNavigation])
 
+  const handleReviewNextDocument = useCallback(() => {
+    const next = getNextUnreviewedSourceDoc(unreviewedSourceDocs, {
+      tab: activeTopTab,
+      w2SubTab: activeSubTab,
+      divPayer: activeDivPayer,
+      intPayer: activeIntPayer,
+    })
+    if (!next) return
+    setActiveTopTab(next.tab)
+    if (next.w2SubTab) setActiveSubTab(next.w2SubTab)
+    if (next.divPayer) setActiveDivPayer(next.divPayer)
+    if (next.intPayer) setActiveIntPayer(next.intPayer)
+    setSelectedField(null)
+  }, [
+    unreviewedSourceDocs, activeTopTab, activeSubTab, activeDivPayer, activeIntPayer,
+    setActiveTopTab, setActiveSubTab, setActiveDivPayer, setActiveIntPayer, setSelectedField,
+  ])
+
   const tabFlagCounts = getTabFlagCounts(reviewedFields)
   const tabInitialFlagCounts = getTabInitialFlagCounts()
   const divPayerFieldCounts: Record<DivPayer, number> = Object.fromEntries(
@@ -114,6 +138,18 @@ export default function DataReviewPopout() {
     intCounts: intPayerFieldCounts,
     rRemaining: tabFlagCounts['1099-rs'] ?? 0,
   })
+  const unreviewedSourceDocs = getUnreviewedSourceDocs({
+    verifiedDocs,
+    w2Counts: w2PayerFieldCounts,
+    divCounts: divPayerFieldCounts,
+    intCounts: intPayerFieldCounts,
+    rRemaining: tabFlagCounts['1099-rs'] ?? 0,
+  })
+  const unreviewedDocCount = unreviewedSourceDocs.length
+  const phase1Resolved = PHASE1_FLAG_KEYS.filter(k => isPhase1FlagResolved(k, reviewedFields)).length
+  const phase1Total = PHASE1_FLAG_KEYS.length
+  const flagsCleared = phase1Remaining === 0
+  const phase1FullyComplete = flagsCleared && unreviewedDocCount === 0
 
   const rightRef = useRef<HTMLDivElement>(null)
   const [previewWidth, setPreviewWidth] = useState(40)
@@ -159,6 +195,15 @@ export default function DataReviewPopout() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+      <Phase1Banner
+        resolved={phase1Resolved}
+        total={phase1Total}
+        flagsCleared={flagsCleared}
+        unreviewedDocCount={unreviewedDocCount}
+        complete={phase1FullyComplete}
+        importsStarted
+        onReviewNextDocument={handleReviewNextDocument}
+      />
       <ReviewTab
         isPopout
         activeTopTab={activeTopTab}
@@ -170,8 +215,13 @@ export default function DataReviewPopout() {
         onTopTabChange={(tab) => { setActiveTopTab(tab); setSelectedField(null) }}
       />
 
-      {phase1Remaining > 0 && (
-        <Phase1IssueBanner unresolvedCount={phase1Remaining} onVerify={handleVerifyNext} />
+      {(phase1Remaining > 0 || (flagsCleared && unreviewedDocCount > 0 && !phase1FullyComplete)) && (
+        <Phase1IssueBanner
+          unresolvedCount={phase1Remaining}
+          onVerify={handleVerifyNext}
+          unreviewedDocCount={unreviewedDocCount}
+          onReviewNextDocument={handleReviewNextDocument}
+        />
       )}
 
       {/* Peel tabs — payer switcher for multi-payer doc types */}
@@ -252,6 +302,7 @@ export default function DataReviewPopout() {
       )}
 
       <div ref={rightRef} style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+          {activeTopTab !== 'questionnaire' && (
           <div style={{ flex: `0 0 ${previewWidth}%`, minWidth: 0, minHeight: 0, overflow: 'hidden', borderRight: '1px solid #d5dee3' }}>
             <DocumentPreview
               imageSrc={sourceDocPreview.imageSrc}
@@ -263,7 +314,9 @@ export default function DataReviewPopout() {
               }
             />
           </div>
+          )}
 
+          {activeTopTab !== 'questionnaire' && (
           <div
             className={dragStyles.handleVertical}
             onPointerDown={handlePreviewDrag}
@@ -273,6 +326,7 @@ export default function DataReviewPopout() {
           >
             <DotsSix size="small" className={dragStyles.handleIcon} />
           </div>
+          )}
 
           <div style={{ flex: 1, minWidth: 0, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             {activeTopTab === 'w2s' && (
@@ -428,7 +482,20 @@ export default function DataReviewPopout() {
                 onVerifyDoc={toggleVerifiedDoc}
               />
             )}
-            {activeTopTab === 'prior-1040' && <PriorYear1040Fields onMarkReviewed={handleMarkReviewed} reviewedFields={reviewedFields} />}
+            {activeTopTab === 'prior-1040' && (
+              <PriorYear1040Fields
+                onMarkReviewed={handleMarkReviewed}
+                reviewedFields={reviewedFields}
+                verifiedDocs={verifiedDocs}
+                onVerifyDoc={toggleVerifiedDoc}
+              />
+            )}
+            {activeTopTab === 'questionnaire' && (
+              <QuestionnaireResponsesPanel
+                verifiedDocs={verifiedDocs}
+                onVerifyDoc={toggleVerifiedDoc}
+              />
+            )}
           </div>
         </div>
     </div>

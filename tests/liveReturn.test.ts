@@ -109,12 +109,12 @@ describe('computeLiveReturn — Build Spec seed anchors', () => {
 })
 
 describe('Phase 1 ↔ Phase 2 flag sync map', () => {
-  it('links DIV fedTaxWithheld to withholdingDrop insight', () => {
-    expect(PHASE1_TO_PHASE2_ISSUES.fedTaxWithheld).toContain('withholdingDrop')
+  it('links DIV fedTaxWithheld to underpaymentRisk diagnostic', () => {
+    expect(PHASE1_TO_PHASE2_ISSUES.fedTaxWithheld).toContain('underpaymentRisk')
   })
 
-  it('links wages-techCircle to optW4Adjustment insight', () => {
-    expect(PHASE1_TO_PHASE2_ISSUES['wages-techCircle']).toContain('optW4Adjustment')
+  it('does not link W-2 wages to a YoY planning diagnostic (optW4 removed)', () => {
+    expect(PHASE1_TO_PHASE2_ISSUES['wages-techCircle']).toBeUndefined()
   })
 })
 

@@ -7,29 +7,39 @@ import styles from '../../styles/data-review/Phase1Banner.module.css'
 interface Phase1BannerProps {
   resolved: number
   total: number
+  /** All import flags resolved */
+  flagsCleared: boolean
+  /** Count of packet source docs (incl. Questionnaire) not yet mark-reviewed */
+  unreviewedDocCount?: number
+  /** Fully complete: flags cleared AND all packet docs reviewed */
   complete: boolean
-  /** Continue to Phase 2 — AI Diagnostics (only enabled when complete) */
-  onContinue: () => void
+  /** Continue to Phase 2 — AI Diagnostics (only enabled when complete). Omit in popout. */
+  onContinue?: () => void
   /** Whether the CPA has started opening source docs for import review */
   importsStarted?: boolean
   /** Begin import review — reveals source documents on the right */
   onStartImports?: () => void
+  /** Jump to next source document that still needs a review */
+  onReviewNextDocument?: () => void
 }
 
 /**
  * ProtoC Phase 1 banner. Reflects live import-flag progress and, once every flag
- * is resolved, invites the CPA to Phase 2. The AI diagnostics control stays hidden
- * until "Start reviewing imports"; after that it's hard-locked (visible + explained)
- * until the counter reaches 0 — this keeps diagnostics accurate rather than early.
+ * is resolved, invites the CPA to review remaining (no-flag) docs before Phase 2.
  */
 export default function Phase1Banner({
   resolved,
   total,
+  flagsCleared,
+  unreviewedDocCount = 0,
   complete,
   onContinue,
   importsStarted = false,
   onStartImports,
+  onReviewNextDocument,
 }: Phase1BannerProps) {
+  const needsDocReview = flagsCleared && unreviewedDocCount > 0 && !complete
+
   return (
     <div className={`${styles.banner} ${complete ? styles.bannerComplete : ''}`}>
       <div className={styles.left}>
@@ -38,7 +48,21 @@ export default function Phase1Banner({
           {complete ? (
             <>
               <span className={styles.title}>Import accuracy confirmed</span>
-              <span className={styles.subtitle}>All flagged fields have been reviewed. Ready to move to Step 2?</span>
+              <span className={styles.subtitle}>
+                {onContinue
+                  ? 'All flagged fields and source documents have been reviewed. Ready to move to Step 2?'
+                  : 'All flagged fields and source documents have been reviewed. Dock back to continue to AI diagnostics.'}
+              </span>
+            </>
+          ) : needsDocReview ? (
+            <>
+              <span className={styles.title}>
+                Flags cleared — {unreviewedDocCount}{' '}
+                {unreviewedDocCount === 1 ? 'document still needs' : 'documents still need'} a review
+              </span>
+              <span className={styles.subtitle}>
+                Open each remaining source document (including Questionnaire) and mark it reviewed before AI diagnostics unlock.
+              </span>
             </>
           ) : (
             <>
@@ -52,15 +76,13 @@ export default function Phase1Banner({
       </div>
 
       <div className={styles.right}>
-        {!complete && (
+        {!flagsCleared && (
           <span className={styles.counter}>
             <strong className={styles.counterNum}>{resolved}</strong> of {total} flags resolved
           </span>
         )}
 
-        {/* Start reviewing imports sits immediately before AI diagnostics so the
-            sequence reads: resolve imports → then unlock AI. */}
-        {!complete && !importsStarted && onStartImports && (
+        {!flagsCleared && !importsStarted && onStartImports && (
           <Button
             priority="primary"
             size="medium"
@@ -70,17 +92,29 @@ export default function Phase1Banner({
           </Button>
         )}
 
-        {complete ? (
+        {needsDocReview && onReviewNextDocument && (
+          <Button priority="primary" size="medium" onClick={onReviewNextDocument}>
+            Review next document
+          </Button>
+        )}
+
+        {complete && onContinue ? (
           <Button priority="primary" size="medium" onClick={onContinue}>
             Continue to AI diagnostics <ArrowRight size="small" />
           </Button>
-        ) : importsStarted ? (
+        ) : complete && !onContinue ? (
+          <span className={styles.lockNote}>
+            Phase 1 complete — continue to AI diagnostics in the main window.
+          </span>
+        ) : importsStarted || needsDocReview ? (
           <div className={styles.lockedWrap}>
             <Button priority="secondary" size="medium" disabled>
               <Lock size="small" /> AI diagnostics locked
             </Button>
             <span className={styles.lockNote}>
-              Diagnostics unlock once import is confirmed.
+              {needsDocReview
+                ? 'Mark remaining documents reviewed to unlock.'
+                : 'Diagnostics unlock once import is confirmed.'}
             </span>
           </div>
         ) : null}
@@ -88,7 +122,7 @@ export default function Phase1Banner({
 
       {complete && (
         <span className={styles.completeBadge}>
-          <CircleCheck size="small" /> All flags resolved
+          <CircleCheck size="small" /> All documents reviewed
         </span>
       )}
     </div>

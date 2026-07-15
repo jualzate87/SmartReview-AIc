@@ -7,7 +7,6 @@ import {
   isDiagnosticAutoDismissed,
   PHASE1_TO_PHASE2_ISSUES,
   PHASE2_DIAGNOSTIC_ORDER,
-  PRIOR_YEAR_OWE,
   SAFE_HARBOR_2024,
   SOURCE_AMOUNTS,
   type DiagnosticSyncContext,
@@ -37,83 +36,44 @@ describe('DIAGNOSTIC_DISMISS_RULES — coverage', () => {
     }
   })
 
+  it('keeps Critical / Compliance / Opportunities catalog at quality size', () => {
+    expect(PHASE2_DIAGNOSTIC_ORDER).toEqual([
+      'confirmPriorAgi',
+      'niitForm8960',
+      'underpaymentRisk',
+      'necScheduleC',
+      'optItemize',
+    ])
+  })
+
   it('derives PHASE1_TO_PHASE2_ISSUES from dismissWhenReviewed', () => {
-    expect(PHASE1_TO_PHASE2_ISSUES.fedTaxWithheld).toContain('withholdingDrop')
-    expect(PHASE1_TO_PHASE2_ISSUES['wages-techCircle']).toContain('optW4Adjustment')
+    expect(PHASE1_TO_PHASE2_ISSUES.fedTaxWithheld).toContain('underpaymentRisk')
   })
 })
 
 describe('isDiagnosticAutoDismissed — flag resolution', () => {
-  it('dismisses withholdingDrop when fedTaxWithheld is reviewed', () => {
-    expect(isDiagnosticAutoDismissed('withholdingDrop', ctx({ reviewed: ['fedTaxWithheld'] }))).toBe(true)
-    expect(isDiagnosticAutoDismissed('withholdingDrop', ctx())).toBe(false)
-  })
-
-  it('dismisses optW4Adjustment when wages-techCircle is reviewed', () => {
-    expect(
-      isDiagnosticAutoDismissed('optW4Adjustment', ctx({ reviewed: ['wages-techCircle'] })),
-    ).toBe(true)
-    expect(isDiagnosticAutoDismissed('optW4Adjustment', ctx())).toBe(false)
+  it('dismisses underpaymentRisk when fedTaxWithheld is reviewed', () => {
+    expect(isDiagnosticAutoDismissed('underpaymentRisk', ctx({ reviewed: ['fedTaxWithheld'] }))).toBe(true)
+    expect(isDiagnosticAutoDismissed('underpaymentRisk', ctx())).toBe(false)
   })
 })
 
 describe('isDiagnosticAutoDismissed — amount edits', () => {
-  it('dismisses optW4Adjustment when wages corrected to source', () => {
+  it('dismisses underpaymentRisk when DIV Box 4 restored to source', () => {
     expect(
       isDiagnosticAutoDismissed(
-        'optW4Adjustment',
-        ctx({ amounts: { wages: SOURCE_AMOUNTS.wages } }),
-      ),
-    ).toBe(true)
-  })
-
-  it('dismisses withholdingDrop when DIV Box 4 restored to source', () => {
-    expect(
-      isDiagnosticAutoDismissed(
-        'withholdingDrop',
+        'underpaymentRisk',
         ctx({ amounts: { divWithholding: SOURCE_AMOUNTS.divWithholding } }),
       ),
     ).toBe(true)
   })
 
-  it('dismisses withholdingDrop when 1099-R withholding restored', () => {
-    expect(
-      isDiagnosticAutoDismissed(
-        'withholdingDrop',
-        ctx({ amounts: { rWithholding: SOURCE_AMOUNTS.rWithholding } }),
-      ),
-    ).toBe(true)
-  })
-
-  it('dismisses withholdingDrop / estTaxPenalty / missingEstPayments when safe harbor met', () => {
+  it('dismisses underpaymentRisk when safe harbor met', () => {
     const base = SEED_AMOUNTS.w2Withholding + SEED_AMOUNTS.divWithholding
     const need = SAFE_HARBOR_2024 - base
     const c = ctx({ amounts: { rWithholding: need } })
     expect(c.live.totalWithholding).toBeGreaterThanOrEqual(SAFE_HARBOR_2024)
-    expect(isDiagnosticAutoDismissed('withholdingDrop', c)).toBe(true)
-    expect(isDiagnosticAutoDismissed('estTaxPenalty', c)).toBe(true)
-    expect(isDiagnosticAutoDismissed('missingEstPayments', c)).toBe(true)
-  })
-
-  it('dismisses balanceDueJump when owed falls to prior-year level', () => {
-    const totalTax = computeLiveReturn(SEED_AMOUNTS).totalTax
-    const targetWh = totalTax - PRIOR_YEAR_OWE
-    const rBoost = targetWh - SEED_AMOUNTS.w2Withholding - SEED_AMOUNTS.divWithholding
-    const c = ctx({ amounts: { rWithholding: rBoost } })
-    expect(c.live.oweAmount).toBeLessThanOrEqual(PRIOR_YEAR_OWE)
-    expect(isDiagnosticAutoDismissed('balanceDueJump', c)).toBe(true)
-  })
-
-  it('dismisses ordinaryDivSurge when ordinary dividends drop near prior year', () => {
-    const c = ctx({
-      amounts: {
-        ordinaryDivsToken: 100_000,
-        ordinaryDivsNorthmark: 10_000,
-        ordinaryDivsBeacon: 5_000,
-      },
-    })
-    expect(c.live.ordinaryDivs).toBeLessThanOrEqual(SOURCE_AMOUNTS.priorOrdinaryDivs * 1.2)
-    expect(isDiagnosticAutoDismissed('ordinaryDivSurge', c)).toBe(true)
+    expect(isDiagnosticAutoDismissed('underpaymentRisk', c)).toBe(true)
   })
 
   it('dismisses niitForm8960 only when AGI falls below $200k', () => {
@@ -136,14 +96,14 @@ describe('isDiagnosticAutoDismissed — amount edits', () => {
 })
 
 describe('study-static diagnostics remain until Phase 2 review', () => {
-  it('keeps totalTaxRise, confirmPriorAgi, and optIra active at seed', () => {
+  it('keeps confirmPriorAgi, necScheduleC, and optItemize active at seed', () => {
     const c = ctx()
-    expect(isDiagnosticAutoDismissed('totalTaxRise', c)).toBe(false)
     expect(isDiagnosticAutoDismissed('confirmPriorAgi', c)).toBe(false)
-    expect(isDiagnosticAutoDismissed('optIra', c)).toBe(false)
-    expect(DIAGNOSTIC_DISMISS_RULES.totalTaxRise.notes).toMatch(/Study-static/)
+    expect(isDiagnosticAutoDismissed('necScheduleC', c)).toBe(false)
+    expect(isDiagnosticAutoDismissed('optItemize', c)).toBe(false)
     expect(DIAGNOSTIC_DISMISS_RULES.confirmPriorAgi.notes).toMatch(/Study-static/)
-    expect(DIAGNOSTIC_DISMISS_RULES.optIra.notes).toMatch(/Study-static/)
+    expect(DIAGNOSTIC_DISMISS_RULES.necScheduleC.notes).toMatch(/Study-static/)
+    expect(DIAGNOSTIC_DISMISS_RULES.optItemize.notes).toMatch(/Study-static/)
   })
 })
 
@@ -155,17 +115,15 @@ describe('getActiveDiagnosticKeys / getPhase2Progress', () => {
     expect(progress.complete).toBe(false)
   })
 
-  it('drops wage + withholding cards from the active list after Phase 1 fixes', () => {
+  it('drops underpaymentRisk after Phase 1 withholding fix', () => {
     const c = ctx({
-      reviewed: ['wages-techCircle', 'fedTaxWithheld'],
-      amounts: { wages: SOURCE_AMOUNTS.wages, divWithholding: SOURCE_AMOUNTS.divWithholding },
+      reviewed: ['fedTaxWithheld'],
+      amounts: { divWithholding: SOURCE_AMOUNTS.divWithholding },
     })
     const active = getActiveDiagnosticKeys(c)
-    expect(active).not.toContain('optW4Adjustment')
-    expect(active).not.toContain('withholdingDrop')
+    expect(active).not.toContain('underpaymentRisk')
     const progress = getPhase2Progress(c)
-    expect(progress.total).toBe(PHASE2_DIAGNOSTIC_ORDER.length - 2)
-    expect(progress.remaining).toBe(progress.total)
+    expect(progress.total).toBe(PHASE2_DIAGNOSTIC_ORDER.length - 1)
   })
 
   it('counts manually reviewed active diagnostics toward complete', () => {

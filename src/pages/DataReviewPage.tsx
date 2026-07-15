@@ -22,12 +22,16 @@ import type { DivPayer } from './data-review/DetailFieldsDiv'
 import {
   buildTabVerifiedKeys,
   buildTypeReviewed,
+  getNextUnreviewedSourceDoc,
+  getUnreviewedSourceDocs,
   isDocReviewed,
 } from './data-review/docReviewStatus'
 import DetailFields1099R, { R_PAYER_TABS } from './data-review/DetailFields1099R'
 import DetailFieldsNec, { NEC_PAYER_TABS } from './data-review/DetailFieldsNec'
 import PeelTab from './data-review/PeelTab'
 import PriorYear1040Fields from './data-review/PriorYear1040Fields'
+import QuestionnaireResponsesPanel from './data-review/QuestionnaireResponsesPanel'
+import type { QuestionnaireResponseId } from './data-review/questionnaireData'
 import AgentReportPane from './data-review/AgentReportPane'
 import AgentLoadingPane from './data-review/AgentLoadingPane'
 import WelcomePane from './data-review/WelcomePane'
@@ -161,6 +165,7 @@ export default function DataReviewPage() {
   // Phase 1: Summary visible by default; sources hidden until Start reviewing imports
   const [show1040, setShow1040] = useState(true)
   const [importsStarted, setImportsStarted] = useState(false)
+  const [questionnaireHighlightId, setQuestionnaireHighlightId] = useState<QuestionnaireResponseId | null>(null)
 
   // The import/OCR flags owned by Phase 1. Each key matches the reviewed-field key
   // emitted by the DetailFields "Edit+Save" / "Mark as correct" controls.
@@ -190,6 +195,16 @@ export default function DataReviewPage() {
     intCounts: intPayerFieldCounts,
     rRemaining: tabFlagCounts['1099-rs'] ?? 0,
   })
+  const unreviewedSourceDocs = getUnreviewedSourceDocs({
+    verifiedDocs,
+    w2Counts: w2PayerFieldCounts,
+    divCounts: divPayerFieldCounts,
+    intCounts: intPayerFieldCounts,
+    rRemaining: tabFlagCounts['1099-rs'] ?? 0,
+  })
+  const unreviewedDocCount = unreviewedSourceDocs.length
+  const flagsCleared = phase1Complete
+  const phase1FullyComplete = flagsCleared && unreviewedDocCount === 0
   // Phase 2 diagnostics progress — same dismiss rules AgentReportPane uses, so
   // resolving Phase 1 flags / editing amounts that fix an insight keeps the banner in sync.
   const phase2Progress = getPhase2Progress({
@@ -286,6 +301,29 @@ export default function DataReviewPage() {
     if (!next) return
     applyVerifyNavigation(next.field)
   }, [importsStarted, startReviewingImports, reviewedFields, selectedField, applyVerifyNavigation])
+
+  const handleReviewNextDocument = useCallback(() => {
+    if (!importsStarted) startReviewingImports()
+    else ensureSourcePanelVisible()
+    const next = getNextUnreviewedSourceDoc(unreviewedSourceDocs, {
+      tab: activeTopTab,
+      w2SubTab: activeSubTab,
+      divPayer: activeDivPayer,
+      intPayer: activeIntPayer,
+    })
+    if (!next) return
+    setActiveTopTab(next.tab)
+    if (next.w2SubTab) setActiveSubTab(next.w2SubTab)
+    if (next.divPayer) setActiveDivPayer(next.divPayer)
+    if (next.intPayer) setActiveIntPayer(next.intPayer)
+    setSelectedField(null)
+    setActiveIssueField(null)
+    if (next.tab === 'questionnaire') setQuestionnaireHighlightId(null)
+  }, [
+    importsStarted, startReviewingImports, ensureSourcePanelVisible,
+    unreviewedSourceDocs, activeTopTab, activeSubTab, activeDivPayer, activeIntPayer,
+    setActiveTopTab, setActiveSubTab, setActiveDivPayer, setActiveIntPayer, setSelectedField,
+  ])
 
   const handleFieldSelect = useCallback((field: string | null) => {
     setSelectedField(field)
@@ -649,10 +687,13 @@ export default function DataReviewPage() {
         <Phase1Banner
           resolved={phase1Resolved}
           total={phase1Total}
-          complete={phase1Complete}
+          flagsCleared={flagsCleared}
+          unreviewedDocCount={unreviewedDocCount}
+          complete={phase1FullyComplete}
           onContinue={handleBeginDiagnostics}
           importsStarted={importsStarted}
           onStartImports={startReviewingImports}
+          onReviewNextDocument={handleReviewNextDocument}
         />
       )}
 
@@ -861,8 +902,13 @@ export default function DataReviewPage() {
                   </IconControl>
                 </div>
               </div>
-              {inImportPhase && phase1Remaining > 0 && (
-                <Phase1IssueBanner unresolvedCount={phase1Remaining} onVerify={handleVerifyNext} />
+              {inImportPhase && (phase1Remaining > 0 || (flagsCleared && unreviewedDocCount > 0)) && (
+                <Phase1IssueBanner
+                  unresolvedCount={phase1Remaining}
+                  onVerify={handleVerifyNext}
+                  unreviewedDocCount={unreviewedDocCount}
+                  onReviewNextDocument={handleReviewNextDocument}
+                />
               )}
               <ReviewTab
                 activeTopTab={activeTopTab}
@@ -970,6 +1016,7 @@ export default function DataReviewPage() {
                   flexDirection: previewSideBySide ? 'row' : 'column',
                 }}
               >
+              {activeTopTab !== 'questionnaire' && (
               <div style={previewSideBySide
                 ? {
                     flex: `0 0 ${previewHeight}%`,
@@ -1011,6 +1058,7 @@ export default function DataReviewPage() {
               >
                 <DotsSix size="small" className={`${dragStyles.handleIcon} ${previewSideBySide ? '' : dragStyles.rotated90}`} />
               </div>
+              )}
 
               {/* Detail fields — switches based on active tab */}
               <div style={{ flex: 1, minWidth: 0, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
@@ -1167,7 +1215,22 @@ export default function DataReviewPage() {
                   onAddFieldNote={(text, context) => handleAddNote(text, context)}
                 />
               )}
-              {activeTopTab === 'prior-1040' && <PriorYear1040Fields onMarkReviewed={handleMarkReviewed} reviewedFields={reviewedFields} onAddFieldNote={(text, context) => handleAddNote(text, context)} />}
+              {activeTopTab === 'prior-1040' && (
+                <PriorYear1040Fields
+                  onMarkReviewed={handleMarkReviewed}
+                  reviewedFields={reviewedFields}
+                  onAddFieldNote={(text, context) => handleAddNote(text, context)}
+                  verifiedDocs={verifiedDocs}
+                  onVerifyDoc={toggleVerifiedDoc}
+                />
+              )}
+              {activeTopTab === 'questionnaire' && (
+                <QuestionnaireResponsesPanel
+                  verifiedDocs={verifiedDocs}
+                  onVerifyDoc={toggleVerifiedDoc}
+                  highlightResponseId={questionnaireHighlightId}
+                />
+              )}
               </div>
               </div>
             </div>
@@ -1227,14 +1290,19 @@ export default function DataReviewPage() {
                         handleAgentClose(true)
                         setActiveTopTab('w2s')
                       }}
-                      onNavigateToTab={(tab, subTab, field) => {
+                      onNavigateToTab={(tab, subTab, field, questionnaireResponseId) => {
                         if (tab) {
                           setActiveTopTab(tab)
                           if (subTab) setActiveSubTab(subTab)
                         }
-                        if (field) {
+                        if (tab === 'questionnaire') {
+                          setQuestionnaireHighlightId(questionnaireResponseId ?? null)
+                          setSelectedField(null)
+                          setActiveIssueField(null)
+                        } else if (field) {
                           setSelectedField(field)
                           setActiveIssueField(field)
+                          setQuestionnaireHighlightId(null)
                         } else if (!tab) {
                           setSelectedField(null)
                           setActiveIssueField(null)
