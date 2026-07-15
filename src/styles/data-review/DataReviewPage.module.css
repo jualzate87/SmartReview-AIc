@@ -229,40 +229,29 @@
 }
 .agentBackBtn:hover { text-decoration: underline; }
 
-.agentPopOutBtn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #5d686f;
-  padding: 2px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
-  flex-shrink: 0;
-}
-.agentPopOutBtn:hover {
-  background: #f0f4f7;
-  color: #21262a;
-}
-
 /* Source document panel header — Prototype A */
 .sourcePanelHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 8px 8px 8px;
+  gap: var(--space-component-gap-small, 8px);
+  padding: var(--space-component-stack-padding-small, 8px) var(--space-component-inline-padding-x-small, 8px);
   flex-shrink: 0;
-  border-bottom: 1px solid #e8edf0;
+  border-bottom: 1px solid var(--color-divider-tertiary, #e8edf0);
 }
 
 .sourcePanelTitle {
   font-family: var(--font-family-component) !important;
-  font-size: 16px;
-  font-weight: 500;
-  color: #21262a;
+  font-size: var(--font-size-component-medium, 16px);
+  font-weight: var(--font-weight-component-semibold, 500);
+  color: var(--color-text-primary, #21262a);
+}
+
+.sourcePanelActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-component-gap-small, 4px);
+  flex-shrink: 0;
 }
 
 /* Issue banner — shown below the panel header, above the tabs */

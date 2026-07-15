@@ -1,10 +1,11 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
-import { ArrowLeft, DotsSix, Panel, ChevronLeft, ChevronRight, Comment, PopOut } from '@design-systems/icons'
+import { ArrowLeft, DotsSix, Panel, ChevronLeft, ChevronRight, Comment, PopOut, Close } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
+import { IconControl } from '@ids-ts/icon-control'
+import '@ids-ts/icon-control/dist/main.css'
 import NotesPane from './data-review/NotesPane'
-import Tooltip from './data-review/Tooltip'
 import type { Note } from './data-review/NotesPane'
 import intuitAssistIcon from '../assets/icons/intuit-assist.svg'
 import LeftPanel1040 from './data-review/LeftPanel1040'
@@ -179,6 +180,16 @@ export default function DataReviewPage() {
       }))
     }
   }, [rightPanelVisible])
+
+  /** Hide the imported-documents panel with the same slide-out used by the toolbar toggle */
+  const handleCloseSourcePanel = useCallback(() => {
+    if (!rightPanelVisible || rightPanelExiting) return
+    setRightPanelExiting(true)
+    setTimeout(() => {
+      setRightPanelExiting(false)
+      setRightPanelVisible(false)
+    }, 280)
+  }, [rightPanelVisible, rightPanelExiting])
 
   const startReviewingImports = useCallback(() => {
     setImportsStarted(true)
@@ -557,12 +568,7 @@ export default function DataReviewPage() {
               if (agentView !== 'idle') {
                 handleAgentClose()
               } else if (rightPanelVisible) {
-                // Slide out first, then hide
-                setRightPanelExiting(true)
-                setTimeout(() => {
-                  setRightPanelExiting(false)
-                  setRightPanelVisible(false)
-                }, 280)
+                handleCloseSourcePanel()
               } else {
                 // Show with slide-in
                 setRightPanelVisible(true)
@@ -743,7 +749,7 @@ export default function DataReviewPage() {
                 opacity: (agentView === 'loading' || agentView === 'report' || agentView === 'closing' || (!rightPanelVisible && !rightPanelExiting)) ? 0 : 1,
               }}
             >
-              {/* Source panel header — always visible, pop-out on right */}
+              {/* Source panel header — title left; Detach + Close on right */}
               <div className={styles.sourcePanelHeader}>
                 {/* "Back to agent insights" only makes sense in Phase 2, after navigating from the agent */}
                 {!inImportPhase && fromAgent && agentView === 'idle' && rightPanelVisible ? (
@@ -756,10 +762,12 @@ export default function DataReviewPage() {
                 ) : (
                   <span className={styles.sourcePanelTitle}>Imported documents</span>
                 )}
-                <Tooltip text="Open in new window" placement="bottom">
-                  <button
-                    className={styles.agentPopOutBtn}
-                    aria-label="Open in new window"
+                <div className={styles.sourcePanelActions}>
+                  <IconControl
+                    label="Detach"
+                    labelAlignment="right"
+                    size="small"
+                    aria-label="Detach"
                     onClick={() => {
                       setPoppedOut(true)
                       const popoutWindow = window.open(
@@ -777,9 +785,16 @@ export default function DataReviewPage() {
                       }
                     }}
                   >
-                    <PopOut size="medium" />
-                  </button>
-                </Tooltip>
+                    <PopOut size="small" />
+                  </IconControl>
+                  <IconControl
+                    size="small"
+                    aria-label="Close"
+                    onClick={handleCloseSourcePanel}
+                  >
+                    <Close size="small" />
+                  </IconControl>
+                </div>
               </div>
               {inImportPhase && phase1Remaining > 0 && (
                 <Phase1IssueBanner unresolvedCount={phase1Remaining} onVerify={handleVerifyNext} />
