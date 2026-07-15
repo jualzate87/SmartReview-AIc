@@ -141,16 +141,15 @@
 }
 
 .cardTitle {
+  /* Prefer --font-family-* over --font-name-* (name tokens → serif fallback). */
   font-family: var(--font-family-component) !important;
-  font-size: 20px;
-  font-weight: 700;
   color: #21262a;
   margin: 0;
   text-align: center;
 }
 
 .cardBody {
-  font-size: 14px;
+  font-family: var(--font-family-body) !important;
   color: #21262a;
   margin: 0;
   text-align: center;
@@ -191,12 +190,11 @@
 .reviewBtn:hover { background: #174d87; }
 
 .feedback {
-  font-size: 13px;
   color: #6b6c72;
   margin: 0;
   margin-top: 24px;
   text-align: center;
-  font-family: var(--font-family-component) !important;
+  font-family: var(--font-family-body) !important;
 }
 
 .feedbackLink {
@@ -204,7 +202,7 @@
   border: none;
   cursor: pointer;
   color: #205ea3;
-  font-size: 13px;
+  font-size: inherit;
   font-weight: 600;
   padding: 0;
   font-family: var(--font-family-component) !important;
