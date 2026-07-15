@@ -260,7 +260,7 @@
 .sourcePanelActions {
   display: flex;
   align-items: center;
-  gap: var(--space-component-gap-small, 4px);
+  gap: var(--space-x-large, 40px);
   flex-shrink: 0;
 }
 
