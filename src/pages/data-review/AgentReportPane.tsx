@@ -17,6 +17,8 @@ import { RETURN_SUMMARY_INSIGHTS } from './phase1FlagMessages'
 import {
   getPhase2Progress,
   PHASE2_DIAGNOSTIC_ORDER,
+  PRIOR_YEAR_OWE,
+  SAFE_HARBOR_2024,
   type Phase2IssueKey,
 } from './phase2FlagSync'
 import styles from '../../styles/data-review/AgentReportPane.module.css'
@@ -85,11 +87,11 @@ function buildBalanceDueIssue(live: LiveReturnTotals) {
   dotColor: 'red' as const,
   title: `Balance due jumped to ${fmtUsd(owe)}`,
   category: 'IRS compliance',
-  summary: `Line 37 rose from $22,790 in 2024 to ${fmtUsd(owe)} this year. Confirm Jessica can pay this amount by the filing deadline.`,
+  summary: `Line 37 rose from ${fmtUsd(PRIOR_YEAR_OWE)} in 2024 to ${fmtUsd(owe)} this year. Confirm Jessica can pay this amount by the filing deadline.`,
   taxImpact: RETURN_SUMMARY_INSIGHTS.estTaxPenalty,
   rootCause: 'Total tax rose while federal withholding fell sharply. Capital gains dropped to $0 but dividend income surged, shifting the tax profile.',
   tableRows: [
-    { label: 'Amount you owe (line 37)', cols: [fmtUsd(owe), '$22,790', 'YoY'], badge: 'red' as const, total: true },
+    { label: 'Amount you owe (line 37)', cols: [fmtUsd(owe), fmtUsd(PRIOR_YEAR_OWE), 'YoY'], badge: 'red' as const, total: true },
   ],
   tableHeaders: ['Item', '2025', '2024', 'YoY'],
   suggestedActions: [
@@ -107,13 +109,13 @@ function buildBalanceDueIssue(live: LiveReturnTotals) {
 const TOTAL_TAX_RISE_ISSUE = {
   issueKey: 'totalTaxRise',
   dotColor: 'red' as const,
-  title: 'Total tax up 52% year over year',
+  title: 'Total tax up 46% year over year',
   category: 'IRS compliance',
-  summary: `Total tax on line 24 rose from $98,890 in 2024 to ${fmtUsd(FROZEN_RETURN.totalTax)} in 2025 even though AGI rose 19%. The income mix changed: capital gains fell to $0 while ordinary dividends rose 59%.`,
+  summary: `Total tax on line 24 rose from $102,754 in 2024 to ${fmtUsd(FROZEN_RETURN.totalTax)} in 2025 even though AGI rose 19%. The income mix changed: capital gains fell to $0 while ordinary dividends rose 59%.`,
   taxImpact: 'Higher total tax with a shifted income mix means more income is taxed at ordinary rates. Review Schedule D and Form 8949 for missing capital gain entries.',
   rootCause: `Capital gains fell from $126,750 to $0 on line 7. Ordinary dividends rose from $219,850 to ${fmtUsd(FROZEN_RETURN.ordinaryDivs)} on line 3b, replacing lower-rate gain income.`,
   tableRows: [
-    { label: 'Total tax (line 24)', cols: [fmtUsd(FROZEN_RETURN.totalTax), '$98,890', '+52%'], badge: 'red' as const, total: true },
+    { label: 'Total tax (line 24)', cols: [fmtUsd(FROZEN_RETURN.totalTax), '$102,754', '+46%'], badge: 'red' as const, total: true },
     { label: 'AGI (line 11)',       cols: [fmtUsd(FROZEN_RETURN.totalIncome), '$485,820', '+19%'], badge: 'orange' as const, total: false },
   ],
   tableHeaders: ['Item', '2025', '2024', 'YoY'],
@@ -142,7 +144,7 @@ function buildWithholdingDropIssue(live: LiveReturnTotals) {
   rootCause: `W-2 Box 2 shows ${fmtUsd(live.w2Withholding)} and 1099 withholding on line 25b shows ${fmtUsd(live.withholding1099)} on the return. ${rNote} Last year total withholding was $41,100.`,
   tableRows: [
     { label: 'Federal withholding (25a + 25b)', cols: [fmtUsd(live.totalWithholding), '$41,100', 'YoY'], badge: 'red' as const, total: false },
-    { label: 'Safe harbor (110% of 2024 tax)',    cols: ['$108,779', 'Not met', '!'], badge: 'red' as const, total: true },
+    { label: 'Safe harbor (110% of 2024 tax)',    cols: [fmtUsd(SAFE_HARBOR_2024), 'Not met', '!'], badge: 'red' as const, total: true },
   ],
   tableHeaders: ['Item', '2025', '2024', 'Status'],
   suggestedActions: [
@@ -164,11 +166,11 @@ function buildEstTaxPenaltyIssue(live: LiveReturnTotals) {
   title: 'Estimated tax penalty may apply',
   category: 'IRS compliance',
   summary: RETURN_SUMMARY_INSIGHTS.estTaxPenalty,
-  taxImpact: `Withholding of ${fmtUsd(live.totalWithholding)} is below the $108,779 safe harbor (110% of 2024 tax). Form 2210 should be completed before filing.`,
+  taxImpact: `Withholding of ${fmtUsd(live.totalWithholding)} is below the ${fmtUsd(SAFE_HARBOR_2024)} safe harbor (110% of 2024 tax). Form 2210 should be completed before filing.`,
   rootCause: `Total payments on line 33 (${fmtUsd(live.totalWithholding)}) fall short of both total tax (${fmtUsd(live.totalTax)}) and the prior-year safe harbor.`,
   tableRows: [
     { label: 'Total payments (line 33)', cols: [fmtUsd(live.totalWithholding), '$76,100', 'YoY'], badge: 'red' as const, total: false },
-    { label: 'Safe harbor shortfall',    cols: [fmtUsd(Math.max(0, 108779 - live.totalWithholding)), 'Gap', '!'], badge: 'red' as const, total: true },
+    { label: 'Safe harbor shortfall',    cols: [fmtUsd(Math.max(0, SAFE_HARBOR_2024 - live.totalWithholding)), 'Gap', '!'], badge: 'red' as const, total: true },
   ],
   tableHeaders: ['Item', '2025', '2024 / status', ''],
   suggestedActions: [
@@ -216,7 +218,7 @@ const CONFIRM_PRIOR_AGI_ISSUE = {
   rootCause: 'The Prior Year 1040 tab is populated from jessica-1040-2024-variant.pdf. The preparer should verify line 11 against Jessica\'s signed copy or an IRS transcript.',
   tableRows: [
     { label: '2024 AGI (line 11)',     cols: ['$485,820', 'Imported', 'Verify'], badge: 'orange' as const, total: false },
-    { label: '2024 total tax (line 24)', cols: ['$98,890', 'Imported', 'Verify'], badge: 'orange' as const, total: true },
+    { label: '2024 total tax (line 24)', cols: ['$102,754', 'Imported', 'Verify'], badge: 'orange' as const, total: true },
   ],
   tableHeaders: ['Field', 'Value', 'Source', 'Action'],
   suggestedActions: [
@@ -260,13 +262,13 @@ function buildMissingEstPaymentsIssue(live: LiveReturnTotals) {
   dotColor: 'orange' as const,
   title: 'No estimated tax payments recorded',
   category: 'Missing information',
-  summary: `Line 26 shows $0 in 2025 estimated payments. With ${fmtUsd(live.oweAmount)} owed (up from $22,790 last year) and ${fmtUsd(live.totalWithholding)} in withholding, confirm whether Jessica made quarterly 1040-ES payments.`,
-  taxImpact: `If estimated payments were made but not entered, the ${fmtUsd(live.oweAmount)} balance due on line 37 would go down. Withholding is below the $108,779 safe harbor.`,
-  rootCause: `No 1040-ES payment records were imported. Last year total payments were $76,100 (line 33) against $98,890 tax. This year ${fmtUsd(live.totalWithholding)} is recorded against ${fmtUsd(live.totalTax)} tax.`,
+  summary: `Line 26 shows $0 in 2025 estimated payments. With ${fmtUsd(live.oweAmount)} owed (up from ${fmtUsd(PRIOR_YEAR_OWE)} last year) and ${fmtUsd(live.totalWithholding)} in withholding, confirm whether Jessica made quarterly 1040-ES payments.`,
+  taxImpact: `If estimated payments were made but not entered, the ${fmtUsd(live.oweAmount)} balance due on line 37 would go down. Withholding is below the ${fmtUsd(SAFE_HARBOR_2024)} safe harbor.`,
+  rootCause: `No 1040-ES payment records were imported. Last year total payments were $76,100 (line 33) against $102,754 tax. This year ${fmtUsd(live.totalWithholding)} is recorded against ${fmtUsd(live.totalTax)} tax.`,
   tableRows: [
     { label: '2025 estimated payments (line 26)', cols: ['$0', 'Unconfirmed', '?'], badge: 'orange' as const, total: false },
-    { label: 'Amount you owe (line 37)',          cols: [fmtUsd(live.oweAmount), '$22,790', 'YoY'], badge: 'orange' as const, total: false },
-    { label: 'Safe harbor shortfall',             cols: [fmtUsd(Math.max(0, 108779 - live.totalWithholding)), 'Gap', '!'], badge: 'red' as const, total: true },
+    { label: 'Amount you owe (line 37)',          cols: [fmtUsd(live.oweAmount), fmtUsd(PRIOR_YEAR_OWE), 'YoY'], badge: 'orange' as const, total: false },
+    { label: 'Safe harbor shortfall',             cols: [fmtUsd(Math.max(0, SAFE_HARBOR_2024 - live.totalWithholding)), 'Gap', '!'], badge: 'red' as const, total: true },
   ],
   tableHeaders: ['Field', '2025', '2024 / status', ''],
   suggestedActions: [
@@ -290,7 +292,7 @@ function buildOptW4Issue(live: LiveReturnTotals) {
   title: 'Plan 2026 estimated payments',
   category: 'Optimization',
   summary: `Federal withholding is ${fmtUsd(live.totalWithholding)} while total tax is ${fmtUsd(live.totalTax)}. W-2 Box 2 shows ${fmtUsd(live.w2Withholding)}. Quarterly 1040-ES payments are the main lever for 2026.`,
-  taxImpact: `The 2026 safe harbor will be 110% of this year's ${fmtUsd(live.totalTax)} total tax: $164,813. Jessica did not meet the $108,779 safe harbor this year.`,
+  taxImpact: `The 2026 safe harbor will be 110% of this year's ${fmtUsd(live.totalTax)} total tax: $164,813. Jessica did not meet the ${fmtUsd(SAFE_HARBOR_2024)} safe harbor this year.`,
   rootCause: `Federal withholding includes ${fmtUsd(live.w2Withholding)} from W-2 and ${fmtUsd(live.withholding1099)} from 1099s. Investment income drives most of the tax at AGI of ${fmtUsd(live.totalIncome)}.`,
   tableRows: [
     { label: '2025 total withholding (25a+25b)', cols: [fmtUsd(live.totalWithholding), '$41,100', 'YoY'], badge: 'orange' as const, total: false },

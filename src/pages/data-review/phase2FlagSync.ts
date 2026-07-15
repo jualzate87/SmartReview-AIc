@@ -41,11 +41,11 @@ export const PHASE2_DIAGNOSTIC_ORDER: readonly Phase2IssueKey[] = [
   'optIra',
 ] as const
 
-/** 110% of 2024 total tax ($98,890) — Form 2210 safe harbor used in card copy. */
-export const SAFE_HARBOR_2024 = 108_779
+/** 110% of 2024 total tax ($102,754) — Form 2210 safe harbor used in card copy. */
+export const SAFE_HARBOR_2024 = 113_029
 
 /** Prior-year amount owed (line 37) referenced by balanceDueJump. */
-export const PRIOR_YEAR_OWE = 22_790
+export const PRIOR_YEAR_OWE = 26_654
 
 /** Source-document amounts that invalidate import-related diagnostics when restored. */
 export const SOURCE_AMOUNTS = {
@@ -85,7 +85,7 @@ export type DiagnosticDismissRule = {
  *
  * | Diagnostic        | Dismiss when reviewed          | Dismiss when amounts                          |
  * |-------------------|--------------------------------|-----------------------------------------------|
- * | balanceDueJump    | —                              | owe ≤ prior-year $22,790                      |
+ * | balanceDueJump    | —                              | owe ≤ prior-year $26,654                      |
  * | totalTaxRise      | — (study-static; tax frozen)   | —                                             |
  * | withholdingDrop   | fedTaxWithheld                 | DIV Box 4 ≥ source, OR 1099-R WH restored, OR |
  * |                   |                                | total WH ≥ safe harbor                        |

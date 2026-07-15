@@ -23,7 +23,7 @@ export interface FieldMeta {
 }
 
 import { FROZEN_RETURN, TOKEN_QUALIFIED_DIVS_RETURN } from '../../data/frozenReturn'
-// Prior-year (2024) values sourced from priorYear1040Data.ts / sample_1040_2024_variant_amounts_no_ssn.pdf
+// Prior-year (2024) values sourced from priorYear1040Data.ts / sample_2024_variant_austin_std15750_no_ssn.pdf
 export const FIELD_META: Record<string, FieldMeta> = {
   wages: {
     label: 'Wages',
@@ -106,18 +106,18 @@ export const FIELD_META: Record<string, FieldMeta> = {
   },
   stdDeduction: {
     label: 'Standard deduction',
-    prior: 31850,
+    prior: 15750,
     current: 15750,
     note: 'Jessica qualifies for the standard deduction because her itemizable expenses (mortgage interest, state and local taxes, charitable gifts) don\'t exceed the standard deduction amount for her filing status.',
   },
   deductionSum: {
     label: 'Deductions total',
-    prior: 31850,
+    prior: 15750,
     current: 15750,
   },
   taxableIncome: {
     label: 'Taxable income',
-    prior: 453970,
+    prior: 470070,
     current: FROZEN_RETURN.totalIncome - FROZEN_RETURN.stdDeduction,
   },
   withholding: {
@@ -135,12 +135,12 @@ export const FIELD_META: Record<string, FieldMeta> = {
   },
   totalTax: {
     label: 'Total tax',
-    prior: 98890,
+    prior: 102754,
     current: 149830,
   },
   incomeTax: {
     label: 'Tax (line 16)',
-    prior: 84610,
+    prior: 88474,
     current: 149830,
   },
   w2Withholding: {
@@ -163,7 +163,7 @@ export const FIELD_META: Record<string, FieldMeta> = {
   },
   amountOwed: {
     label: 'Amount you owe',
-    prior: 22790,
+    prior: 26654,
     current: FROZEN_RETURN.totalTax - FROZEN_RETURN.totalWithholding,
   },
   box12: {

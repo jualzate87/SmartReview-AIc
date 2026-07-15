@@ -118,7 +118,7 @@ export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSourc
           <div className={styles.section}>
             <p className={styles.sectionTitle}>Root cause</p>
             <p className={styles.sectionBody}>
-              Wages decreased $17,540 (-13%) year over year while W-2 federal withholding is $15,840 (from $22,360 last year). Combined with investment income changes, the balance due is $109,065 — up from $22,790 last year.
+              Wages decreased $17,540 (-13%) year over year while W-2 federal withholding is $15,840 (from $22,360 last year). Combined with investment income changes, the balance due is $109,065 — up from $26,654 last year.
             </p>
           </div>
 
