@@ -550,6 +550,10 @@
   margin: 0;
 }
 
+.findingIrsLink {
+  margin: 0;
+}
+
 .findingActions {
   display: flex;
   align-items: center;

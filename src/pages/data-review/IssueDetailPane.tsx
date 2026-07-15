@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight, CircleCheck, Panel, Document } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
+import { Link } from '@ids-ts/link'
+import '@ids-ts/link/dist/main.css'
 import Tooltip from './Tooltip'
 import styles from '../../styles/data-review/YoYDetailPane.module.css'
 
@@ -27,6 +29,9 @@ interface IssueDetailPaneProps {
   actions?: IssueAction[]
   /** Shown when a diagnostic is based on Tax Organizer Q&A */
   clientResponseNote?: string
+  /** Official IRS page for related tax law / form guidance */
+  irsGuidanceUrl?: string
+  irsGuidanceLabel?: string
   reviewedCount?: number
   totalItems?: number
   closing?: boolean
@@ -58,6 +63,8 @@ export default function IssueDetailPane({
   viewSourceLabel = 'Review source',
   actions,
   clientResponseNote,
+  irsGuidanceUrl,
+  irsGuidanceLabel = 'Learn more on IRS.gov',
   reviewedCount = 0,
   totalItems = 5,
   closing = false,
@@ -158,7 +165,7 @@ export default function IssueDetailPane({
       <div className={styles.pane}>
         <div className={styles.chat}>
 
-          <div className={styles.issueHero}>
+            <div className={styles.issueHero}>
             {category && <span className={styles.categoryChip}>{category}</span>}
             <div className={styles.titleRow}>
               <span className={styles.dot} style={dotStyle} />
@@ -170,6 +177,19 @@ export default function IssueDetailPane({
               </span>
             </div>
             <p className={styles.summary}>{summary}</p>
+            {irsGuidanceUrl && (
+              <p className={styles.irsGuidance}>
+                <Link
+                  href={irsGuidanceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  type="standalone"
+                  size="body-3"
+                >
+                  {irsGuidanceLabel}
+                </Link>
+              </p>
+            )}
           </div>
 
           <div className={styles.section}>

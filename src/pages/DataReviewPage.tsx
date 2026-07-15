@@ -25,7 +25,12 @@ import {
   getNextUnreviewedSourceDoc,
   getUnreviewedSourceDocs,
   isDocReviewed,
+  listPacketSourceDocs,
 } from './data-review/docReviewStatus'
+import DocReviewTransitionModal, {
+  markDocReviewModalShown,
+  readDocReviewModalShown,
+} from './data-review/DocReviewTransitionModal'
 import DetailFields1099R, { R_PAYER_TABS } from './data-review/DetailFields1099R'
 import DetailFieldsNec, { NEC_PAYER_TABS } from './data-review/DetailFieldsNec'
 import PeelTab from './data-review/PeelTab'
@@ -203,8 +208,17 @@ export default function DataReviewPage() {
     rRemaining: tabFlagCounts['1099-rs'] ?? 0,
   })
   const unreviewedDocCount = unreviewedSourceDocs.length
+  const totalDocCount = listPacketSourceDocs().length
   const flagsCleared = phase1Complete
   const phase1FullyComplete = flagsCleared && unreviewedDocCount === 0
+  const [docReviewModalOpen, setDocReviewModalOpen] = useState(false)
+
+  useEffect(() => {
+    if (!(flagsCleared && unreviewedDocCount > 0 && !phase1FullyComplete)) return
+    if (readDocReviewModalShown()) return
+    markDocReviewModalShown()
+    setDocReviewModalOpen(true)
+  }, [flagsCleared, unreviewedDocCount, phase1FullyComplete])
   // Phase 2 diagnostics progress — same dismiss rules AgentReportPane uses, so
   // resolving Phase 1 flags / editing amounts that fix an insight keeps the banner in sync.
   const phase2Progress = getPhase2Progress({
@@ -907,6 +921,7 @@ export default function DataReviewPage() {
                   unresolvedCount={phase1Remaining}
                   onVerify={handleVerifyNext}
                   unreviewedDocCount={unreviewedDocCount}
+                  totalDocCount={totalDocCount}
                   onReviewNextDocument={handleReviewNextDocument}
                 />
               )}
@@ -1344,6 +1359,12 @@ export default function DataReviewPage() {
           closing={notesClosing}
         />
       )}
+
+      <DocReviewTransitionModal
+        open={docReviewModalOpen}
+        onClose={() => setDocReviewModalOpen(false)}
+        onReviewNextDocument={handleReviewNextDocument}
+      />
     </div>
   )
 }

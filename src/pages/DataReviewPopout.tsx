@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { DotsSix } from '@design-systems/icons'
 import ReviewTab from './data-review/ReviewTab'
 import Phase1IssueBanner from './data-review/Phase1IssueBanner'
@@ -33,7 +33,12 @@ import {
   getNextUnreviewedSourceDoc,
   getUnreviewedSourceDocs,
   isDocReviewed,
+  listPacketSourceDocs,
 } from './data-review/docReviewStatus'
+import DocReviewTransitionModal, {
+  markDocReviewModalShown,
+  readDocReviewModalShown,
+} from './data-review/DocReviewTransitionModal'
 import DetailFields1099R, { R_PAYER_TABS } from './data-review/DetailFields1099R'
 import DetailFieldsNec, { NEC_PAYER_TABS } from './data-review/DetailFieldsNec'
 import PeelTab from './data-review/PeelTab'
@@ -146,10 +151,19 @@ export default function DataReviewPopout() {
     rRemaining: tabFlagCounts['1099-rs'] ?? 0,
   })
   const unreviewedDocCount = unreviewedSourceDocs.length
+  const totalDocCount = listPacketSourceDocs().length
   const phase1Resolved = PHASE1_FLAG_KEYS.filter(k => isPhase1FlagResolved(k, reviewedFields)).length
   const phase1Total = PHASE1_FLAG_KEYS.length
   const flagsCleared = phase1Remaining === 0
   const phase1FullyComplete = flagsCleared && unreviewedDocCount === 0
+  const [docReviewModalOpen, setDocReviewModalOpen] = useState(false)
+
+  useEffect(() => {
+    if (!(flagsCleared && unreviewedDocCount > 0 && !phase1FullyComplete)) return
+    if (readDocReviewModalShown()) return
+    markDocReviewModalShown()
+    setDocReviewModalOpen(true)
+  }, [flagsCleared, unreviewedDocCount, phase1FullyComplete])
 
   const rightRef = useRef<HTMLDivElement>(null)
   const [previewWidth, setPreviewWidth] = useState(40)
@@ -220,6 +234,7 @@ export default function DataReviewPopout() {
           unresolvedCount={phase1Remaining}
           onVerify={handleVerifyNext}
           unreviewedDocCount={unreviewedDocCount}
+          totalDocCount={totalDocCount}
           onReviewNextDocument={handleReviewNextDocument}
         />
       )}
@@ -498,6 +513,12 @@ export default function DataReviewPopout() {
             )}
           </div>
         </div>
+
+      <DocReviewTransitionModal
+        open={docReviewModalOpen}
+        onClose={() => setDocReviewModalOpen(false)}
+        onReviewNextDocument={handleReviewNextDocument}
+      />
     </div>
   )
 }

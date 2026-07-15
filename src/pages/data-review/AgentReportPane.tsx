@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import { Close, Plus, ChevronDown, ChevronRight, CircleCheck, Send } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
+import { Link } from '@ids-ts/link'
+import '@ids-ts/link/dist/main.css'
 import intuitAssistIcon from '../../assets/icons/intuit-assist.svg'
 import compareOthersIcon from '../../assets/icons/compare-others.svg'
 import federalTaxesIcon from '../../assets/icons/federal-taxes.svg'
@@ -86,6 +88,9 @@ type IssueCard = {
   viewSourceTab?: NavigateTab
   viewSourceSubTab?: 'techCircle'
   viewSourceField?: string
+  /** Official IRS guidance page for this diagnostic topic */
+  irsGuidanceUrl?: string
+  irsGuidanceLabel?: string
 }
 
 const CONFIRM_PRIOR_AGI_ISSUE: IssueCard = {
@@ -115,6 +120,8 @@ const CONFIRM_PRIOR_AGI_ISSUE: IssueCard = {
   ],
   viewSourceTab: 'prior-1040',
   viewSourceField: 'agi',
+  irsGuidanceUrl: 'https://www.irs.gov/individuals/validating-your-electronically-filed-tax-return',
+  irsGuidanceLabel: 'IRS guidance — e-file prior-year AGI',
 }
 
 const NIIT_FORM8960_ISSUE: IssueCard = {
@@ -145,6 +152,8 @@ const NIIT_FORM8960_ISSUE: IssueCard = {
     },
   ],
   viewSourceField: 'totalIncome',
+  irsGuidanceUrl: 'https://www.irs.gov/forms-pubs/about-form-8960',
+  irsGuidanceLabel: 'IRS guidance — About Form 8960 (NIIT)',
 }
 
 function buildUnderpaymentRiskIssue(live: LiveReturnTotals): IssueCard {
@@ -183,6 +192,8 @@ function buildUnderpaymentRiskIssue(live: LiveReturnTotals): IssueCard {
     ],
     viewSourceTab: '1099-divs',
     viewSourceField: 'fedTaxWithheld',
+    irsGuidanceUrl: 'https://www.irs.gov/forms-pubs/about-form-2210',
+    irsGuidanceLabel: 'IRS guidance — About Form 2210',
   }
 }
 
@@ -222,6 +233,8 @@ function buildNecScheduleCIssue(): IssueCard {
     ],
     viewSourceTab: '1099-necs',
     viewSourceField: 'nec-box1',
+    irsGuidanceUrl: 'https://www.irs.gov/forms-pubs/about-schedule-c-form-1040',
+    irsGuidanceLabel: 'IRS guidance — About Schedule C',
   }
 }
 
@@ -259,6 +272,8 @@ const OPT_ITEMIZE_ISSUE: IssueCard = {
     },
   ],
   viewSourceField: 'stdDeduction',
+  irsGuidanceUrl: 'https://www.irs.gov/taxtopics/tc501',
+  irsGuidanceLabel: 'IRS guidance — Should I itemize?',
 }
 
 export const ISSUE_FIELD: Partial<Record<IssueKey, string>> = {
@@ -485,6 +500,19 @@ export default function AgentReportPane({
                           </div>
                           {signOff && <span className={styles.findingSignOff}>{signOff.by} · {signOff.at}</span>}
                           <p className={styles.findingBody}>{issue.summary}</p>
+                          {issue.irsGuidanceUrl && (
+                            <p className={styles.findingIrsLink} onClick={e => e.stopPropagation()}>
+                              <Link
+                                href={issue.irsGuidanceUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                type="standalone"
+                                size="body-4"
+                              >
+                                {issue.irsGuidanceLabel ?? 'Learn more on IRS.gov'}
+                              </Link>
+                            </p>
+                          )}
                           <div className={styles.findingActions} onClick={e => e.stopPropagation()}>
                             <Tooltip text="See the root cause, tax impact, and suggested next steps for this finding">
                               <Button priority="primary" size="small" onClick={() => openDetail(key)}>See details <ChevronRight size="small" /></Button>
@@ -561,6 +589,8 @@ export default function AgentReportPane({
           taxImpact={activeIssue.taxImpact}
           rootCause={activeIssue.rootCause}
           clientResponseNote={activeIssue.clientResponseNote}
+          irsGuidanceUrl={activeIssue.irsGuidanceUrl}
+          irsGuidanceLabel={activeIssue.irsGuidanceLabel}
           tableRows={activeIssue.tableRows}
           tableHeaders={activeIssue.tableHeaders}
           suggestedActions={activeIssue.suggestedActions}

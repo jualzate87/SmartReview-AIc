@@ -412,6 +412,11 @@
   padding-left: 16px;
 }
 
+.irsGuidance {
+  margin: 8px 0 0;
+  padding-left: 16px;
+}
+
 /* ── Uniform section block — every section uses this ── */
 .section {
   display: flex;
