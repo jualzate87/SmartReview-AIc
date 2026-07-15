@@ -56,12 +56,14 @@ export default function DataReviewPopout() {
     fieldValues, updateFieldValue,
     reviewedFields,
     editedFields,
+    editedFieldsMeta,
     markEdited,
     activeDivPayer, setActiveDivPayer,
     activeIntPayer, setActiveIntPayer,
     markReviewed: handleMarkReviewed,
     markReviewedBulk: handleMarkReviewedBulk,
     verifiedDocs,
+    verifiedDocsMeta,
     toggleVerifiedDoc,
   } = useSyncedReviewState()
 
@@ -316,7 +318,9 @@ export default function DataReviewPopout() {
                 onMarkReviewedBulk={handleMarkReviewedBulk}
                 reviewedFields={reviewedFields}
                 editedFields={editedFields}
+                editedFieldsMeta={editedFieldsMeta}
                 verifiedDocs={verifiedDocs}
+                verifiedDocsMeta={verifiedDocsMeta}
                 onVerifyDoc={toggleVerifiedDoc}
                 flaggedFields={{
                   ssn: PHASE1_FLAG_MESSAGES.w2.ssn,
@@ -376,7 +380,9 @@ export default function DataReviewPopout() {
                 onMarkReviewedBulk={handleMarkReviewedBulk}
                 reviewedFields={reviewedFields}
                 editedFields={editedFields}
+                editedFieldsMeta={editedFieldsMeta}
                 verifiedDocs={verifiedDocs}
+                verifiedDocsMeta={verifiedDocsMeta}
                 onVerifyDoc={toggleVerifiedDoc}
                 flaggedFields={{
                   taxableInterest: PHASE1_FLAG_MESSAGES.int.taxableInterest,

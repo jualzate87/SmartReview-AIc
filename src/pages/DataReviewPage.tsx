@@ -615,13 +615,15 @@ export default function DataReviewPage() {
                 handleAgentClose()
               } else if (rightPanelVisible) {
                 handleCloseSourcePanel()
-              } else {
-                // Show with slide-in
+              } else if (importsStarted) {
                 setRightPanelVisible(true)
                 requestAnimationFrame(() => requestAnimationFrame(() => {
                   setRightPanelAnimating(true)
                   setTimeout(() => setRightPanelAnimating(false), SOURCE_PANEL_ENTER_MS)
                 }))
+              } else {
+                // Same as Phase 1 banner CTA — open sources and mark imports started
+                startReviewingImports()
               }
             }}
           >
