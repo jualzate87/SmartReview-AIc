@@ -243,6 +243,7 @@
   /* 16px vertical; 20px horizontal so title + actions aren't flush to edges */
   padding: var(--space-container-padding-small, 16px) var(--space-container-padding-medium, 20px);
   flex-shrink: 0;
+  background: var(--color-container-background-secondary);
   border-bottom: 1px solid var(--color-divider-tertiary, #e8edf0);
 }
 
