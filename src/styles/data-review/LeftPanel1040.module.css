@@ -994,16 +994,6 @@
   color: var(--color-ui-attention-hover);
 }
 /* Small orange dot when a flag note is stored */
-.summaryFlagNoteDot {
-  position: absolute;
-  top: 3px;
-  right: 3px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--color-ui-attention);
-  pointer-events: none;
-}
 .flagNoteChip {
   border-color: var(--color-container-border-attention);
   background: var(--color-input-background-warning);

@@ -1004,9 +1004,6 @@ export default function LeftPanel1040({
                                     }}
                                   >
                                     <Flag size="small" />
-                                    {isFlagged && !!flagNote && (
-                                      <span className={styles.summaryFlagNoteDot} aria-hidden="true" />
-                                    )}
                                   </button>
                                 </Tooltip>
                               ) : (
