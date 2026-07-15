@@ -18,9 +18,9 @@ interface Phase1BannerProps {
 
 /**
  * ProtoC Phase 1 banner. Reflects live import-flag progress and, once every flag
- * is resolved, invites the CPA to Phase 2. The "Continue to AI Diagnostics" CTA is
- * hard-locked (visible + explained) until the counter reaches 0 — this keeps the
- * diagnostics accurate rather than hand-holding.
+ * is resolved, invites the CPA to Phase 2. The AI diagnostics control stays hidden
+ * until "Start reviewing imports"; after that it's hard-locked (visible + explained)
+ * until the counter reaches 0 — this keeps diagnostics accurate rather than early.
  */
 export default function Phase1Banner({
   resolved,
@@ -74,7 +74,7 @@ export default function Phase1Banner({
           <Button priority="primary" size="medium" onClick={onContinue}>
             Continue to AI diagnostics <ArrowRight size="small" />
           </Button>
-        ) : (
+        ) : importsStarted ? (
           <div className={styles.lockedWrap}>
             <Button priority="secondary" size="medium" disabled>
               <Lock size="small" /> AI diagnostics locked
@@ -83,7 +83,7 @@ export default function Phase1Banner({
               Diagnostics unlock once import is confirmed.
             </span>
           </div>
-        )}
+        ) : null}
       </div>
 
       {complete && (
