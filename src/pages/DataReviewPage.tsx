@@ -25,7 +25,6 @@ import {
   getNextUnreviewedSourceDoc,
   getUnreviewedSourceDocs,
   isDocReviewed,
-  listPacketSourceDocs,
 } from './data-review/docReviewStatus'
 import DocReviewTransitionModal, {
   markDocReviewModalShown,
@@ -208,7 +207,6 @@ export default function DataReviewPage() {
     rRemaining: tabFlagCounts['1099-rs'] ?? 0,
   })
   const unreviewedDocCount = unreviewedSourceDocs.length
-  const totalDocCount = listPacketSourceDocs().length
   const flagsCleared = phase1Complete
   const phase1FullyComplete = flagsCleared && unreviewedDocCount === 0
   const [docReviewModalOpen, setDocReviewModalOpen] = useState(false)
@@ -916,13 +914,10 @@ export default function DataReviewPage() {
                   </IconControl>
                 </div>
               </div>
-              {inImportPhase && (phase1Remaining > 0 || (flagsCleared && unreviewedDocCount > 0)) && (
+              {inImportPhase && phase1Remaining > 0 && (
                 <Phase1IssueBanner
                   unresolvedCount={phase1Remaining}
                   onVerify={handleVerifyNext}
-                  unreviewedDocCount={unreviewedDocCount}
-                  totalDocCount={totalDocCount}
-                  onReviewNextDocument={handleReviewNextDocument}
                 />
               )}
               <ReviewTab

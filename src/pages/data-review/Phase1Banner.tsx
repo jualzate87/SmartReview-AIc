@@ -1,4 +1,4 @@
-import { ArrowRight, CircleCheck, Lock } from '@design-systems/icons'
+import { ArrowRight, CircleCheck, Document, Lock } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import intuitAssistIcon from '../../assets/icons/intuit-assist.svg'
@@ -41,9 +41,21 @@ export default function Phase1Banner({
   const needsDocReview = flagsCleared && unreviewedDocCount > 0 && !complete
 
   return (
-    <div className={`${styles.banner} ${complete ? styles.bannerComplete : ''}`}>
+    <div
+      className={[
+        styles.banner,
+        complete ? styles.bannerComplete : '',
+        needsDocReview ? styles.bannerDocReview : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
       <div className={styles.left}>
-        <img src={intuitAssistIcon} alt="" className={styles.icon} />
+        {needsDocReview ? (
+          <Document size="medium" className={styles.docIcon} aria-hidden />
+        ) : (
+          <img src={intuitAssistIcon} alt="" className={styles.icon} />
+        )}
         <div className={styles.text}>
           {complete ? (
             <>
@@ -61,7 +73,7 @@ export default function Phase1Banner({
                 {unreviewedDocCount === 1 ? 'document left' : 'documents left'} to review
               </span>
               <span className={styles.subtitle}>
-                Flags are cleared. Confirm each remaining source document (and Questionnaire) before AI diagnostics unlock.
+                Flags are cleared. Confirm each remaining source document before AI diagnostics unlock.
               </span>
             </>
           ) : (
