@@ -475,31 +475,25 @@ export default function LeftPanel1040({
     }
   }
 
-  const handleRowClick = (field: string, e: React.MouseEvent<HTMLTableRowElement>) => {
-    // If the field is the active issue field, just toggle selection (orange mode)
-    if (field === issueField) {
-      onFieldClick?.(activeHighlight === field ? null : field)
+  const handleRowClick = (field: string) => {
+    // Row / amount click: selection highlight only — never open FieldPopover
+    if (popoverField) {
+      setPopoverField(null)
+      setPopoverRect(null)
+    }
+    onFieldClick?.(activeHighlight === field ? null : field)
+  }
+
+  /** Form view: open FieldPopover only from the (i) info button. */
+  const openFormInfo = (field: string, btn: HTMLElement) => {
+    if (popoverField === field) {
       setPopoverField(null)
       setPopoverRect(null)
       return
     }
-
-    // Same field + popover already open → toggle closed
-    if (field === activeHighlight && popoverField === field) {
-      onFieldClick?.(null)
-      setPopoverField(null)
-      setPopoverRect(null)
-      return
-    }
-
-    // New field, OR selected (e.g. from detail nav) without a popover → open it
+    const rowEl = btn.closest('tr') as HTMLElement | null
+    if (rowEl) openPopoverForRow(field, rowEl)
     onFieldClick?.(field)
-    if (fieldHasPopover(field)) {
-      openPopoverForRow(field, e.currentTarget)
-    } else {
-      setPopoverField(null)
-      setPopoverRect(null)
-    }
   }
 
   // Close popover and deselect field (e.g. X button or outside click)
@@ -614,7 +608,7 @@ export default function LeftPanel1040({
           // Keep FieldPopover's document mousedown-outside from stealing 1040 row clicks
           e.stopPropagation()
         } : undefined}
-        onClick={clickable ? (e) => handleRowClick(field!, e) : undefined}
+        onClick={clickable ? () => handleRowClick(field!) : undefined}
         onMouseEnter={field ? () => setHoveredField(field) : undefined}
         onMouseLeave={field ? () => setHoveredField(null) : undefined}
       >
@@ -641,6 +635,26 @@ export default function LeftPanel1040({
               )}
 
             </div>
+
+            {/* Info — sole trigger for FieldPopover (not row / amount click) */}
+            {!!field && fieldHasPopover(field) && value !== undefined && (
+              <Tooltip
+                text={kind === 'calc' ? 'View subtotals' : 'View sources'}
+                placement="top"
+              >
+                <button
+                  type="button"
+                  className={`${styles.summaryInfoBtn} ${isPopoverOpen ? styles.summaryInfoBtnActive : ''}`}
+                  aria-label={kind === 'calc' ? `View subtotals for ${label}` : `View sources for ${label}`}
+                  onClick={e => {
+                    e.stopPropagation()
+                    openFormInfo(field!, e.currentTarget)
+                  }}
+                >
+                  <CircleInfo size="small" />
+                </button>
+              </Tooltip>
+            )}
 
             {/* Check button — outside value box, shown on hover */}
             {showCheckBtn && !isReviewed && (
@@ -901,10 +915,9 @@ export default function LeftPanel1040({
                           className={subRowCls}
                           data-field-row={row.field || undefined}
                           onMouseDown={clickable ? (e) => e.stopPropagation() : undefined}
-                          onClick={clickable && hasPopover ? (e) => {
-                            // Open Interest-style flyout only — never auto-open a source document
-                            const el = (e.currentTarget as HTMLElement).querySelector(`.${styles.summaryCurrValText}`) as HTMLElement | null
-                            openSummaryInfo(row.field!, el ?? e.currentTarget)
+                          onClick={clickable ? () => {
+                            // Row click: highlight/selection only — flyout opens via (i) only
+                            onFieldClick?.(activeHighlight === row.field ? null : row.field!)
                           } : undefined}
                           onMouseEnter={row.field ? () => setHoveredField(row.field!) : undefined}
                           onMouseLeave={row.field ? () => setHoveredField(null) : undefined}
@@ -921,14 +934,7 @@ export default function LeftPanel1040({
                             {/* Current year — value + info affordance (info stays here for drilldown) */}
                             <div className={styles.summaryCurrVal} style={{ width: 108 }}>
                               <span
-                                className={`${styles.summaryCurrValText} ${row.kind === 'calc' ? styles.summaryCurrValCalc : ''} ${isBlue ? styles.summaryCurrValBlue : ''} ${isOrange ? styles.summaryCurrValOrange : ''} ${clickable ? styles.summaryCurrValClickable : ''}`}
-                                onClick={clickable ? e => {
-                                  e.stopPropagation()
-                                  // Summary CY click opens flyout only — never auto-opens a document
-                                  if (hasPopover) {
-                                    openSummaryInfo(row.field!, e.currentTarget)
-                                  }
-                                } : undefined}
+                                className={`${styles.summaryCurrValText} ${row.kind === 'calc' ? styles.summaryCurrValCalc : ''} ${isBlue ? styles.summaryCurrValBlue : ''} ${isOrange ? styles.summaryCurrValOrange : ''}`}
                               >
                                 ${fmt(row.curr)}
                               </span>
