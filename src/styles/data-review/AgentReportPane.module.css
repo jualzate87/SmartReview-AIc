@@ -848,15 +848,16 @@
   justify-content: center;
   cursor: default;
   flex-shrink: 0;
+  color: var(--color-text-disabled, #6b6c72);
+  padding: 0;
 }
 .sendBtnActive {
   background: #393a3d;
   cursor: pointer;
+  color: var(--color-text-inverse, #fff);
 }
-
-.sendIcon {
-  width: 20px;
-  height: 20px;
+.sendBtn:disabled {
+  cursor: default;
 }
 
 /* Legal/Disclaimer — #0365ac, 12px, body font, centered */

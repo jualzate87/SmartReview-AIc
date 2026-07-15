@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Plus, ChevronLeft, ChevronRight, CircleCheck, Panel } from '@design-systems/icons'
+import { Plus, ChevronLeft, ChevronRight, CircleCheck, Panel, Send } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
-import sendArrow from '../../assets/send-arrow.svg'
 import Tooltip from './Tooltip'
 import styles from '../../styles/data-review/YoYDetailPane.module.css'
 interface IssueDetailPaneProps {
@@ -59,6 +58,11 @@ export default function IssueDetailPane({
   const [inputValue, setInputValue] = useState('')
   const signOff = reviewedFields?.get(issueKey)
   const isReviewed = !!signOff
+
+  const handleSend = () => {
+    if (!inputValue.trim()) return
+    setInputValue('')
+  }
 
   const handleMarkReviewed = () => {
     if (!isReviewed) onMarkReviewed?.(issueKey)
@@ -232,7 +236,12 @@ export default function IssueDetailPane({
               placeholder="Ask anything"
               value={inputValue}
               onChange={e => setInputValue(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) e.preventDefault() }}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  handleSend()
+                }
+              }}
               rows={1}
             />
           </div>
@@ -244,10 +253,13 @@ export default function IssueDetailPane({
             </div>
             <div className={styles.inputActionsRight}>
               <button
+                type="button"
                 className={`${styles.sendBtn} ${inputValue.trim() ? styles.sendBtnActive : ''}`}
                 aria-label="Send"
+                disabled={!inputValue.trim()}
+                onClick={handleSend}
               >
-                <img src={sendArrow} alt="" className={styles.sendIcon} />
+                <Send size="medium" />
               </button>
             </div>
           </div>

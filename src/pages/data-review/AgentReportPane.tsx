@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
-import { Close, Plus, ChevronDown, ChevronRight, CircleCheck } from '@design-systems/icons'
+import { Close, Plus, ChevronDown, ChevronRight, CircleCheck, Send } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import intuitAssistIcon from '../../assets/icons/intuit-assist.svg'
-import brandBallsIcon from '../../assets/icons/brand-balls.svg'
 import compareOthersIcon from '../../assets/icons/compare-others.svg'
 import federalTaxesIcon from '../../assets/icons/federal-taxes.svg'
 import scannerIcon from '../../assets/icons/scanner.svg'
@@ -404,6 +403,13 @@ export default function AgentReportPane({
   const [issueDetailOpen, setIssueDetailOpen] = useState<string | null>(null)
   const [issueDetailClosing, setIssueDetailClosing] = useState(false)
 
+  const handleSend = () => {
+    const text = inputValue.trim()
+    if (!text) return
+    // Prototype: submit clears the composer (no backend chat yet)
+    setInputValue('')
+  }
+
   // Auto-trigger completion screen the moment all items become reviewed
   useEffect(() => {
     if (allReviewed && !prevAllReviewed.current) {
@@ -632,7 +638,12 @@ export default function AgentReportPane({
               placeholder="Ask anything"
               value={inputValue}
               onChange={e => setInputValue(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) e.preventDefault() }}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  handleSend()
+                }
+              }}
               rows={1}
             />
           </div>
@@ -641,8 +652,14 @@ export default function AgentReportPane({
               <button className={styles.attachBtn} aria-label="Attach"><Plus size="medium" /></button>
             </div>
             <div className={styles.inputActionsRight}>
-              <button className={`${styles.sendBtn} ${inputValue.trim() ? styles.sendBtnActive : ''}`} aria-label="Send">
-                <img src={brandBallsIcon} alt="" className={styles.sendIcon} />
+              <button
+                type="button"
+                className={`${styles.sendBtn} ${inputValue.trim() ? styles.sendBtnActive : ''}`}
+                aria-label="Send"
+                disabled={!inputValue.trim()}
+                onClick={handleSend}
+              >
+                <Send size="medium" />
               </button>
             </div>
           </div>

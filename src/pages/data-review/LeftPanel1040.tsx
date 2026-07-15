@@ -394,19 +394,8 @@ export default function LeftPanel1040({
     const meta = FIELD_META[field]
     const liveCurrent = getFieldLiveCurrent(field, originTotals)
 
-    // 1) Source-backed → Interest cards with View source + doc open on card click
-    if (cfg && cfg.docs.length > 0 && breakdown?.kind === 'source') {
-      setSummaryFlyout({
-        field,
-        label: cfg.label,
-        mode: 'source',
-        items: docsToSummaryItems(cfg.docs),
-        sumLabel: 'Total from sources',
-        sumValue: breakdown.total,
-      })
-      setSummaryFlyoutRect(rect)
-      return
-    }
+    // 1) Source-backed → prefer live fieldOrigins amounts (synced Details inputs after Save)
+    //    over TAX_CONTROL_ROWS.hint planted/source-true figures.
     if (origin?.sources && origin.sources.length > 0) {
       const detailByDocId: Record<string, string> = {}
       const docs: TaxControlDocEntry[] = origin.sources.map(s => {
@@ -424,6 +413,18 @@ export default function LeftPanel1040({
         items: docsToSummaryItems(docs),
         detailByDocId,
         sumLabel: 'Total from sources',
+      })
+      setSummaryFlyoutRect(rect)
+      return
+    }
+    if (cfg && cfg.docs.length > 0 && breakdown?.kind === 'source') {
+      setSummaryFlyout({
+        field,
+        label: cfg.label,
+        mode: 'source',
+        items: docsToSummaryItems(cfg.docs),
+        sumLabel: 'Total from sources',
+        sumValue: breakdown.total,
       })
       setSummaryFlyoutRect(rect)
       return
