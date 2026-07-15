@@ -4,7 +4,7 @@
   align-items: flex-start;
   position: relative;
   /* Horizontal inset matches .sourcePanelHeader so title + tabs share a left edge */
-  padding: var(--space-x-small, 8px) var(--space-container-padding-small, 16px) 0;
+  padding: var(--space-x-small, 8px) var(--space-container-padding-medium, 20px) 0;
   flex-shrink: 0;
   width: 100%;
 }
