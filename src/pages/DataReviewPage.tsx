@@ -74,6 +74,10 @@ function VerticalGripIcon() {
 /** Source-doc panel slide timing — matches --duration-appear/disappear-emphasize-fast */
 const SOURCE_PANEL_ENTER_MS = 500
 const SOURCE_PANEL_EXIT_MS = 500
+/** Summary / left 1040 panel — prevents value columns from cropping */
+const LEFT_PANEL_MIN_WIDTH = 956.4
+/** Matches DragHandle.module.css .handleVertical width */
+const PANEL_DRAG_HANDLE_WIDTH = 16
 
 export default function DataReviewPage() {
   // Source-doc review state — flags, reviewed fields, active tab, editable field
@@ -464,7 +468,8 @@ export default function DataReviewPage() {
     document.addEventListener('pointercancel', onPointerUp)
   }, [])
 
-  // Horizontal drag between left panel and agent panel (resizes agent panel px width)
+  // Horizontal drag between left panel and agent panel (resizes agent panel px width).
+  // Cap max so Summary (left) never shrinks below LEFT_PANEL_MIN_WIDTH when space allows.
   const handleAgentDrag = useCallback((e: React.PointerEvent) => {
     const body = bodyRef.current
     if (!body) return
@@ -473,11 +478,18 @@ export default function DataReviewPage() {
     beginPanelDrag(e, 'col-resize', (clientX) => {
       const delta = startX - clientX // dragging left = wider agent panel
       const bodyWidth = body.getBoundingClientRect().width
-      setAgentPanelWidth(Math.max(360, Math.min(bodyWidth * 0.7, startPanelWidth + delta)))
+      const maxByLeftMin = bodyWidth - LEFT_PANEL_MIN_WIDTH - PANEL_DRAG_HANDLE_WIDTH
+      const upper = maxByLeftMin >= 360
+        ? Math.min(bodyWidth * 0.7, maxByLeftMin)
+        : bodyWidth * 0.7
+      const next = startPanelWidth + delta
+      setAgentPanelWidth(Math.max(360, Math.min(upper, next)))
     })
   }, [agentPanelWidth, beginPanelDrag])
 
-  // Horizontal drag between left panel and right panel (resizes rightPanelWidth)
+  // Horizontal drag between left panel and right panel (resizes rightPanelWidth).
+  // Cap max so Summary (left) never shrinks below LEFT_PANEL_MIN_WIDTH when space allows;
+  // on narrow viewports CSS min-width + body overflow-x handles the rest.
   const handleRightPanelDrag = useCallback((e: React.PointerEvent) => {
     const body = bodyRef.current
     if (!body) return
@@ -486,7 +498,12 @@ export default function DataReviewPage() {
     beginPanelDrag(e, 'col-resize', (clientX) => {
       const delta = startX - clientX // dragging left = wider right panel
       const bodyWidth = body.getBoundingClientRect().width
-      setRightPanelWidth(Math.max(400, Math.min(bodyWidth * 0.75, startPanelWidth + delta)))
+      const maxByLeftMin = bodyWidth - LEFT_PANEL_MIN_WIDTH - PANEL_DRAG_HANDLE_WIDTH
+      const upper = maxByLeftMin >= 400
+        ? Math.min(bodyWidth * 0.75, maxByLeftMin)
+        : bodyWidth * 0.75
+      const next = startPanelWidth + delta
+      setRightPanelWidth(Math.max(400, Math.min(upper, next)))
     })
   }, [rightPanelWidth, beginPanelDrag])
 
@@ -649,7 +666,7 @@ export default function DataReviewPage() {
             flex: (inImportPhase && !show1040) ? '0 0 0px' : 1,
             width: (inImportPhase && !show1040) ? 0 : undefined,
             opacity: (inImportPhase && !show1040) ? 0 : 1,
-            minWidth: 0,
+            minWidth: (inImportPhase && !show1040) ? 0 : LEFT_PANEL_MIN_WIDTH,
             transition: panelResizing ? 'none' : undefined,
           }}
         >

@@ -139,17 +139,20 @@
   display: flex;
   flex: 1;
   min-height: 0;
-  overflow: hidden;
+  /* Horizontal scroll when Summary min (956.4) + source min exceeds viewport */
+  overflow-x: auto;
+  overflow-y: hidden;
   position: relative;
 }
 
-/* Left panel — flex:1, smoothly grows/shrinks as panels open/close */
+/* Left panel — flex:1, smoothly grows/shrinks as panels open/close.
+   min-width floor also set inline when Summary is visible (LEFT_PANEL_MIN_WIDTH). */
 .leftPanel {
   display: flex;
   flex-direction: column;
   overflow: hidden;
   flex: 1;
-  min-width: 0;
+  min-width: 956.4px;
   transition: flex var(--duration-transform-emphasize-fast) var(--ease-transform),
               width var(--duration-transform-emphasize-fast) var(--ease-transform),
               opacity var(--duration-disappear-slow) var(--ease-fade);
