@@ -271,13 +271,13 @@
   box-shadow: inset 3px 0 0 #8a9ba5;
 }
 
-/* "Amount you owe" — final result row, subtle accent (still part of the form) */
+/* "Amount you owe" — final result row, neutral emphasis (matches summary) */
 .rowOwe {
-  background: #f7f9fb;
-  border-top: 2px solid #c8d3da;
+  background: var(--color-container-background-secondary);
+  border-top: 2px solid var(--color-divider-secondary);
 }
 .rowOwe .cellLabel {
-  color: #1a1a1a;
+  color: var(--color-text-primary);
   padding-top: 8px;
   padding-bottom: 8px;
 }
@@ -292,7 +292,7 @@
 .oweDividerRow td {
   padding: 0;
   height: 3px;
-  background: #c8d3da;
+  background: var(--color-divider-secondary);
 }
 
 /* Section header */
@@ -1128,13 +1128,13 @@
   margin-left: 4px;
 }
 
-/* Amount owed row */
+/* Amount owed row — neutral emphasis (no alert orange) */
 .summaryOweRow {
-  background: #fff8f3;
-  border-top: 2px solid #f5c5a3;
+  background: var(--color-container-background-secondary);
+  border-top: 2px solid var(--color-divider-secondary);
   padding-left: 32px;
 }
-.summaryOweRow:hover { background: #fff3ec; }
+.summaryOweRow:hover { background: var(--color-container-background-tertiary); }
 
 /* ── Tax control view ── */
 
@@ -1534,11 +1534,9 @@
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-small); /* 14px */
   font-weight: var(--font-weight-component-bold); /* 600 */
-  color: #c9500f;
+  color: var(--color-text-primary);
 }
-.summaryOweAmt {
-  color: #c9500f;
-}
+/* summaryOweAmt kept as a hook; CY total uses .summaryCurrValText (primary), not alert orange */
 
 /* Change indicators (kept for badge reuse) */
 .tvPos { color: #287f39; }
