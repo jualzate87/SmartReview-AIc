@@ -28,8 +28,16 @@
   border-left: 1px solid #D5DEE3;
   border-right: 1px solid #D5DEE3;
   flex-shrink: 0;
-  z-index: 2;
+  z-index: 5;
+  position: relative;
   user-select: none;
+  /* Wider hit target without changing visual gutter width */
+  touch-action: none;
+}
+.handleVertical::before {
+  content: '';
+  position: absolute;
+  inset: 0 -4px;
 }
 
 .handleVertical:hover {

@@ -7,24 +7,27 @@
   overflow: hidden;
 }
 
-/* Header — 68px, white bg, bottom border */
+/* Header — white bg, bottom border; +16px vertical padding vs prior 16px so
+   Comments / Source Documents buttons aren't clipped by a fixed height */
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 68px;
-  padding: var(--space-medium, 16px) var(--space-medium, 16px) var(--space-medium, 16px) 22px;
+  min-height: 68px;
+  padding: var(--space-container-padding-x-large, 32px) var(--space-medium, 16px) var(--space-container-padding-x-large, 32px) 22px;
   background: var(--color-container-background-primary, #ffffff);
   border-bottom: 1px solid #C3CED5;
   flex-shrink: 0;
-  overflow: hidden;
+  overflow: visible;
+  box-sizing: border-box;
 }
 
 .headerLeft {
   display: flex;
   align-items: center;
   gap: 22px;
-  overflow: hidden;
+  min-width: 0;
+  overflow: visible;
 }
 
 /* Back button — bordered box */
@@ -68,6 +71,8 @@
   align-items: center;
   gap: var(--space-medium, 16px);
   justify-content: flex-end;
+  flex-shrink: 0;
+  overflow: visible;
 }
 
 /* Intuit Intelligence button — bordered box */

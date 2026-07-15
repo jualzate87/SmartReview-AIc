@@ -110,6 +110,8 @@ export default function DataReviewPage() {
   const [rightPanelWidth, setRightPanelWidth] = useState(() =>
     typeof window !== 'undefined' ? Math.round(window.innerWidth * 0.65) : 920,
   )
+  // Suppress panel width CSS transitions while the user is dragging a resize handle
+  const [panelResizing, setPanelResizing] = useState(false)
   // Top/bottom section height ratio in right panel (0-100, where value = preview percentage)
   const [previewHeight, setPreviewHeight] = useState(40)
   // Whether right panel is popped out
@@ -444,6 +446,7 @@ export default function DataReviewPage() {
     if (!body) return
     const startX = e.clientX
     const startPanelWidth = agentPanelWidth
+    setPanelResizing(true)
     const onMouseMove = (moveEvent: MouseEvent) => {
       const delta = startX - moveEvent.clientX // dragging left = wider agent panel
       const bodyWidth = body.getBoundingClientRect().width
@@ -455,6 +458,7 @@ export default function DataReviewPage() {
       document.removeEventListener('mouseup', onMouseUp)
       document.body.style.cursor = ''
       document.body.style.userSelect = ''
+      setPanelResizing(false)
     }
     document.body.style.cursor = 'col-resize'
     document.body.style.userSelect = 'none'
@@ -469,6 +473,7 @@ export default function DataReviewPage() {
     if (!body) return
     const startX = e.clientX
     const startPanelWidth = rightPanelWidth
+    setPanelResizing(true)
     const onMouseMove = (moveEvent: MouseEvent) => {
       const delta = startX - moveEvent.clientX // dragging left = wider right panel
       const bodyWidth = body.getBoundingClientRect().width
@@ -480,6 +485,7 @@ export default function DataReviewPage() {
       document.removeEventListener('mouseup', onMouseUp)
       document.body.style.cursor = ''
       document.body.style.userSelect = ''
+      setPanelResizing(false)
     }
     document.body.style.cursor = 'col-resize'
     document.body.style.userSelect = 'none'
@@ -652,10 +658,13 @@ export default function DataReviewPage() {
         <div
           className={styles.leftPanel}
           style={{
-            flex: (inImportPhase && !show1040) ? '0 0 0px' : (inImportPhase && importsStarted && rightPanelVisible) ? '0 0 35%' : 1,
+            /* Grow into remaining space; right panel keeps a draggable pixel width
+               (percentage flex locks were ignoring handleRightPanelDrag). */
+            flex: (inImportPhase && !show1040) ? '0 0 0px' : 1,
             width: (inImportPhase && !show1040) ? 0 : undefined,
             opacity: (inImportPhase && !show1040) ? 0 : 1,
             minWidth: 0,
+            transition: panelResizing ? 'none' : undefined,
           }}
         >
           {inImportPhase && show1040 && (rightPanelVisible || notesOpen) && (
@@ -752,13 +761,14 @@ export default function DataReviewPage() {
                 width: (agentView === 'loading' || agentView === 'report' || agentView === 'closing' || (!rightPanelVisible && !rightPanelExiting))
                   ? 0
                   : (inImportPhase && !show1040) ? undefined : rightPanelWidth,
+                /* When Summary is collapsed, fill; otherwise fixed px width so the
+                   vertical drag handle can resize via rightPanelWidth. */
                 flex: (inImportPhase && !show1040 && rightPanelVisible)
                   ? '1 1 0%'
-                  : (inImportPhase && importsStarted && rightPanelVisible && show1040)
-                    ? '0 0 65%'
-                    : '0 0 auto',
+                  : '0 0 auto',
                 overflow: 'hidden',
                 opacity: (agentView === 'loading' || agentView === 'report' || agentView === 'closing' || (!rightPanelVisible && !rightPanelExiting)) ? 0 : 1,
+                transition: panelResizing ? 'none' : undefined,
               }}
             >
               {/* Source panel header — title left; Detach + Close on right */}
@@ -1095,6 +1105,7 @@ export default function DataReviewPage() {
               className={styles.agentPanelWrapper}
               style={{
                 width: agentView === 'idle' ? 0 : agentPanelWidth,
+                transition: panelResizing ? 'none' : undefined,
               }}
             >
                 <AgentLoadingPane
