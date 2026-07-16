@@ -82,6 +82,10 @@ function VerticalGripIcon() {
 /** Source-doc panel slide timing — matches --duration-appear/disappear-emphasize-fast */
 const SOURCE_PANEL_ENTER_MS = 500
 const SOURCE_PANEL_EXIT_MS = 500
+/** Summary show/hide — matches --duration-transform-emphasize-fast */
+const SUMMARY_TOGGLE_MS = 500
+/** Collapsed "Show Summary" edge tab width */
+const SHOW_SUMMARY_HANDLE_WIDTH = 44
 /** Summary / left 1040 panel — prevents value columns from cropping */
 const LEFT_PANEL_MIN_WIDTH = 956.4
 /** Matches DragHandle.module.css .handleVertical width */
@@ -169,6 +173,10 @@ export default function DataReviewPage() {
   // Phase 1: Summary visible by default; sources hidden until Start reviewing imports
   const [show1040, setShow1040] = useState(true)
   const [importsStarted, setImportsStarted] = useState(false)
+  /** Explicit left-panel px width during Summary collapse/expand (null = natural flex). */
+  const [leftAnimWidth, setLeftAnimWidth] = useState<number | null>(null)
+  /** Keep doc|Details side-by-side during Summary toggle so flexDirection doesn't flip mid-motion. */
+  const [freezePreviewSideBySide, setFreezePreviewSideBySide] = useState(false)
   const [questionnaireHighlightId, setQuestionnaireHighlightId] = useState<QuestionnaireResponseId | null>(null)
 
   // The import/OCR flags owned by Phase 1. Each key matches the reviewed-field key
@@ -230,9 +238,17 @@ export default function DataReviewPage() {
   // ---------------------------------------------------------------------------
 
   const bodyRef = useRef<HTMLDivElement>(null)
+  const leftPanelRef = useRef<HTMLDivElement>(null)
   const rightRef = useRef<HTMLDivElement>(null)
   /** Split container for document preview ↔ Details (not the whole right panel). */
   const splitPaneRef = useRef<HTMLDivElement>(null)
+  /** Right-panel width to restore when Show Summary expands again. */
+  const preCollapseRightWidthRef = useRef<number | null>(null)
+  const summaryToggleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => () => {
+    if (summaryToggleTimerRef.current) clearTimeout(summaryToggleTimerRef.current)
+  }, [])
 
   const ensureSourcePanelVisible = useCallback(() => {
     if (!rightPanelVisible) {
@@ -588,7 +604,8 @@ export default function DataReviewPage() {
     !rightPanelExiting &&
     bodyWidth > 0 &&
     rightPanelWidth / bodyWidth > 0.6
-  const previewSideBySide = !show1040 || sourcesPanelWide
+  const previewSideBySide = freezePreviewSideBySide || !show1040 || sourcesPanelWide
+  const inImportPhase = phase === 'import'
 
   // Resize drag between the document preview and detail fields. Axis is frozen
   // for the gesture (matches flexDirection at pointer-down). previewHeight
@@ -611,6 +628,73 @@ export default function DataReviewPage() {
     })
   }, [previewHeight, previewSideBySide, beginPanelDrag])
 
+  // While Summary is animating or collapsed, right panel flex-fills so it grows/shrinks
+  // as the left width transitions — avoids a px→flex mode flip mid-collapse.
+  const rightPanelFills = inImportPhase && (!show1040 || leftAnimWidth !== null)
+
+  const handleHideSummary = useCallback(() => {
+    const body = bodyRef.current
+    const left = leftPanelRef.current
+    if (!body) {
+      setShow1040(false)
+      return
+    }
+    const bodyW = body.clientWidth || body.getBoundingClientRect().width
+    const leftW = left?.getBoundingClientRect().width
+      ?? Math.max(0, bodyW - rightPanelWidth - PANEL_DRAG_HANDLE_WIDTH)
+    preCollapseRightWidthRef.current = rightPanelWidth
+    // If doc|Details is already side-by-side, keep that axis for the whole motion.
+    if (previewSideBySide) setFreezePreviewSideBySide(true)
+
+    // Frame 1: lock left at its current pixel width (right switches to flex-fill
+    // via leftAnimWidth !== null) — visually identical, no reflow jump.
+    setLeftAnimWidth(leftW)
+    if (summaryToggleTimerRef.current) clearTimeout(summaryToggleTimerRef.current)
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setShow1040(false)
+        setLeftAnimWidth(0)
+      })
+    })
+
+    summaryToggleTimerRef.current = setTimeout(() => {
+      setLeftAnimWidth(null)
+      setFreezePreviewSideBySide(false)
+      summaryToggleTimerRef.current = null
+    }, SUMMARY_TOGGLE_MS)
+  }, [previewSideBySide, rightPanelWidth])
+
+  const handleShowSummary = useCallback(() => {
+    const body = bodyRef.current
+    const bodyW = body
+      ? (body.clientWidth || body.getBoundingClientRect().width)
+      : window.innerWidth
+    const restoreWidth = preCollapseRightWidthRef.current
+      ?? Math.max(480, Math.round(bodyW * 0.65))
+    const targetLeft = Math.max(0, bodyW - restoreWidth - PANEL_DRAG_HANDLE_WIDTH)
+    // Keep side-by-side frozen when restoring into a wide Sources layout.
+    if (restoreWidth / bodyW > 0.6) setFreezePreviewSideBySide(true)
+
+    setLeftAnimWidth(0)
+    setShow1040(true)
+    if (summaryToggleTimerRef.current) clearTimeout(summaryToggleTimerRef.current)
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setLeftAnimWidth(targetLeft)
+        setRightPanelWidth(restoreWidth)
+      })
+    })
+
+    summaryToggleTimerRef.current = setTimeout(() => {
+      setLeftAnimWidth(null)
+      setFreezePreviewSideBySide(false)
+      preCollapseRightWidthRef.current = null
+      summaryToggleTimerRef.current = null
+    }, SUMMARY_TOGGLE_MS)
+  }, [])
+
   // ProtoC: welcome/orientation screen is the entry point (no header chrome)
   if (phase === 'welcome') {
     return (
@@ -628,8 +712,6 @@ export default function DataReviewPage() {
       </div>
     )
   }
-
-  const inImportPhase = phase === 'import'
 
   return (
     <div className={styles.page}>
@@ -730,11 +812,16 @@ export default function DataReviewPage() {
         {inImportPhase && (
           <div
             className={styles.form1040HandleWrap}
-            style={{ width: show1040 ? 0 : 44, opacity: show1040 ? 0 : 1, pointerEvents: show1040 ? 'none' : 'auto' }}
+            style={{
+              width: show1040 ? 0 : SHOW_SUMMARY_HANDLE_WIDTH,
+              opacity: show1040 ? 0 : 1,
+              pointerEvents: show1040 ? 'none' : 'auto',
+              transition: panelResizing ? 'none' : undefined,
+            }}
           >
             <button
               className={styles.form1040Handle}
-              onClick={() => setShow1040(true)}
+              onClick={handleShowSummary}
               aria-label="Show 1040"
             >
               <ChevronRight size="small" className={styles.form1040HandleIcon} />
@@ -743,14 +830,21 @@ export default function DataReviewPage() {
           </div>
         )}
         <div
+          ref={leftPanelRef}
           className={styles.leftPanel}
           style={{
-            /* Grow into remaining space; right panel keeps a draggable pixel width
-               (percentage flex locks were ignoring handleRightPanelDrag). */
-            flex: (inImportPhase && !show1040) ? '0 0 0px' : 1,
-            width: (inImportPhase && !show1040) ? 0 : undefined,
+            /* During toggle, drive an explicit px width so min-width→0 and collapse
+               interpolate together; otherwise flex:1 grows into remaining space. */
+            flex: leftAnimWidth !== null
+              ? `0 0 ${leftAnimWidth}px`
+              : (inImportPhase && !show1040) ? '0 0 0px' : 1,
+            width: leftAnimWidth !== null
+              ? leftAnimWidth
+              : (inImportPhase && !show1040) ? 0 : undefined,
             opacity: (inImportPhase && !show1040) ? 0 : 1,
-            minWidth: (inImportPhase && !show1040) ? 0 : LEFT_PANEL_MIN_WIDTH,
+            minWidth: (inImportPhase && !show1040) || leftAnimWidth !== null
+              ? 0
+              : LEFT_PANEL_MIN_WIDTH,
             transition: panelResizing ? 'none' : undefined,
           }}
         >
@@ -759,7 +853,7 @@ export default function DataReviewPage() {
               priority="secondary"
               size="small"
               className={styles.form1040HideBtn}
-              onClick={() => setShow1040(false)}
+              onClick={handleHideSummary}
               aria-label="Hide Summary"
             >
               <ChevronLeft size="small" /> Hide Summary
@@ -833,33 +927,38 @@ export default function DataReviewPage() {
 
         {!poppedOut && (
           <>
-            {/* Left/right drag handle — hidden when the 1040 is collapsed (nothing to drag
-                against) or when the right panel/agent isn't visible */}
-            {agentView === 'idle' && rightPanelVisible && !rightPanelExiting && !(inImportPhase && !show1040) && (
+            {/* Left/right drag handle — stays mounted and collapses width with Summary
+                so the gutter doesn't pop out of the row mid-animation. */}
+            {agentView === 'idle' && rightPanelVisible && !rightPanelExiting && (
               <div
-                className={dragStyles.handleVertical}
-                onPointerDown={handleRightPanelDrag}
+                className={`${dragStyles.handleVertical} ${styles.summarySplitter}`}
+                onPointerDown={show1040 ? handleRightPanelDrag : undefined}
                 role="separator"
                 aria-orientation="vertical"
                 aria-label="Resize Summary and Source Documents"
+                aria-hidden={inImportPhase && !show1040}
+                style={{
+                  width: (inImportPhase && !show1040) ? 0 : PANEL_DRAG_HANDLE_WIDTH,
+                  opacity: (inImportPhase && !show1040) ? 0 : 1,
+                  pointerEvents: (inImportPhase && !show1040) ? 'none' : 'auto',
+                  transition: panelResizing ? 'none' : undefined,
+                }}
               >
                 <VerticalGripIcon />
               </div>
             )}
 
-            {/* Right panel — always in DOM, width animates to 0 when hidden. When the 1040
-                is collapsed in Phase 1, it switches from a fixed pixel width to flex:1 so it
-                fills the space the 1040 gave up instead of leaving a dead gap on wide screens. */}
+            {/* Right panel — always in DOM, width animates to 0 when hidden. During Summary
+                toggle/collapse it flex-fills so it grows as the left width eases to 0
+                (no hard px→flex flip after the row is already side-by-side). */}
             <div
-              className={`${styles.rightPanel} ${rightPanelAnimating ? styles.rightPanelEntering : ''} ${rightPanelExiting ? styles.rightPanelExiting : ''}`}
+              className={`${styles.rightPanel} ${rightPanelAnimating ? styles.rightPanelEntering : ''} ${rightPanelExiting ? styles.rightPanelExiting : ''} ${rightPanelFills ? styles.rightPanelFills : ''}`}
               ref={rightRef}
               style={{
                 width: (agentView === 'loading' || agentView === 'report' || agentView === 'closing' || (!rightPanelVisible && !rightPanelExiting))
                   ? 0
-                  : (inImportPhase && !show1040) ? undefined : rightPanelWidth,
-                /* When Summary is collapsed, fill; otherwise fixed px width so the
-                   vertical drag handle can resize via rightPanelWidth. */
-                flex: (inImportPhase && !show1040 && rightPanelVisible)
+                  : rightPanelFills ? undefined : rightPanelWidth,
+                flex: (rightPanelFills && rightPanelVisible)
                   ? '1 1 0%'
                   : '0 0 auto',
                 overflow: 'hidden',

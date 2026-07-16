@@ -149,7 +149,8 @@
 }
 
 /* Left panel — flex:1, smoothly grows/shrinks as panels open/close.
-   min-width floor also set inline when Summary is visible (LEFT_PANEL_MIN_WIDTH). */
+   min-width floor also set inline when Summary is visible (LEFT_PANEL_MIN_WIDTH).
+   min-width must transition too — otherwise Hide Summary jumps past 956.4. */
 .leftPanel {
   display: flex;
   flex-direction: column;
@@ -157,7 +158,9 @@
   flex: 1;
   min-width: 956.4px;
   transition: flex var(--duration-transform-emphasize-fast) var(--ease-transform),
+              flex-basis var(--duration-transform-emphasize-fast) var(--ease-transform),
               width var(--duration-transform-emphasize-fast) var(--ease-transform),
+              min-width var(--duration-transform-emphasize-fast) var(--ease-transform),
               opacity var(--duration-disappear-slow) var(--ease-fade);
 }
 
@@ -175,6 +178,22 @@
   transition: width var(--duration-transform-emphasize-fast) var(--ease-transform),
               flex var(--duration-transform-emphasize-fast) var(--ease-transform),
               opacity var(--duration-transform-emphasize-fast) var(--ease-transform);
+}
+
+/* While Summary collapses/expands, right panel flex-fills — drop width transitions
+   so layout growth follows the left panel's easing instead of fighting a px→auto jump. */
+.rightPanelFills {
+  min-width: 0;
+  transition: opacity var(--duration-transform-emphasize-fast) var(--ease-transform);
+}
+
+/* Summary ↔ Sources splitter — width collapses with Hide Summary */
+.summarySplitter {
+  overflow: hidden;
+  box-sizing: border-box;
+  transition: width var(--duration-transform-emphasize-fast) var(--ease-transform),
+              opacity var(--duration-disappear-slow) var(--ease-fade),
+              border-color var(--duration-disappear-slow) var(--ease-fade);
 }
 
 /* ── Slide in from right (agent close → doc panel appears) ── */
@@ -211,6 +230,8 @@
 @media (prefers-reduced-motion: reduce) {
   .leftPanel { transition: none; }
   .rightPanel { transition: none; }
+  .rightPanelFills { transition: none; }
+  .summarySplitter { transition: none; }
   .agentPanelWrapper { transition: none; }
   .rightPanelEntering, .rightPanelExiting { animation: none; }
 }
@@ -328,7 +349,9 @@
   flex-shrink: 0;
   align-self: stretch;
   overflow: hidden;
-  transition: width 380ms cubic-bezier(0.4, 0, 0.25, 1), opacity 280ms ease;
+  /* Match left/right panel Summary toggle (~500ms emphasize) */
+  transition: width var(--duration-transform-emphasize-fast) var(--ease-transform),
+              opacity var(--duration-disappear-slow) var(--ease-fade);
 }
 
 @media (prefers-reduced-motion: reduce) {
