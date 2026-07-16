@@ -15,12 +15,6 @@
   border-bottom-color: #b7e0c7;
 }
 
-/* Remaining docs after flags clear — calm info chrome (not orange flag) */
-.bannerDocReview {
-  background: var(--color-container-background-info, #d9effb);
-  border-bottom-color: var(--color-container-border-info, #0097e6);
-}
-
 .left {
   display: flex;
   align-items: center;
@@ -33,13 +27,6 @@
   width: 26px;
   height: 26px;
   flex-shrink: 0;
-}
-
-.docIcon {
-  width: 26px;
-  height: 26px;
-  flex-shrink: 0;
-  color: var(--color-container-border-info, #0097e6);
 }
 
 .text {

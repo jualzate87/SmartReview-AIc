@@ -787,7 +787,6 @@ export default function DataReviewPage() {
           onContinue={handleBeginDiagnostics}
           importsStarted={importsStarted}
           onStartImports={startReviewingImports}
-          onReviewNextDocument={handleReviewNextDocument}
         />
       )}
 
@@ -1015,8 +1014,16 @@ export default function DataReviewPage() {
               </div>
               {inImportPhase && phase1Remaining > 0 && (
                 <Phase1IssueBanner
+                  mode="flags"
                   unresolvedCount={phase1Remaining}
                   onVerify={handleVerifyNext}
+                />
+              )}
+              {inImportPhase && flagsCleared && unreviewedDocCount > 0 && !phase1FullyComplete && (
+                <Phase1IssueBanner
+                  mode="documents"
+                  unreviewedDocCount={unreviewedDocCount}
+                  onReviewNextDocument={handleReviewNextDocument}
                 />
               )}
               <ReviewTab

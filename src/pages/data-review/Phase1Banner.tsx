@@ -1,4 +1,4 @@
-import { ArrowRight, CircleCheck, Document, Lock } from '@design-systems/icons'
+import { ArrowRight, CircleCheck, Lock } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import intuitAssistIcon from '../../assets/icons/intuit-assist.svg'
@@ -19,13 +19,11 @@ interface Phase1BannerProps {
   importsStarted?: boolean
   /** Begin import review — reveals source documents on the right */
   onStartImports?: () => void
-  /** Jump to next source document that still needs a review */
-  onReviewNextDocument?: () => void
 }
 
 /**
- * ProtoC Phase 1 banner. Reflects live import-flag progress and, once every flag
- * is resolved, invites the CPA to review remaining (no-flag) docs before Phase 2.
+ * ProtoC Phase 1 step header. Progress, start CTA, AI-diagnostics lock, and complete state.
+ * Remaining-document attention (copy + CTA) lives on Phase1IssueBanner (documents mode).
  */
 export default function Phase1Banner({
   resolved,
@@ -36,26 +34,15 @@ export default function Phase1Banner({
   onContinue,
   importsStarted = false,
   onStartImports,
-  onReviewNextDocument,
 }: Phase1BannerProps) {
   const needsDocReview = flagsCleared && unreviewedDocCount > 0 && !complete
 
   return (
     <div
-      className={[
-        styles.banner,
-        complete ? styles.bannerComplete : '',
-        needsDocReview ? styles.bannerDocReview : '',
-      ]
-        .filter(Boolean)
-        .join(' ')}
+      className={[styles.banner, complete ? styles.bannerComplete : ''].filter(Boolean).join(' ')}
     >
       <div className={styles.left}>
-        {needsDocReview ? (
-          <Document size="medium" className={styles.docIcon} aria-hidden />
-        ) : (
-          <img src={intuitAssistIcon} alt="" className={styles.icon} />
-        )}
+        <img src={intuitAssistIcon} alt="" className={styles.icon} />
         <div className={styles.text}>
           {complete ? (
             <>
@@ -64,16 +51,6 @@ export default function Phase1Banner({
                 {onContinue
                   ? 'All flagged fields and source documents have been reviewed. Ready to move to Step 2?'
                   : 'All flagged fields and source documents have been reviewed. Dock back to continue to AI diagnostics.'}
-              </span>
-            </>
-          ) : needsDocReview ? (
-            <>
-              <span className={styles.title}>
-                {unreviewedDocCount}{' '}
-                {unreviewedDocCount === 1 ? 'document left' : 'documents left'} to review
-              </span>
-              <span className={styles.subtitle}>
-                Flags are cleared. Confirm each remaining source document before AI diagnostics unlock.
               </span>
             </>
           ) : (
@@ -101,12 +78,6 @@ export default function Phase1Banner({
             onClick={onStartImports}
           >
             Start reviewing imports
-          </Button>
-        )}
-
-        {needsDocReview && onReviewNextDocument && (
-          <Button priority="secondary" size="medium" onClick={onReviewNextDocument}>
-            Review next document
           </Button>
         )}
 

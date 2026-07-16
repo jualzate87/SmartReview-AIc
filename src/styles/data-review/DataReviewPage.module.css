@@ -288,7 +288,8 @@
   flex-shrink: 0;
 }
 
-/* Issue banner — shown below the panel header, above the tabs */
+/* Issue banner — shown below the panel header, above the tabs.
+   Shared shell for flags (orange) and remaining documents (info). */
 .issueBanner {
   display: flex;
   align-items: center;
@@ -301,6 +302,11 @@
   flex-shrink: 0;
 }
 
+.issueBannerDocuments {
+  border-color: var(--color-container-border-info, #0097e6);
+  background: var(--color-container-background-info, #d9effb);
+}
+
 .issueBannerIcon {
   width: 18px;
   height: 18px;
@@ -308,6 +314,34 @@
   color: #cc5500;
 }
 
+.issueBannerDocuments .issueBannerIcon {
+  color: var(--color-container-border-info, #0097e6);
+}
+
+.issueBannerCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.issueBannerHeader {
+  font-family: var(--font-family-component) !important;
+  font-size: 13px;
+  font-weight: 600;
+  color: #393a3d;
+}
+
+.issueBannerBody {
+  font-family: var(--font-family-component) !important;
+  font-size: 12px;
+  font-weight: 400;
+  color: #5d686f;
+  line-height: 1.35;
+}
+
+/* Legacy single-line class — kept for any stray fallbacks */
 .issueBannerText {
   font-family: var(--font-family-component) !important;
   font-size: 13px;
@@ -334,6 +368,13 @@
 }
 .issueBannerPill:hover {
   background: #e05500;
+}
+
+.issueBannerDocuments .issueBannerPill {
+  background: var(--color-container-border-info, #0077c5);
+}
+.issueBannerDocuments .issueBannerPill:hover {
+  background: #0066a8;
 }
 
 /* ProtoC — Phase 1: minimized 1040 — slim edge handle, matches the panel drag-handle
