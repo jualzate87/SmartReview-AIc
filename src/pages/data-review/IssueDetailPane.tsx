@@ -220,9 +220,10 @@ export default function IssueDetailPane({
             {(() => {
               const hasBadge = tableRows.some(r => r.badge)
               const colCount = tableHeaders.length - 1
+              /* Fixed tracks are content-only; 20px column-gap lives outside them */
               const gridCols = hasBadge
-                ? `1fr repeat(${colCount - 1}, 72px) 52px`
-                : `1fr repeat(${colCount}, 80px)`
+                ? `1fr repeat(${colCount - 1}, minmax(64px, auto)) minmax(56px, auto)`
+                : `1fr repeat(${colCount}, minmax(72px, auto))`
               return (
                 <div className={styles.tableCard}>
                   <div className={`${styles.tableRow} ${styles.tableHeaderRow}`} style={{ gridTemplateColumns: gridCols }}>

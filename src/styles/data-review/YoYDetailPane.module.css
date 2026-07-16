@@ -468,9 +468,13 @@
 
 .tableRow {
   display: grid;
-  grid-template-columns: 1fr 72px 72px 72px 52px;
+  grid-template-columns: 1fr minmax(64px, auto) minmax(64px, auto) minmax(64px, auto) minmax(56px, auto);
   align-items: center;
   min-height: 36px;
+  /* 12px left/right inset for content inside the table */
+  padding-inline: var(--space-container-padding-x-small, 12px);
+  /* ~20px between Value / Source / Action (and other right columns) */
+  column-gap: var(--space-column-gap-medium, 20px);
 }
 
 .tableRowBorder {
@@ -487,7 +491,8 @@
   font-weight: 600;
   line-height: 16px;
   color: var(--text\/primary, #21262a);
-  padding: 8px;
+  /* Horizontal spacing handled by row padding-inline + column-gap */
+  padding: 8px 0;
 }
 
 .cellValue {
@@ -496,7 +501,8 @@
   font-weight: 400;
   line-height: 16px;
   color: var(--text\/primary, #21262a);
-  padding: 8px;
+  /* Horizontal spacing handled by row padding-inline + column-gap */
+  padding: 8px 0;
 }
 
 .tableHeaderRow .cellValue {
