@@ -105,24 +105,8 @@ export default function DataReviewPopout() {
     applyVerifyNavigation(next.field)
   }, [reviewedFields, selectedField, applyVerifyNavigation])
 
-  const handleReviewNextDocument = useCallback(() => {
-    const next = getNextUnreviewedSourceDoc(unreviewedSourceDocs, {
-      tab: activeTopTab,
-      w2SubTab: activeSubTab,
-      divPayer: activeDivPayer,
-      intPayer: activeIntPayer,
-    })
-    if (!next) return
-    setActiveTopTab(next.tab)
-    if (next.w2SubTab) setActiveSubTab(next.w2SubTab)
-    if (next.divPayer) setActiveDivPayer(next.divPayer)
-    if (next.intPayer) setActiveIntPayer(next.intPayer)
-    setSelectedField(null)
-  }, [
-    unreviewedSourceDocs, activeTopTab, activeSubTab, activeDivPayer, activeIntPayer,
-    setActiveTopTab, setActiveSubTab, setActiveDivPayer, setActiveIntPayer, setSelectedField,
-  ])
-
+  // Derived review status must be computed before handleReviewNextDocument —
+  // that callback's dependency array reads unreviewedSourceDocs (TDZ crash if reversed).
   const tabFlagCounts = getTabFlagCounts(reviewedFields)
   const tabInitialFlagCounts = getTabInitialFlagCounts()
   const divPayerFieldCounts: Record<DivPayer, number> = Object.fromEntries(
@@ -155,6 +139,24 @@ export default function DataReviewPopout() {
   const flagsCleared = phase1Remaining === 0
   const phase1FullyComplete = flagsCleared && unreviewedDocCount === 0
   const [docReviewModalOpen, setDocReviewModalOpen] = useState(false)
+
+  const handleReviewNextDocument = useCallback(() => {
+    const next = getNextUnreviewedSourceDoc(unreviewedSourceDocs, {
+      tab: activeTopTab,
+      w2SubTab: activeSubTab,
+      divPayer: activeDivPayer,
+      intPayer: activeIntPayer,
+    })
+    if (!next) return
+    setActiveTopTab(next.tab)
+    if (next.w2SubTab) setActiveSubTab(next.w2SubTab)
+    if (next.divPayer) setActiveDivPayer(next.divPayer)
+    if (next.intPayer) setActiveIntPayer(next.intPayer)
+    setSelectedField(null)
+  }, [
+    unreviewedSourceDocs, activeTopTab, activeSubTab, activeDivPayer, activeIntPayer,
+    setActiveTopTab, setActiveSubTab, setActiveDivPayer, setActiveIntPayer, setSelectedField,
+  ])
 
   useEffect(() => {
     if (!(flagsCleared && unreviewedDocCount > 0 && !phase1FullyComplete)) return
