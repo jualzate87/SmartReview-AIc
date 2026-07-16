@@ -115,8 +115,7 @@ const CONFIRM_PRIOR_AGI_ISSUE: IssueCard = {
     'Enter the confirmed AGI in the e-file section before submission.',
   ],
   actions: [
-    // reviewSource → document preview; goToInput → Details line 11 / AGI field
-    { type: 'reviewSource', label: 'Review Prior Year 1040', tab: 'prior-1040' },
+    // Single CTA: Details + AGI field (Preview + Review was redundant)
     { type: 'goToInput', label: 'Go to AGI input', tab: 'prior-1040', field: 'agi' },
   ],
   sources: [
@@ -202,8 +201,7 @@ function buildUnderpaymentRiskIssue(live: LiveReturnTotals): IssueCard {
       'Confirm the Tax Organizer "no ES payments" answer matches her records.',
     ],
     actions: [
-      // reviewSource → document preview; goToInput → Details withholding field
-      { type: 'reviewSource', label: 'Review 1099-DIV', tab: '1099-divs' },
+      // Single doc CTA: Details + withholding field (Review 1099-DIV was redundant)
       { type: 'goToInput', label: 'Go to withholding', tab: '1099-divs', field: 'fedTaxWithheld' },
       { type: 'viewClientResponse', label: 'View client response', questionnaireResponseId: 'estimatedPayments' },
       {
@@ -254,8 +252,7 @@ function buildNecScheduleCIssue(): IssueCard {
       'Review the Tax Organizer NEC expenses response.',
     ],
     actions: [
-      // reviewSource → document preview; goToInput → Details Box 1 income field
-      { type: 'reviewSource', label: 'Review 1099-NEC', tab: '1099-necs' },
+      // Single doc CTA: Details + Box 1 (Review 1099-NEC was redundant)
       { type: 'goToInput', label: 'Go to NEC income', tab: '1099-necs', field: 'nec-box1' },
       { type: 'viewClientResponse', label: 'View client response', questionnaireResponseId: 'necExpenses' },
       {
