@@ -37,7 +37,7 @@ export default function Phase1IssueBanner({
             {unreviewedDocCount === 1 ? 'document left' : 'documents left'} to review
           </span>
           <span className={styles.issueBannerBody}>
-            Flags are cleared. Confirm each remaining source document before AI diagnostics unlock.
+            Flags are cleared. AI diagnostics are available. Reviewing remaining documents is recommended.
           </span>
         </span>
         <button type="button" className={styles.issueBannerPill} onClick={onReviewNextDocument}>

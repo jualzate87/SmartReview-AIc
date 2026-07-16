@@ -776,7 +776,7 @@ export default function DataReviewPage() {
         </div>
       </div>
 
-      {/* ProtoC Phase 1 — Import Accuracy banner (dynamic progress + gated Phase 2 CTA) */}
+      {/* ProtoC Phase 1 — Import Accuracy banner (flags-only gate for Phase 2 CTA) */}
       {inImportPhase && (
         <Phase1Banner
           resolved={phase1Resolved}

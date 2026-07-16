@@ -7,13 +7,13 @@ import styles from '../../styles/data-review/Phase1Banner.module.css'
 interface Phase1BannerProps {
   resolved: number
   total: number
-  /** All import flags resolved */
+  /** All import flags resolved — hard gate for AI diagnostics */
   flagsCleared: boolean
   /** Count of packet source docs (incl. Questionnaire) not yet mark-reviewed */
   unreviewedDocCount?: number
-  /** Fully complete: flags cleared AND all packet docs reviewed */
+  /** Soft complete: flags cleared AND all packet docs reviewed */
   complete: boolean
-  /** Continue to Phase 2 — AI Diagnostics (only enabled when complete). Omit in popout. */
+  /** Continue to Phase 2 — AI Diagnostics (enabled when flags cleared). Omit in popout. */
   onContinue?: () => void
   /** Whether the CPA has started opening source docs for import review */
   importsStarted?: boolean
@@ -24,6 +24,7 @@ interface Phase1BannerProps {
 /**
  * ProtoC Phase 1 step header. Progress, start CTA, AI-diagnostics lock, and complete state.
  * Remaining-document attention (copy + CTA) lives on Phase1IssueBanner (documents mode).
+ * Flags are the hard gate for Continue; document review is recommended only.
  */
 export default function Phase1Banner({
   resolved,
@@ -35,22 +36,26 @@ export default function Phase1Banner({
   importsStarted = false,
   onStartImports,
 }: Phase1BannerProps) {
-  const needsDocReview = flagsCleared && unreviewedDocCount > 0 && !complete
+  const needsDocReview = flagsCleared && unreviewedDocCount > 0
 
   return (
     <div
-      className={[styles.banner, complete ? styles.bannerComplete : ''].filter(Boolean).join(' ')}
+      className={[styles.banner, flagsCleared ? styles.bannerComplete : ''].filter(Boolean).join(' ')}
     >
       <div className={styles.left}>
         <img src={intuitAssistIcon} alt="" className={styles.icon} />
         <div className={styles.text}>
-          {complete ? (
+          {flagsCleared ? (
             <>
               <span className={styles.title}>Import accuracy confirmed</span>
               <span className={styles.subtitle}>
-                {onContinue
-                  ? 'All flagged fields and source documents have been reviewed. Ready to move to Step 2?'
-                  : 'All flagged fields and source documents have been reviewed. Dock back to continue to AI diagnostics.'}
+                {complete
+                  ? onContinue
+                    ? 'All flagged fields and source documents have been reviewed. Ready to move to Step 2?'
+                    : 'All flagged fields and source documents have been reviewed. Dock back to continue to AI diagnostics.'
+                  : onContinue
+                    ? 'Flags are cleared. AI diagnostics are available. Reviewing remaining documents is recommended.'
+                    : 'Flags are cleared. AI diagnostics are available in the main window. Reviewing remaining documents is recommended.'}
               </span>
             </>
           ) : (
@@ -81,23 +86,23 @@ export default function Phase1Banner({
           </Button>
         )}
 
-        {complete && onContinue ? (
+        {flagsCleared && onContinue ? (
           <Button priority="primary" size="medium" onClick={onContinue}>
             Continue to AI diagnostics <ArrowRight size="small" />
           </Button>
-        ) : complete && !onContinue ? (
+        ) : flagsCleared && !onContinue ? (
           <span className={styles.lockNote}>
-            Phase 1 complete. Continue to AI diagnostics in the main window.
+            {needsDocReview
+              ? 'AI diagnostics available in the main window. Document review is recommended.'
+              : 'Phase 1 complete. Continue to AI diagnostics in the main window.'}
           </span>
-        ) : importsStarted || needsDocReview ? (
+        ) : importsStarted ? (
           <div className={styles.lockedWrap}>
             <Button priority="secondary" size="medium" disabled>
               <Lock size="small" /> AI diagnostics locked
             </Button>
             <span className={styles.lockNote}>
-              {needsDocReview
-                ? 'Mark remaining documents reviewed to unlock.'
-                : 'Diagnostics unlock once import is confirmed.'}
+              Diagnostics unlock once import flags are confirmed.
             </span>
           </div>
         ) : null}

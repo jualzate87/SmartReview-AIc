@@ -50,12 +50,12 @@ export default function DocReviewTransitionModal({
   return (
     <Modal open={open} onClose={onClose} size="medium" dismissible>
       <ModalHeader alignment="center" transparentBackground onClose={onClose}>
-        <ModalTitle title="Flags resolved. Finish document review" />
+        <ModalTitle title="Flags resolved. Review remaining documents?" />
       </ModalHeader>
       <ModalContent alignment="left">
         <p className={styles.controlModalBody}>
-          No open flags remain. Some documents never had flags. Confirm each source document
-          (and questionnaire) before continuing.
+          No open flags remain. AI diagnostics are available when you&apos;re ready. Some documents
+          never had flags; reviewing them is recommended.
         </p>
       </ModalContent>
       <ModalActions alignment="right">
