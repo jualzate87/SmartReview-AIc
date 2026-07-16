@@ -562,13 +562,15 @@
   align-items: flex-start;
   gap: var(--space-component-gap-small, 4px);
   width: 100%;
-  max-width: 240px;
+  max-width: 280px;
   min-width: 140px;
   padding: var(--space-container-padding-xx-small, 8px) var(--space-container-padding-x-small, 12px);
   border: none;
   border-radius: var(--radius-medium, 6px);
   background: var(--color-action-passive, #e3e5e8);
   text-align: left;
+  text-decoration: none;
+  color: inherit;
   font-family: var(--font-family-component);
   box-sizing: border-box;
   cursor: pointer;
@@ -653,7 +655,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
 }
 

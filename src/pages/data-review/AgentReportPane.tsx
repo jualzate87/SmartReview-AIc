@@ -2,8 +2,6 @@ import { useState, useEffect, useRef } from 'react'
 import { Close, Plus, ChevronDown, ChevronRight, CircleCheck, Send } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
-import { Link } from '@ids-ts/link'
-import '@ids-ts/link/dist/main.css'
 import intuitAssistIcon from '../../assets/icons/intuit-assist.svg'
 import compareOthersIcon from '../../assets/icons/compare-others.svg'
 import federalTaxesIcon from '../../assets/icons/federal-taxes.svg'
@@ -91,8 +89,6 @@ type IssueCard = {
   viewSourceField?: string
   /** When true, goToInput highlights Summary only (no source-tab switch) */
   summaryOnlyGoToInput?: boolean
-  irsGuidanceUrl?: string
-  irsGuidanceLabel?: string
 }
 
 const CONFIRM_PRIOR_AGI_ISSUE: IssueCard = {
@@ -122,19 +118,17 @@ const CONFIRM_PRIOR_AGI_ISSUE: IssueCard = {
   ],
   sources: [
     {
-      id: 'py-1040',
-      sourceName: 'Prior Year 1040',
-      title: 'Jessica Drake',
-      description: '2024 AGI $485,820',
-      meta: 'Imported',
-      tab: 'prior-1040',
-      field: 'agi',
+      id: 'irs-efile-agi',
+      sourceName: 'IRS.gov',
+      title: 'Validating your electronically filed tax return',
+      description:
+        'The IRS authenticates e-filed returns with prior-year AGI (or an Identity Protection PIN). A mismatch is a common rejection reason — confirm the signed 2024 AGI before submission.',
+      meta: 'E-file authentication',
+      href: 'https://www.irs.gov/individuals/validating-your-electronically-filed-tax-return',
     },
   ],
   viewSourceTab: 'prior-1040',
   viewSourceField: 'agi',
-  irsGuidanceUrl: 'https://www.irs.gov/individuals/validating-your-electronically-filed-tax-return',
-  irsGuidanceLabel: 'IRS guidance: e-file prior-year AGI',
 }
 
 const NIIT_FORM8960_ISSUE: IssueCard = {
@@ -166,53 +160,18 @@ const NIIT_FORM8960_ISSUE: IssueCard = {
   ],
   sources: [
     {
-      id: 'niit-ord-div',
-      sourceName: 'Summary',
-      title: 'Ordinary dividends',
-      description: `${fmtUsd(FROZEN_RETURN.ordinaryDivs)} · Line 3b`,
-      meta: 'Current year',
-      field: 'ordinaryDivs',
-    },
-    {
-      id: 'niit-qual-div',
-      sourceName: 'Summary',
-      title: 'Qualified dividends',
-      description: `${fmtUsd(FROZEN_RETURN.qualifiedDivs)} · Line 3a`,
-      meta: 'Current year',
-      field: 'qualifiedDivs',
-    },
-    {
-      id: 'niit-1099-div',
-      sourceName: '1099-DIV',
-      title: 'Token Financial',
-      description: `Ordinary divs ${fmtUsd(FROZEN_RETURN.ordinaryDivs)}`,
-      meta: 'In packet',
-      tab: '1099-divs',
-      field: 'ordinaryDivs',
-    },
-    {
-      id: 'niit-1099-int',
-      sourceName: '1099-INT',
-      title: 'Unwavering Financial',
-      description: `Taxable interest ${fmtUsd(FROZEN_RETURN.taxableInterest)}`,
-      meta: 'In packet',
-      tab: '1099-ints',
-      field: 'taxableInterest',
-    },
-    {
-      id: 'niit-8960',
+      id: 'irs-form-8960',
       sourceName: 'Form 8960',
-      title: 'Net Investment Income Tax',
-      description: 'Required at this AGI level',
-      meta: 'Not in packet',
-      placeholder: true,
+      title: 'Net Investment Income Tax (NIIT)',
+      description:
+        'Individuals with modified AGI above the filing-status threshold may owe an additional 3.8% tax on net investment income. Form 8960 computes that tax when interest, dividends, and other NII apply.',
+      meta: 'IRS.gov · About Form 8960',
+      href: 'https://www.irs.gov/forms-pubs/about-form-8960',
     },
   ],
   // Summary CY investment lines only — never prior-1040
   viewSourceField: 'ordinaryDivs',
   summaryOnlyGoToInput: true,
-  irsGuidanceUrl: 'https://www.irs.gov/forms-pubs/about-form-8960',
-  irsGuidanceLabel: 'IRS guidance: About Form 8960 (NIIT)',
 }
 
 function buildUnderpaymentRiskIssue(live: LiveReturnTotals): IssueCard {
@@ -251,36 +210,17 @@ function buildUnderpaymentRiskIssue(live: LiveReturnTotals): IssueCard {
     ],
     sources: [
       {
-        id: 'up-1099-div',
-        sourceName: '1099-DIV',
-        title: 'Token Financial',
-        description: `Fed. tax withheld ${fmtUsd(FROZEN_RETURN.divWithholding)}`,
-        meta: 'Box 4',
-        tab: '1099-divs',
-        field: 'fedTaxWithheld',
-      },
-      {
-        id: 'up-questionnaire',
-        sourceName: 'Questionnaire',
-        title: 'Estimated payments',
-        description: 'Client: no 1040-ES payments',
-        meta: 'Tax Organizer',
-        tab: 'questionnaire',
-        questionnaireResponseId: 'estimatedPayments',
-      },
-      {
-        id: 'up-2210',
+        id: 'irs-form-2210',
         sourceName: 'Form 2210',
-        title: 'Underpayment of Estimated Tax',
-        description: `Shortfall ${fmtUsd(shortfall)}`,
-        meta: 'Not in packet',
-        placeholder: true,
+        title: 'Underpayment of Estimated Tax by Individuals',
+        description:
+          'Taxpayers generally must pay tax as they earn income through withholding or estimated payments. Form 2210 figures the underpayment penalty when payments fall short of safe-harbor rules.',
+        meta: 'IRS.gov · About Form 2210',
+        href: 'https://www.irs.gov/forms-pubs/about-form-2210',
       },
     ],
     viewSourceTab: '1099-divs',
     viewSourceField: 'fedTaxWithheld',
-    irsGuidanceUrl: 'https://www.irs.gov/forms-pubs/about-form-2210',
-    irsGuidanceLabel: 'IRS guidance: About Form 2210',
   }
 }
 
@@ -320,36 +260,17 @@ function buildNecScheduleCIssue(): IssueCard {
     ],
     sources: [
       {
-        id: 'nec-1099',
-        sourceName: '1099-NEC',
-        title: 'Summit Advisory Partners',
-        description: 'Nonemployee compensation',
-        meta: 'Box 1',
-        tab: '1099-necs',
-        field: 'nec-box1',
-      },
-      {
-        id: 'nec-q',
-        sourceName: 'Questionnaire',
-        title: 'Business expenses',
-        description: 'Client confirmed deductible costs',
-        meta: 'Tax Organizer',
-        tab: 'questionnaire',
-        questionnaireResponseId: 'necExpenses',
-      },
-      {
-        id: 'nec-sched-c',
+        id: 'irs-schedule-c',
         sourceName: 'Schedule C',
-        title: 'Profit or Loss From Business',
-        description: 'Not applied on return',
-        meta: 'Not in packet',
-        placeholder: true,
+        title: 'Profit or Loss From Business (Sole Proprietorship)',
+        description:
+          'Self-employment and nonemployee compensation generally belong on Schedule C. Ordinary and necessary business expenses (software, supplies, travel) reduce net profit and self-employment tax.',
+        meta: 'IRS.gov · About Schedule C',
+        href: 'https://www.irs.gov/forms-pubs/about-schedule-c-form-1040',
       },
     ],
     viewSourceTab: '1099-necs',
     viewSourceField: 'nec-box1',
-    irsGuidanceUrl: 'https://www.irs.gov/forms-pubs/about-schedule-c-form-1040',
-    irsGuidanceLabel: 'IRS guidance: About Schedule C',
   }
 }
 
@@ -388,35 +309,17 @@ const OPT_ITEMIZE_ISSUE: IssueCard = {
   ],
   sources: [
     {
-      id: 'item-std',
-      sourceName: 'Summary',
-      title: 'Standard deduction',
-      description: `${fmtUsd(FROZEN_RETURN.stdDeduction)} · On return`,
-      meta: 'Current year',
-      field: 'stdDeduction',
-    },
-    {
-      id: 'item-q',
-      sourceName: 'Questionnaire',
-      title: 'Mortgage interest',
-      description: 'Client confirmed 2025 payments',
-      meta: 'Tax Organizer',
-      tab: 'questionnaire',
-      questionnaireResponseId: 'mortgage',
-    },
-    {
-      id: 'item-1098',
-      sourceName: 'Form 1098',
-      title: 'Mortgage Interest Statement',
-      description: 'Not uploaded by client',
-      meta: 'Not in packet',
-      placeholder: true,
+      id: 'irs-topic-501',
+      sourceName: 'Tax Topic 501',
+      title: 'Should I itemize?',
+      description:
+        'Compare the standard deduction to itemized amounts such as mortgage interest, state and local taxes, and charitable gifts. If itemized deductions are higher, Schedule A usually produces a lower tax.',
+      meta: 'IRS.gov · Topic 501',
+      href: 'https://www.irs.gov/taxtopics/tc501',
     },
   ],
   viewSourceField: 'stdDeduction',
   summaryOnlyGoToInput: true,
-  irsGuidanceUrl: 'https://www.irs.gov/taxtopics/tc501',
-  irsGuidanceLabel: 'IRS guidance: Should I itemize?',
 }
 
 export const ISSUE_FIELD: Partial<Record<IssueKey, string>> = {
@@ -566,28 +469,6 @@ export default function AgentReportPane({
     onNavigateToTab?.(tab, activeIssue?.viewSourceSubTab, field, qId)
   }
 
-  const handleSourceClick = (source: IssueSourceCard) => {
-    if (source.placeholder) return
-    if (source.tab === 'questionnaire' || source.questionnaireResponseId) {
-      onNavigateToTab?.(
-        'questionnaire',
-        undefined,
-        undefined,
-        source.questionnaireResponseId as QuestionnaireResponseId | undefined,
-      )
-      return
-    }
-    if (source.tab) {
-      onNavigateToTab?.(source.tab as NavigateTab, undefined, source.field)
-      return
-    }
-    if (source.field) {
-      // Summary-only source card
-      onHighlightField?.(source.field)
-      onNavigateToTab?.(undefined, undefined, source.field)
-    }
-  }
-
   return (
     <div className={`${embedded ? styles.panelEmbedded : styles.panel} ${closing && !embedded ? styles.panelClosing : ''}`}>
 
@@ -697,19 +578,6 @@ export default function AgentReportPane({
                           </div>
                           {signOff && <span className={styles.findingSignOff}>{signOff.by} · {signOff.at}</span>}
                           <p className={styles.findingBody}>{issue.summary}</p>
-                          {issue.irsGuidanceUrl && (
-                            <p className={styles.findingIrsLink} onClick={e => e.stopPropagation()}>
-                              <Link
-                                href={issue.irsGuidanceUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                type="standalone"
-                                size="body-4"
-                              >
-                                {issue.irsGuidanceLabel ?? 'Learn more on IRS.gov'}
-                              </Link>
-                            </p>
-                          )}
                           <div className={styles.findingActions} onClick={e => e.stopPropagation()}>
                             <Tooltip text="See the root cause, tax impact, and suggested next steps for this finding">
                               <Button priority="primary" size="small" onClick={() => openDetail(key)}>See details <ChevronRight size="small" /></Button>
@@ -786,8 +654,6 @@ export default function AgentReportPane({
           taxImpact={activeIssue.taxImpact}
           rootCause={activeIssue.rootCause}
           clientResponseNote={activeIssue.clientResponseNote}
-          irsGuidanceUrl={activeIssue.irsGuidanceUrl}
-          irsGuidanceLabel={activeIssue.irsGuidanceLabel}
           tableRows={activeIssue.tableRows}
           tableHeaders={activeIssue.tableHeaders}
           suggestedActions={activeIssue.suggestedActions}
@@ -817,7 +683,6 @@ export default function AgentReportPane({
               questionnaireResponseId: activeIssue.questionnaireResponseId,
             })
           }}
-          onSourceClick={handleSourceClick}
           onMarkReviewed={onMarkReviewed}
           issueNumber={activeOrder.indexOf(activeIssue.issueKey as IssueKey) + 1}
           category={activeIssue.category}

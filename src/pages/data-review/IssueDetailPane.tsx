@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight, CircleCheck, Panel, Document } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
-import { Link } from '@ids-ts/link'
-import '@ids-ts/link/dist/main.css'
 import brandBallsIcon from '../../assets/icons/brand-balls.svg'
 import Tooltip from './Tooltip'
 import styles from '../../styles/data-review/YoYDetailPane.module.css'
@@ -19,22 +17,21 @@ export type IssueAction = {
   questionnaireResponseId?: string
 }
 
-/** Figma Source card (node 32554:101249) — used in See details Sources section */
+/** IRS law / guidance card for See details Sources section */
 export type IssueSourceCard = {
   id: string
-  /** Top chip label, e.g. "1099-DIV" or "Form 8960" */
+  /** Top chip label, e.g. "IRS.gov" or "Form 8960" */
   sourceName: string
-  /** Primary title (payer, form, or summary line) */
+  /** Title of the law / topic */
   title: string
-  /** Amount or short meta line */
+  /** Plain-language description of what the rule covers */
   description?: string
-  /** Footer meta (date, "Not in packet", etc.) */
+  /** Footer meta (e.g. "IRS.gov", "Tax Topic 501") */
   meta?: string
-  /** When true: non-navigating placeholder (form not in prototype) */
+  /** Official IRS URL — opens in a new tab when set */
+  href?: string
+  /** When true: non-navigating placeholder */
   placeholder?: boolean
-  tab?: string
-  field?: string
-  questionnaireResponseId?: string
 }
 
 interface IssueDetailPaneProps {
@@ -53,9 +50,6 @@ interface IssueDetailPaneProps {
   sources?: IssueSourceCard[]
   /** Shown when a diagnostic is based on Tax Organizer Q&A */
   clientResponseNote?: string
-  /** Official IRS page for related tax law / form guidance */
-  irsGuidanceUrl?: string
-  irsGuidanceLabel?: string
   reviewedCount?: number
   totalItems?: number
   closing?: boolean
@@ -89,8 +83,6 @@ export default function IssueDetailPane({
   actions,
   sources,
   clientResponseNote,
-  irsGuidanceUrl,
-  irsGuidanceLabel = 'Learn more on IRS.gov',
   reviewedCount = 0,
   totalItems = 5,
   closing = false,
@@ -204,19 +196,6 @@ export default function IssueDetailPane({
               </span>
             </div>
             <p className={styles.summary}>{summary}</p>
-            {irsGuidanceUrl && (
-              <p className={styles.irsGuidance}>
-                <Link
-                  href={irsGuidanceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  type="standalone"
-                  size="body-3"
-                >
-                  {irsGuidanceLabel}
-                </Link>
-              </p>
-            )}
           </div>
 
           <div className={styles.section}>
@@ -309,6 +288,20 @@ export default function IssueDetailPane({
                       >
                         {content}
                       </div>
+                    )
+                  }
+                      if (source.href) {
+                    return (
+                      <a
+                        key={source.id}
+                        className={cardClass}
+                        href={source.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`Open IRS guidance: ${source.title}`}
+                      >
+                        {content}
+                      </a>
                     )
                   }
                   return (
