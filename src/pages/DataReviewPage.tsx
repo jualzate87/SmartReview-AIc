@@ -1335,6 +1335,9 @@ export default function DataReviewPage() {
               )}
               {activeTopTab === 'prior-1040' && (
                 <PriorYear1040Fields
+                  selectedField={selectedField}
+                  highlightMode={highlightMode}
+                  onFieldSelect={handleFieldSelect}
                   onMarkReviewed={handleMarkReviewed}
                   reviewedFields={reviewedFields}
                   onAddFieldNote={(text, context) => handleAddNote(text, context)}
@@ -1408,7 +1411,7 @@ export default function DataReviewPage() {
                         handleAgentClose(true)
                         setActiveTopTab('w2s')
                       }}
-                      onNavigateToTab={(tab, subTab, field, questionnaireResponseId) => {
+                      onNavigateToTab={(tab, subTab, field, questionnaireResponseId, focus) => {
                         // Summary-only CTAs (e.g. NIIT investment income): highlight CY
                         // Summary without opening Sources on a stale tab like prior-1040.
                         if (!tab && field) {
@@ -1425,15 +1428,24 @@ export default function DataReviewPage() {
                           setQuestionnaireHighlightId(questionnaireResponseId ?? null)
                           setSelectedField(null)
                           setActiveIssueField(null)
+                        } else if (focus === 'preview') {
+                          // Review source: open document preview; light/no Details highlight
+                          setSelectedField(null)
+                          setActiveIssueField(null)
+                          setQuestionnaireHighlightId(null)
+                          setPreviewHeight(58)
                         } else if (field) {
+                          // Go to input: focus/highlight Details field and give it room
                           setSelectedField(field)
                           setActiveIssueField(field)
                           setQuestionnaireHighlightId(null)
+                          setPreviewHeight(22)
                         } else if (!tab) {
                           setSelectedField(null)
                           setActiveIssueField(null)
                         }
                         setFromAgent(true)
+                        ensureSourcePanelVisible()
                         handleAgentClose(true)
                       }}
                       onHighlightField={(field) => {

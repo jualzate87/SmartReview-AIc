@@ -46,6 +46,8 @@ interface AgentReportPaneProps {
     subTab?: 'techCircle',
     field?: string,
     questionnaireResponseId?: QuestionnaireResponseId,
+    /** preview = document source panel; details = focus/highlight Details input */
+    focus?: 'preview' | 'details',
   ) => void
   onHighlightField?: (field: string | null) => void
   fieldValues?: { withholding: number; box12: number; taxableInterest: number; qualifiedDivs: number }
@@ -113,7 +115,8 @@ const CONFIRM_PRIOR_AGI_ISSUE: IssueCard = {
     'Enter the confirmed AGI in the e-file section before submission.',
   ],
   actions: [
-    { type: 'reviewSource', label: 'Review Prior Year 1040', tab: 'prior-1040', field: 'agi' },
+    // reviewSource → document preview; goToInput → Details line 11 / AGI field
+    { type: 'reviewSource', label: 'Review Prior Year 1040', tab: 'prior-1040' },
     { type: 'goToInput', label: 'Go to AGI input', tab: 'prior-1040', field: 'agi' },
   ],
   sources: [
@@ -199,8 +202,9 @@ function buildUnderpaymentRiskIssue(live: LiveReturnTotals): IssueCard {
       'Confirm the Tax Organizer "no ES payments" answer matches her records.',
     ],
     actions: [
+      // reviewSource → document preview; goToInput → Details withholding field
+      { type: 'reviewSource', label: 'Review 1099-DIV', tab: '1099-divs' },
       { type: 'goToInput', label: 'Go to withholding', tab: '1099-divs', field: 'fedTaxWithheld' },
-      { type: 'reviewSource', label: 'Review 1099-DIV', tab: '1099-divs', field: 'fedTaxWithheld' },
       { type: 'viewClientResponse', label: 'View client response', questionnaireResponseId: 'estimatedPayments' },
       {
         type: 'openForm',
@@ -250,7 +254,9 @@ function buildNecScheduleCIssue(): IssueCard {
       'Review the Tax Organizer NEC expenses response.',
     ],
     actions: [
-      { type: 'reviewSource', label: 'Review 1099-NEC', tab: '1099-necs', field: 'nec-box1' },
+      // reviewSource → document preview; goToInput → Details Box 1 income field
+      { type: 'reviewSource', label: 'Review 1099-NEC', tab: '1099-necs' },
+      { type: 'goToInput', label: 'Go to NEC income', tab: '1099-necs', field: 'nec-box1' },
       { type: 'viewClientResponse', label: 'View client response', questionnaireResponseId: 'necExpenses' },
       {
         type: 'openForm',
@@ -442,17 +448,22 @@ export default function AgentReportPane({
     field?: string
     questionnaireResponseId?: QuestionnaireResponseId
     summaryOnly?: boolean
+    focus?: 'preview' | 'details'
   }) => {
     const tab = (action?.tab as NavigateTab | undefined) ?? fallback?.tab
     const field = action?.field ?? fallback?.field
     const qId = (action?.questionnaireResponseId as QuestionnaireResponseId | undefined)
       ?? fallback?.questionnaireResponseId
     const summaryOnly = fallback?.summaryOnly && !tab
+    // reviewSource → document preview; goToInput → Details field focus
+    const focus: 'preview' | 'details' =
+      fallback?.focus
+      ?? (action?.type === 'reviewSource' ? 'preview' : 'details')
 
     if (summaryOnly && field) {
       // Highlight Summary only — never switch source tabs (avoids sticky prior-1040)
       onHighlightField?.(field)
-      onNavigateToTab?.(undefined, undefined, field)
+      onNavigateToTab?.(undefined, undefined, field, undefined, 'details')
       return
     }
 
@@ -466,7 +477,9 @@ export default function AgentReportPane({
       return
     }
 
-    onNavigateToTab?.(tab, activeIssue?.viewSourceSubTab, field, qId)
+    // Preview CTAs open the source doc; Details CTAs require a field target
+    const navField = focus === 'preview' ? undefined : field
+    onNavigateToTab?.(tab, activeIssue?.viewSourceSubTab, navField, qId, focus)
   }
 
   return (
@@ -669,12 +682,15 @@ export default function AgentReportPane({
               tab: activeIssue.summaryOnlyGoToInput ? undefined : activeIssue.viewSourceTab,
               field: action?.field ?? activeIssue.viewSourceField,
               summaryOnly: activeIssue.summaryOnlyGoToInput,
+              focus: 'details',
             })
           }}
           onViewSource={(action) => {
             navigateFromAction(action, {
               tab: activeIssue.viewSourceTab,
-              field: action?.field ?? activeIssue.viewSourceField,
+              // Preview-first: do not pin a Details field unless the action asks for one
+              field: action?.field,
+              focus: 'preview',
             })
           }}
           onViewClientResponse={(action) => {
