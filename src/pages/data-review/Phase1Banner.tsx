@@ -55,7 +55,7 @@ export default function Phase1Banner({
             </>
           ) : (
             <>
-              <span className={styles.title}>Step 1 — Import accuracy</span>
+              <span className={styles.title}>Step 1: Import accuracy</span>
               <span className={styles.subtitle}>
                 Verify the flagged fields against each source document, then continue to AI diagnostics.
               </span>
@@ -87,7 +87,7 @@ export default function Phase1Banner({
           </Button>
         ) : complete && !onContinue ? (
           <span className={styles.lockNote}>
-            Phase 1 complete — continue to AI diagnostics in the main window.
+            Phase 1 complete. Continue to AI diagnostics in the main window.
           </span>
         ) : importsStarted || needsDocReview ? (
           <div className={styles.lockedWrap}>

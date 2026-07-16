@@ -50,11 +50,11 @@ export default function TaxControlUnlockModal({ open, onClose, onCheckTotals }: 
   return (
     <Modal open={open} onClose={onClose} size="medium" dismissible>
       <ModalHeader alignment="center" transparentBackground onClose={onClose}>
-        <ModalTitle title="Next… Let's lock in your tax control sheet" />
+        <ModalTitle title="Review your tax control sheet" />
       </ModalHeader>
       <ModalContent alignment="left">
         <p className={styles.controlModalBody}>
-          You&apos;ve cleared the import flags. Open the tax control sheet to compare summary totals against your source documents — a quick check before you dig into the details.
+          You&apos;ve cleared the import flags. Open the tax control sheet to compare summary totals against your source documents. It&apos;s a quick check before you dig into the details.
         </p>
       </ModalContent>
       <ModalActions alignment="right">

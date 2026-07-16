@@ -125,7 +125,7 @@ const CONFIRM_PRIOR_AGI_ISSUE: IssueCard = {
       sourceName: 'IRS.gov',
       title: 'Validating your electronically filed tax return',
       description:
-        'The IRS authenticates e-filed returns with prior-year AGI (or an Identity Protection PIN). A mismatch is a common rejection reason — confirm the signed 2024 AGI before submission.',
+        'The IRS authenticates e-filed returns with prior-year AGI (or an Identity Protection PIN). A mismatch is a common rejection reason. Confirm the signed 2024 AGI before submission.',
       meta: 'E-file authentication',
       href: 'https://www.irs.gov/individuals/validating-your-electronically-filed-tax-return',
     },

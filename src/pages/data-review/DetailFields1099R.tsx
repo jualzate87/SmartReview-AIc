@@ -267,7 +267,7 @@ export default function DetailFields1099R({
         ) : isReviewed ? (
           (() => {
             const meta = reviewedFields?.get(resolveKey)
-            const tip = meta ? `Reviewed by ${meta.by} · ${meta.at} — Click to unmark` : 'Click to unmark'
+            const tip = meta ? `Reviewed by ${meta.by} · ${meta.at}. Click to unmark` : 'Click to unmark'
             return (
               <Tooltip text={tip} placement="top">
                 <button className={styles.markCorrectBtn} style={{ color: '#108000' }} onClick={e => { e.stopPropagation(); onMarkReviewed?.(resolveKey) }}><CircleCheck size="small" /></button>

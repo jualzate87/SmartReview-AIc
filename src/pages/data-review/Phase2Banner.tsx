@@ -21,7 +21,7 @@ export default function Phase2Banner({ reviewed, total, complete }: Phase2Banner
             </>
           ) : (
             <>
-              <span className={styles.title}>Step 2 — AI diagnostics</span>
+              <span className={styles.title}>Step 2: AI diagnostics</span>
               <span className={styles.subtitle}>
                 Filing stoppers, compliance checks, and opportunities for this return.
               </span>

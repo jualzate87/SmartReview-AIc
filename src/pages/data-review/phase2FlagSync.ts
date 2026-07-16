@@ -73,7 +73,7 @@ export const DIAGNOSTIC_DISMISS_RULES: Record<Phase2IssueKey, DiagnosticDismissR
   niitForm8960: {
     dismissWhenReviewed: [],
     dismissWhenAmounts: ({ live }) => live.totalIncome < NIIT_AGI_THRESHOLD_SINGLE,
-    notes: 'Form 8960 — dismissed if AGI falls below the $200k single-filer NIIT threshold.',
+    notes: 'Form 8960: dismissed if AGI falls below the $200k single-filer NIIT threshold.',
   },
   underpaymentRisk: {
     dismissWhenReviewed: ['fedTaxWithheld'],
@@ -82,7 +82,7 @@ export const DIAGNOSTIC_DISMISS_RULES: Record<Phase2IssueKey, DiagnosticDismissR
       amounts.divWithholding >= SOURCE_AMOUNTS.divWithholding ||
       amounts.rWithholding >= SOURCE_AMOUNTS.rWithholding,
     notes:
-      'Merged WH + no-ES underpayment card — dismissed when withholding is restored or meets safe harbor.',
+      'Merged WH + no-ES underpayment card: dismissed when withholding is restored or meets safe harbor.',
   },
   necScheduleC: {
     dismissWhenReviewed: [],

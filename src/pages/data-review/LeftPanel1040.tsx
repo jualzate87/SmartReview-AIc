@@ -926,7 +926,7 @@ export default function LeftPanel1040({
                       const flagTooltipPrimary = isFlagged
                         ? (flagNote
                           ? `Flagged: ${flagNote}`
-                          : 'Flagged for follow-up — click to remove flag')
+                          : 'Flagged for follow-up. Click to remove flag')
                         : (hasImportAttention
                           ? 'Flag this row for follow-up (import issues still need review)'
                           : 'Flag this row for follow-up')

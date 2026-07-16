@@ -50,11 +50,11 @@ export default function DocReviewTransitionModal({
   return (
     <Modal open={open} onClose={onClose} size="medium" dismissible>
       <ModalHeader alignment="center" transparentBackground onClose={onClose}>
-        <ModalTitle title="Flags resolved — finish document review" />
+        <ModalTitle title="Flags resolved. Finish document review" />
       </ModalHeader>
       <ModalContent alignment="left">
         <p className={styles.controlModalBody}>
-          No open flags remain. Some documents never had flags — confirm each source document
+          No open flags remain. Some documents never had flags. Confirm each source document
           (and questionnaire) before continuing.
         </p>
       </ModalContent>

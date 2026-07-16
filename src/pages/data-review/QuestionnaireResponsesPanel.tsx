@@ -35,7 +35,7 @@ export default function QuestionnaireResponsesPanel({
         <div className={styles.headerText}>
           <h2 className={styles.title}>Questionnaire</h2>
           <p className={styles.subtitle}>
-            Jessica Drake&apos;s Tax Organizer responses — read-only for this review.
+            Jessica Drake&apos;s Tax Organizer responses (read-only for this review).
           </p>
         </div>
         {isVerified ? (
