@@ -1,5 +1,5 @@
 import { cloneElement, isValidElement, useRef, type ReactElement, type ReactNode } from 'react'
-import { GuidanceTooltip } from '@ids-ts/guidance-tooltip'
+import GuidanceTooltip from '@ids-ts/guidance-tooltip'
 import '@ids-ts/guidance-tooltip/dist/main.css'
 import styles from '../../styles/data-review/CoachTip.module.css'
 
