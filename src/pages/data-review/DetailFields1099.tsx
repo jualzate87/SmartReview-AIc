@@ -59,7 +59,8 @@ const PAYER_DATA: Record<IntPayer, { ein: string; name: string; street: string; 
 }
 
 const RECIPIENT_DATA = {
-  ssn: 'XXX-XX-4321',
+  // Full SSN visible during import accuracy review so preparers can verify against source
+  ssn: '987-65-4321',
   ...CLIENT_ADDRESS,
 }
 
@@ -504,9 +505,56 @@ export default function DetailFields1099({
         {/* ── State Tax Information ── */}
         <div className={styles.sectionHeader}>State Tax Information</div>
 
-        {renderReadOnlyRow(`stateTaxId-${activePayer}`, "(13) State / Payer's state ID number", form.box13_stateTaxId)}
-        {renderReadOnlyRow(`stateTax-${activePayer}`, '(14) State income tax withheld', form.box14_stateTax)}
-        {renderReadOnlyRow(`stateIncome-${activePayer}`, '(15) State income', form.box15_stateIncome)}
+        {activePayer === 'unwaverIngFinancial' ? (
+          <>
+            {renderReadOnlyRow(
+              `stateTaxId-${activePayer}`,
+              "(13) State / Payer's state ID number",
+              amounts?.intStateIdUnwavering ?? form.box13_stateTaxId,
+            )}
+            {renderReadOnlyRow(`stateTax-${activePayer}`, '(14) State income tax withheld', form.box14_stateTax)}
+            {renderReadOnlyRow(
+              `stateIncome-${activePayer}`,
+              '(15) State income',
+              amounts?.intStateIncomeUnwavering
+                ? amounts.intStateIncomeUnwavering.toLocaleString()
+                : (amounts?.intStateIdUnwavering ? '' : form.box15_stateIncome),
+            )}
+            {(amounts?.intStateIdUnwavering || (amounts?.intStateIncomeUnwavering ?? 0) > 0) &&
+              !reviewedFields?.has('intState-unwavering') && (
+              <div style={{ padding: '4px 20px 12px', display: 'flex', gap: 8 }}>
+                <button
+                  type="button"
+                  className={styles.saveBtn}
+                  onClick={() => {
+                    onAmountChange?.(
+                      { intStateIdUnwavering: '', intStateIncomeUnwavering: 0 },
+                      'intState-unwavering',
+                    )
+                    onMarkReviewed?.('intState-unwavering')
+                  }}
+                >
+                  Clear phantom state data
+                </button>
+                <Tooltip text="Confirm blank / looks correct" placement="top">
+                  <button
+                    type="button"
+                    className={styles.markCorrectBtn}
+                    onClick={() => onMarkReviewed?.('intState-unwavering')}
+                  >
+                    <CircleCheck size="small" />
+                  </button>
+                </Tooltip>
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            {renderReadOnlyRow(`stateTaxId-${activePayer}`, "(13) State / Payer's state ID number", form.box13_stateTaxId)}
+            {renderReadOnlyRow(`stateTax-${activePayer}`, '(14) State income tax withheld', form.box14_stateTax)}
+            {renderReadOnlyRow(`stateIncome-${activePayer}`, '(15) State income', form.box15_stateIncome)}
+          </>
+        )}
 
       </div>
     </div>

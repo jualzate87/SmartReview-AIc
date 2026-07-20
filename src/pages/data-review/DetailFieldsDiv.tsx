@@ -386,7 +386,16 @@ export default function DetailFieldsDiv({
             </Tooltip>
           ) : (
             <div className={styles.fieldActions}>
-              <Tooltip text="Mark as correct" placement="top"><button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.(reviewedKey) }}><CircleCheck size="small" /></button></Tooltip>
+              <Tooltip
+                text={
+                  isFlagged && !currentVal
+                    ? 'Confirm blank'
+                    : 'Mark as correct'
+                }
+                placement="top"
+              >
+                <button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.(reviewedKey) }}><CircleCheck size="small" /></button>
+              </Tooltip>
               {renderCommentBtn(fieldKey, label)}
             </div>
           )}

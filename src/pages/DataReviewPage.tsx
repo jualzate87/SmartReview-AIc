@@ -36,6 +36,8 @@ import PeelTab from './data-review/PeelTab'
 import PriorYear1040Fields from './data-review/PriorYear1040Fields'
 import QuestionnaireResponsesPanel from './data-review/QuestionnaireResponsesPanel'
 import type { QuestionnaireResponseId } from './data-review/questionnaireData'
+import type { OutputFormId } from './data-review/outputForms'
+import { resolveOutputFormFromAction } from './data-review/outputForms'
 import AgentReportPane from './data-review/AgentReportPane'
 import AgentLoadingPane from './data-review/AgentLoadingPane'
 import WelcomePane from './data-review/WelcomePane'
@@ -172,6 +174,7 @@ export default function DataReviewPage() {
   const [phase, setPhase] = useState<ReviewPhase>('welcome')
   // Phase 1: Summary visible by default; sources hidden until Start reviewing imports
   const [show1040, setShow1040] = useState(true)
+  const [outputFormId, setOutputFormId] = useState<OutputFormId>('summary')
   const [importsStarted, setImportsStarted] = useState(false)
   /** Explicit left-panel px width during Summary collapse/expand (null = natural flex). */
   const [leftAnimWidth, setLeftAnimWidth] = useState<number | null>(null)
@@ -272,7 +275,8 @@ export default function DataReviewPage() {
 
   const startReviewingImports = useCallback(() => {
     setImportsStarted(true)
-    setShow1040(true)
+    // Auto-collapse Summary so source + input fill the viewport (research: Hide Summary confusion)
+    setShow1040(false)
     const body = bodyRef.current
     const bodyW = body
       ? (body.clientWidth || body.getBoundingClientRect().width)
@@ -879,6 +883,8 @@ export default function DataReviewPage() {
             liveTotals={liveTotals}
             liveAmounts={amounts}
             editedFields={editedFields}
+            outputFormId={outputFormId}
+            onOutputFormChange={setOutputFormId}
             onAddFieldNote={(text, context) => handleAddNote(text, context)}
             onNavigateToSourceDoc={handleNavigateToSourceDoc}
             onNavigateSource={handleNavigateSource}
@@ -983,7 +989,7 @@ export default function DataReviewPage() {
                     label="Detach"
                     labelAlignment="right"
                     size="small"
-                    aria-label="Detach"
+                    aria-label="Detach — open source documents on another screen"
                     onClick={() => {
                       setPoppedOut(true)
                       const popoutWindow = window.open(
@@ -1219,6 +1225,25 @@ export default function DataReviewPage() {
                     markEdited(kind === 'ssn' ? 'ssn-techCircle' : 'ein-techCircle')
                   }}
                   identityValues={{ ssn: amounts.employeeSsn, ein: amounts.employerEin }}
+                  box13={{
+                    retirementPlan: amounts.box13RetirementPlan,
+                    statutoryEmployee: amounts.box13StatutoryEmployee,
+                    thirdPartySickPay: amounts.box13ThirdPartySickPay,
+                  }}
+                  onBox13Change={patch => {
+                    updateAmounts({
+                      ...(patch.retirementPlan !== undefined
+                        ? { box13RetirementPlan: patch.retirementPlan }
+                        : {}),
+                      ...(patch.statutoryEmployee !== undefined
+                        ? { box13StatutoryEmployee: patch.statutoryEmployee }
+                        : {}),
+                      ...(patch.thirdPartySickPay !== undefined
+                        ? { box13ThirdPartySickPay: patch.thirdPartySickPay }
+                        : {}),
+                    })
+                    markEdited('box13')
+                  }}
                   onMarkReviewed={handleMarkReviewed}
                   onMarkReviewedBulk={handleMarkReviewedBulk}
                   reviewedFields={reviewedFields}
@@ -1231,6 +1256,7 @@ export default function DataReviewPage() {
                     ssn: PHASE1_FLAG_MESSAGES.w2.ssn,
                     wages: PHASE1_FLAG_MESSAGES.w2.wages,
                     box12: PHASE1_FLAG_MESSAGES.w2.box12,
+                    box13: PHASE1_FLAG_MESSAGES.w2.box13,
                     ein: PHASE1_FLAG_MESSAGES.w2.ein,
                   }}
                 />
@@ -1290,7 +1316,11 @@ export default function DataReviewPage() {
                   verifiedDocs={verifiedDocs}
                   verifiedDocsMeta={verifiedDocsMeta}
                   onVerifyDoc={toggleVerifiedDoc}
-                  flaggedFields={{ taxableInterest: PHASE1_FLAG_MESSAGES.int.taxableInterest }}
+                  flaggedFields={{
+                    taxableInterest: PHASE1_FLAG_MESSAGES.int.taxableInterest,
+                    'stateTaxId-unwaverIngFinancial': PHASE1_FLAG_MESSAGES.int.phantomState,
+                    'stateIncome-unwaverIngFinancial': PHASE1_FLAG_MESSAGES.int.phantomState,
+                  }}
                   onAddFieldNote={(text, context) => handleAddNote(text, context)}
                 />
               )}
@@ -1455,6 +1485,13 @@ export default function DataReviewPage() {
                       fieldValues={{ ...fieldValues, withholding: totalWithholding }}
                       liveTotals={liveTotals}
                       amounts={amounts}
+                      onOpenForm={(label) => {
+                        const formId = resolveOutputFormFromAction(label)
+                        if (formId) {
+                          setOutputFormId(formId)
+                          setShow1040(true)
+                        }
+                      }}
                       onFieldValueChange={(key, value) => {
                         if (key === 'withholding' && typeof value === 'number') {
                           updateField('withholding', { techCircle: value })

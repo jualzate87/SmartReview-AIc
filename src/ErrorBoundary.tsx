@@ -21,6 +21,23 @@ export default class ErrorBoundary extends Component<Props, State> {
     console.error('Prototype render error:', error, info.componentStack)
   }
 
+  handleRetry = () => {
+    this.setState({ hasError: false, error: null })
+    // Clear stale review session so partial amount shapes can't keep crashing
+    try {
+      const keys: string[] = []
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const k = sessionStorage.key(i)
+        if (k && k.startsWith('protoc-data-review-state')) keys.push(k)
+      }
+      keys.forEach(k => sessionStorage.removeItem(k))
+    } catch {
+      /* ignore */
+    }
+    window.location.hash = '#/data-review'
+    window.location.reload()
+  }
+
   render() {
     if (this.state.hasError) {
       return (
@@ -39,7 +56,7 @@ export default class ErrorBoundary extends Component<Props, State> {
               {this.state.error.message}
             </div>
           )}
-          <button onClick={() => this.setState({ hasError: false, error: null })}>
+          <button type="button" onClick={this.handleRetry}>
             Try again
           </button>
         </div>

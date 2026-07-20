@@ -1,25 +1,27 @@
 /**
- * Phase 2 diagnostic dismiss rules — Critical / Compliance / Opportunities.
+ * Phase 2 diagnostic dismiss rules — Filing stoppers / Compliance / Opportunities.
  *
- * Quality over count: only high-value filing / compliance / opportunity cards.
- * Pure YoY curiosity cards are removed from the catalog.
+ * Outstanding input↔source mismatches from Phase 1 surface here when values
+ * were marked correct without fixing (or silent import gaps remain).
+ * Pure YoY curiosity cards are not in this catalog.
  */
 import type { LiveAmounts, LiveReturnTotals } from '../../data/liveReturn'
+import { TOKEN_QUALIFIED_DIVS_RETURN } from '../../data/frozenReturn'
 import { PHASE1_FLAG_KEYS, isPhase1FlagResolved, type Phase1FlagKey } from './phase1FieldSync'
 
 const PHASE1_FLAG_KEY_SET = new Set<string>(PHASE1_FLAG_KEYS)
 
 /** Phase 2 issue keys — must match AgentReportPane GUIDED_ORDER. */
 export type Phase2IssueKey =
-  | 'confirmPriorAgi'
+  | 'importMismatches'
   | 'niitForm8960'
   | 'underpaymentRisk'
   | 'necScheduleC'
   | 'optItemize'
 
-/** Canonical Phase 2 order — Critical → Compliance → Opportunities. */
+/** Canonical Phase 2 order — Filing stoppers → Compliance → Opportunities. */
 export const PHASE2_DIAGNOSTIC_ORDER: readonly Phase2IssueKey[] = [
-  'confirmPriorAgi',
+  'importMismatches',
   'niitForm8960',
   'underpaymentRisk',
   'necScheduleC',
@@ -37,6 +39,9 @@ export const SOURCE_AMOUNTS = {
   wages: 148_940,
   divWithholding: 26_363,
   rWithholding: 30_000,
+  taxablePension: 150_000,
+  /** Token 1099-DIV Box 1b on the PDF (return seeds silent error at TOKEN_QUALIFIED_DIVS_RETURN) */
+  qualifiedDivsToken: 187_500,
   priorOrdinaryDivs: 219_850,
 } as const
 
@@ -52,23 +57,121 @@ export type DiagnosticSyncContext = {
 export type DiagnosticDismissRule = {
   dismissWhenReviewed: ReadonlyArray<Phase1FlagKey | string>
   dismissWhenAmounts?: (ctx: DiagnosticSyncContext) => boolean
+  /** When true, diagnostic is ACTIVE only while the amount condition holds (inverse of dismiss). */
+  activeWhenAmounts?: (ctx: DiagnosticSyncContext) => boolean
   notes?: string
 }
 
+/** Remaining input↔source gaps after Phase 1 (mark-correct without fixing, silent errors, phantom CO). */
+export function getOutstandingImportMismatches(amounts: LiveAmounts): Array<{
+  id: string
+  label: string
+  returnValue: string
+  sourceValue: string
+  field: string
+  tab: string
+}> {
+  const rows: Array<{
+    id: string
+    label: string
+    returnValue: string
+    sourceValue: string
+    field: string
+    tab: string
+  }> = []
+
+  if (amounts.wages !== SOURCE_AMOUNTS.wages) {
+    rows.push({
+      id: 'wages',
+      label: 'W-2 Box 1 wages (Tech Circle)',
+      returnValue: `$${amounts.wages.toLocaleString()}`,
+      sourceValue: `$${SOURCE_AMOUNTS.wages.toLocaleString()}`,
+      field: 'wages',
+      tab: 'w2s',
+    })
+  }
+  if (amounts.qualifiedDivsToken === TOKEN_QUALIFIED_DIVS_RETURN
+    || amounts.qualifiedDivsToken !== SOURCE_AMOUNTS.qualifiedDivsToken) {
+    if (amounts.qualifiedDivsToken !== SOURCE_AMOUNTS.qualifiedDivsToken) {
+      rows.push({
+        id: 'qualifiedDivs',
+        label: '1099-DIV Box 1b qualified dividends (Token)',
+        returnValue: `$${amounts.qualifiedDivsToken.toLocaleString()}`,
+        sourceValue: `$${SOURCE_AMOUNTS.qualifiedDivsToken.toLocaleString()}`,
+        field: 'qualifiedDivs',
+        tab: '1099-divs',
+      })
+    }
+  }
+  if (amounts.divWithholding !== SOURCE_AMOUNTS.divWithholding) {
+    rows.push({
+      id: 'divWithholding',
+      label: '1099-DIV Box 4 federal withholding (Token)',
+      returnValue: `$${amounts.divWithholding.toLocaleString()}`,
+      sourceValue: `$${SOURCE_AMOUNTS.divWithholding.toLocaleString()}`,
+      field: 'fedTaxWithheld',
+      tab: '1099-divs',
+    })
+  }
+  if (amounts.taxablePension !== SOURCE_AMOUNTS.taxablePension) {
+    rows.push({
+      id: 'taxablePension',
+      label: '1099-R Box 2a taxable amount (Meridian)',
+      returnValue: `$${amounts.taxablePension.toLocaleString()}`,
+      sourceValue: `$${SOURCE_AMOUNTS.taxablePension.toLocaleString()}`,
+      field: 'r-taxableAmt',
+      tab: '1099-rs',
+    })
+  }
+  if (amounts.rWithholding < SOURCE_AMOUNTS.rWithholding) {
+    rows.push({
+      id: 'rWithholding',
+      label: '1099-R Box 4 federal withholding (Meridian)',
+      returnValue: `$${amounts.rWithholding.toLocaleString()}`,
+      sourceValue: `$${SOURCE_AMOUNTS.rWithholding.toLocaleString()}`,
+      field: 'withholding1099',
+      tab: '1099-rs',
+    })
+  }
+  if (amounts.intStateIncomeUnwavering > 0 || amounts.intStateIdUnwavering.trim()) {
+    rows.push({
+      id: 'phantomCO',
+      label: '1099-INT state info (Unwavering) — not on source',
+      returnValue: amounts.intStateIdUnwavering || `$${amounts.intStateIncomeUnwavering.toLocaleString()}`,
+      sourceValue: 'Blank (TX resident)',
+      field: 'stateTaxId-unwaverIngFinancial',
+      tab: '1099-ints',
+    })
+  }
+  if (!amounts.box13RetirementPlan) {
+    rows.push({
+      id: 'box13',
+      label: 'W-2 Box 13 Retirement plan',
+      returnValue: 'Unchecked',
+      sourceValue: 'Should be checked (401(k))',
+      field: 'box13',
+      tab: 'w2s',
+    })
+  }
+
+  return rows
+}
+
 /**
- * | Diagnostic        | Dismiss when reviewed   | Dismiss when amounts        |
- * |-------------------|-------------------------|-----------------------------|
- * | confirmPriorAgi   | — (study-static)        | —                           |
- * | niitForm8960      | —                       | AGI < $200k                 |
- * | underpaymentRisk  | fedTaxWithheld          | total WH ≥ safe harbor      |
- * | necScheduleC      | — (study-static)        | —                           |
- * | optItemize        | — (study-static)        | —                           |
+ * | Diagnostic        | Active / dismiss rules                                      |
+ * |-------------------|-------------------------------------------------------------|
+ * | importMismatches  | Active while any input↔source gap remains                   |
+ * | niitForm8960      | Dismiss when AGI < $200k                                    |
+ * | underpaymentRisk  | Dismiss when WH restored or ≥ safe harbor                   |
+ * | necScheduleC      | Study-static until marked reviewed                          |
+ * | optItemize        | Study-static until marked reviewed                          |
  */
 export const DIAGNOSTIC_DISMISS_RULES: Record<Phase2IssueKey, DiagnosticDismissRule> = {
-  confirmPriorAgi: {
+  importMismatches: {
     dismissWhenReviewed: [],
+    activeWhenAmounts: ({ amounts }) => getOutstandingImportMismatches(amounts).length > 0,
     notes:
-      'Study-static verify step: prior-year AGI confirmation has no editable invalidation path; stays until marked reviewed.',
+      'Surfaces remaining input↔source mismatches (including silent errors and phantom CO) after Phase 1.',
   },
   niitForm8960: {
     dismissWhenReviewed: [],
@@ -82,7 +185,7 @@ export const DIAGNOSTIC_DISMISS_RULES: Record<Phase2IssueKey, DiagnosticDismissR
       amounts.divWithholding >= SOURCE_AMOUNTS.divWithholding ||
       amounts.rWithholding >= SOURCE_AMOUNTS.rWithholding,
     notes:
-      'Merged WH + no-ES underpayment card: dismissed when withholding is restored or meets safe harbor.',
+      'Underpayment card: dismissed when withholding is restored or meets safe harbor.',
   },
   necScheduleC: {
     dismissWhenReviewed: [],
@@ -120,6 +223,11 @@ export function isDiagnosticAutoDismissed(
 ): boolean {
   const rule = DIAGNOSTIC_DISMISS_RULES[issueKey]
   if (!rule) return false
+
+  // activeWhenAmounts: diagnostic only appears while condition is true
+  if (rule.activeWhenAmounts) {
+    return !rule.activeWhenAmounts(ctx)
+  }
 
   for (const flagKey of rule.dismissWhenReviewed) {
     if (PHASE1_FLAG_KEY_SET.has(flagKey)) {

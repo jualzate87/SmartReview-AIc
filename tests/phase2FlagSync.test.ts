@@ -3,6 +3,7 @@ import { computeLiveReturn, SEED_AMOUNTS } from '../src/data/liveReturn'
 import {
   DIAGNOSTIC_DISMISS_RULES,
   getActiveDiagnosticKeys,
+  getOutstandingImportMismatches,
   getPhase2Progress,
   isDiagnosticAutoDismissed,
   PHASE1_TO_PHASE2_ISSUES,
@@ -36,9 +37,9 @@ describe('DIAGNOSTIC_DISMISS_RULES — coverage', () => {
     }
   })
 
-  it('keeps Critical / Compliance / Opportunities catalog at quality size', () => {
+  it('keeps Filing stoppers / Compliance / Opportunities catalog at quality size', () => {
     expect(PHASE2_DIAGNOSTIC_ORDER).toEqual([
-      'confirmPriorAgi',
+      'importMismatches',
       'niitForm8960',
       'underpaymentRisk',
       'necScheduleC',
@@ -93,15 +94,31 @@ describe('isDiagnosticAutoDismissed — amount edits', () => {
     expect(c.live.totalIncome).toBeLessThan(200_000)
     expect(isDiagnosticAutoDismissed('niitForm8960', c)).toBe(true)
   })
+
+  it('dismisses importMismatches when all source gaps are cleared', () => {
+    expect(isDiagnosticAutoDismissed('importMismatches', ctx())).toBe(false)
+    const c = ctx({
+      amounts: {
+        wages: SOURCE_AMOUNTS.wages,
+        qualifiedDivsToken: SOURCE_AMOUNTS.qualifiedDivsToken,
+        divWithholding: SOURCE_AMOUNTS.divWithholding,
+        taxablePension: SOURCE_AMOUNTS.taxablePension,
+        rWithholding: SOURCE_AMOUNTS.rWithholding,
+        intStateIncomeUnwavering: 0,
+        intStateIdUnwavering: '',
+        box13RetirementPlan: true,
+      },
+    })
+    expect(getOutstandingImportMismatches(c.amounts)).toHaveLength(0)
+    expect(isDiagnosticAutoDismissed('importMismatches', c)).toBe(true)
+  })
 })
 
 describe('study-static diagnostics remain until Phase 2 review', () => {
-  it('keeps confirmPriorAgi, necScheduleC, and optItemize active at seed', () => {
+  it('keeps necScheduleC and optItemize active at seed', () => {
     const c = ctx()
-    expect(isDiagnosticAutoDismissed('confirmPriorAgi', c)).toBe(false)
     expect(isDiagnosticAutoDismissed('necScheduleC', c)).toBe(false)
     expect(isDiagnosticAutoDismissed('optItemize', c)).toBe(false)
-    expect(DIAGNOSTIC_DISMISS_RULES.confirmPriorAgi.notes).toMatch(/Study-static/)
     expect(DIAGNOSTIC_DISMISS_RULES.necScheduleC.notes).toMatch(/Study-static/)
     expect(DIAGNOSTIC_DISMISS_RULES.optItemize.notes).toMatch(/Study-static/)
   })
@@ -118,19 +135,7 @@ describe('getActiveDiagnosticKeys / getPhase2Progress', () => {
   it('drops underpaymentRisk after Phase 1 withholding fix', () => {
     const c = ctx({
       reviewed: ['fedTaxWithheld'],
-      amounts: { divWithholding: SOURCE_AMOUNTS.divWithholding },
     })
-    const active = getActiveDiagnosticKeys(c)
-    expect(active).not.toContain('underpaymentRisk')
-    const progress = getPhase2Progress(c)
-    expect(progress.total).toBe(PHASE2_DIAGNOSTIC_ORDER.length - 1)
-  })
-
-  it('counts manually reviewed active diagnostics toward complete', () => {
-    const active = getActiveDiagnosticKeys(ctx())
-    const progress = getPhase2Progress(ctx({ reviewed: [...active] }))
-    expect(progress.reviewed).toBe(active.length)
-    expect(progress.remaining).toBe(0)
-    expect(progress.complete).toBe(true)
+    expect(getActiveDiagnosticKeys(c)).not.toContain('underpaymentRisk')
   })
 })

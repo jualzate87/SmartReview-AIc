@@ -8,11 +8,13 @@ export const PHASE1_FLAG_KEYS = [
   'ssn-techCircle',
   'wages-techCircle',
   'box12',
+  'box13',
   'ein-techCircle',
   'divCollectibles',
   'divNonDiv',
   'fedTaxWithheld',
   'taxableInterest',
+  'intState-unwavering',
   'grossDistrib-meridian',
   'ordinaryDivs-northmark',
 ] as const
@@ -33,12 +35,14 @@ export const PHASE1_VERIFY_QUEUE: Phase1VerifyItem[] = [
   { flagKey: 'ssn-techCircle',           field: 'ssn',             tab: 'w2s' },
   { flagKey: 'wages-techCircle',         field: 'wages',           tab: 'w2s' },
   { flagKey: 'box12',                    field: 'box12',           tab: 'w2s' },
+  { flagKey: 'box13',                    field: 'box13',           tab: 'w2s' },
   { flagKey: 'ein-techCircle',           field: 'ein',             tab: 'w2s' },
   { flagKey: 'divCollectibles',          field: 'divCollectibles', tab: '1099-divs', divPayer: 'tokenFinancial' },
   { flagKey: 'divNonDiv',                field: 'divNonDiv',       tab: '1099-divs', divPayer: 'tokenFinancial' },
   { flagKey: 'fedTaxWithheld',           field: 'fedTaxWithheld',  tab: '1099-divs', divPayer: 'tokenFinancial' },
   { flagKey: 'ordinaryDivs-northmark',   field: 'ordinaryDivs',    tab: '1099-divs', divPayer: 'northmarkIndex' },
   { flagKey: 'taxableInterest',          field: 'taxableInterest', tab: '1099-ints', intPayer: 'unwaverIngFinancial' },
+  { flagKey: 'intState-unwavering',      field: 'stateTaxId-unwaverIngFinancial', tab: '1099-ints', intPayer: 'unwaverIngFinancial' },
   { flagKey: 'grossDistrib-meridian',    field: 'grossDistrib',    tab: '1099-rs' },
 ]
 
@@ -177,7 +181,7 @@ export function navigationForDetailField(field: string): Pick<Phase1VerifyItem, 
 
 /** Phase 1 import flags per W-2 employer — only Tech Circle carries flags. */
 const W2_PAYER_FLAG_KEYS: Record<W2Employer, Phase1FlagKey[]> = {
-  techCircle: ['ssn-techCircle', 'wages-techCircle', 'box12', 'ein-techCircle'],
+  techCircle: ['ssn-techCircle', 'wages-techCircle', 'box12', 'box13', 'ein-techCircle'],
   bingEquipment: [],
 }
 
@@ -195,7 +199,7 @@ const R_PAYER_FLAG_KEYS: Record<'meridian', Phase1FlagKey[]> = {
 
 /** Phase 1 import flags per 1099-INT payer — only primary payer carries flags. */
 const INT_PAYER_FLAG_KEYS: Record<IntPayer, Phase1FlagKey[]> = {
-  unwaverIngFinancial: ['taxableInterest'],
+  unwaverIngFinancial: ['taxableInterest', 'intState-unwavering'],
   harborlineCredit: [],
   cascadeFederal: [],
 }

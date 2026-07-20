@@ -14,6 +14,7 @@ import { computeLiveReturn, SEED_AMOUNTS } from '../../data/liveReturn'
 import { RETURN_SUMMARY_INSIGHTS } from './phase1FlagMessages'
 import {
   getPhase2Progress,
+  getOutstandingImportMismatches,
   PHASE2_DIAGNOSTIC_ORDER,
   SAFE_HARBOR_2024,
   type Phase2IssueKey,
@@ -54,12 +55,14 @@ interface AgentReportPaneProps {
   onFieldValueChange?: (key: 'withholding' | 'box12' | 'taxableInterest' | 'qualifiedDivs', value: number) => void
   liveTotals?: LiveReturnTotals
   amounts?: LiveAmounts
+  /** Open an output form / schedule in the left panel (Sch C, 8960, …) */
+  onOpenForm?: (formLabel: string) => void
 }
 
 const REPORT_CARDS = [
-  { label: 'Critical', keys: ['confirmPriorAgi', 'niitForm8960'], badgeColor: 'red' as const, position: 'first' },
+  { label: 'Filing stoppers', keys: ['importMismatches', 'niitForm8960'], badgeColor: 'red' as const, position: 'first' },
   { label: 'Compliance', keys: ['underpaymentRisk', 'necScheduleC'], badgeColor: 'orange' as const, position: 'middle' },
-  { label: 'Opportunities', keys: ['optItemize'], badgeColor: 'blue' as const, position: 'last' },
+  { label: 'Planning opportunities', keys: ['optItemize'], badgeColor: 'blue' as const, position: 'last' },
 ]
 
 const CARD_ICONS = [
@@ -93,60 +96,77 @@ type IssueCard = {
   summaryOnlyGoToInput?: boolean
 }
 
-const CONFIRM_PRIOR_AGI_ISSUE: IssueCard = {
-  issueKey: 'confirmPriorAgi',
-  dotColor: 'red',
-  title: 'Prior-year AGI required for e-file authentication',
-  category: 'Critical',
-  summary:
-    'The imported 2024 Form 1040 shows AGI of $485,820 on line 11. Confirm this matches Jessica\'s signed return before e-filing. Prior-year AGI is required for IRS identity / PIN validation.',
-  taxImpact:
-    'Wrong prior-year AGI is a top reason for e-file rejections. The IRS uses it to authenticate the taxpayer.',
-  rootCause:
-    'The Prior Year 1040 tab is populated from the imported 2024 return. Verify line 11 against Jessica\'s signed copy or an IRS transcript before submission.',
-  tableRows: [
-    { label: '2024 AGI (line 11)', cols: ['$485,820', 'Imported', 'Verify'], badge: 'red', total: false },
-    { label: '2024 total tax (line 24)', cols: ['$102,754', 'Imported', 'Verify'], badge: 'orange', total: true },
-  ],
-  tableHeaders: ['Field', 'Value', 'Source', 'Action'],
-  suggestedActions: [
-    'Open Prior Year 1040 and confirm line 11 shows $485,820.',
-    'Compare against Jessica\'s signed 2024 return or IRS Get Transcript.',
-    'Enter the confirmed AGI in the e-file section before submission.',
-  ],
-  actions: [
-    // Single CTA: Details + AGI field (Preview + Review was redundant)
-    { type: 'goToInput', label: 'Go to AGI input', tab: 'prior-1040', field: 'agi' },
-  ],
-  sources: [
-    {
-      id: 'irs-efile-agi',
-      sourceName: 'IRS.gov',
-      title: 'Validating your electronically filed tax return',
-      description:
-        'The IRS authenticates e-filed returns with prior-year AGI (or an Identity Protection PIN). A mismatch is a common rejection reason. Confirm the signed 2024 AGI before submission.',
-      meta: 'E-file authentication',
-      href: 'https://www.irs.gov/individuals/validating-your-electronically-filed-tax-return',
-    },
-  ],
-  viewSourceTab: 'prior-1040',
-  viewSourceField: 'agi',
+function buildImportMismatchesIssue(amounts: LiveAmounts): IssueCard {
+  const gaps = getOutstandingImportMismatches(amounts)
+  const first = gaps[0]
+  return {
+    issueKey: 'importMismatches',
+    dotColor: 'red',
+    title:
+      gaps.length === 0
+        ? 'Import accuracy: no remaining input↔source gaps'
+        : `${gaps.length} input↔source mismatch${gaps.length === 1 ? '' : 'es'} still on the return`,
+    category: 'Filing stoppers',
+    summary:
+      gaps.length === 0
+        ? 'Source-document amounts and input fields match. No outstanding import accuracy gaps.'
+        : 'These fields still disagree with the source documents — including items that may have been marked correct in Phase 1 without fixing the amount, plus silent import gaps.',
+    taxImpact:
+      'Filing with uncorrected import mismatches can understate income, withholding, or identity data and trigger notices or amended returns.',
+    rootCause:
+      'OCR / import mapped some values incorrectly, dropped withholding, or planted state data that is not on the PDF. Confirm each row against the source preview.',
+    tableRows: gaps.slice(0, 6).map((g, i) => ({
+      label: g.label,
+      cols: [g.returnValue, g.sourceValue, 'Fix'],
+      badge: (i === 0 ? 'red' : 'orange') as 'red' | 'orange',
+      total: i === gaps.length - 1 || i === 5,
+    })),
+    tableHeaders: ['Field', 'On return', 'On source', ''],
+    suggestedActions: [
+      'Open each listed field and compare to the source document preview.',
+      'Correct the amount, or clear phantom data (e.g. Colorado state on 1099-INT).',
+      'Re-check Box 13 Retirement plan on the W-2 if the client has a workplace plan.',
+    ],
+    actions: first
+      ? [
+          {
+            type: 'goToInput',
+            label: 'Go to first mismatch',
+            tab: first.tab as IssueAction['tab'],
+            field: first.field,
+          },
+        ]
+      : [{ type: 'goToInput', label: 'Go to wages', tab: 'w2s', field: 'wages' }],
+    sources: [
+      {
+        id: 'irs-accuracy',
+        sourceName: 'IRS.gov',
+        title: 'Check your return carefully',
+        description:
+          'Compare every imported amount to the paper or PDF source before filing. Common gaps include wages, withholding, and state boxes that do not belong on the form.',
+        meta: 'Import accuracy',
+        href: 'https://www.irs.gov/individuals/check-your-tax-return',
+      },
+    ],
+    viewSourceTab: (first?.tab as IssueCard['viewSourceTab']) ?? 'w2s',
+    viewSourceField: first?.field ?? 'wages',
+  }
 }
 
 const NIIT_FORM8960_ISSUE: IssueCard = {
   issueKey: 'niitForm8960',
   dotColor: 'red',
   title: 'Required Form 8960, Net Investment Income Tax',
-  category: 'Critical',
+  category: 'Filing stoppers',
   summary: RETURN_SUMMARY_INSIGHTS.niit,
   taxImpact:
     'At AGI above $200,000 for single filers, net investment income may be subject to the 3.8% NIIT on Form 8960. Missing 8960 is a filing risk at this income level.',
   rootCause: `Investment income is substantial: ${fmtUsd(FROZEN_RETURN.taxableInterest)} taxable interest, ${fmtUsd(FROZEN_RETURN.ordinaryDivs)} ordinary dividends, and ${fmtUsd(FROZEN_RETURN.qualifiedDivs)} qualified dividends.`,
   tableRows: [
-    { label: 'AGI (line 11)', cols: [fmtUsd(FROZEN_RETURN.totalIncome), '$485,820', '+19%'], badge: 'orange', total: false },
+    { label: 'AGI (line 11)', cols: [fmtUsd(FROZEN_RETURN.totalIncome), 'Above $200k', '!'], badge: 'orange', total: false },
     { label: 'Form 8960', cols: ['Required', 'Not filed', '!'], badge: 'red', total: true },
   ],
-  tableHeaders: ['Item', '2025', 'Status', ''],
+  tableHeaders: ['Item', 'Status', 'Note', ''],
   suggestedActions: [
     'Complete Form 8960 for net investment income tax.',
     'Confirm which dividend and interest amounts are subject to NIIT.',
@@ -157,7 +177,6 @@ const NIIT_FORM8960_ISSUE: IssueCard = {
     {
       type: 'openForm',
       label: 'Open Form 8960',
-      note: 'Form 8960 is not in this prototype. Complete it in the full product.',
     },
   ],
   sources: [
@@ -190,24 +209,22 @@ function buildUnderpaymentRiskIssue(live: LiveReturnTotals): IssueCard {
       'Jessica Drake (Mar 2, 2025): "No. I didn\'t make any estimated payments this year. I figured my W-2 and 1099 withholding would cover everything like usual."',
     questionnaireResponseId: 'estimatedPayments',
     tableRows: [
-      { label: 'Federal withholding (25a + 25b)', cols: [fmtUsd(live.totalWithholding), '$41,100', 'YoY'], badge: 'orange', total: false },
+      { label: 'Federal withholding (25a + 25b)', cols: [fmtUsd(live.totalWithholding), 'On return', ''], badge: 'orange', total: false },
       { label: '2025 estimated payments (line 26)', cols: ['$0', 'Client: none', '!'], badge: 'orange', total: false },
       { label: 'Safe harbor shortfall', cols: [fmtUsd(shortfall), 'Form 2210', '!'], badge: 'red', total: true },
     ],
-    tableHeaders: ['Item', '2025', '2024 / status', ''],
+    tableHeaders: ['Item', 'Amount', 'Status', ''],
     suggestedActions: [
       'Restore or confirm DIV / 1099-R withholding on the return.',
       'Review Form 2210 for underpayment penalty exposure.',
       'Confirm the Tax Organizer "no ES payments" answer matches her records.',
     ],
     actions: [
-      // Single doc CTA: Details + withholding field (Review 1099-DIV was redundant)
       { type: 'goToInput', label: 'Go to withholding', tab: '1099-divs', field: 'fedTaxWithheld' },
       { type: 'viewClientResponse', label: 'View client response', questionnaireResponseId: 'estimatedPayments' },
       {
         type: 'openForm',
         label: 'Open Form 2210',
-        note: 'Form 2210 is not in this prototype. Estimate underpayment in the full product.',
       },
     ],
     sources: [
@@ -252,13 +269,11 @@ function buildNecScheduleCIssue(): IssueCard {
       'Review the Tax Organizer NEC expenses response.',
     ],
     actions: [
-      // Single doc CTA: Details + Box 1 (Review 1099-NEC was redundant)
       { type: 'goToInput', label: 'Go to NEC income', tab: '1099-necs', field: 'nec-box1' },
       { type: 'viewClientResponse', label: 'View client response', questionnaireResponseId: 'necExpenses' },
       {
         type: 'openForm',
         label: 'Open Schedule C',
-        note: 'Schedule C is not in this prototype. Add business expenses in the full product.',
       },
     ],
     sources: [
@@ -281,7 +296,7 @@ const OPT_ITEMIZE_ISSUE: IssueCard = {
   issueKey: 'optItemize',
   dotColor: 'blue',
   title: 'Standard deduction vs itemizing: mortgage interest',
-  category: 'Opportunities',
+  category: 'Planning opportunities',
   summary:
     'The return is on the standard deduction, but Jessica said she owns a home, pays mortgage interest, and may have an unuploaded Form 1098. Itemizing could reduce taxable income.',
   taxImpact:
@@ -306,8 +321,7 @@ const OPT_ITEMIZE_ISSUE: IssueCard = {
     { type: 'goToInput', label: 'Go to deductions', field: 'stdDeduction' },
     {
       type: 'openForm',
-      label: 'Open Form 1098',
-      note: 'Form 1098 is not in this packet yet. Request upload from the client.',
+      label: 'Open Schedule A',
     },
   ],
   sources: [
@@ -326,16 +340,16 @@ const OPT_ITEMIZE_ISSUE: IssueCard = {
 }
 
 export const ISSUE_FIELD: Partial<Record<IssueKey, string>> = {
-  confirmPriorAgi: 'agi',
+  importMismatches: 'wages',
   niitForm8960: 'ordinaryDivs',
   underpaymentRisk: 'fedTaxWithheld',
   necScheduleC: 'nec-box1',
   optItemize: 'stdDeduction',
 }
 
-function buildAllIssues(live: LiveReturnTotals): IssueCard[] {
+function buildAllIssues(live: LiveReturnTotals, amounts: LiveAmounts): IssueCard[] {
   return [
-    CONFIRM_PRIOR_AGI_ISSUE,
+    buildImportMismatchesIssue(amounts),
     NIIT_FORM8960_ISSUE,
     buildUnderpaymentRiskIssue(live),
     buildNecScheduleCIssue(),
@@ -354,9 +368,10 @@ export default function AgentReportPane({
   onHighlightField,
   liveTotals,
   amounts = SEED_AMOUNTS,
+  onOpenForm,
 }: AgentReportPaneProps) {
   const live = liveTotals ?? computeLiveReturn(amounts)
-  const ALL_ISSUES = buildAllIssues(live)
+  const ALL_ISSUES = buildAllIssues(live, amounts)
   const phase2Progress = getPhase2Progress({ reviewedFields, live, amounts })
   const activeOrder = phase2Progress.activeKeys
   const reviewedCount = phase2Progress.reviewed
@@ -367,7 +382,7 @@ export default function AgentReportPane({
   const [showCompletion, setShowCompletion] = useState(false)
   const prevAllReviewed = useRef(false)
   const [inputValue, setInputValue] = useState('')
-  const [expandedCard, setExpandedCard] = useState<string | null>('Critical')
+  const [expandedCard, setExpandedCard] = useState<string | null>('Filing stoppers')
   const [issueDetailOpen, setIssueDetailOpen] = useState<string | null>(null)
   const [issueDetailClosing, setIssueDetailClosing] = useState(false)
 
@@ -695,6 +710,9 @@ export default function AgentReportPane({
               tab: 'questionnaire',
               questionnaireResponseId: activeIssue.questionnaireResponseId,
             })
+          }}
+          onOpenForm={(action) => {
+            onOpenForm?.(action?.label ?? 'Open Form 1040')
           }}
           onMarkReviewed={onMarkReviewed}
           issueNumber={activeOrder.indexOf(activeIssue.issueKey as IssueKey) + 1}

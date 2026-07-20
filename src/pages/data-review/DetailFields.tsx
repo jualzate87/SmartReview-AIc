@@ -42,6 +42,17 @@ interface DetailFieldsProps {
   /** Synced SSN / EIN (blank at session start — planted import errors) */
   identityValues?: { ssn: string; ein: string }
   onIdentityChange?: (kind: 'ssn' | 'ein', value: string) => void
+  /** W-2 Box 13 checkboxes */
+  box13?: {
+    retirementPlan: boolean
+    statutoryEmployee: boolean
+    thirdPartySickPay: boolean
+  }
+  onBox13Change?: (patch: Partial<{
+    retirementPlan: boolean
+    statutoryEmployee: boolean
+    thirdPartySickPay: boolean
+  }>) => void
   onMarkReviewed?: (field: string) => void
   onMarkReviewedBulk?: (fields: string[]) => void
   reviewedFields?: Map<string, { by: string; at: string }>
@@ -107,6 +118,8 @@ export default function DetailFields({
   onBox12RowChange,
   identityValues,
   onIdentityChange,
+  box13,
+  onBox13Change,
   onMarkReviewed,
   onMarkReviewedBulk,
   reviewedFields,
@@ -695,6 +708,77 @@ export default function DetailFields({
             <ValidationNote fieldKey="box12" />
           </>
         )}
+
+        {/* Box 13 — Statutory employee / Retirement plan / Third-party sick pay */}
+        <div
+          className={`${styles.fieldRow} ${selectedField === 'box13' ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''}`}
+          onClick={() => onFieldSelect?.('box13')}
+          style={{ cursor: 'pointer', flexDirection: 'column', alignItems: 'stretch', gap: 8, paddingTop: 10, paddingBottom: 10 }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span className={styles.fieldLabel}>(13) Box 13</span>
+            {flaggedFields['box13'] && !reviewedFields?.has('box13') && (
+              <span className={styles.issueIndicator} />
+            )}
+            <span style={{ flex: 1 }} />
+            {reviewedFields?.has('box13') ? (
+              <span className={styles.reviewedBadge}><CircleCheck size="small" /></span>
+            ) : (
+              <div className={styles.fieldActions}>
+                <Tooltip text="Mark as correct" placement="top">
+                  <button
+                    className={styles.markCorrectBtn}
+                    onClick={e => { e.stopPropagation(); onMarkReviewed?.('box13') }}
+                  >
+                    <CircleCheck size="small" />
+                  </button>
+                </Tooltip>
+              </div>
+            )}
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, paddingLeft: 8 }}>
+            {(
+              [
+                { key: 'statutoryEmployee' as const, label: 'Statutory employee' },
+                { key: 'retirementPlan' as const, label: 'Retirement plan' },
+                { key: 'thirdPartySickPay' as const, label: 'Third-party sick pay' },
+              ] as const
+            ).map(opt => {
+              const checked = !!box13?.[opt.key]
+              return (
+                <label
+                  key={opt.key}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    fontFamily: 'var(--font-family-component)',
+                    fontSize: 13,
+                    color: '#21262a',
+                    cursor: 'pointer',
+                  }}
+                  onClick={e => e.stopPropagation()}
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={e => {
+                      onBox13Change?.({ [opt.key]: e.target.checked })
+                      setLocalEdited(prev => new Set(prev).add('box13'))
+                      setSavedField('box13')
+                      setTimeout(() => setSavedField(null), 3500)
+                    }}
+                  />
+                  {opt.label}
+                </label>
+              )
+            })}
+          </div>
+          {savedField === 'box13' && <span className={styles.recalcBadge}>Saved</span>}
+          {flaggedFields['box13'] && !reviewedFields?.has('box13') && (
+            <ValidationNote fieldKey="box13" />
+          )}
+        </div>
       </div>
     </div>
   )

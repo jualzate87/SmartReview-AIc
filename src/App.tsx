@@ -29,20 +29,24 @@ export default function App() {
       <HashRouter>
         <FusionProvider pathPrefix={FUSION_CONFIG.pathPrefix || ''}>
           <Routes>
+            {/* SmartReview prototype — outside the QBO Fusion shell */}
+            <Route path="/" element={<Navigate to="/data-review" replace />} />
             <Route path="/import-hub" element={<OpenReturnPage />} />
             <Route path="/smart-return" element={<SmartReturnPage />} />
             <Route path="/data-review" element={<DataReviewPage />} />
             <Route path="/data-review-popout" element={<DataReviewPopout />} />
+
             <Route element={<AppLayout />}>
-              <Route path="/" element={<Navigate to="/import-hub" replace />} />
               <Route path="/home" element={<HomePage />} />
               <Route path="/workspace" element={<WorkspacePage />} />
               {APP_PAGES.map(({ path, component: Page }) => (
                 <Route key={path} path={`/app/${path}`} element={<Page />} />
               ))}
               <Route path="/app/*" element={<NotFoundPage />} />
-              <Route path="*" element={<NotFoundPage />} />
             </Route>
+
+            {/* Unknown paths → Data Review (not the IDS shell NotFound) */}
+            <Route path="*" element={<Navigate to="/data-review" replace />} />
           </Routes>
         </FusionProvider>
       </HashRouter>
