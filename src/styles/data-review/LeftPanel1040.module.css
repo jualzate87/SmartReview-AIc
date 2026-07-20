@@ -776,9 +776,12 @@
   flex: 1;
   min-width: 0;
   overflow-y: auto;
-  overflow-x: auto;
+  /* No horizontal page/panel scroll — columns compress via @container rules */
+  overflow-x: hidden;
   padding: 40px 32px 32px;
   background: #f4f6f8;
+  container-type: inline-size;
+  container-name: summary;
 }
 
 .controlWrapper {
@@ -794,7 +797,9 @@
   border: 1px solid #eef0f3;
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(28,32,42,0.06), 0 1px 2px rgba(28,32,42,0.03);
-  min-width: 860px;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
   /* visible so row-action tooltips aren’t clipped before the portal paints */
   overflow: visible;
 }
@@ -836,7 +841,9 @@
   padding: 5px 32px;
   border-top: 1px solid #f1f3f7;
   background: #fafbfc;
-  gap: 40px; /* matches gap between .summaryRowLeft and .summaryRowRight */
+  gap: 40px; /* space between label column and value columns */
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 /* Spacer stretches to fill the same space as .summaryRowLeft in data rows */
@@ -850,7 +857,8 @@
   display: flex;
   align-items: center;
   gap: 80px; /* matches .summaryRowRight gap */
-  flex-shrink: 0;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 /* Width set via inline style in TSX to match value columns exactly */
@@ -884,6 +892,7 @@
   text-align: left;
   gap: 40px;
   box-sizing: border-box;
+  min-width: 0;
 }
 .summarySectionRow:focus-visible {
   outline: 2px solid var(--color-action-standard, #0077c5);
@@ -915,6 +924,10 @@
   font-size: var(--font-size-component-small); /* 14px */
   font-weight: var(--font-weight-component-bold); /* 600 */
   color: #1c202a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 /* ── Value columns — ALL share the same font-size/weight; only color varies ── */
@@ -922,7 +935,8 @@
   display: flex;
   align-items: center;
   gap: 80px;
-  flex-shrink: 0;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 /* Current year — value + info icon; comments live in end actions */
@@ -1110,6 +1124,8 @@
   gap: 40px;
   transition: background 80ms;
   background: #fff;
+  min-width: 0;
+  box-sizing: border-box;
 }
 .summarySubRowClickable { cursor: pointer; }
 .summarySubRowClickable:hover { background: #f8f9fb; }
@@ -1134,6 +1150,10 @@
   align-items: center;
   gap: 5px;
   line-height: var(--line-height-component);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 .summarySubLabelCalc {
   color: #6b6c72;
@@ -1581,3 +1601,29 @@
 /* Change indicators (kept for badge reuse) */
 .tvPos { color: #287f39; }
 .tvNeg { color: #955d2b; }
+
+/*
+ * When the Summary panel is narrower than 949px, keep ≥20px between the label
+ * column and CURRENT YEAR, and compress other value-column gaps to 20px so
+ * columns never overlap and the panel never needs horizontal scroll.
+ */
+@container summary (max-width: 948px) {
+  .summaryColHeaders,
+  .summarySectionRow,
+  .summarySubRow {
+    gap: 20px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .summarySubRow {
+    padding-left: 36px; /* keep indent, tighter side padding */
+  }
+  .summaryColValues,
+  .summaryRowRight {
+    gap: 20px;
+  }
+  .summaryCardHeader {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}

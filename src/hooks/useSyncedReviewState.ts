@@ -47,13 +47,19 @@ interface SyncedState {
    * used for lightweight meta display.
    */
   summaryFlagActivity: Record<string, ActivityEntry>
+  /**
+   * Free-text / static detail-field overrides (employer name, addresses, etc.).
+   * Keys match DetailFields row keys (e.g. `employerName-techCircle`).
+   * Persists across tabs and Phase 2 so edits never disappear.
+   */
+  fieldOverrides: Record<string, string>
   activeDivPayer: DivPayer
   activeIntPayer: IntPayer
 }
 
 const CHANNEL_NAME = 'protoc-data-review-sync'
 // Bump whenever DEFAULT_STATE shape or seed values change so stale sessions reset.
-const STATE_VERSION = 19
+const STATE_VERSION = 20
 const STORAGE_KEY = 'protoc-data-review-state-v' + STATE_VERSION
 export const PREPARER_NAME = 'Sara Chen'
 
@@ -103,6 +109,7 @@ const DEFAULT_STATE: SyncedState = {
   summaryFlaggedFieldsList: [],
   summaryFlagNotes: {},
   summaryFlagActivity: {},
+  fieldOverrides: {},
   activeDivPayer: 'tokenFinancial',
   activeIntPayer: 'unwaverIngFinancial',
 }
@@ -162,6 +169,7 @@ function loadInitialState(): SyncedState {
         summaryFlaggedFieldsList: migrateActivityList(parsed.summaryFlaggedFieldsList),
         summaryFlagNotes: parsed.summaryFlagNotes ?? {},
         summaryFlagActivity: parsed.summaryFlagActivity ?? {},
+        fieldOverrides: parsed.fieldOverrides ?? {},
       }
       return reconcileVerifiedDocFlags(enforceMutualExclusion(loaded))
     }
@@ -222,6 +230,16 @@ export function useSyncedReviewState() {
     const entry = nowEntry()
     fieldKeys.forEach(k => next.set(k, entry))
     update({ editedFieldsList: Array.from(next.entries()) })
+  }
+
+  /** Persist a static/detail field value and stamp it as edited. */
+  const setFieldOverride = (fieldKey: string, value: string) => {
+    const nextEdited = new Map(stateRef.current.editedFieldsList)
+    nextEdited.set(fieldKey, nowEntry())
+    update({
+      fieldOverrides: { ...stateRef.current.fieldOverrides, [fieldKey]: value },
+      editedFieldsList: Array.from(nextEdited.entries()),
+    })
   }
 
   const markReviewed = (fieldName: string) => {
@@ -427,6 +445,8 @@ export function useSyncedReviewState() {
     editedFieldsMeta: editedFields,
     markEdited,
     markEditedBulk,
+    fieldOverrides: state.fieldOverrides,
+    setFieldOverride,
     activeDivPayer: state.activeDivPayer,
     setActiveDivPayer: (payer: DivPayer) => update({ activeDivPayer: payer }),
     activeIntPayer: state.activeIntPayer,

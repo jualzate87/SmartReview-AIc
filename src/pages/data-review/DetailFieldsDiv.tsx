@@ -134,6 +134,10 @@ interface DetailFieldsDivProps {
   onMarkReviewedBulk?: (fields: string[]) => void
   reviewedFields?: Map<string, { by: string; at: string }>
   editedFields?: Set<string>
+  /** Persisted static field values */
+  fieldOverrides?: Record<string, string>
+  /** Persist a static field edit (also stamps Edited badge) */
+  onFieldOverride?: (fieldKey: string, value: string) => void
   verifiedDocs?: Set<string>
   onVerifyDoc?: (docKey: string) => void
   flaggedFields?: Record<string, string>
@@ -153,6 +157,8 @@ export default function DetailFieldsDiv({
   onMarkReviewedBulk,
   reviewedFields,
   editedFields: syncedEditedFields,
+  fieldOverrides = {},
+  onFieldOverride,
   verifiedDocs,
   onVerifyDoc,
   flaggedFields = {},
@@ -162,11 +168,9 @@ export default function DetailFieldsDiv({
   const highlightedRef = useRef<HTMLDivElement>(null)
   const [editingField, setEditingField] = useState<string | null>(null)
   const [draftValue, setDraftValue] = useState('')
+  const [originalValue, setOriginalValue] = useState('')
   const [savedField, setSavedField] = useState<string | null>(null)
   const [localEdited, setLocalEdited] = useState<Set<string>>(new Set())
-  // Local overrides for fields edited by the preparer (payer/recipient info, boxes not
-  // imported, etc.) — amount fields that feed the 1040 also call onAmountChange
-  const [staticValues, setStaticValues] = useState<Record<string, string>>({})
   const isEdited = (key: string) => syncedEditedFields?.has(key) || localEdited.has(key)
   // Field key whose comment popover is currently open + its anchor position (fixed)
   const [commentField, setCommentField] = useState<string | null>(null)
@@ -184,20 +188,24 @@ export default function DetailFieldsDiv({
     const clean = currentValue.replace(/,/g, '')
     setEditingField(field)
     setDraftValue(clean)
+    setOriginalValue(clean)
   }
 
   const commitEdit = (field: 'qualifiedDivs') => {
-    const num = parseFloat(draftValue.replace(/,/g, '')) || 0
-    onFieldValueChange?.(field, num)
-    onAmountChange?.({ qualifiedDivsToken: num }, 'qualifiedDivs')
+    if (editingField !== field) return
+    if (draftValue !== originalValue) {
+      const num = parseFloat(draftValue.replace(/,/g, '')) || 0
+      onFieldValueChange?.(field, num)
+      onAmountChange?.({ qualifiedDivsToken: num }, 'qualifiedDivs')
+      setLocalEdited(prev => new Set(prev).add(field))
+      setSavedField(field)
+      setTimeout(() => setSavedField(null), 3500)
+      onMarkReviewed?.(field)
+    }
     setEditingField(null)
-    setLocalEdited(prev => new Set(prev).add(field))
-    setSavedField(field)
-    setTimeout(() => setSavedField(null), 3500)
-    onMarkReviewed?.(field)
   }
 
-  const cancelEdit = () => { setEditingField(null); setDraftValue('') }
+  const cancelEdit = () => { setEditingField(null); setDraftValue(''); setOriginalValue('') }
 
   // Close popover on outside click
   useEffect(() => {
@@ -322,7 +330,7 @@ export default function DetailFieldsDiv({
       }
       return null
     })()
-    const currentVal = syncedAmountDisplay ?? staticValues[fieldKey] ?? defaultValue
+    const currentVal = syncedAmountDisplay ?? fieldOverrides[fieldKey] ?? defaultValue
     const isEditing = editingField === fieldKey
     const isFlagged = !!flaggedFields[flagKey] && !reviewedFields?.has(reviewedKey)
     const isReviewed = reviewedFields?.has(reviewedKey)
@@ -334,24 +342,27 @@ export default function DetailFieldsDiv({
       fieldKey.startsWith('ordinaryDivs-') ||
       fieldKey.startsWith('qualifiedDivs-')
     const commitStatic = () => {
-      setStaticValues(prev => ({ ...prev, [fieldKey]: draftValue }))
-      setEditingField(null)
-      setLocalEdited(prev => new Set(prev).add(fieldKey))
-      setSavedField(fieldKey)
-      setTimeout(() => setSavedField(null), 3500)
-      const num = parseAmountDraft(draftValue)
-      if (fieldKey === 'fedTaxWithheld') {
-        onAmountChange?.({ divWithholding: num }, 'fedTaxWithheld')
-      } else if (fieldKey === 'ordinaryDivs-northmarkIndex' || (flagKey === 'ordinaryDivs' && activePayer === 'northmarkIndex')) {
-        onAmountChange?.({ ordinaryDivsNorthmark: num }, 'ordinaryDivs-northmark')
-      } else if (fieldKey.startsWith('ordinaryDivs-')) {
-        if (activePayer === 'tokenFinancial') onAmountChange?.({ ordinaryDivsToken: num }, fieldKey)
-        else if (activePayer === 'beaconDividend') onAmountChange?.({ ordinaryDivsBeacon: num }, fieldKey)
-      } else if (fieldKey.startsWith('qualifiedDivs-')) {
-        if (activePayer === 'northmarkIndex') onAmountChange?.({ qualifiedDivsNorthmark: num }, fieldKey)
-        else if (activePayer === 'beaconDividend') onAmountChange?.({ qualifiedDivsBeacon: num }, fieldKey)
+      if (editingField !== fieldKey) return
+      if (draftValue !== originalValue) {
+        onFieldOverride?.(fieldKey, draftValue)
+        setLocalEdited(prev => new Set(prev).add(fieldKey))
+        setSavedField(fieldKey)
+        setTimeout(() => setSavedField(null), 3500)
+        const num = parseAmountDraft(draftValue)
+        if (fieldKey === 'fedTaxWithheld') {
+          onAmountChange?.({ divWithholding: num }, 'fedTaxWithheld')
+        } else if (fieldKey === 'ordinaryDivs-northmarkIndex' || (flagKey === 'ordinaryDivs' && activePayer === 'northmarkIndex')) {
+          onAmountChange?.({ ordinaryDivsNorthmark: num }, 'ordinaryDivs-northmark')
+        } else if (fieldKey.startsWith('ordinaryDivs-')) {
+          if (activePayer === 'tokenFinancial') onAmountChange?.({ ordinaryDivsToken: num }, fieldKey)
+          else if (activePayer === 'beaconDividend') onAmountChange?.({ ordinaryDivsBeacon: num }, fieldKey)
+        } else if (fieldKey.startsWith('qualifiedDivs-')) {
+          if (activePayer === 'northmarkIndex') onAmountChange?.({ qualifiedDivsNorthmark: num }, fieldKey)
+          else if (activePayer === 'beaconDividend') onAmountChange?.({ qualifiedDivsBeacon: num }, fieldKey)
+        }
+        if (draftValue.trim()) onMarkReviewed?.(reviewedKey)
       }
-      if (draftValue.trim()) onMarkReviewed?.(reviewedKey)
+      setEditingField(null)
     }
     return (
       <>
@@ -373,12 +384,19 @@ export default function DetailFieldsDiv({
             placeholder={!isEditing && flaggedFields[fieldKey] ? 'Not imported' : placeholder}
             autoFocus={isEditing}
             onClick={e => { e.stopPropagation(); if (!isEditing) startEdit(fieldKey, currentVal) }}
+            onBlur={commitStatic}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitStatic() } if (e.key === 'Escape') cancelEdit() }}
           />
           {isEditing ? (
             <div className={styles.editActions}>
-              <button className={styles.saveBtn} onClick={commitStatic}>Save</button>
-              <button className={styles.undoBtn} onClick={cancelEdit}>Undo</button>
+              <button
+                type="button"
+                className={styles.undoBtn}
+                onMouseDown={e => e.preventDefault()}
+                onClick={cancelEdit}
+              >
+                Undo
+              </button>
             </div>
           ) : isReviewed ? (
             <Tooltip text="Click to unmark" placement="top">
@@ -489,12 +507,19 @@ export default function DetailFieldsDiv({
                 onChange={e => setDraftValue(e.target.value)}
                 autoFocus={editingField === 'qualifiedDivs'}
                 onClick={e => { e.stopPropagation(); if (editingField !== 'qualifiedDivs') startEdit('qualifiedDivs', fieldValues?.qualifiedDivs?.toString() ?? form.box1b_qualifiedDivs) }}
+                onBlur={() => commitEdit('qualifiedDivs')}
                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitEdit('qualifiedDivs') } if (e.key === 'Escape') cancelEdit() }}
               />
               {editingField === 'qualifiedDivs' ? (
                 <div className={styles.editActions}>
-                  <button className={styles.saveBtn} onClick={() => commitEdit('qualifiedDivs')}>Save</button>
-                  <button className={styles.undoBtn} onClick={cancelEdit}>Undo</button>
+                  <button
+                    type="button"
+                    className={styles.undoBtn}
+                    onMouseDown={e => e.preventDefault()}
+                    onClick={cancelEdit}
+                  >
+                    Undo
+                  </button>
                 </div>
               ) : reviewedFields?.has('qualifiedDivs') ? (
                 <Tooltip text="Click to unmark" placement="top">

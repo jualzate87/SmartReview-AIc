@@ -86,8 +86,9 @@ const SUMMARY_TOGGLE_MS = 500
 /** Collapsed "Show Summary" edge tab width */
 const SHOW_SUMMARY_HANDLE_WIDTH = 44
 /** Soft floor for Summary when dragging the splitter — layout uses min-width:0
- *  so Summary + Sources always fit the viewport (no page horizontal scroll). */
-const LEFT_PANEL_MIN_WIDTH = 720
+ *  so Summary + Sources always fit the viewport (no page horizontal scroll).
+ *  Below ~949px Summary uses tighter 20px column gaps (see LeftPanel1040 CSS). */
+const LEFT_PANEL_MIN_WIDTH = 360
 /** Absolute min Sources width when both panels are open */
 const RIGHT_PANEL_MIN_WIDTH = 360
 /** Matches DragHandle.module.css .handleVertical width */
@@ -106,6 +107,8 @@ export default function DataReviewPage() {
     reviewedFields,
     editedFields,
     markEdited,
+    fieldOverrides,
+    setFieldOverride,
     activeDivPayer, setActiveDivPayer,
     activeIntPayer, setActiveIntPayer,
     markReviewed: handleMarkReviewed,
@@ -1291,6 +1294,8 @@ export default function DataReviewPage() {
                   reviewedFields={reviewedFields}
                   editedFields={editedFields}
                   editedFieldsMeta={editedFieldsMeta}
+                  fieldOverrides={fieldOverrides}
+                  onFieldOverride={setFieldOverride}
                   verifiedDocs={verifiedDocs}
                   verifiedDocsMeta={verifiedDocsMeta}
                   onVerifyDoc={toggleVerifiedDoc}
@@ -1322,6 +1327,8 @@ export default function DataReviewPage() {
                   onMarkReviewedBulk={handleMarkReviewedBulk}
                   reviewedFields={reviewedFields}
                   editedFields={editedFields}
+                  fieldOverrides={fieldOverrides}
+                  onFieldOverride={setFieldOverride}
                   verifiedDocs={verifiedDocs}
                   onVerifyDoc={toggleVerifiedDoc}
                   flaggedFields={{
@@ -1354,6 +1361,8 @@ export default function DataReviewPage() {
                   reviewedFields={reviewedFields}
                   editedFields={editedFields}
                   editedFieldsMeta={editedFieldsMeta}
+                  fieldOverrides={fieldOverrides}
+                  onFieldOverride={setFieldOverride}
                   verifiedDocs={verifiedDocs}
                   verifiedDocsMeta={verifiedDocsMeta}
                   onVerifyDoc={toggleVerifiedDoc}
@@ -1377,6 +1386,8 @@ export default function DataReviewPage() {
                   onMarkReviewedBulk={handleMarkReviewedBulk}
                   reviewedFields={reviewedFields}
                   editedFields={editedFields}
+                  fieldOverrides={fieldOverrides}
+                  onFieldOverride={setFieldOverride}
                   verifiedDocs={verifiedDocs}
                   onVerifyDoc={toggleVerifiedDoc}
                   flaggedFields={{ grossDistrib: PHASE1_FLAG_MESSAGES.r.grossDistrib }}
@@ -1397,6 +1408,8 @@ export default function DataReviewPage() {
                   onMarkReviewedBulk={handleMarkReviewedBulk}
                   reviewedFields={reviewedFields}
                   editedFields={editedFields}
+                  fieldOverrides={fieldOverrides}
+                  onFieldOverride={setFieldOverride}
                   verifiedDocs={verifiedDocs}
                   onVerifyDoc={toggleVerifiedDoc}
                   onAddFieldNote={(text, context) => handleAddNote(text, context)}

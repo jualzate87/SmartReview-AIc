@@ -54,6 +54,10 @@ interface DetailFields1099RProps {
   onMarkReviewedBulk?: (fields: string[]) => void
   reviewedFields?: Map<string, { by: string; at: string }>
   editedFields?: Set<string>
+  /** Persisted static field values */
+  fieldOverrides?: Record<string, string>
+  /** Persist a static field edit (also stamps Edited badge) */
+  onFieldOverride?: (fieldKey: string, value: string) => void
   verifiedDocs?: Set<string>
   onVerifyDoc?: (docKey: string) => void
   onAddFieldNote?: (text: string, context?: string) => void
@@ -70,6 +74,8 @@ export default function DetailFields1099R({
   onMarkReviewedBulk,
   reviewedFields,
   editedFields: syncedEditedFields,
+  fieldOverrides = {},
+  onFieldOverride,
   verifiedDocs,
   onVerifyDoc,
   onAddFieldNote,
@@ -78,9 +84,9 @@ export default function DetailFields1099R({
   const highlightedRef = useRef<HTMLDivElement>(null)
   const [editingField, setEditingField] = useState<string | null>(null)
   const [draftValue, setDraftValue] = useState('')
+  const [originalValue, setOriginalValue] = useState('')
   const [savedField, setSavedField] = useState<string | null>(null)
   const [localEdited, setLocalEdited] = useState<Set<string>>(new Set())
-  const [staticValues, setStaticValues] = useState<Record<string, string>>({})
   const [commentField, setCommentField] = useState<string | null>(null)
   const [commentDraft, setCommentDraft] = useState('')
   const [commentAnchor, setCommentAnchor] = useState<{ top: number; left: number } | null>(null)
@@ -108,25 +114,29 @@ export default function DetailFields1099R({
     const clean = currentValue.replace(/,/g, '')
     setEditingField(field)
     setDraftValue(clean)
+    setOriginalValue(clean)
   }
 
-  const cancelEdit = () => { setEditingField(null); setDraftValue('') }
+  const cancelEdit = () => { setEditingField(null); setDraftValue(''); setOriginalValue('') }
 
   const commitStaticEdit = (fieldKey: string, resolveKey = fieldKey) => {
-    setStaticValues(prev => ({ ...prev, [fieldKey]: draftValue }))
+    if (editingField !== fieldKey) return
+    if (draftValue !== originalValue) {
+      onFieldOverride?.(fieldKey, draftValue)
+      setLocalEdited(prev => new Set(prev).add(fieldKey))
+      setSavedField(fieldKey)
+      setTimeout(() => setSavedField(null), 3500)
+      // Flow Box 4 withholding / Box 2a taxable into live 1040 amounts
+      if (fieldKey === 'r-fedTaxWithheld') {
+        onAmountChange?.({ rWithholding: parseAmountDraft(draftValue) }, 'r-fedTaxWithheld')
+      } else if (fieldKey === 'r-taxableAmt') {
+        onAmountChange?.({ taxablePension: parseAmountDraft(draftValue) }, 'r-taxableAmt')
+      }
+      if (draftValue.trim() || fieldKey === 'r-fedTaxWithheld' || fieldKey === 'r-taxableAmt') {
+        onMarkReviewed?.(resolveKey)
+      }
+    }
     setEditingField(null)
-    setLocalEdited(prev => new Set(prev).add(fieldKey))
-    setSavedField(fieldKey)
-    setTimeout(() => setSavedField(null), 3500)
-    // Flow Box 4 withholding / Box 2a taxable into live 1040 amounts
-    if (fieldKey === 'r-fedTaxWithheld') {
-      onAmountChange?.({ rWithholding: parseAmountDraft(draftValue) }, 'r-fedTaxWithheld')
-    } else if (fieldKey === 'r-taxableAmt') {
-      onAmountChange?.({ taxablePension: parseAmountDraft(draftValue) }, 'r-taxableAmt')
-    }
-    if (draftValue.trim() || fieldKey === 'r-fedTaxWithheld' || fieldKey === 'r-taxableAmt') {
-      onMarkReviewed?.(resolveKey)
-    }
   }
 
   const ValidationNote = ({ issueKey, resolveKey }: { issueKey: string; resolveKey: string }) => {
@@ -224,7 +234,7 @@ export default function DetailFields1099R({
         : fieldKey === 'r-taxableAmt' && amounts
           ? amounts.taxablePension.toLocaleString()
           : null
-    const currentVal = syncedDisplay ?? staticValues[fieldKey] ?? defaultValue
+    const currentVal = syncedDisplay ?? fieldOverrides[fieldKey] ?? defaultValue
     const isEditing = editingField === fieldKey
     const isFlagged = !!flaggedFields[issueKey] && !reviewedFields?.has(resolveKey)
     const isReviewed = reviewedFields?.has(resolveKey)
@@ -257,12 +267,19 @@ export default function DetailFields1099R({
             if (e.key === 'Enter') { e.preventDefault(); commitStaticEdit(fieldKey, resolveKey) }
             if (e.key === 'Escape') cancelEdit()
           }}
+          onBlur={() => commitStaticEdit(fieldKey, resolveKey)}
           onClick={e => { e.stopPropagation(); if (!isEditing) startEdit(fieldKey, currentVal) }}
         />
         {isEditing ? (
           <div className={styles.editActions}>
-            <button className={styles.saveBtn} onClick={() => commitStaticEdit(fieldKey, resolveKey)}>Save</button>
-            <button className={styles.undoBtn} onClick={cancelEdit}>Undo</button>
+            <button
+              type="button"
+              className={styles.undoBtn}
+              onMouseDown={e => e.preventDefault()}
+              onClick={cancelEdit}
+            >
+              Undo
+            </button>
           </div>
         ) : isReviewed ? (
           (() => {

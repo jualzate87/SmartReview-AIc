@@ -59,6 +59,10 @@ interface DetailFieldsProps {
   editedFields?: Set<string>
   /** Who/when for last edit — optional; shown on Edited badge tooltip */
   editedFieldsMeta?: Map<string, { by: string; at: string }>
+  /** Persisted static field values (employer name, addresses, …) */
+  fieldOverrides?: Record<string, string>
+  /** Persist a static field edit (also stamps Edited badge) */
+  onFieldOverride?: (fieldKey: string, value: string) => void
   /** Map of doc field key → issue summary shown as a hover tooltip */
   flaggedFields?: Record<string, string>
   verifiedDocs?: Set<string>
@@ -125,6 +129,8 @@ export default function DetailFields({
   reviewedFields,
   editedFields: syncedEditedFields,
   editedFieldsMeta,
+  fieldOverrides = {},
+  onFieldOverride,
   flaggedFields = {},
   verifiedDocs,
   verifiedDocsMeta,
@@ -154,8 +160,6 @@ export default function DetailFields({
     const m = reviewedFields?.get(key)
     return m ? `Marked correct · ${m.by} · ${m.at}` : 'Click to unmark'
   }
-  // Local overrides for static (non-calculated) fields edited by the user
-  const [staticValues, setStaticValues] = useState<Record<string, string>>({})
   // Field key whose comment popover is currently open + its anchor position (fixed)
   const [commentField, setCommentField] = useState<string | null>(null)
   const [commentDraft, setCommentDraft] = useState('')
@@ -180,23 +184,29 @@ export default function DetailFields({
   }
 
   const commitEdit = (field: FieldValuesKey) => {
+    if (editingField !== field) return
     const num = parseFloat(draftValue.replace(/,/g, '')) || 0
-    onFieldValueChange?.(field, num)
+    if (draftValue !== originalValue) {
+      onFieldValueChange?.(field, num)
+      setLocalEdited(prev => new Set(prev).add(field))
+      setSavedField(field)
+      setTimeout(() => setSavedField(null), 3500)
+      onMarkReviewed?.(field)
+    }
     setEditingField(null)
-    setLocalEdited(prev => new Set(prev).add(field))
-    setSavedField(field)
-    setTimeout(() => setSavedField(null), 3500)
-    onMarkReviewed?.(field)
   }
 
   const commitWagesEdit = () => {
+    if (editingField !== 'wages') return
     const num = parseFloat(draftValue.replace(/,/g, '')) || 0
-    onWageChange?.(activeSubTab, num)
+    if (draftValue !== originalValue) {
+      onWageChange?.(activeSubTab, num)
+      setLocalEdited(prev => new Set(prev).add(`wages-${activeSubTab}`))
+      setSavedField('wages')
+      setTimeout(() => setSavedField(null), 3500)
+      onMarkReviewed?.(`wages-${activeSubTab}`)
+    }
     setEditingField(null)
-    setLocalEdited(prev => new Set(prev).add(`wages-${activeSubTab}`))
-    setSavedField('wages')
-    setTimeout(() => setSavedField(null), 3500)
-    onMarkReviewed?.(`wages-${activeSubTab}`)
   }
 
   const cancelEdit = () => {
@@ -335,7 +345,7 @@ export default function DetailFields({
     )
   }
 
-  // Generic editable row for fields that don't feed into a live 1040 calculation
+  // Generic editable row — auto-saves on blur / Enter (no Save button)
   const renderStaticRow = (fieldKey: string, label: string, defaultValue: string, inputClass = styles.fieldInputSmall) => {
     const key = `${fieldKey}-${activeSubTab}`
     const identitySynced =
@@ -344,21 +354,25 @@ export default function DetailFields({
         : fieldKey === 'ein' && identityValues?.ein
           ? identityValues.ein
           : null
-    const currentVal = identitySynced ?? staticValues[key] ?? defaultValue
+    const currentVal = identitySynced ?? fieldOverrides[key] ?? defaultValue
     const isEditing = editingField === key
     const isReviewed = reviewedFields?.has(key)
     const isCommentOpen = commentField === key
     // A flagged static row (e.g. missing EIN) shows the same orange dot + validation note as other import flags
     const isFlagged = !!flaggedFields[fieldKey] && !isReviewed
     const commitStatic = () => {
-      setStaticValues(prev => ({ ...prev, [key]: draftValue }))
+      if (editingField !== key) return
+      const next = draftValue
+      if (next !== originalValue) {
+        onFieldOverride?.(key, next)
+        setLocalEdited(prev => new Set(prev).add(key))
+        setSavedField(key)
+        setTimeout(() => setSavedField(null), 2000)
+        if (fieldKey === 'ssn') onIdentityChange?.('ssn', next.trim())
+        if (fieldKey === 'ein') onIdentityChange?.('ein', next.trim())
+        if (next.trim()) onMarkReviewed?.(key)
+      }
       setEditingField(null)
-      setLocalEdited(prev => new Set(prev).add(key))
-      setSavedField(key)
-      setTimeout(() => setSavedField(null), 3500)
-      if (fieldKey === 'ssn') onIdentityChange?.('ssn', draftValue.trim())
-      if (fieldKey === 'ein') onIdentityChange?.('ein', draftValue.trim())
-      if (draftValue.trim()) onMarkReviewed?.(key)
     }
     return (
       <>
@@ -382,15 +396,22 @@ export default function DetailFields({
           onChange={e => setDraftValue(e.target.value)}
           autoFocus={isEditing}
           onClick={e => { e.stopPropagation(); if (!isEditing) startEdit(key, currentVal) }}
+          onBlur={commitStatic}
           onKeyDown={e => {
             if (e.key === 'Enter') { e.preventDefault(); commitStatic() }
-            if (e.key === 'Escape') cancelEdit()
+            if (e.key === 'Escape') { e.preventDefault(); cancelEdit() }
           }}
         />
         {isEditing ? (
           <div className={styles.editActions}>
-            <button className={styles.saveBtn} onClick={commitStatic}>Save</button>
-            <button className={styles.undoBtn} onClick={cancelEdit}>Undo</button>
+            <button
+              type="button"
+              className={styles.undoBtn}
+              onMouseDown={e => e.preventDefault()}
+              onClick={cancelEdit}
+            >
+              Undo
+            </button>
           </div>
         ) : isReviewed ? (
           <Tooltip text={reviewedTip(key, true)} placement="top">
@@ -497,6 +518,7 @@ export default function DetailFields({
             onChange={e => setDraftValue(e.target.value)}
             autoFocus={editingField === 'wages'}
             onClick={e => { e.stopPropagation(); if (editingField !== 'wages') startEdit('wages', currentWages.toString()) }}
+            onBlur={commitWagesEdit}
             onKeyDown={e => {
               if (e.key === 'Enter') { e.preventDefault(); commitWagesEdit() }
               if (e.key === 'Escape') cancelEdit()
@@ -504,8 +526,14 @@ export default function DetailFields({
           />
           {editingField === 'wages' ? (
             <div className={styles.editActions}>
-              <button className={styles.saveBtn} onClick={commitWagesEdit}>Save</button>
-              <button className={styles.undoBtn} onClick={cancelEdit}>Undo</button>
+              <button
+                type="button"
+                className={styles.undoBtn}
+                onMouseDown={e => e.preventDefault()}
+                onClick={cancelEdit}
+              >
+                Undo
+              </button>
             </div>
           ) : reviewedFields?.has(`wages-${activeSubTab}`) ? (
             <Tooltip text="Click to unmark" placement="top">
@@ -536,12 +564,19 @@ export default function DetailFields({
             onChange={e => setDraftValue(e.target.value)}
             autoFocus={editingField === 'withholding'}
             onClick={e => { e.stopPropagation(); if (editingField !== 'withholding') startEdit('withholding', fieldValues?.withholding?.toString() ?? employer.federalTax) }}
+            onBlur={() => commitEdit('withholding')}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitEdit('withholding') } if (e.key === 'Escape') cancelEdit() }}
           />
           {editingField === 'withholding' ? (
             <div className={styles.editActions}>
-              <button className={styles.saveBtn} onClick={() => commitEdit('withholding')}>Save</button>
-              <button className={styles.undoBtn} onClick={cancelEdit}>Undo</button>
+              <button
+                type="button"
+                className={styles.undoBtn}
+                onMouseDown={e => e.preventDefault()}
+                onClick={cancelEdit}
+              >
+                Undo
+              </button>
             </div>
           ) : reviewedFields?.has('withholding') ? (
             <span className={styles.reviewedBadge}><CircleCheck size="small" /></span>
@@ -584,27 +619,30 @@ export default function DetailFields({
               const isEditingAmt = editingField === amtKey
               const isRowReviewed = reviewedFields?.has(rowKey)
               const syncedRow = box12Rows?.[sub]
-              const codeVal = syncedRow?.code ?? staticValues[codeKey] ?? entry.code
+              const codeVal = syncedRow?.code ?? fieldOverrides[codeKey] ?? entry.code
               // Seed amount 0 must stay blank (codes shown, amounts missing) — only show once > 0
               const syncedAmt = syncedRow?.amount ?? 0
               const amtVal = syncedAmt > 0
                 ? syncedAmt.toLocaleString()
-                : (staticValues[amtKey] ?? (entry.sub === 'a' && fieldValues?.box12 ? fieldValues.box12.toLocaleString() : entry.amount))
+                : (fieldOverrides[amtKey] ?? (entry.sub === 'a' && fieldValues?.box12 ? fieldValues.box12.toLocaleString() : entry.amount))
               const BOX12_CODES = ['', 'A','B','C','D','E','F','G','H','J','K','L','M','N','P','Q','R','S','T','V','W','AA','BB','DD','EE','FF','GG','HH']
               const commitAmt = () => {
-                const num = parseFloat(draftValue.replace(/,/g, '')) || 0
-                if (onBox12RowChange) {
-                  onBox12RowChange(sub, { amount: num, code: codeVal })
-                } else if (entry.sub === 'a') {
-                  onFieldValueChange?.('box12', num)
+                if (editingField !== amtKey) return
+                if (draftValue !== originalValue) {
+                  const num = parseFloat(draftValue.replace(/,/g, '')) || 0
+                  if (onBox12RowChange) {
+                    onBox12RowChange(sub, { amount: num, code: codeVal })
+                  } else if (entry.sub === 'a') {
+                    onFieldValueChange?.('box12', num)
+                  }
+                  onFieldOverride?.(amtKey, draftValue)
+                  setLocalEdited(prev => new Set(prev).add(amtKey))
+                  if (entry.sub === 'a') setLocalEdited(prev => new Set(prev).add('box12'))
+                  setSavedField(amtKey)
+                  setTimeout(() => setSavedField(null), 3500)
+                  markBox12RowReviewed(rowKey)
                 }
-                setStaticValues(prev => ({ ...prev, [amtKey]: draftValue }))
                 setEditingField(null)
-                setLocalEdited(prev => new Set(prev).add(amtKey))
-                if (entry.sub === 'a') setLocalEdited(prev => new Set(prev).add('box12'))
-                setSavedField(amtKey)
-                setTimeout(() => setSavedField(null), 3500)
-                markBox12RowReviewed(rowKey)
               }
               return (
                 <div key={entry.sub}>
@@ -624,9 +662,8 @@ export default function DetailFields({
                         const nextCode = e.target.value
                         if (onBox12RowChange) {
                           onBox12RowChange(sub, { code: nextCode })
-                        } else {
-                          setStaticValues(prev => ({ ...prev, [codeKey]: nextCode }))
                         }
+                        onFieldOverride?.(codeKey, nextCode)
                         setLocalEdited(prev => new Set(prev).add(codeKey))
                       }}
                       style={{ width: 64, fontSize: 13, height: 32, padding: '0 4px', boxSizing: 'border-box', border: `1px solid ${isFlagged ? '#ff6a00' : '#c3ced5'}`, borderRadius: 4, background: isFlagged ? 'rgba(255,187,0,0.25)' : '#fff', color: codeVal ? '#21262a' : '#859299', fontFamily: 'var(--font-family-component)', outline: 'none', flexShrink: 0, cursor: 'pointer', appearance: 'auto' }}
@@ -640,6 +677,7 @@ export default function DetailFields({
                       placeholder="—"
                       onChange={e => setDraftValue(e.target.value)}
                       autoFocus={isEditingAmt}
+                      onBlur={commitAmt}
                       onKeyDown={e => {
                         if (e.key === 'Enter') { e.preventDefault(); commitAmt() }
                         if (e.key === 'Escape') cancelEdit()
@@ -647,11 +685,16 @@ export default function DetailFields({
                       style={{ width: 120, fontSize: 13, height: 32, padding: '5px 8px', boxSizing: 'border-box', border: `${isEditingAmt ? '2px' : '1px'} solid ${isEditingAmt ? '#205ea3' : isFlagged ? '#ff6a00' : '#c3ced5'}`, borderRadius: 4, background: isEditingAmt ? '#fff' : isFlagged ? 'rgba(255,187,0,0.25)' : '#fff', color: '#21262a', fontFamily: 'var(--font-family-component)', outline: 'none', flexShrink: 0, cursor: 'text' }}
                       onClick={e => { e.stopPropagation(); if (!isEditingAmt) { startEdit(amtKey, amtVal) } }}
                     />
-                    {/* Save/Undo when editing amount */}
                     {isEditingAmt ? (
                       <div className={styles.editActions}>
-                        <button className={styles.saveBtn} onClick={commitAmt}>Save</button>
-                        <button className={styles.undoBtn} onClick={cancelEdit}>Undo</button>
+                        <button
+                          type="button"
+                          className={styles.undoBtn}
+                          onMouseDown={e => e.preventDefault()}
+                          onClick={cancelEdit}
+                        >
+                          Undo
+                        </button>
                       </div>
                     ) : isRowReviewed ? (
                       <Tooltip text="Click to unmark" placement="top">
@@ -687,12 +730,19 @@ export default function DetailFields({
                 onChange={e => setDraftValue(e.target.value)}
                 autoFocus={editingField === 'box12'}
                 onClick={e => { e.stopPropagation(); if (editingField !== 'box12') startEdit('box12', fieldValues?.box12?.toString() ?? employer.box12Amount ?? '') }}
+                onBlur={() => commitEdit('box12')}
                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitEdit('box12') } if (e.key === 'Escape') cancelEdit() }}
               />
               {editingField === 'box12' ? (
                 <div className={styles.editActions}>
-                  <button className={styles.saveBtn} onClick={() => commitEdit('box12')}>Save</button>
-                  <button className={styles.undoBtn} onClick={cancelEdit}>Undo</button>
+                  <button
+                    type="button"
+                    className={styles.undoBtn}
+                    onMouseDown={e => e.preventDefault()}
+                    onClick={cancelEdit}
+                  >
+                    Undo
+                  </button>
                 </div>
               ) : reviewedFields?.has('box12') ? (
                 <span className={styles.reviewedBadge}><CircleCheck size="small" /></span>

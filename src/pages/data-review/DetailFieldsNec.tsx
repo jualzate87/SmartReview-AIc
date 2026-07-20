@@ -57,6 +57,10 @@ interface DetailFieldsNecProps {
   onMarkReviewedBulk?: (fields: string[]) => void
   reviewedFields?: Map<string, { by: string; at: string }>
   editedFields?: Set<string>
+  /** Persisted static field values */
+  fieldOverrides?: Record<string, string>
+  /** Persist a static field edit (also stamps Edited badge) */
+  onFieldOverride?: (fieldKey: string, value: string) => void
   verifiedDocs?: Set<string>
   onVerifyDoc?: (docKey: string) => void
   onAddFieldNote?: (text: string, context?: string) => void
@@ -72,6 +76,8 @@ export default function DetailFieldsNec({
   onMarkReviewedBulk,
   reviewedFields,
   editedFields: syncedEditedFields,
+  fieldOverrides = {},
+  onFieldOverride,
   verifiedDocs,
   onVerifyDoc,
   onAddFieldNote,
@@ -79,9 +85,9 @@ export default function DetailFieldsNec({
   const highlightedRef = useRef<HTMLDivElement>(null)
   const [editingField, setEditingField] = useState<string | null>(null)
   const [draftValue, setDraftValue] = useState('')
+  const [originalValue, setOriginalValue] = useState('')
   const [savedField, setSavedField] = useState<string | null>(null)
   const [localEdited, setLocalEdited] = useState<Set<string>>(new Set())
-  const [staticValues, setStaticValues] = useState<Record<string, string>>({})
   const [commentField, setCommentField] = useState<string | null>(null)
   const [commentDraft, setCommentDraft] = useState('')
   const [commentAnchor, setCommentAnchor] = useState<{ top: number; left: number } | null>(null)
@@ -98,9 +104,10 @@ export default function DetailFieldsNec({
     const clean = currentValue.replace(/,/g, '')
     setEditingField(field)
     setDraftValue(clean)
+    setOriginalValue(clean)
   }
 
-  const cancelEdit = () => { setEditingField(null); setDraftValue('') }
+  const cancelEdit = () => { setEditingField(null); setDraftValue(''); setOriginalValue('') }
 
   useEffect(() => {
     if (!commentField) return
@@ -189,25 +196,28 @@ export default function DetailFieldsNec({
       fieldKey === 'nec-box1' && amounts
         ? (amounts.necIncome > 0 ? amounts.necIncome.toLocaleString() : '0')
         : null
-    const currentVal = syncedNecDisplay ?? staticValues[fieldKey] ?? defaultValue
+    const currentVal = syncedNecDisplay ?? fieldOverrides[fieldKey] ?? defaultValue
     const isEditing = editingField === fieldKey
     const isReviewed = reviewedFields?.has(fieldKey)
     const isCommentOpen = commentField === fieldKey
     const isSelected = selectedField === select || selectedField === fieldKey || selectedField === 'necIncome'
     const commitStatic = () => {
-      setStaticValues(prev => ({ ...prev, [fieldKey]: draftValue }))
-      setEditingField(null)
-      setLocalEdited(prev => new Set(prev).add(fieldKey))
-      setSavedField(fieldKey)
-      setTimeout(() => setSavedField(null), 3500)
-      // Saving NEC Box 1 confirms omitted income onto Form 1040 line 8
-      if (fieldKey === 'nec-box1') {
-        const parsed = parseAmountDraft(draftValue)
-        // Empty save defaults to source amount (the planted miss the preparer is correcting)
-        const num = parsed > 0 ? parsed : NEC_SOURCE_AMOUNT
-        onAmountChange?.({ necIncome: num, necOnReturn: true }, 'nec-box1')
+      if (editingField !== fieldKey) return
+      if (draftValue !== originalValue) {
+        onFieldOverride?.(fieldKey, draftValue)
+        setLocalEdited(prev => new Set(prev).add(fieldKey))
+        setSavedField(fieldKey)
+        setTimeout(() => setSavedField(null), 3500)
+        // Saving NEC Box 1 confirms omitted income onto Form 1040 line 8
+        if (fieldKey === 'nec-box1') {
+          const parsed = parseAmountDraft(draftValue)
+          // Empty save defaults to source amount (the planted miss the preparer is correcting)
+          const num = parsed > 0 ? parsed : NEC_SOURCE_AMOUNT
+          onAmountChange?.({ necIncome: num, necOnReturn: true }, 'nec-box1')
+        }
+        if (draftValue.trim() || fieldKey === 'nec-box1') onMarkReviewed?.(fieldKey)
       }
-      if (draftValue.trim() || fieldKey === 'nec-box1') onMarkReviewed?.(fieldKey)
+      setEditingField(null)
     }
     return (
       <div
@@ -224,6 +234,7 @@ export default function DetailFieldsNec({
           onChange={e => setDraftValue(e.target.value)}
           autoFocus={isEditing}
           onClick={e => { e.stopPropagation(); if (!isEditing) startEdit(fieldKey, currentVal) }}
+          onBlur={commitStatic}
           onKeyDown={e => {
             if (e.key === 'Enter') { e.preventDefault(); commitStatic() }
             if (e.key === 'Escape') cancelEdit()
@@ -231,8 +242,14 @@ export default function DetailFieldsNec({
         />
         {isEditing ? (
           <div className={styles.editActions}>
-            <button className={styles.saveBtn} onClick={commitStatic}>Save</button>
-            <button className={styles.undoBtn} onClick={cancelEdit}>Undo</button>
+            <button
+              type="button"
+              className={styles.undoBtn}
+              onMouseDown={e => e.preventDefault()}
+              onClick={cancelEdit}
+            >
+              Undo
+            </button>
           </div>
         ) : isReviewed ? (
           (() => {
