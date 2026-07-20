@@ -828,36 +828,36 @@
 }
 
 /*
- * Typography rule: ALL value columns use the same font-size and weight.
- * Only COLOR differentiates them — current year = dark, prior = muted, diff = colored.
- *
- * Column widths (fixed, px) + ~80px gap so numeric cols use available width
- * instead of clustering on the right.
- * Both header and data rows share these widths/gaps exactly.
+ * Wide panels: fixed label column + value group (flex: 1) that fills the card.
+ * space-between spreads CY / PY / Change $ / Change % / actions across remaining
+ * width (min 24px gap). Label does not grow. Below 949px @container compresses.
  */
 .summaryColHeaders {
   display: flex;
   align-items: center;
+  width: 100%;
   padding: 5px 32px;
   border-top: 1px solid #f1f3f7;
   background: #fafbfc;
-  gap: 40px; /* space between label column and value columns */
+  gap: 24px;
   box-sizing: border-box;
   min-width: 0;
 }
 
-/* Spacer stretches to fill the same space as .summaryRowLeft in data rows */
+/* Matches .summaryRowLeft width so headers line up with data rows */
 .summaryColSpacer {
-  flex: 1;
-  min-width: 0;
+  flex: 0 1 160px;
+  min-width: 96px;
+  max-width: 200px;
 }
 
-/* Group the 4 col labels to mirror .summaryRowRight layout exactly */
+/* Group col labels + actions spacer — mirrors .summaryRowRight layout */
 .summaryColValues {
   display: flex;
   align-items: center;
-  gap: 80px; /* matches .summaryRowRight gap */
-  flex-shrink: 1;
+  flex: 1;
+  justify-content: space-between;
+  gap: 24px;
   min-width: 0;
 }
 
@@ -883,14 +883,13 @@
   width: 100%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   padding: 10px 32px;
   background: #f7f8fa;
   border: none;
   border-top: 1px solid #eef0f3;
   cursor: pointer;
   text-align: left;
-  gap: 40px;
+  gap: 24px;
   box-sizing: border-box;
   min-width: 0;
 }
@@ -906,8 +905,9 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  flex: 1;
-  min-width: 0;
+  flex: 0 1 160px;
+  min-width: 96px;
+  max-width: 200px;
 }
 
 .summaryChevron {
@@ -934,8 +934,9 @@
 .summaryRowRight {
   display: flex;
   align-items: center;
-  gap: 80px;
-  flex-shrink: 1;
+  flex: 1;
+  justify-content: space-between;
+  gap: 24px;
   min-width: 0;
 }
 
@@ -1118,10 +1119,10 @@
 .summarySubRow {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  width: 100%;
   padding: 8px 32px 8px 52px; /* 52px left = 32px margin + 20px indent */
   border-top: 1px solid #f1f3f7;
-  gap: 40px;
+  gap: 24px;
   transition: background 80ms;
   background: #fff;
   min-width: 0;
@@ -1620,7 +1621,14 @@
   }
   .summaryColValues,
   .summaryRowRight {
+    justify-content: flex-start;
     gap: 20px;
+  }
+  .summaryColSpacer,
+  .summaryRowLeft {
+    flex-basis: 120px;
+    max-width: 140px;
+    min-width: 80px;
   }
   .summaryCardHeader {
     padding-left: 16px;
