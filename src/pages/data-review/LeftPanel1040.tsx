@@ -243,7 +243,7 @@ export default function LeftPanel1040({
     underpaymentAmount: Math.max(0, SAFE_HARBOR_2210 - withholding1040),
     employeeSsn: displaySsn,
     employerEin: '',
-    box13RetirementPlan: false,
+    box13RetirementPlan: true,
   }
 
   const fieldHasPopover = (field: string) =>

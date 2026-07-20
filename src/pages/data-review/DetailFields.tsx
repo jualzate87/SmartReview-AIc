@@ -459,7 +459,7 @@ export default function DetailFields({
                   `sstips-${activeSubTab}`, `allocatedtips-${activeSubTab}`,
                   `dependentcare-${activeSubTab}`, `nonqualified-${activeSubTab}`,
                 ]
-                fieldKeys.forEach(k => onMarkReviewed?.(k))
+                onMarkReviewedBulk?.(fieldKeys)
               }}
             >Mark as verified</button>
           )}
@@ -721,19 +721,21 @@ export default function DetailFields({
               <span className={styles.issueIndicator} />
             )}
             <span style={{ flex: 1 }} />
-            {reviewedFields?.has('box13') ? (
-              <span className={styles.reviewedBadge}><CircleCheck size="small" /></span>
-            ) : (
-              <div className={styles.fieldActions}>
-                <Tooltip text="Mark as correct" placement="top">
-                  <button
-                    className={styles.markCorrectBtn}
-                    onClick={e => { e.stopPropagation(); onMarkReviewed?.('box13') }}
-                  >
-                    <CircleCheck size="small" />
-                  </button>
-                </Tooltip>
-              </div>
+            {flaggedFields['box13'] && (
+              reviewedFields?.has('box13') ? (
+                <span className={styles.reviewedBadge}><CircleCheck size="small" /></span>
+              ) : (
+                <div className={styles.fieldActions}>
+                  <Tooltip text="Mark as correct" placement="top">
+                    <button
+                      className={styles.markCorrectBtn}
+                      onClick={e => { e.stopPropagation(); onMarkReviewed?.('box13') }}
+                    >
+                      <CircleCheck size="small" />
+                    </button>
+                  </Tooltip>
+                </div>
+              )
             )}
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, paddingLeft: 8 }}>

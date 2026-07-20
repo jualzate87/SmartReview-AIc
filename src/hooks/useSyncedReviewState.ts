@@ -5,6 +5,7 @@ import type { TopTab } from '../pages/data-review/ReviewTab'
 import type { DivPayer } from '../pages/data-review/DetailFieldsDiv'
 import type { IntPayer } from '../pages/data-review/DetailFields1099'
 import { PHASE1_TO_PHASE2_ISSUES } from '../pages/data-review/phase2FlagSync'
+import { getPhase1FlagKeysForVerifiedDoc } from '../pages/data-review/phase1FieldSync'
 
 // ProtoC: the source-doc review state (flags, reviewed fields, active tab, field
 // values) is shared live between the main window and the pop-out window via
@@ -55,7 +56,7 @@ interface SyncedState {
 
 const CHANNEL_NAME = 'protoc-data-review-sync'
 // Bump whenever DEFAULT_STATE shape or seed values change so stale sessions reset.
-const STATE_VERSION = 15
+const STATE_VERSION = 17
 const STORAGE_KEY = 'protoc-data-review-state-v' + STATE_VERSION
 export const PREPARER_NAME = 'Sara Chen'
 
@@ -117,6 +118,26 @@ function enforceMutualExclusion(state: SyncedState): SyncedState {
   return { ...state, summaryFlaggedFieldsList: flagged }
 }
 
+function reconcileVerifiedDocFlags(state: SyncedState): SyncedState {
+  // If a doc is Verified but its Phase 1 flags were never written (stale session /
+  // older Mark as verified), clear those flags so tab badges match what the user sees.
+  if (!state.verifiedDocsList.length) return state
+  const nextReviewed = new Map(state.reviewedFieldsList)
+  let changed = false
+  const at = state.verifiedDocsList[0]?.[1]?.at ?? formatActivityTimestamp()
+  const by = state.verifiedDocsList[0]?.[1]?.by ?? PREPARER_NAME
+  for (const [docKey] of state.verifiedDocsList) {
+    for (const flag of getPhase1FlagKeysForVerifiedDoc(docKey)) {
+      if (!nextReviewed.has(flag)) {
+        nextReviewed.set(flag, { by, at })
+        changed = true
+      }
+    }
+  }
+  if (!changed) return state
+  return { ...state, reviewedFieldsList: Array.from(nextReviewed.entries()) }
+}
+
 function loadInitialState(): SyncedState {
   try {
     const raw = sessionStorage.getItem(STORAGE_KEY)
@@ -145,7 +166,7 @@ function loadInitialState(): SyncedState {
         summaryFlagNotes: parsed.summaryFlagNotes ?? {},
         summaryFlagActivity: parsed.summaryFlagActivity ?? {},
       }
-      return enforceMutualExclusion(loaded)
+      return reconcileVerifiedDocFlags(enforceMutualExclusion(loaded))
     }
   } catch {
     // ignore malformed storage — fall through to defaults
@@ -180,7 +201,7 @@ export function useSyncedReviewState() {
     // fieldKeys.forEach(k => markReviewed(k))) each see the previous call's
     // write instead of all reading the same stale snapshot and clobbering
     // each other. setState is still what actually triggers the re-render.
-    const safe = enforceMutualExclusion(next)
+    const safe = reconcileVerifiedDocFlags(enforceMutualExclusion(next))
     stateRef.current = safe
     setState(safe)
     try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(safe)) } catch { /* ignore */ }
@@ -247,10 +268,30 @@ export function useSyncedReviewState() {
   const summaryFlagActivity = state.summaryFlagActivity
 
   const toggleVerifiedDoc = (docKey: string) => {
-    const next = new Map(stateRef.current.verifiedDocsList)
-    if (next.has(docKey)) next.delete(docKey)
-    else next.set(docKey, nowEntry())
-    update({ verifiedDocsList: Array.from(next.entries()) })
+    const nextVerified = new Map(stateRef.current.verifiedDocsList)
+    if (nextVerified.has(docKey)) {
+      nextVerified.delete(docKey)
+      update({ verifiedDocsList: Array.from(nextVerified.entries()) })
+      return
+    }
+
+    // Marking verified also clears every Phase 1 flag tied to this document
+    nextVerified.set(docKey, nowEntry())
+    const at = formatActivityTimestamp()
+    const nextReviewed = new Map(stateRef.current.reviewedFieldsList)
+    getPhase1FlagKeysForVerifiedDoc(docKey).forEach(f => {
+      if (!nextReviewed.has(f)) nextReviewed.set(f, { by: PREPARER_NAME, at })
+      const linked = PHASE1_TO_PHASE2_ISSUES[f]
+      if (linked) {
+        linked.forEach(issueKey => {
+          if (!nextReviewed.has(issueKey)) nextReviewed.set(issueKey, { by: PREPARER_NAME, at })
+        })
+      }
+    })
+    update({
+      verifiedDocsList: Array.from(nextVerified.entries()),
+      reviewedFieldsList: Array.from(nextReviewed.entries()),
+    })
   }
 
   /** Toggle Summary check — clearing flag if turning check on. */

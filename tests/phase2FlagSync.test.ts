@@ -104,9 +104,6 @@ describe('isDiagnosticAutoDismissed — amount edits', () => {
         divWithholding: SOURCE_AMOUNTS.divWithholding,
         taxablePension: SOURCE_AMOUNTS.taxablePension,
         rWithholding: SOURCE_AMOUNTS.rWithholding,
-        intStateIncomeUnwavering: 0,
-        intStateIdUnwavering: '',
-        box13RetirementPlan: true,
       },
     })
     expect(getOutstandingImportMismatches(c.amounts)).toHaveLength(0)

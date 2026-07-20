@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { DotsSix } from '@design-systems/icons'
 import ReviewTab from './data-review/ReviewTab'
 import Phase1IssueBanner from './data-review/Phase1IssueBanner'
@@ -34,10 +34,6 @@ import {
   getUnreviewedSourceDocs,
   isDocReviewed,
 } from './data-review/docReviewStatus'
-import DocReviewTransitionModal, {
-  markDocReviewModalShown,
-  readDocReviewModalShown,
-} from './data-review/DocReviewTransitionModal'
 import DetailFields1099R, { R_PAYER_TABS } from './data-review/DetailFields1099R'
 import DetailFieldsNec, { NEC_PAYER_TABS } from './data-review/DetailFieldsNec'
 import PeelTab from './data-review/PeelTab'
@@ -138,7 +134,6 @@ export default function DataReviewPopout() {
   const phase1Total = PHASE1_FLAG_KEYS.length
   const flagsCleared = phase1Remaining === 0
   const phase1FullyComplete = flagsCleared && unreviewedDocCount === 0
-  const [docReviewModalOpen, setDocReviewModalOpen] = useState(false)
 
   const handleReviewNextDocument = useCallback(() => {
     const next = getNextUnreviewedSourceDoc(unreviewedSourceDocs, {
@@ -157,13 +152,6 @@ export default function DataReviewPopout() {
     unreviewedSourceDocs, activeTopTab, activeSubTab, activeDivPayer, activeIntPayer,
     setActiveTopTab, setActiveSubTab, setActiveDivPayer, setActiveIntPayer, setSelectedField,
   ])
-
-  useEffect(() => {
-    if (!(flagsCleared && unreviewedDocCount > 0 && !phase1FullyComplete)) return
-    if (readDocReviewModalShown()) return
-    markDocReviewModalShown()
-    setDocReviewModalOpen(true)
-  }, [flagsCleared, unreviewedDocCount, phase1FullyComplete])
 
   const rightRef = useRef<HTMLDivElement>(null)
   const [previewWidth, setPreviewWidth] = useState(40)
@@ -517,12 +505,6 @@ export default function DataReviewPopout() {
             )}
           </div>
         </div>
-
-      <DocReviewTransitionModal
-        open={docReviewModalOpen}
-        onClose={() => setDocReviewModalOpen(false)}
-        onReviewNextDocument={handleReviewNextDocument}
-      />
     </div>
   )
 }

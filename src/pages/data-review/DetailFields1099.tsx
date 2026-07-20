@@ -84,9 +84,9 @@ const FORM_DATA: Record<IntPayer, {
     box9_specPrivActivity:'',        // Box 9 — Specified private activity bond interest
     box10_marketDiscount: '',        // Box 10 — Market discount
     box11_bondPremium:    '',        // Box 11 — Bond premium
-    box13_stateTaxId:     'CO-47882103',
+    box13_stateTaxId:     '',
     box14_stateTax:       '',
-    box15_stateIncome:    '1,986',
+    box15_stateIncome:    '',
   },
   harborlineCredit: {
     box1_interest:        '3,200',
@@ -314,7 +314,15 @@ export default function DetailFields1099({
 
   // Editable row with hover-revealed Edit + Mark as correct + Comment — same pattern as
   // the W-2 panel's renderStaticRow. Per-payer Box 1 interest also updates live amounts.
-  const renderReadOnlyRow = (fieldKey: string, label: string, defaultValue: string, inputClass = styles.fieldInputSmall, placeholder?: string) => {
+  const renderReadOnlyRow = (
+    fieldKey: string,
+    label: string,
+    defaultValue: string,
+    inputClass = styles.fieldInputSmall,
+    placeholder?: string,
+    /** Phase 1 flag key — when set, drives orange attention styling until resolved */
+    flagKey?: string,
+  ) => {
     const syncedInterest =
       amounts && fieldKey.startsWith('taxableInterest-')
         ? activePayer === 'harborlineCredit'
@@ -328,6 +336,7 @@ export default function DetailFields1099({
     const isReviewed = reviewedFields?.has(fieldKey)
     const isCommentOpen = commentField === fieldKey
     const isSelected = selectedField === fieldKey
+    const flagUnresolved = !!(flagKey && flaggedFields[flagKey] && !reviewedFields?.has(flagKey))
     const flowsTo1040 = fieldKey.startsWith('taxableInterest-') || fieldKey.startsWith('taxExempt-')
     const commitStatic = () => {
       setStaticValues(prev => ({ ...prev, [fieldKey]: draftValue }))
@@ -345,13 +354,16 @@ export default function DetailFields1099({
     return (
       <div
         ref={isSelected ? highlightedRef : undefined}
-        className={`${styles.fieldRow} ${isCommentOpen ? styles.fieldRowCommentOpen : ''} ${isSelected ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''}`}
+        className={`${styles.fieldRow} ${flagUnresolved ? styles.fieldRowHasNote : ''} ${isCommentOpen ? styles.fieldRowCommentOpen : ''} ${isSelected ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''}`}
         onClick={() => onFieldSelect?.(fieldKey)}
         style={{ cursor: 'pointer' }}
       >
-        <span className={styles.fieldLabel}>{label}</span>
+        <span className={`${styles.fieldLabel} ${flagUnresolved ? styles.fieldLabelFlagged : ''}`}>
+          {flagUnresolved && <span className={styles.issueIndicator} />}
+          {label}
+        </span>
         <input
-          className={`${styles.fieldInput} ${inputClass} ${isEditing ? styles.fieldInputEditing : isSelected ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`}
+          className={`${styles.fieldInput} ${inputClass} ${isEditing ? styles.fieldInputEditing : flagUnresolved ? styles.fieldInputHighlightedOrange : isSelected ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`}
           readOnly={!isEditing}
           value={isEditing ? draftValue : currentVal}
           onChange={e => setDraftValue(e.target.value)}
@@ -505,56 +517,9 @@ export default function DetailFields1099({
         {/* ── State Tax Information ── */}
         <div className={styles.sectionHeader}>State Tax Information</div>
 
-        {activePayer === 'unwaverIngFinancial' ? (
-          <>
-            {renderReadOnlyRow(
-              `stateTaxId-${activePayer}`,
-              "(13) State / Payer's state ID number",
-              amounts?.intStateIdUnwavering ?? form.box13_stateTaxId,
-            )}
-            {renderReadOnlyRow(`stateTax-${activePayer}`, '(14) State income tax withheld', form.box14_stateTax)}
-            {renderReadOnlyRow(
-              `stateIncome-${activePayer}`,
-              '(15) State income',
-              amounts?.intStateIncomeUnwavering
-                ? amounts.intStateIncomeUnwavering.toLocaleString()
-                : (amounts?.intStateIdUnwavering ? '' : form.box15_stateIncome),
-            )}
-            {(amounts?.intStateIdUnwavering || (amounts?.intStateIncomeUnwavering ?? 0) > 0) &&
-              !reviewedFields?.has('intState-unwavering') && (
-              <div style={{ padding: '4px 20px 12px', display: 'flex', gap: 8 }}>
-                <button
-                  type="button"
-                  className={styles.saveBtn}
-                  onClick={() => {
-                    onAmountChange?.(
-                      { intStateIdUnwavering: '', intStateIncomeUnwavering: 0 },
-                      'intState-unwavering',
-                    )
-                    onMarkReviewed?.('intState-unwavering')
-                  }}
-                >
-                  Clear phantom state data
-                </button>
-                <Tooltip text="Confirm blank / looks correct" placement="top">
-                  <button
-                    type="button"
-                    className={styles.markCorrectBtn}
-                    onClick={() => onMarkReviewed?.('intState-unwavering')}
-                  >
-                    <CircleCheck size="small" />
-                  </button>
-                </Tooltip>
-              </div>
-            )}
-          </>
-        ) : (
-          <>
-            {renderReadOnlyRow(`stateTaxId-${activePayer}`, "(13) State / Payer's state ID number", form.box13_stateTaxId)}
-            {renderReadOnlyRow(`stateTax-${activePayer}`, '(14) State income tax withheld', form.box14_stateTax)}
-            {renderReadOnlyRow(`stateIncome-${activePayer}`, '(15) State income', form.box15_stateIncome)}
-          </>
-        )}
+        {renderReadOnlyRow(`stateTaxId-${activePayer}`, "(13) State / Payer's state ID number", form.box13_stateTaxId)}
+        {renderReadOnlyRow(`stateTax-${activePayer}`, '(14) State income tax withheld', form.box14_stateTax)}
+        {renderReadOnlyRow(`stateIncome-${activePayer}`, '(15) State income', form.box15_stateIncome)}
 
       </div>
     </div>

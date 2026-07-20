@@ -7,7 +7,6 @@ export const PHASE1_FLAG_MESSAGES = {
     ein: 'Employer EIN not imported. Required for e-filing. Enter manually.',
     box12: 'Box 12 amounts not imported. Codes present, amounts missing. Enter manually.',
     wages: 'Box 1 wages may be misread. Source shows 148,940; return has 118,940.',
-    box13: 'Box 13 Retirement plan not checked. Client has a workplace 401(k) — confirm against source.',
   },
   div: {
     fedTaxWithheld: 'Box 4 withholding may be misread. Source shows 26,363; return has 24,925.',
@@ -17,8 +16,6 @@ export const PHASE1_FLAG_MESSAGES = {
   },
   int: {
     taxableInterest: 'Box 1 interest may be misread. Verify against source.',
-    phantomState:
-      'State tax info (Colorado) is on the return but not on the source document. Jessica is a Texas resident — clear if incorrect.',
   },
   r: {
     grossDistrib: 'Gross distribution may be misread. Verify against source.',

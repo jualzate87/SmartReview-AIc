@@ -71,8 +71,7 @@ export type LiveAmounts = {
   /** Schedule A charitable cash contributions */
   charitableContributions: number
   /**
-   * Unwavering 1099-INT phantom state income (CO) — editable so preparers can clear it.
-   * Source PDF has no state info for this TX resident.
+   * Unwavering 1099-INT state fields — kept for session compatibility; seeded blank.
    */
   intStateIncomeUnwavering: number
   intStateIdUnwavering: string
@@ -106,17 +105,16 @@ export const SEED_AMOUNTS: LiveAmounts = {
     c: { code: 'DD', amount: 0 },
     d: { code: '', amount: 0 },
   },
-  // Box 13 blank at import — questionnaire says Tech Circle has 401(k) coverage
-  box13RetirementPlan: false,
+  // Box 13 matches Tech Circle W-2 / questionnaire (401(k) coverage)
+  box13RetirementPlan: true,
   box13StatutoryEmployee: false,
   box13ThirdPartySickPay: false,
   schCExpenses: 0,
   mortgageInterest: 0,
   saltTaxes: 8_400,
   charitableContributions: 1_200,
-  // Phantom CO state data planted on Unwavering 1099-INT (not on source for TX resident)
-  intStateIncomeUnwavering: 1_986,
-  intStateIdUnwavering: 'CO-47882103',
+  intStateIncomeUnwavering: 0,
+  intStateIdUnwavering: '',
 }
 
 /** Source-true NEC Box 1 on the Summit PDF — not seeded onto the return/detail panel. */

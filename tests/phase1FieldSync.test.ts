@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   countPhase1FlagsForW2Payer,
   countPhase1FlagsForW2Tab,
+  getPhase1FlagKeysForVerifiedDoc,
   getTabFlagCounts,
   isBox12FlagResolved,
   isPhase1FlagResolved,
@@ -79,5 +80,39 @@ describe('Phase 1 flag total', () => {
     const total = PHASE1_FLAG_KEYS.filter(k => !isPhase1FlagResolved(k, empty)).length
     expect(total).toBe(10)
     expect(getTabFlagCounts(empty)['1099-rs']).toBe(1)
+  })
+})
+
+describe('getPhase1FlagKeysForVerifiedDoc', () => {
+  it('returns all Tech Circle W-2 flags plus box12 sub-rows', () => {
+    const keys = getPhase1FlagKeysForVerifiedDoc('techCircle')
+    expect(keys).toEqual(expect.arrayContaining([
+      'ssn-techCircle',
+      'wages-techCircle',
+      'box12',
+      'ein-techCircle',
+      'box12a-techCircle',
+      'box12b-techCircle',
+      'box12c-techCircle',
+      'box12d-techCircle',
+    ]))
+  })
+
+  it('returns INT interest flag for Unwavering', () => {
+    expect(getPhase1FlagKeysForVerifiedDoc('1099-int-unwaverIngFinancial')).toEqual([
+      'taxableInterest',
+    ])
+  })
+
+  it('returns DIV primary payer flags', () => {
+    expect(getPhase1FlagKeysForVerifiedDoc('1099-div-tokenFinancial')).toEqual([
+      'divCollectibles',
+      'divNonDiv',
+      'fedTaxWithheld',
+    ])
+  })
+
+  it('returns 1099-R Meridian flag', () => {
+    expect(getPhase1FlagKeysForVerifiedDoc('1099-r')).toEqual(['grossDistrib-meridian'])
   })
 })

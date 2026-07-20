@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react'
 import { CircleCheck, PopIn } from '@design-systems/icons'
 import sparklesIcon from '../../assets/icons/sparkles.svg'
+import CoachTip, { markCoachTipShown, readCoachTipShown } from './CoachTip'
 import styles from '../../styles/data-review/ReviewTab.module.css'
 
 // Import docs first; Questionnaire + Prior Year 1040 last (reference / Organizer)
@@ -57,6 +59,18 @@ export default function ReviewTab({
   tabVerifiedKeys,
   typeReviewed,
 }: ReviewTabProps) {
+  const [dockCoachOpen, setDockCoachOpen] = useState(false)
+
+  useEffect(() => {
+    if (!isPopout) return
+    if (readCoachTipShown('dockBack')) return
+    setDockCoachOpen(true)
+  }, [isPopout])
+
+  const dismissDockCoach = () => {
+    markCoachTipShown('dockBack')
+    setDockCoachOpen(false)
+  }
 
   const handleTabClick = (key: string, label: string) => {
     if (TAB_KEYS.has(key)) {
@@ -121,14 +135,26 @@ export default function ReviewTab({
 
       {/* Dock-back button — only shown in the popout window */}
       {isPopout && (
-        <button
-          className={styles.dockBackBtn}
-          aria-label="Dock back to main window"
-          onClick={() => window.close()}
+        <CoachTip
+          open={dockCoachOpen}
+          title="Dock back to the main window"
+          message="Done with the separate window? Dock back closes this view and returns you to the main review screen."
+          onClose={dismissDockCoach}
+          position="bottom"
+          alignment="right"
         >
-          <PopIn size="small" />
-          Dock back
-        </button>
+          <button
+            className={styles.dockBackBtn}
+            aria-label="Dock back to main window"
+            onClick={() => {
+              dismissDockCoach()
+              window.close()
+            }}
+          >
+            <PopIn size="small" />
+            Dock back
+          </button>
+        </CoachTip>
       )}
     </div>
   )

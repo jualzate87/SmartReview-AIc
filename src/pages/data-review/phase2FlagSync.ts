@@ -62,7 +62,7 @@ export type DiagnosticDismissRule = {
   notes?: string
 }
 
-/** Remaining input↔source gaps after Phase 1 (mark-correct without fixing, silent errors, phantom CO). */
+/** Remaining input↔source gaps after Phase 1 (mark-correct without fixing, silent errors). */
 export function getOutstandingImportMismatches(amounts: LiveAmounts): Array<{
   id: string
   label: string
@@ -133,26 +133,6 @@ export function getOutstandingImportMismatches(amounts: LiveAmounts): Array<{
       tab: '1099-rs',
     })
   }
-  if (amounts.intStateIncomeUnwavering > 0 || amounts.intStateIdUnwavering.trim()) {
-    rows.push({
-      id: 'phantomCO',
-      label: '1099-INT state info (Unwavering) — not on source',
-      returnValue: amounts.intStateIdUnwavering || `$${amounts.intStateIncomeUnwavering.toLocaleString()}`,
-      sourceValue: 'Blank (TX resident)',
-      field: 'stateTaxId-unwaverIngFinancial',
-      tab: '1099-ints',
-    })
-  }
-  if (!amounts.box13RetirementPlan) {
-    rows.push({
-      id: 'box13',
-      label: 'W-2 Box 13 Retirement plan',
-      returnValue: 'Unchecked',
-      sourceValue: 'Should be checked (401(k))',
-      field: 'box13',
-      tab: 'w2s',
-    })
-  }
 
   return rows
 }
@@ -171,7 +151,7 @@ export const DIAGNOSTIC_DISMISS_RULES: Record<Phase2IssueKey, DiagnosticDismissR
     dismissWhenReviewed: [],
     activeWhenAmounts: ({ amounts }) => getOutstandingImportMismatches(amounts).length > 0,
     notes:
-      'Surfaces remaining input↔source mismatches (including silent errors and phantom CO) after Phase 1.',
+      'Surfaces remaining input↔source mismatches (including silent errors) after Phase 1.',
   },
   niitForm8960: {
     dismissWhenReviewed: [],

@@ -2,9 +2,17 @@ import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight, CircleCheck, Panel, Document } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
+import { DropdownButton, MenuItem } from '@ids-ts/dropdown-button'
+import '@ids-ts/dropdown-button/dist/main.css'
 import brandBallsIcon from '../../assets/icons/brand-balls.svg'
 import Tooltip from './Tooltip'
 import styles from '../../styles/data-review/YoYDetailPane.module.css'
+
+export type IssueActionMenuItem = {
+  label: string
+  tab?: string
+  field?: string
+}
 
 export type IssueAction = {
   type: 'goToInput' | 'reviewSource' | 'viewClientResponse' | 'openForm'
@@ -15,6 +23,8 @@ export type IssueAction = {
   tab?: string
   field?: string
   questionnaireResponseId?: string
+  /** When set, render as a dropdown of destinations instead of a single button */
+  menuItems?: IssueActionMenuItem[]
 }
 
 /** IRS law / guidance card for See details Sources section */
@@ -334,6 +344,34 @@ export default function IssueDetailPane({
             <div className={styles.actionButtons}>
               {resolvedActions.map((action, i) => {
                 const primary = i === 0
+                if (action.menuItems?.length) {
+                  return (
+                    <DropdownButton
+                      key={`${action.type}-${action.label}`}
+                      label={action.label}
+                      buttonPriority={primary ? 'primary' : 'secondary'}
+                      buttonSize="small"
+                      automationId={`issue-action-menu-${action.label}`}
+                      onSelect={(e: { target?: { value?: string } }) => {
+                        const idx = Number(e?.target?.value)
+                        const item = action.menuItems?.[idx]
+                        if (!item) return
+                        runAction({
+                          type: 'goToInput',
+                          label: item.label,
+                          tab: item.tab,
+                          field: item.field,
+                        })
+                      }}
+                    >
+                      {action.menuItems.map((item, idx) => (
+                        <MenuItem key={item.label} value={String(idx)}>
+                          {item.label}
+                        </MenuItem>
+                      ))}
+                    </DropdownButton>
+                  )
+                }
                 const icon =
                   action.type === 'viewClientResponse' || action.type === 'openForm'
                     ? <Document size="small" />

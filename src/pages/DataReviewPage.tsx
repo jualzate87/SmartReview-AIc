@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
-import { ArrowLeft, DotsSix, Panel, ChevronLeft, ChevronRight, Comment, PopOut, Close } from '@design-systems/icons'
+import { DotsSix, Panel, ChevronLeft, ChevronRight, Comment, PopOut, Close } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import { IconControl } from '@ids-ts/icon-control'
@@ -26,10 +26,6 @@ import {
   getUnreviewedSourceDocs,
   isDocReviewed,
 } from './data-review/docReviewStatus'
-import DocReviewTransitionModal, {
-  markDocReviewModalShown,
-  readDocReviewModalShown,
-} from './data-review/DocReviewTransitionModal'
 import DetailFields1099R, { R_PAYER_TABS } from './data-review/DetailFields1099R'
 import DetailFieldsNec, { NEC_PAYER_TABS } from './data-review/DetailFieldsNec'
 import PeelTab from './data-review/PeelTab'
@@ -39,6 +35,7 @@ import type { QuestionnaireResponseId } from './data-review/questionnaireData'
 import type { OutputFormId } from './data-review/outputForms'
 import { resolveOutputFormFromAction } from './data-review/outputForms'
 import AgentReportPane from './data-review/AgentReportPane'
+import CoachTip, { markCoachTipShown, readCoachTipShown, type CoachTipId } from './data-review/CoachTip'
 import AgentLoadingPane from './data-review/AgentLoadingPane'
 import WelcomePane from './data-review/WelcomePane'
 import Phase1Banner from './data-review/Phase1Banner'
@@ -176,6 +173,8 @@ export default function DataReviewPage() {
   const [show1040, setShow1040] = useState(true)
   const [outputFormId, setOutputFormId] = useState<OutputFormId>('summary')
   const [importsStarted, setImportsStarted] = useState(false)
+  /** First-run coach tips: hide summary → detach → (popout) dock back */
+  const [coachTip, setCoachTip] = useState<CoachTipId | null>(null)
   /** Explicit left-panel px width during Summary collapse/expand (null = natural flex). */
   const [leftAnimWidth, setLeftAnimWidth] = useState<number | null>(null)
   /** Keep doc|Details side-by-side during Summary toggle so flexDirection doesn't flip mid-motion. */
@@ -220,14 +219,6 @@ export default function DataReviewPage() {
   const unreviewedDocCount = unreviewedSourceDocs.length
   const flagsCleared = phase1Complete
   const phase1FullyComplete = flagsCleared && unreviewedDocCount === 0
-  const [docReviewModalOpen, setDocReviewModalOpen] = useState(false)
-
-  useEffect(() => {
-    if (!(flagsCleared && unreviewedDocCount > 0 && !phase1FullyComplete)) return
-    if (readDocReviewModalShown()) return
-    markDocReviewModalShown()
-    setDocReviewModalOpen(true)
-  }, [flagsCleared, unreviewedDocCount, phase1FullyComplete])
   // Phase 2 diagnostics progress — same dismiss rules AgentReportPane uses, so
   // resolving Phase 1 flags / editing amounts that fix an insight keeps the banner in sync.
   const phase2Progress = getPhase2Progress({
@@ -275,8 +266,8 @@ export default function DataReviewPage() {
 
   const startReviewingImports = useCallback(() => {
     setImportsStarted(true)
-    // Auto-collapse Summary so source + input fill the viewport (research: Hide Summary confusion)
-    setShow1040(false)
+    // Keep Summary visible so the Hide Summary coach tip can teach the control
+    setShow1040(true)
     const body = bodyRef.current
     const bodyW = body
       ? (body.clientWidth || body.getBoundingClientRect().width)
@@ -290,6 +281,38 @@ export default function DataReviewPage() {
       setTimeout(() => setRightPanelAnimating(false), SOURCE_PANEL_ENTER_MS)
     }))
   }, [])
+
+  const dismissCoachTip = useCallback((id: CoachTipId) => {
+    markCoachTipShown(id)
+    if (id === 'hideSummary' && !readCoachTipShown('detach')) {
+      setCoachTip('detach')
+      return
+    }
+    setCoachTip(null)
+  }, [])
+
+  // Sequence coach tips once sources are open in Phase 1
+  useEffect(() => {
+    if (phase !== 'import' || !importsStarted || !rightPanelVisible || poppedOut) return
+    if (!readCoachTipShown('hideSummary')) {
+      if (show1040) {
+        setCoachTip('hideSummary')
+        return
+      }
+      // Summary already collapsed — skip that tip and move to Detach
+      markCoachTipShown('hideSummary')
+    }
+    if (!readCoachTipShown('detach')) {
+      setCoachTip('detach')
+    }
+  }, [phase, importsStarted, rightPanelVisible, show1040, poppedOut])
+
+  // If Hide Summary collapses while its tip is open, advance the sequence
+  useEffect(() => {
+    if (!show1040 && coachTip === 'hideSummary') {
+      dismissCoachTip('hideSummary')
+    }
+  }, [show1040, coachTip, dismissCoachTip])
 
   // Field that the agent flagged as an issue — drives orange highlight mode
   // Set when navigating to source docs from any issue detail pane
@@ -722,11 +745,6 @@ export default function DataReviewPage() {
       {/* Header */}
       <div className={styles.header}>
         <div className={styles.headerLeft}>
-          <div className={styles.backDivider}>
-            <button className={styles.backButton} aria-label="Back">
-              <ArrowLeft size="medium" />
-            </button>
-          </div>
           <span className={styles.headerTitle}>Data Review - Form 1040</span>
         </div>
         <div className={styles.headerRight}>
@@ -852,15 +870,27 @@ export default function DataReviewPage() {
           }}
         >
           {inImportPhase && show1040 && (rightPanelVisible || notesOpen) && (
-            <Button
-              priority="secondary"
-              size="small"
-              className={styles.form1040HideBtn}
-              onClick={handleHideSummary}
-              aria-label="Hide Summary"
+            <CoachTip
+              open={coachTip === 'hideSummary'}
+              title="Hide the Summary"
+              message="Need more room for source documents? Use Hide Summary to collapse this panel. You can bring it back anytime with Show Summary."
+              onClose={() => dismissCoachTip('hideSummary')}
+              position="bottom"
+              alignment="left"
             >
-              <ChevronLeft size="small" /> Hide Summary
-            </Button>
+              <Button
+                priority="secondary"
+                size="small"
+                className={styles.form1040HideBtn}
+                onClick={() => {
+                  if (coachTip === 'hideSummary') dismissCoachTip('hideSummary')
+                  handleHideSummary()
+                }}
+                aria-label="Hide Summary"
+              >
+                <ChevronLeft size="small" /> Hide Summary
+              </Button>
+            </CoachTip>
           )}
           <LeftPanel1040
             selectedField={selectedField}
@@ -985,30 +1015,40 @@ export default function DataReviewPage() {
                   <span className={styles.sourcePanelTitle}>Imported documents</span>
                 )}
                 <div className={styles.sourcePanelActions}>
-                  <IconControl
-                    label="Detach"
-                    labelAlignment="right"
-                    size="small"
-                    aria-label="Detach — open source documents on another screen"
-                    onClick={() => {
-                      setPoppedOut(true)
-                      const popoutWindow = window.open(
-                        `${window.location.origin}${window.location.pathname}#/data-review-popout`,
-                        '_blank',
-                        'width=950,height=900'
-                      )
-                      if (popoutWindow) {
-                        const checkClosed = setInterval(() => {
-                          if (popoutWindow.closed) {
-                            clearInterval(checkClosed)
-                            setPoppedOut(false)
-                          }
-                        }, 500)
-                      }
-                    }}
+                  <CoachTip
+                    open={coachTip === 'detach' && !poppedOut}
+                    title="Detach for a second screen"
+                    message="Open source documents in a separate window so you can put them on another monitor while you work the inputs here."
+                    onClose={() => dismissCoachTip('detach')}
+                    position="bottom"
+                    alignment="right"
                   >
-                    <PopOut size="small" />
-                  </IconControl>
+                    <IconControl
+                      label="Detach"
+                      labelAlignment="right"
+                      size="small"
+                      aria-label="Detach — open source documents on another screen"
+                      onClick={() => {
+                        if (coachTip === 'detach') dismissCoachTip('detach')
+                        setPoppedOut(true)
+                        const popoutWindow = window.open(
+                          `${window.location.origin}${window.location.pathname}#/data-review-popout`,
+                          '_blank',
+                          'width=950,height=900'
+                        )
+                        if (popoutWindow) {
+                          const checkClosed = setInterval(() => {
+                            if (popoutWindow.closed) {
+                              clearInterval(checkClosed)
+                              setPoppedOut(false)
+                            }
+                          }, 500)
+                        }
+                      }}
+                    >
+                      <PopOut size="small" />
+                    </IconControl>
+                  </CoachTip>
                   <IconControl
                     size="small"
                     aria-label="Close"
@@ -1256,7 +1296,6 @@ export default function DataReviewPage() {
                     ssn: PHASE1_FLAG_MESSAGES.w2.ssn,
                     wages: PHASE1_FLAG_MESSAGES.w2.wages,
                     box12: PHASE1_FLAG_MESSAGES.w2.box12,
-                    box13: PHASE1_FLAG_MESSAGES.w2.box13,
                     ein: PHASE1_FLAG_MESSAGES.w2.ein,
                   }}
                 />
@@ -1318,8 +1357,6 @@ export default function DataReviewPage() {
                   onVerifyDoc={toggleVerifiedDoc}
                   flaggedFields={{
                     taxableInterest: PHASE1_FLAG_MESSAGES.int.taxableInterest,
-                    'stateTaxId-unwaverIngFinancial': PHASE1_FLAG_MESSAGES.int.phantomState,
-                    'stateIncome-unwaverIngFinancial': PHASE1_FLAG_MESSAGES.int.phantomState,
                   }}
                   onAddFieldNote={(text, context) => handleAddNote(text, context)}
                 />
@@ -1454,6 +1491,13 @@ export default function DataReviewPage() {
                           setActiveTopTab(tab)
                           if (subTab) setActiveSubTab(subTab)
                         }
+                        // Prefer field-driven payer navigation (DIV / INT peel tabs)
+                        if (field) {
+                          const nav = navigationForDetailField(field)
+                          if (nav?.divPayer) setActiveDivPayer(nav.divPayer)
+                          if (nav?.intPayer) setActiveIntPayer(nav.intPayer)
+                          if (nav?.tab && !tab) setActiveTopTab(nav.tab)
+                        }
                         if (tab === 'questionnaire') {
                           setQuestionnaireHighlightId(questionnaireResponseId ?? null)
                           setSelectedField(null)
@@ -1517,12 +1561,6 @@ export default function DataReviewPage() {
           closing={notesClosing}
         />
       )}
-
-      <DocReviewTransitionModal
-        open={docReviewModalOpen}
-        onClose={() => setDocReviewModalOpen(false)}
-        onReviewNextDocument={handleReviewNextDocument}
-      />
     </div>
   )
 }

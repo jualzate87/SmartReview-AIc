@@ -30,32 +30,6 @@
   overflow: visible;
 }
 
-/* Back button — bordered box */
-.backButton {
-  display: flex;
-  align-items: center;
-  padding: 4px;
-  background: var(--color-input-background-primary, #ffffff);
-  border: 1px solid #859299;
-  border-radius: 4px;
-  cursor: pointer;
-  color: #5D686F;
-  flex-shrink: 0;
-}
-
-.backButton:hover {
-  background: #f4f5f8;
-}
-
-/* Divider after back button */
-.backDivider {
-  border-right: 1px solid #D5DEE3;
-  padding-right: 22px;
-  display: flex;
-  align-items: center;
-  height: 100%;
-}
-
 /* Title — Regular weight, not Demi */
 .headerTitle {
   font-family: var(--font-family-component) !important;

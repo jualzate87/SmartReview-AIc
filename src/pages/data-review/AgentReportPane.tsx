@@ -124,8 +124,7 @@ function buildImportMismatchesIssue(amounts: LiveAmounts): IssueCard {
     tableHeaders: ['Field', 'On return', 'On source', ''],
     suggestedActions: [
       'Open each listed field and compare to the source document preview.',
-      'Correct the amount, or clear phantom data (e.g. Colorado state on 1099-INT).',
-      'Re-check Box 13 Retirement plan on the W-2 if the client has a workplace plan.',
+      'Correct amounts that disagree with the source, or enter missing identity fields.',
     ],
     actions: first
       ? [
@@ -173,7 +172,17 @@ const NIIT_FORM8960_ISSUE: IssueCard = {
     'Cross-check qualified vs. ordinary dividend classifications.',
   ],
   actions: [
-    { type: 'goToInput', label: 'Go to investment income', field: 'ordinaryDivs' },
+    {
+      type: 'goToInput',
+      label: 'Go to investment income',
+      field: 'ordinaryDivs',
+      menuItems: [
+        { label: 'Taxable interest (1099-INT)', tab: '1099-ints', field: 'taxableInterest' },
+        { label: 'Ordinary dividends (1099-DIV)', tab: '1099-divs', field: 'ordinaryDivs' },
+        { label: 'Qualified dividends (1099-DIV)', tab: '1099-divs', field: 'qualifiedDivs' },
+        { label: 'Summary — investment lines', field: 'ordinaryDivs' },
+      ],
+    },
     {
       type: 'openForm',
       label: 'Open Form 8960',
@@ -192,7 +201,7 @@ const NIIT_FORM8960_ISSUE: IssueCard = {
   ],
   // Summary CY investment lines only — never prior-1040
   viewSourceField: 'ordinaryDivs',
-  summaryOnlyGoToInput: true,
+  summaryOnlyGoToInput: false,
 }
 
 function buildUnderpaymentRiskIssue(live: LiveReturnTotals): IssueCard {

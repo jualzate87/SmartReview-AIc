@@ -1,0 +1,49 @@
+.wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
+/* Pink attention pulse — sits at the top-right of the control */
+.dot {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  z-index: 5;
+  width: 12px;
+  height: 12px;
+  pointer-events: none;
+}
+
+.dot::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  background: #e91e8c;
+  box-shadow: 0 0 0 2px #fff;
+}
+
+.dotPulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(233, 30, 140, 0.45);
+  animation: coachPulse 1.6s ease-out infinite;
+}
+
+@keyframes coachPulse {
+  0% {
+    transform: scale(0.65);
+    opacity: 0.9;
+  }
+  70% {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+}
