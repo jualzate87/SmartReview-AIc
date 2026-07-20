@@ -144,6 +144,9 @@
   overflow: hidden;
   border-left: 1px solid #D5DEE3;
   min-height: 0;
+  /* min-width:0 so wide Details/preview content can't expand past the
+     allocated Sources width and force page-level horizontal scroll. */
+  min-width: 0;
   flex-shrink: 0;
   /* Matches .leftPanel timing so the two panels resize in lockstep
      when the 1040 toggles — includes `flex` since collapsing the 1040 switches

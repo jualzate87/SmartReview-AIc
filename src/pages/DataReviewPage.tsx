@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { useSyncedReviewState } from '../hooks/useSyncedReviewState'
-import { DotsSix, Panel, ChevronLeft, ChevronRight, Comment, PopOut, Close } from '@design-systems/icons'
+import { DotsSix, Panel, ChevronLeft, ChevronRight, Comment, Close } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import { IconControl } from '@ids-ts/icon-control'
@@ -87,7 +87,7 @@ const SUMMARY_TOGGLE_MS = 500
 const SHOW_SUMMARY_HANDLE_WIDTH = 44
 /** Soft floor for Summary when dragging the splitter — layout uses min-width:0
  *  so Summary + Sources always fit the viewport (no page horizontal scroll). */
-const LEFT_PANEL_MIN_WIDTH = 320
+const LEFT_PANEL_MIN_WIDTH = 720
 /** Absolute min Sources width when both panels are open */
 const RIGHT_PANEL_MIN_WIDTH = 360
 /** Matches DragHandle.module.css .handleVertical width */
@@ -95,8 +95,7 @@ const PANEL_DRAG_HANDLE_WIDTH = 16
 
 export default function DataReviewPage() {
   // Source-doc review state — flags, reviewed fields, active tab, editable field
-  // values — is shared live with the pop-out window via BroadcastChannel so the
-  // two views never drift apart. See useSyncedReviewState for the sync mechanism.
+  // values — persisted in sessionStorage via useSyncedReviewState.
   const {
     activeTopTab, setActiveTopTab,
     activeSubTab, setActiveSubTab,
@@ -144,8 +143,6 @@ export default function DataReviewPage() {
   const [panelResizing, setPanelResizing] = useState(false)
   // Top/bottom section height ratio in right panel (0-100, where value = preview percentage)
   const [previewHeight, setPreviewHeight] = useState(40)
-  // Whether right panel is popped out
-  const [poppedOut, setPoppedOut] = useState(false)
   // Whether the right document panel is visible — hidden until "Start reviewing imports"
   const [rightPanelVisible, setRightPanelVisible] = useState(false)
   // Whether the right panel is animating out (slide-out before display:none)
@@ -176,8 +173,12 @@ export default function DataReviewPage() {
   const [show1040, setShow1040] = useState(true)
   const [outputFormId, setOutputFormId] = useState<OutputFormId>('summary')
   const [importsStarted, setImportsStarted] = useState(false)
-  /** First-run coach tips: hide summary → detach → (popout) dock back */
+  /** First-run coach tip: hide summary */
   const [coachTip, setCoachTip] = useState<CoachTipId | null>(null)
+  /** One-shot nudge when Phase 1 is fully complete (flags + docs) */
+  const [continueDiagnosticsCoach, setContinueDiagnosticsCoach] = useState(false)
+  /** One-shot nudge after Phase 2 diagnostics are all reviewed */
+  const [outputFormsCoach, setOutputFormsCoach] = useState(false)
   /** Explicit left-panel px width during Summary collapse/expand (null = natural flex). */
   const [leftAnimWidth, setLeftAnimWidth] = useState<number | null>(null)
   /** Keep doc|Details side-by-side during Summary toggle so flexDirection doesn't flip mid-motion. */
@@ -276,8 +277,8 @@ export default function DataReviewPage() {
       ? (body.clientWidth || body.getBoundingClientRect().width)
       : window.innerWidth
     setBodyWidth(bodyW)
-    // ~65% of body → sourcesPanelWide (>0.6) → auto side-by-side on open;
-    // clamp so Summary still fits when both panels are open.
+    // ~65% of body for Sources; Details stays full-width of Sources while
+    // Summary is open (stacked). Clamp so Summary still fits beside Sources.
     const preferred = Math.round(bodyW * 0.65)
     const preferredMax = bodyW - LEFT_PANEL_MIN_WIDTH - PANEL_DRAG_HANDLE_WIDTH
     const hardMax = Math.max(RIGHT_PANEL_MIN_WIDTH, bodyW - PANEL_DRAG_HANDLE_WIDTH)
@@ -292,28 +293,44 @@ export default function DataReviewPage() {
 
   const dismissCoachTip = useCallback((id: CoachTipId) => {
     markCoachTipShown(id)
-    if (id === 'hideSummary' && !readCoachTipShown('detach')) {
-      setCoachTip('detach')
-      return
-    }
     setCoachTip(null)
   }, [])
 
-  // Sequence coach tips once sources are open in Phase 1
+  const dismissContinueDiagnosticsCoach = useCallback(() => {
+    markCoachTipShown('continueDiagnostics')
+    setContinueDiagnosticsCoach(false)
+  }, [])
+
+  const dismissOutputFormsCoach = useCallback(() => {
+    markCoachTipShown('outputForms')
+    setOutputFormsCoach(false)
+  }, [])
+
+  // Hide-summary coach tip once sources are open in Phase 1
   useEffect(() => {
-    if (phase !== 'import' || !importsStarted || !rightPanelVisible || poppedOut) return
+    if (phase !== 'import' || !importsStarted || !rightPanelVisible) return
     if (!readCoachTipShown('hideSummary')) {
       if (show1040) {
         setCoachTip('hideSummary')
-        return
+      } else {
+        markCoachTipShown('hideSummary')
       }
-      // Summary already collapsed — skip that tip and move to Detach
-      markCoachTipShown('hideSummary')
     }
-    if (!readCoachTipShown('detach')) {
-      setCoachTip('detach')
-    }
-  }, [phase, importsStarted, rightPanelVisible, show1040, poppedOut])
+  }, [phase, importsStarted, rightPanelVisible, show1040])
+
+  // Continue-to-diagnostics nudge when Phase 1 is fully complete
+  useEffect(() => {
+    if (phase !== 'import' || !phase1FullyComplete) return
+    if (readCoachTipShown('continueDiagnostics')) return
+    setContinueDiagnosticsCoach(true)
+  }, [phase, phase1FullyComplete])
+
+  // Output-forms nudge when Phase 2 diagnostics are complete
+  useEffect(() => {
+    if (phase !== 'diagnostics' || !phase2Complete) return
+    if (readCoachTipShown('outputForms')) return
+    setOutputFormsCoach(true)
+  }, [phase, phase2Complete])
 
   // If Hide Summary collapses while its tip is open, advance the sequence
   useEffect(() => {
@@ -485,6 +502,7 @@ export default function DataReviewPage() {
   // ProtoC: Phase 1 → Phase 2 transition. Switches layout to agent-primary and
   // opens the AI diagnostics panel (plays the loading animation once).
   const handleBeginDiagnostics = () => {
+    dismissContinueDiagnosticsCoach()
     setPhase('diagnostics')
     setShow1040(true)          // 1040 visible by default in Phase 2 (context for diagnostics)
     setSelectedField(null)
@@ -641,19 +659,12 @@ export default function DataReviewPage() {
     setRightPanelWidth((w) => Math.min(w, maxRight))
   }, [bodyWidth, rightPanelVisible])
 
-  // Side-by-side (doc LEFT / Details RIGHT) when:
-  //   1. Hide Summary (!show1040), OR
-  //   2. Sources (right) panel is >60% of review body width
-  // Stacked (preview TOP / Details BOTTOM) when Summary is visible AND
-  // Sources panel is ≤60% of body. Uses measured body.clientWidth.
-  // Do NOT use previewHeight.
-  // Equivalent: sideBySide = !show1040 || (sourcesOpen && rightPanelWidth / bodyClientWidth > 0.6)
-  const sourcesPanelWide =
-    rightPanelVisible &&
-    !rightPanelExiting &&
-    bodyWidth > 0 &&
-    rightPanelWidth / bodyWidth > 0.6
-  const previewSideBySide = freezePreviewSideBySide || !show1040 || sourcesPanelWide
+  // Side-by-side (doc | Details) only when Summary is hidden — Sources then has
+  // the full body width. When both Summary + Sources are open, always stack
+  // (preview TOP / Details BOTTOM) so the Details form keeps the full Sources
+  // column width and never needs horizontal page scroll to stay readable.
+  // freezePreviewSideBySide holds orientation steady during Hide/Show Summary.
+  const previewSideBySide = freezePreviewSideBySide || !show1040
   const inImportPhase = phase === 'import'
 
   // Resize drag between the document preview and detail fields. Axis is frozen
@@ -831,6 +842,8 @@ export default function DataReviewPage() {
           onContinue={handleBeginDiagnostics}
           importsStarted={importsStarted}
           onStartImports={startReviewingImports}
+          continueCoachOpen={continueDiagnosticsCoach}
+          onDismissContinueCoach={dismissContinueDiagnosticsCoach}
         />
       )}
 
@@ -937,6 +950,8 @@ export default function DataReviewPage() {
             editedFields={editedFields}
             outputFormId={outputFormId}
             onOutputFormChange={setOutputFormId}
+            outputFormsCoachOpen={outputFormsCoach}
+            onDismissOutputFormsCoach={dismissOutputFormsCoach}
             onAddFieldNote={(text, context) => handleAddNote(text, context)}
             onNavigateToSourceDoc={handleNavigateToSourceDoc}
             onNavigateSource={handleNavigateSource}
@@ -982,11 +997,9 @@ export default function DataReviewPage() {
           />
         </div>
 
-        {!poppedOut && (
-          <>
-            {/* Left/right drag handle — stays mounted and collapses width with Summary
-                so the gutter doesn't pop out of the row mid-animation. */}
-            {agentView === 'idle' && rightPanelVisible && !rightPanelExiting && (
+        {/* Left/right drag handle — stays mounted and collapses width with Summary
+            so the gutter doesn't pop out of the row mid-animation. */}
+        {agentView === 'idle' && rightPanelVisible && !rightPanelExiting && (
               <div
                 className={`${dragStyles.handleVertical} ${styles.summarySplitter}`}
                 onPointerDown={show1040 ? handleRightPanelDrag : undefined}
@@ -1018,12 +1031,13 @@ export default function DataReviewPage() {
                 flex: (rightPanelFills && rightPanelVisible)
                   ? '1 1 0%'
                   : '0 0 auto',
+                minWidth: 0,
                 overflow: 'hidden',
                 opacity: (agentView === 'loading' || agentView === 'report' || agentView === 'closing' || (!rightPanelVisible && !rightPanelExiting)) ? 0 : 1,
                 transition: panelResizing ? 'none' : undefined,
               }}
             >
-              {/* Source panel header — title left; Detach + Close on right */}
+              {/* Source panel header — title left; Close on right */}
               <div className={styles.sourcePanelHeader}>
                 {/* "Back to agent insights" only makes sense in Phase 2, after navigating from the agent */}
                 {!inImportPhase && fromAgent && agentView === 'idle' && rightPanelVisible ? (
@@ -1037,40 +1051,6 @@ export default function DataReviewPage() {
                   <span className={styles.sourcePanelTitle}>Imported documents</span>
                 )}
                 <div className={styles.sourcePanelActions}>
-                  <CoachTip
-                    open={coachTip === 'detach' && !poppedOut}
-                    title="Detach for a second screen"
-                    message="Open source documents in a separate window so you can put them on another monitor while you work the inputs here."
-                    onClose={() => dismissCoachTip('detach')}
-                    position="bottom"
-                    alignment="right"
-                  >
-                    <IconControl
-                      label="Detach"
-                      labelAlignment="right"
-                      size="small"
-                      aria-label="Detach — open source documents on another screen"
-                      onClick={() => {
-                        if (coachTip === 'detach') dismissCoachTip('detach')
-                        setPoppedOut(true)
-                        const popoutWindow = window.open(
-                          `${window.location.origin}${window.location.pathname}#/data-review-popout`,
-                          '_blank',
-                          'width=950,height=900'
-                        )
-                        if (popoutWindow) {
-                          const checkClosed = setInterval(() => {
-                            if (popoutWindow.closed) {
-                              clearInterval(checkClosed)
-                              setPoppedOut(false)
-                            }
-                          }, 500)
-                        }
-                      }}
-                    >
-                      <PopOut size="small" />
-                    </IconControl>
-                  </CoachTip>
                   <IconControl
                     size="small"
                     aria-label="Close"
@@ -1569,8 +1549,6 @@ export default function DataReviewPage() {
                   }
                 />
             </div>
-          </>
-        )}
       </div>
 
       {/* Notes / Comments pane — page-level overlay */}

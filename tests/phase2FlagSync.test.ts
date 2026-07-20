@@ -40,9 +40,9 @@ describe('DIAGNOSTIC_DISMISS_RULES — coverage', () => {
   it('keeps Filing stoppers / Compliance / Opportunities catalog at quality size', () => {
     expect(PHASE2_DIAGNOSTIC_ORDER).toEqual([
       'importMismatches',
-      'niitForm8960',
       'underpaymentRisk',
       'necScheduleC',
+      'niitForm8960',
       'optItemize',
     ])
   })

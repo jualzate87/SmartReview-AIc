@@ -1,7 +1,5 @@
-import { useEffect, useState } from 'react'
-import { CircleCheck, PopIn } from '@design-systems/icons'
+import { CircleCheck } from '@design-systems/icons'
 import sparklesIcon from '../../assets/icons/sparkles.svg'
-import CoachTip, { markCoachTipShown, readCoachTipShown } from './CoachTip'
 import styles from '../../styles/data-review/ReviewTab.module.css'
 
 // Import docs first; Questionnaire + Prior Year 1040 last (reference / Organizer)
@@ -30,8 +28,6 @@ interface ReviewTabProps {
   activeTopTab?: string
   onTopTabChange?: (tab: TopTab) => void
   onTabChange?: (tab: string) => void
-  onPopOut?: () => void
-  isPopout?: boolean
   /** Per-tab count of unresolved import flags — drives dynamic tab badges */
   flagCounts?: Record<string, number>
   /** Initial flag totals — used when combining with verified semantics */
@@ -51,27 +47,12 @@ export default function ReviewTab({
   activeTopTab = 'w2s',
   onTopTabChange,
   onTabChange,
-  onPopOut: _onPopOut,
-  isPopout = false,
   flagCounts,
   initialFlagCounts,
   verifiedDocs,
   tabVerifiedKeys,
   typeReviewed,
 }: ReviewTabProps) {
-  const [dockCoachOpen, setDockCoachOpen] = useState(false)
-
-  useEffect(() => {
-    if (!isPopout) return
-    if (readCoachTipShown('dockBack')) return
-    setDockCoachOpen(true)
-  }, [isPopout])
-
-  const dismissDockCoach = () => {
-    markCoachTipShown('dockBack')
-    setDockCoachOpen(false)
-  }
-
   const handleTabClick = (key: string, label: string) => {
     if (TAB_KEYS.has(key)) {
       onTopTabChange?.(key as TopTab)
@@ -132,30 +113,6 @@ export default function ReviewTab({
           </button>
         ))}
       </div>
-
-      {/* Dock-back button — only shown in the popout window */}
-      {isPopout && (
-        <CoachTip
-          open={dockCoachOpen}
-          title="Dock back to the main window"
-          message="Done with the separate window? Dock back closes this view and returns you to the main review screen."
-          onClose={dismissDockCoach}
-          position="bottom"
-          alignment="right"
-        >
-          <button
-            className={styles.dockBackBtn}
-            aria-label="Dock back to main window"
-            onClick={() => {
-              dismissDockCoach()
-              window.close()
-            }}
-          >
-            <PopIn size="small" />
-            Dock back
-          </button>
-        </CoachTip>
-      )}
     </div>
   )
 }

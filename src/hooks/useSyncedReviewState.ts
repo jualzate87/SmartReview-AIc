@@ -7,11 +7,8 @@ import type { IntPayer } from '../pages/data-review/DetailFields1099'
 import { PHASE1_TO_PHASE2_ISSUES } from '../pages/data-review/phase2FlagSync'
 import { getPhase1FlagKeysForVerifiedDoc } from '../pages/data-review/phase1FieldSync'
 
-// ProtoC: the source-doc review state (flags, reviewed fields, active tab, field
-// values) is shared live between the main window and the pop-out window via
-// BroadcastChannel, so the pop-out is genuinely the same view — not a separate
-// copy that can drift. Every field here mirrors what DataReviewPage previously
-// held as local useState; the pop-out consumes the identical hook.
+// ProtoC: source-doc review state persisted in sessionStorage. BroadcastChannel
+// remains available for cross-tab sync if a second view is added later.
 
 /** @deprecated Prefer LiveAmounts — kept for DetailFields prop shims. */
 export interface FieldValues {
@@ -175,9 +172,7 @@ function loadInitialState(): SyncedState {
 }
 
 /**
- * Shared source-doc review state, live-synced across windows (main + pop-out)
- * via BroadcastChannel. sessionStorage seeds the pop-out on open and survives
- * a channel message being missed during the brief window-open race.
+ * Shared source-doc review state with sessionStorage persistence.
  */
 export function useSyncedReviewState() {
   const channelRef = useRef<BroadcastChannel | null>(null)

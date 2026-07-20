@@ -67,7 +67,7 @@ export default function CoachTip({
 
 const STORAGE_PREFIX = 'protoc-coach-tip:'
 
-export type CoachTipId = 'hideSummary' | 'detach' | 'dockBack'
+export type CoachTipId = 'hideSummary' | 'continueDiagnostics' | 'outputForms'
 
 export function readCoachTipShown(id: CoachTipId): boolean {
   try {

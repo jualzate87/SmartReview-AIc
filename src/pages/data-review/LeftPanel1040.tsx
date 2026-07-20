@@ -13,6 +13,7 @@ import type { FieldOriginSource } from '../../data/fieldOrigins'
 import type { LiveAmounts, LiveReturnTotals } from '../../data/liveReturn'
 import { SAFE_HARBOR_2210, SEED_AMOUNTS } from '../../data/liveReturn'
 import Tooltip from './Tooltip'
+import CoachTip from './CoachTip'
 import { TAX_CONTROL_ROWS, getControlSystemValues, type TaxControlDocEntry } from '../../data/sourceDocuments'
 import { CLIENT_ADDRESS, formatClientCityStateZip } from '../../data/clientAddress'
 import { summaryFieldHasUnresolvedFlags } from './phase1FieldSync'
@@ -81,6 +82,9 @@ interface LeftPanel1040Props {
   /** Controlled output form / summary selection (Summary, 1040, Sch C, …) */
   outputFormId?: OutputFormId
   onOutputFormChange?: (id: OutputFormId) => void
+  /** One-shot coach tip on output form dropdown after Phase 2 diagnostics complete */
+  outputFormsCoachOpen?: boolean
+  onDismissOutputFormsCoach?: () => void
 }
 
 const PRIOR_YEAR = PRIOR_YEAR_1040_VALUES
@@ -114,6 +118,9 @@ function fmt(n: number) {
   return n.toLocaleString()
 }
 
+const SUMMARY_INFO_DISCOVERY_TOOLTIP =
+  'View how this amount was calculated or which documents feed it'
+
 export default function LeftPanel1040({
   selectedField,
   highlightField,
@@ -140,6 +147,8 @@ export default function LeftPanel1040({
   onAddFieldNote,
   outputFormId: controlledOutputFormId,
   onOutputFormChange,
+  outputFormsCoachOpen = false,
+  onDismissOutputFormsCoach,
 }: LeftPanel1040Props) {
   // Hooks first — keep order stable across renders
   const [internalOutputFormId, setInternalOutputFormId] = useState<OutputFormId>('summary')
@@ -819,19 +828,32 @@ export default function LeftPanel1040({
         <label className={styles.formNavLabel} htmlFor="output-form-select">
           View
         </label>
-        <select
-          id="output-form-select"
-          className={styles.formNavSelect}
-          value={outputFormId}
-          onChange={e => setOutputFormId(e.target.value as OutputFormId)}
-          aria-label="Select return form or schedule"
+        <CoachTip
+          open={outputFormsCoachOpen}
+          title="Review output forms"
+          message="Review Schedules and Forms 8960 / 2210 before finishing."
+          onClose={() => onDismissOutputFormsCoach?.()}
+          position="bottom"
+          alignment="left"
         >
-          {OUTPUT_FORM_OPTIONS.map(opt => (
-            <option key={opt.id} value={opt.id}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+          <select
+            id="output-form-select"
+            className={styles.formNavSelect}
+            value={outputFormId}
+            onChange={e => {
+              const id = e.target.value as OutputFormId
+              setOutputFormId(id)
+              if (id !== 'summary') onDismissOutputFormsCoach?.()
+            }}
+            aria-label="Select return form or schedule"
+          >
+            {OUTPUT_FORM_OPTIONS.map(opt => (
+              <option key={opt.id} value={opt.id}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </CoachTip>
       </div>
 
       {/* ── SUMMARY TABLE VIEW — Figma ProConnect style ── */}
@@ -895,7 +917,7 @@ export default function LeftPanel1040({
                               <span className={styles.summaryCurrValText}>${fmt(cat.totalCurr)}</span>
                               {totalHasBreakdown && (
                                 <Tooltip
-                                  text="View subtotals"
+                                  text={SUMMARY_INFO_DISCOVERY_TOOLTIP}
                                   placement="top"
                                   disabled={summaryFlyout?.field === cat.totalField}
                                 >
@@ -1006,7 +1028,7 @@ export default function LeftPanel1040({
                               </span>
                               {hasPopover && (
                                 <Tooltip
-                                  text={row.kind === 'calc' ? 'View subtotals' : 'View sources'}
+                                  text={SUMMARY_INFO_DISCOVERY_TOOLTIP}
                                   placement="top"
                                   disabled={summaryFlyout?.field === row.field}
                                 >
@@ -1137,7 +1159,7 @@ export default function LeftPanel1040({
                   <div className={styles.summaryCurrVal} style={{ width: 108 }}>
                     <span className={`${styles.summaryCurrValText} ${styles.summaryOweAmt}`}>${fmt(oweAmount)}</span>
                     <Tooltip
-                      text="View subtotals"
+                      text={SUMMARY_INFO_DISCOVERY_TOOLTIP}
                       placement="top"
                       disabled={summaryFlyout?.field === 'amountOwed'}
                     >

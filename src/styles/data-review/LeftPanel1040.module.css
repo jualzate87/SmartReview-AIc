@@ -30,7 +30,10 @@
   box-shadow: 0 1px 4px rgba(0,0,0,0.08);
   font-family: var(--font-family-component);
   font-size: 95%;
-  flex-shrink: 0;
+  /* Allow shrink so dual-panel Summary doesn't force page overflow;
+     wide value columns scroll inside .documentViewer instead. */
+  flex-shrink: 1;
+  min-width: 0;
   padding-bottom: 24px;
   overflow: hidden;
 }
@@ -771,7 +774,9 @@
 /* ── Summary view ── */
 .summaryWrapper {
   flex: 1;
+  min-width: 0;
   overflow-y: auto;
+  overflow-x: auto;
   padding: 40px 32px 32px;
   background: #f4f6f8;
 }
@@ -789,6 +794,7 @@
   border: 1px solid #eef0f3;
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(28,32,42,0.06), 0 1px 2px rgba(28,32,42,0.03);
+  min-width: 860px;
   /* visible so row-action tooltips aren’t clipped before the portal paints */
   overflow: visible;
 }

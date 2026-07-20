@@ -18,7 +18,8 @@ export const PHASE1_FLAG_MESSAGES = {
     taxableInterest: 'Box 1 interest may be misread. Verify against source.',
   },
   r: {
-    grossDistrib: 'Gross distribution may be misread. Verify against source.',
+    grossDistrib:
+      'Gross distribution (Box 1) may be misread. Confirm against the 1099-R — Box 1 is gross; taxable amount is Box 2a (1040 line 4b).',
   },
 } as const
 

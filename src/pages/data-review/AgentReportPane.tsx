@@ -60,8 +60,8 @@ interface AgentReportPaneProps {
 }
 
 const REPORT_CARDS = [
-  { label: 'Filing stoppers', keys: ['importMismatches', 'niitForm8960'], badgeColor: 'red' as const, position: 'first' },
-  { label: 'Compliance', keys: ['underpaymentRisk', 'necScheduleC'], badgeColor: 'orange' as const, position: 'middle' },
+  { label: 'Filing stoppers', keys: ['importMismatches'], badgeColor: 'red' as const, position: 'first' },
+  { label: 'Compliance', keys: ['underpaymentRisk', 'necScheduleC', 'niitForm8960'], badgeColor: 'orange' as const, position: 'middle' },
   { label: 'Planning opportunities', keys: ['optItemize'], badgeColor: 'blue' as const, position: 'last' },
 ]
 
@@ -125,6 +125,13 @@ function buildImportMismatchesIssue(amounts: LiveAmounts): IssueCard {
     suggestedActions: [
       'Open each listed field and compare to the source document preview.',
       'Correct amounts that disagree with the source, or enter missing identity fields.',
+      ...(gaps.some(g => g.id === 'taxablePension' || g.id === 'rWithholding')
+        ? [
+            'IRA / 1099-R tip: Box 1 is the gross distribution; Box 2a is the taxable amount that flows to Form 1040 line 4b — they often differ when basis or rollovers apply.',
+            'IRA / 1099-R tip: Confirm Box 4 federal withholding is on the return; missing withholding is a common underpayment trigger.',
+            'IRA / 1099-R tip: Check Box 7 distribution code (e.g. 7 = normal distribution). Early-withdrawal codes may need Form 5329.',
+          ]
+        : []),
     ],
     actions: first
       ? [
@@ -154,24 +161,28 @@ function buildImportMismatchesIssue(amounts: LiveAmounts): IssueCard {
 
 const NIIT_FORM8960_ISSUE: IssueCard = {
   issueKey: 'niitForm8960',
-  dotColor: 'red',
-  title: 'Required Form 8960, Net Investment Income Tax',
-  category: 'Filing stoppers',
+  dotColor: 'orange',
+  title: 'Review Form 8960 — Net Investment Income Tax',
+  category: 'Compliance',
   summary: RETURN_SUMMARY_INSIGHTS.niit,
   taxImpact:
-    'At AGI above $200,000 for single filers, net investment income may be subject to the 3.8% NIIT on Form 8960. Missing 8960 is a filing risk at this income level.',
-  rootCause: `Investment income is substantial: ${fmtUsd(FROZEN_RETURN.taxableInterest)} taxable interest, ${fmtUsd(FROZEN_RETURN.ordinaryDivs)} ordinary dividends, and ${fmtUsd(FROZEN_RETURN.qualifiedDivs)} qualified dividends.`,
+    'At AGI above $200,000 for single filers, net investment income may be subject to the 3.8% NIIT on Form 8960. Confirm the form amounts match interest and dividends on the return.',
+  rootCause: `Investment income is substantial: ${fmtUsd(FROZEN_RETURN.taxableInterest)} taxable interest, ${fmtUsd(FROZEN_RETURN.ordinaryDivs)} ordinary dividends, and ${fmtUsd(FROZEN_RETURN.qualifiedDivs)} qualified dividends. Form 8960 is already on the return — verify the NIIT computation.`,
   tableRows: [
-    { label: 'AGI (line 11)', cols: [fmtUsd(FROZEN_RETURN.totalIncome), 'Above $200k', '!'], badge: 'orange', total: false },
-    { label: 'Form 8960', cols: ['Required', 'Not filed', '!'], badge: 'red', total: true },
+    { label: 'AGI (line 11)', cols: [fmtUsd(FROZEN_RETURN.totalIncome), 'Above $200k', ''], badge: 'orange', total: false },
+    { label: 'Form 8960', cols: ['On return', 'Review NIIT lines', '✓'], badge: 'blue', total: true },
   ],
   tableHeaders: ['Item', 'Status', 'Note', ''],
   suggestedActions: [
-    'Complete Form 8960 for net investment income tax.',
-    'Confirm which dividend and interest amounts are subject to NIIT.',
-    'Cross-check qualified vs. ordinary dividend classifications.',
+    'Open Form 8960 and confirm NIIT lines match taxable interest and dividends.',
+    'Cross-check qualified vs. ordinary dividend classifications on the 1099-DIVs.',
+    'Mark this issue reviewed once the form looks correct.',
   ],
   actions: [
+    {
+      type: 'openForm',
+      label: 'Open Form 8960',
+    },
     {
       type: 'goToInput',
       label: 'Go to investment income',
@@ -182,10 +193,6 @@ const NIIT_FORM8960_ISSUE: IssueCard = {
         { label: 'Qualified dividends (1099-DIV)', tab: '1099-divs', field: 'qualifiedDivs' },
         { label: 'Summary — investment lines', field: 'ordinaryDivs' },
       ],
-    },
-    {
-      type: 'openForm',
-      label: 'Open Form 8960',
     },
   ],
   sources: [
@@ -225,11 +232,13 @@ function buildUnderpaymentRiskIssue(live: LiveReturnTotals): IssueCard {
     tableHeaders: ['Item', 'Amount', 'Status', ''],
     suggestedActions: [
       'Restore or confirm DIV / 1099-R withholding on the return.',
+      'IRA tip: Meridian 1099-R Box 4 should show $30,000 federal withholding — confirm it posted to the return.',
       'Review Form 2210 for underpayment penalty exposure.',
       'Confirm the Tax Organizer "no ES payments" answer matches her records.',
     ],
     actions: [
-      { type: 'goToInput', label: 'Go to withholding', tab: '1099-divs', field: 'fedTaxWithheld' },
+      { type: 'goToInput', label: 'Go to DIV withholding', tab: '1099-divs', field: 'fedTaxWithheld' },
+      { type: 'goToInput', label: 'Go to 1099-R withholding', tab: '1099-rs', field: 'withholding1099' },
       { type: 'viewClientResponse', label: 'View client response', questionnaireResponseId: 'estimatedPayments' },
       {
         type: 'openForm',
@@ -359,9 +368,9 @@ export const ISSUE_FIELD: Partial<Record<IssueKey, string>> = {
 function buildAllIssues(live: LiveReturnTotals, amounts: LiveAmounts): IssueCard[] {
   return [
     buildImportMismatchesIssue(amounts),
-    NIIT_FORM8960_ISSUE,
     buildUnderpaymentRiskIssue(live),
     buildNecScheduleCIssue(),
+    NIIT_FORM8960_ISSUE,
     OPT_ITEMIZE_ISSUE,
   ]
 }

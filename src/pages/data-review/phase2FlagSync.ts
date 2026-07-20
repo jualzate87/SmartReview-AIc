@@ -22,9 +22,9 @@ export type Phase2IssueKey =
 /** Canonical Phase 2 order — Filing stoppers → Compliance → Opportunities. */
 export const PHASE2_DIAGNOSTIC_ORDER: readonly Phase2IssueKey[] = [
   'importMismatches',
-  'niitForm8960',
   'underpaymentRisk',
   'necScheduleC',
+  'niitForm8960',
   'optItemize',
 ] as const
 

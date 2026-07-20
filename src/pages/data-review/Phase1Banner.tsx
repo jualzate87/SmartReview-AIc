@@ -2,6 +2,7 @@ import { ArrowRight, CircleCheck, Lock } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import intuitAssistIcon from '../../assets/icons/intuit-assist.svg'
+import CoachTip from './CoachTip'
 import styles from '../../styles/data-review/Phase1Banner.module.css'
 
 interface Phase1BannerProps {
@@ -13,12 +14,15 @@ interface Phase1BannerProps {
   unreviewedDocCount?: number
   /** Soft complete: flags cleared AND all packet docs reviewed */
   complete: boolean
-  /** Continue to Phase 2 — AI Diagnostics (enabled when flags cleared). Omit in popout. */
+  /** Continue to Phase 2 — AI Diagnostics (enabled when flags cleared) */
   onContinue?: () => void
   /** Whether the CPA has started opening source docs for import review */
   importsStarted?: boolean
   /** Begin import review — reveals source documents on the right */
   onStartImports?: () => void
+  /** One-shot coach tip on Continue when Phase 1 is fully complete */
+  continueCoachOpen?: boolean
+  onDismissContinueCoach?: () => void
 }
 
 /**
@@ -35,9 +39,9 @@ export default function Phase1Banner({
   onContinue,
   importsStarted = false,
   onStartImports,
+  continueCoachOpen = false,
+  onDismissContinueCoach,
 }: Phase1BannerProps) {
-  const needsDocReview = flagsCleared && unreviewedDocCount > 0
-
   return (
     <div
       className={[styles.banner, flagsCleared ? styles.bannerComplete : ''].filter(Boolean).join(' ')}
@@ -50,12 +54,8 @@ export default function Phase1Banner({
               <span className={styles.title}>Import accuracy confirmed</span>
               <span className={styles.subtitle}>
                 {complete
-                  ? onContinue
-                    ? 'All flagged fields and source documents have been reviewed. Ready to move to Step 2?'
-                    : 'All flagged fields and source documents have been reviewed. Dock back to continue to AI diagnostics.'
-                  : onContinue
-                    ? 'Flags are cleared. AI diagnostics are available. Reviewing remaining documents is recommended.'
-                    : 'Flags are cleared. AI diagnostics are available in the main window. Reviewing remaining documents is recommended.'}
+                  ? 'All flagged fields and source documents have been reviewed. Ready to move to Step 2?'
+                  : 'Flags are cleared. AI diagnostics are available. Reviewing remaining documents is recommended.'}
               </span>
             </>
           ) : (
@@ -87,15 +87,25 @@ export default function Phase1Banner({
         )}
 
         {flagsCleared && onContinue ? (
-          <Button priority="primary" size="medium" onClick={onContinue}>
-            Continue to AI diagnostics <ArrowRight size="small" />
-          </Button>
-        ) : flagsCleared && !onContinue ? (
-          <span className={styles.lockNote}>
-            {needsDocReview
-              ? 'AI diagnostics available in the main window. Document review is recommended.'
-              : 'Phase 1 complete. Continue to AI diagnostics in the main window.'}
-          </span>
+          <CoachTip
+            open={!!continueCoachOpen && complete}
+            title="Ready for AI diagnostics"
+            message="Import checks are complete. Continue to Step 2 for compliance, year-over-year, and planning insights."
+            onClose={() => onDismissContinueCoach?.()}
+            position="bottom"
+            alignment="right"
+          >
+            <Button
+              priority="primary"
+              size="medium"
+              onClick={() => {
+                if (continueCoachOpen) onDismissContinueCoach?.()
+                onContinue()
+              }}
+            >
+              Continue to AI diagnostics <ArrowRight size="small" />
+            </Button>
+          </CoachTip>
         ) : importsStarted ? (
           <div className={styles.lockedWrap}>
             <Button priority="secondary" size="medium" disabled>
