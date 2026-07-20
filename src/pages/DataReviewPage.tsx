@@ -85,8 +85,11 @@ const SOURCE_PANEL_EXIT_MS = 500
 const SUMMARY_TOGGLE_MS = 500
 /** Collapsed "Show Summary" edge tab width */
 const SHOW_SUMMARY_HANDLE_WIDTH = 44
-/** Summary / left 1040 panel — prevents value columns from cropping */
-const LEFT_PANEL_MIN_WIDTH = 956.4
+/** Soft floor for Summary when dragging the splitter — layout uses min-width:0
+ *  so Summary + Sources always fit the viewport (no page horizontal scroll). */
+const LEFT_PANEL_MIN_WIDTH = 320
+/** Absolute min Sources width when both panels are open */
+const RIGHT_PANEL_MIN_WIDTH = 360
 /** Matches DragHandle.module.css .handleVertical width */
 const PANEL_DRAG_HANDLE_WIDTH = 16
 
@@ -273,8 +276,13 @@ export default function DataReviewPage() {
       ? (body.clientWidth || body.getBoundingClientRect().width)
       : window.innerWidth
     setBodyWidth(bodyW)
-    // ~65% of body → sourcesPanelWide (>0.6) → auto side-by-side on open
-    setRightPanelWidth(Math.max(480, Math.round(bodyW * 0.65)))
+    // ~65% of body → sourcesPanelWide (>0.6) → auto side-by-side on open;
+    // clamp so Summary still fits when both panels are open.
+    const preferred = Math.round(bodyW * 0.65)
+    const preferredMax = bodyW - LEFT_PANEL_MIN_WIDTH - PANEL_DRAG_HANDLE_WIDTH
+    const hardMax = Math.max(RIGHT_PANEL_MIN_WIDTH, bodyW - PANEL_DRAG_HANDLE_WIDTH)
+    const maxRight = preferredMax >= RIGHT_PANEL_MIN_WIDTH ? preferredMax : hardMax
+    setRightPanelWidth(Math.min(Math.max(RIGHT_PANEL_MIN_WIDTH, preferred), maxRight))
     setRightPanelVisible(true)
     requestAnimationFrame(() => requestAnimationFrame(() => {
       setRightPanelAnimating(true)
@@ -568,7 +576,8 @@ export default function DataReviewPage() {
   }, [])
 
   // Horizontal drag between left panel and agent panel (resizes agent panel px width).
-  // Cap max so Summary (left) never shrinks below LEFT_PANEL_MIN_WIDTH when space allows.
+  // Prefer keeping Summary ≥ LEFT_PANEL_MIN_WIDTH; if the viewport is tighter, allow
+  // Summary to shrink so the row never overflows horizontally.
   const handleAgentDrag = useCallback((e: React.PointerEvent) => {
     const body = bodyRef.current
     if (!body) return
@@ -576,19 +585,21 @@ export default function DataReviewPage() {
     const startPanelWidth = agentPanelWidth
     beginPanelDrag(e, 'col-resize', (clientX) => {
       const delta = startX - clientX // dragging left = wider agent panel
-      const bodyWidth = body.getBoundingClientRect().width
-      const maxByLeftMin = bodyWidth - LEFT_PANEL_MIN_WIDTH - PANEL_DRAG_HANDLE_WIDTH
-      const upper = maxByLeftMin >= 360
-        ? Math.min(bodyWidth * 0.7, maxByLeftMin)
-        : bodyWidth * 0.7
+      const bodyW = body.getBoundingClientRect().width
+      const preferredMax = bodyW - LEFT_PANEL_MIN_WIDTH - PANEL_DRAG_HANDLE_WIDTH
+      const hardMax = Math.max(360, bodyW - PANEL_DRAG_HANDLE_WIDTH)
+      const upper = Math.min(
+        bodyW * 0.7,
+        preferredMax >= 360 ? preferredMax : hardMax,
+      )
       const next = startPanelWidth + delta
       setAgentPanelWidth(Math.max(360, Math.min(upper, next)))
     })
   }, [agentPanelWidth, beginPanelDrag])
 
   // Horizontal drag between left panel and right panel (resizes rightPanelWidth).
-  // Cap max so Summary (left) never shrinks below LEFT_PANEL_MIN_WIDTH when space allows;
-  // on narrow viewports CSS min-width + body overflow-x handles the rest.
+  // Prefer keeping Summary ≥ LEFT_PANEL_MIN_WIDTH; if the viewport is tighter, allow
+  // Summary to shrink so the row never overflows horizontally.
   const handleRightPanelDrag = useCallback((e: React.PointerEvent) => {
     const body = bodyRef.current
     if (!body) return
@@ -596,13 +607,15 @@ export default function DataReviewPage() {
     const startPanelWidth = rightPanelWidth
     beginPanelDrag(e, 'col-resize', (clientX) => {
       const delta = startX - clientX // dragging left = wider right panel
-      const bodyWidth = body.getBoundingClientRect().width
-      const maxByLeftMin = bodyWidth - LEFT_PANEL_MIN_WIDTH - PANEL_DRAG_HANDLE_WIDTH
-      const upper = maxByLeftMin >= 400
-        ? Math.min(bodyWidth * 0.75, maxByLeftMin)
-        : bodyWidth * 0.75
+      const bodyW = body.getBoundingClientRect().width
+      const preferredMax = bodyW - LEFT_PANEL_MIN_WIDTH - PANEL_DRAG_HANDLE_WIDTH
+      const hardMax = Math.max(RIGHT_PANEL_MIN_WIDTH, bodyW - PANEL_DRAG_HANDLE_WIDTH)
+      const upper = Math.min(
+        bodyW * 0.75,
+        preferredMax >= RIGHT_PANEL_MIN_WIDTH ? preferredMax : hardMax,
+      )
       const next = startPanelWidth + delta
-      setRightPanelWidth(Math.max(400, Math.min(upper, next)))
+      setRightPanelWidth(Math.max(RIGHT_PANEL_MIN_WIDTH, Math.min(upper, next)))
     })
   }, [rightPanelWidth, beginPanelDrag])
 
@@ -619,12 +632,21 @@ export default function DataReviewPage() {
     return () => ro.disconnect()
   }, [phase])
 
+  // Clamp Sources width when the viewport shrinks so Summary + Sources stay in-bounds.
+  useEffect(() => {
+    if (bodyWidth <= 0 || !rightPanelVisible) return
+    const preferredMax = bodyWidth - LEFT_PANEL_MIN_WIDTH - PANEL_DRAG_HANDLE_WIDTH
+    const hardMax = Math.max(RIGHT_PANEL_MIN_WIDTH, bodyWidth - PANEL_DRAG_HANDLE_WIDTH)
+    const maxRight = preferredMax >= RIGHT_PANEL_MIN_WIDTH ? preferredMax : hardMax
+    setRightPanelWidth((w) => Math.min(w, maxRight))
+  }, [bodyWidth, rightPanelVisible])
+
   // Side-by-side (doc LEFT / Details RIGHT) when:
   //   1. Hide Summary (!show1040), OR
   //   2. Sources (right) panel is >60% of review body width
   // Stacked (preview TOP / Details BOTTOM) when Summary is visible AND
-  // Sources panel is ≤60% of body. Uses measured body.clientWidth so Summary
-  // min-width (956.4) doesn't distort the ratio. Do NOT use previewHeight.
+  // Sources panel is ≤60% of body. Uses measured body.clientWidth.
+  // Do NOT use previewHeight.
   // Equivalent: sideBySide = !show1040 || (sourcesOpen && rightPanelWidth / bodyClientWidth > 0.6)
   const sourcesPanelWide =
     rightPanelVisible &&
@@ -863,9 +885,9 @@ export default function DataReviewPage() {
               ? leftAnimWidth
               : (inImportPhase && !show1040) ? 0 : undefined,
             opacity: (inImportPhase && !show1040) ? 0 : 1,
-            minWidth: (inImportPhase && !show1040) || leftAnimWidth !== null
-              ? 0
-              : LEFT_PANEL_MIN_WIDTH,
+            /* Always allow shrink so dual-panel fits the viewport; soft floor is
+               enforced only while dragging the splitter (LEFT_PANEL_MIN_WIDTH). */
+            minWidth: 0,
             transition: panelResizing ? 'none' : undefined,
           }}
         >

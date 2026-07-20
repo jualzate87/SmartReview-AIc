@@ -113,24 +113,23 @@
   display: flex;
   flex: 1;
   min-height: 0;
-  /* Allow shrink below content min so overflow-x scrolls instead of growing
-     the row (grown bodyWidth was breaking the >60% Sources side-by-side rule). */
+  /* min-width:0 lets columns shrink so Summary + Sources fit the viewport
+     without page-level horizontal scroll. */
   min-width: 0;
-  /* Horizontal scroll when Summary min (956.4) + source min exceeds viewport */
-  overflow-x: auto;
+  overflow-x: hidden;
   overflow-y: hidden;
   position: relative;
 }
 
 /* Left panel — flex:1, smoothly grows/shrinks as panels open/close.
-   min-width floor also set inline when Summary is visible (LEFT_PANEL_MIN_WIDTH).
-   min-width must transition too — otherwise Hide Summary jumps past 956.4. */
+   min-width:0 is required so dual-panel fits the viewport; Summary content
+   scrolls inside LeftPanel1040 when the column is narrower than the form. */
 .leftPanel {
   display: flex;
   flex-direction: column;
   overflow: hidden;
   flex: 1;
-  min-width: 956.4px;
+  min-width: 0;
   transition: flex var(--duration-transform-emphasize-fast) var(--ease-transform),
               flex-basis var(--duration-transform-emphasize-fast) var(--ease-transform),
               width var(--duration-transform-emphasize-fast) var(--ease-transform),
