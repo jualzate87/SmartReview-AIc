@@ -70,11 +70,6 @@ export type LiveAmounts = {
   saltTaxes: number
   /** Schedule A charitable cash contributions */
   charitableContributions: number
-  /**
-   * Unwavering 1099-INT state fields — kept for session compatibility; seeded blank.
-   */
-  intStateIncomeUnwavering: number
-  intStateIdUnwavering: string
 }
 
 /** Build Spec INITIAL seeds — verification anchors at session start. */
@@ -113,8 +108,6 @@ export const SEED_AMOUNTS: LiveAmounts = {
   mortgageInterest: 0,
   saltTaxes: 8_400,
   charitableContributions: 1_200,
-  intStateIncomeUnwavering: 0,
-  intStateIdUnwavering: '',
 }
 
 /** Source-true NEC Box 1 on the Summit PDF — not seeded onto the return/detail panel. */
