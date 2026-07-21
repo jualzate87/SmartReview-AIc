@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { CircleCheck, Comment } from '@design-systems/icons'
 import Tooltip from './Tooltip'
+import { DestinationFieldLabel } from './DestinationFieldLabel'
 import { CLIENT_ADDRESS } from '../../data/clientAddress'
 import { parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
 import styles from '../../styles/data-review/DetailFields.module.css'
@@ -250,12 +251,14 @@ export default function DetailFields1099R({
         style={{ cursor: 'pointer' }}
       >
         {flaggedFields[issueKey] ? (
-          <span className={`${styles.fieldLabel} ${isFlagged ? styles.fieldLabelFlagged : ''}`}>
+          <DestinationFieldLabel fieldKey={fieldKey} className={`${styles.fieldLabel} ${isFlagged ? styles.fieldLabelFlagged : ''}`}>
             {isFlagged && <span className={styles.issueIndicator} />}
             {label}
-          </span>
+          </DestinationFieldLabel>
         ) : (
-          <span className={styles.fieldLabel}>{label}</span>
+          <DestinationFieldLabel fieldKey={fieldKey} className={styles.fieldLabel}>
+            {label}
+          </DestinationFieldLabel>
         )}
         <input
           className={`${styles.fieldInput} ${inputClass} ${isEditing ? styles.fieldInputEditing : isFlagged ? styles.fieldInputHighlightedOrange : isSelected ? styles.fieldInputHighlighted : ''}`}

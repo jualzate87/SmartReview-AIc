@@ -66,7 +66,12 @@ export default function TaxControlDocPopover({
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) onClose()
+      const target = e.target as Element | null
+      if (!target) return
+      if (ref.current?.contains(target)) return
+      // Output / summary rows manage their own open/close
+      if (target.closest?.('[data-field-row]')) return
+      onClose()
     }
     const id = setTimeout(() => document.addEventListener('mousedown', handler), 80)
     return () => { clearTimeout(id); document.removeEventListener('mousedown', handler) }

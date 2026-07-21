@@ -85,6 +85,9 @@ interface LeftPanel1040Props {
   /** One-shot coach tip on output form dropdown after Phase 2 diagnostics complete */
   outputFormsCoachOpen?: boolean
   onDismissOutputFormsCoach?: () => void
+  /** One-shot coach tip on Summary output amounts — click to see source docs */
+  outputSourcesCoachOpen?: boolean
+  onDismissOutputSourcesCoach?: () => void
 }
 
 const PRIOR_YEAR = PRIOR_YEAR_1040_VALUES
@@ -119,7 +122,7 @@ function fmt(n: number) {
 }
 
 const SUMMARY_INFO_DISCOVERY_TOOLTIP =
-  'View how this amount was calculated or which documents feed it'
+  'Click to see which documents feed this output amount'
 
 export default function LeftPanel1040({
   selectedField,
@@ -149,6 +152,8 @@ export default function LeftPanel1040({
   onOutputFormChange,
   outputFormsCoachOpen = false,
   onDismissOutputFormsCoach,
+  outputSourcesCoachOpen = false,
+  onDismissOutputSourcesCoach,
 }: LeftPanel1040Props) {
   // Hooks first — keep order stable across renders
   const [internalOutputFormId, setInternalOutputFormId] = useState<OutputFormId>('summary')
@@ -527,16 +532,25 @@ export default function LeftPanel1040({
     }
   }
 
-  const handleRowClick = (field: string) => {
-    // Row / amount click: selection highlight only — never open FieldPopover
+  const handleRowClick = (field: string, rowEl?: HTMLElement | null) => {
+    // Row click opens the same source/calc flyout as the (i) icon; docs open from the flyout
+    onFieldClick?.(field)
+    if (fieldHasPopover(field) && rowEl) {
+      if (popoverField === field) {
+        setPopoverField(null)
+        setPopoverRect(null)
+        return
+      }
+      openPopoverForRow(field, rowEl)
+      return
+    }
     if (popoverField) {
       setPopoverField(null)
       setPopoverRect(null)
     }
-    onFieldClick?.(activeHighlight === field ? null : field)
   }
 
-  /** Form view: open FieldPopover only from the (i) info button. */
+  /** Form view: open FieldPopover from (i) or row click. */
   const openFormInfo = (field: string, btn: HTMLElement) => {
     if (popoverField === field) {
       setPopoverField(null)
@@ -660,7 +674,7 @@ export default function LeftPanel1040({
           // Keep FieldPopover's document mousedown-outside from stealing 1040 row clicks
           e.stopPropagation()
         } : undefined}
-        onClick={clickable ? () => handleRowClick(field!) : undefined}
+        onClick={clickable ? (e) => handleRowClick(field!, e.currentTarget) : undefined}
         onMouseEnter={field ? () => setHoveredField(field) : undefined}
         onMouseLeave={field ? () => setHoveredField(null) : undefined}
       >
@@ -688,10 +702,10 @@ export default function LeftPanel1040({
 
             </div>
 
-            {/* Info — sole trigger for FieldPopover (not row / amount click) */}
+            {/* Info — also available via row click; opens FieldPopover */}
             {!!field && fieldHasPopover(field) && value !== undefined && (
               <Tooltip
-                text={kind === 'calc' ? 'View subtotals' : 'View sources'}
+                text={kind === 'calc' ? 'Click row or icon to view subtotals' : 'Click row or icon to view sources'}
                 placement="top"
                 disabled={isPopoverOpen}
               >
@@ -1003,9 +1017,16 @@ export default function LeftPanel1040({
                           className={subRowCls}
                           data-field-row={row.field || undefined}
                           onMouseDown={clickable ? (e) => e.stopPropagation() : undefined}
-                          onClick={clickable ? () => {
-                            // Row click: highlight/selection only — flyout opens via (i) only
-                            onFieldClick?.(activeHighlight === row.field ? null : row.field!)
+                          onClick={clickable ? (e) => {
+                            // Always select; open flyout when this line has sources/calc — docs open from the flyout
+                            onFieldClick?.(row.field!)
+                            if (hasPopover && row.field) {
+                              const anchor = (e.currentTarget as HTMLElement).querySelector(
+                                `.${styles.summaryInfoBtn}`,
+                              ) as HTMLElement | null
+                              openSummaryInfo(row.field, anchor ?? (e.currentTarget as HTMLElement))
+                              onDismissOutputSourcesCoach?.()
+                            }
                           } : undefined}
                           onMouseEnter={row.field ? () => setHoveredField(row.field!) : undefined}
                           onMouseLeave={row.field ? () => setHoveredField(null) : undefined}
@@ -1027,23 +1048,46 @@ export default function LeftPanel1040({
                                 ${fmt(row.curr)}
                               </span>
                               {hasPopover && (
-                                <Tooltip
-                                  text={SUMMARY_INFO_DISCOVERY_TOOLTIP}
-                                  placement="top"
-                                  disabled={summaryFlyout?.field === row.field}
-                                >
-                                  <button
-                                    type="button"
-                                    className={`${styles.summaryInfoBtn} ${summaryFlyout?.field === row.field ? styles.summaryInfoBtnActive : ''}`}
-                                    aria-label={row.kind === 'calc' ? `View subtotals for ${row.label}` : `View sources for ${row.label}`}
-                                    onClick={e => {
-                                      e.stopPropagation()
-                                      openSummaryInfo(row.field!, e.currentTarget)
-                                    }}
-                                  >
-                                    <CircleInfo size="small" />
-                                  </button>
-                                </Tooltip>
+                                (() => {
+                                  const infoBtn = (
+                                    <Tooltip
+                                      text={SUMMARY_INFO_DISCOVERY_TOOLTIP}
+                                      placement="top"
+                                      disabled={summaryFlyout?.field === row.field || (outputSourcesCoachOpen && row.field === 'wages')}
+                                    >
+                                      <button
+                                        type="button"
+                                        className={`${styles.summaryInfoBtn} ${summaryFlyout?.field === row.field ? styles.summaryInfoBtnActive : ''}`}
+                                        aria-label={row.kind === 'calc' ? `View subtotals for ${row.label}` : `View sources for ${row.label}`}
+                                        onClick={e => {
+                                          e.stopPropagation()
+                                          openSummaryInfo(row.field!, e.currentTarget)
+                                          onDismissOutputSourcesCoach?.()
+                                        }}
+                                      >
+                                        <CircleInfo size="small" />
+                                      </button>
+                                    </Tooltip>
+                                  )
+                                  // First source-fed amount (W-2 wages) anchors the discovery coach tip
+                                  if (row.field === 'wages' && outputSourcesCoachOpen) {
+                                    return (
+                                      <CoachTip
+                                        open
+                                        title="See where amounts come from"
+                                        message="Click an output row to see the source documents that feed that field. Open a document from the flyout."
+                                        onClose={() => onDismissOutputSourcesCoach?.()}
+                                        position="left"
+                                        alignment="middle"
+                                      >
+                                        <span className={styles.summaryInfoCoachAnchor}>
+                                          {infoBtn}
+                                        </span>
+                                      </CoachTip>
+                                    )
+                                  }
+                                  return infoBtn
+                                })()
                               )}
                             </div>
                             <span className={styles.summaryPriorVal}>
@@ -1149,8 +1193,20 @@ export default function LeftPanel1040({
                 className={`${styles.summarySubRow} ${styles.summaryOweRow} ${isIssue && isSelected ? styles.summarySubRowOrange : ''} ${isSelected && !isIssue ? styles.summarySubRowBlue : ''}`}
                 role="button"
                 tabIndex={0}
-                onClick={() => onFieldClick?.(activeHighlight === 'amountOwed' ? null : 'amountOwed')}
-                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onFieldClick?.(activeHighlight === 'amountOwed' ? null : 'amountOwed') } }}
+                onClick={(e) => {
+                  onFieldClick?.('amountOwed')
+                  const anchor = (e.currentTarget as HTMLElement).querySelector(
+                    `.${styles.summaryInfoBtn}`,
+                  ) as HTMLElement | null
+                  openSummaryInfo('amountOwed', anchor ?? (e.currentTarget as HTMLElement))
+                }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    onFieldClick?.('amountOwed')
+                    openSummaryInfo('amountOwed', e.currentTarget as HTMLElement)
+                  }
+                }}
               >
                 <div className={styles.summaryRowLeft}>
                   <span className={styles.summaryOweLabel}>Amount you owe · Line 37</span>
@@ -1235,6 +1291,8 @@ export default function LeftPanel1040({
             formId={outputFormId}
             live={originTotals}
             amounts={liveAmounts}
+            onNavigateSource={onNavigateSource}
+            onNavigateToSourceDoc={onNavigateToSourceDoc}
           />
         ) : (
         <div className={styles.formDoc}>

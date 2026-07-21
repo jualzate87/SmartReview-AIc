@@ -991,6 +991,13 @@
   color: #0265ac;
 }
 
+/* Coach tip anchor around the first Summary (i) affordance */
+.summaryInfoCoachAnchor {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
 /* End-of-row actions: comment + flag + check — equal-size icon buttons */
 .summaryRowEndActions {
   display: flex;

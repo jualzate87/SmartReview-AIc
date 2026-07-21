@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { CircleCheck, Comment } from '@design-systems/icons'
 import Tooltip from './Tooltip'
+import { DestinationFieldLabel } from './DestinationFieldLabel'
 import { CLIENT_ADDRESS } from '../../data/clientAddress'
 import { parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
 import styles from '../../styles/data-review/DetailFields.module.css'
@@ -372,10 +373,10 @@ export default function DetailFieldsDiv({
           onClick={() => onFieldSelect?.(selectKey)}
           style={{ cursor: 'pointer' }}
         >
-          <span className={`${styles.fieldLabel} ${isFlagged ? styles.fieldLabelFlagged : ''}`}>
+          <DestinationFieldLabel fieldKey={fieldKey} className={`${styles.fieldLabel} ${isFlagged ? styles.fieldLabelFlagged : ''}`}>
             {isFlagged && <span className={styles.issueIndicator} />}
             {label}
-          </span>
+          </DestinationFieldLabel>
           <input
             className={`${styles.fieldInput} ${inputClass} ${isEditing ? styles.fieldInputEditing : isFlagged ? styles.fieldInputHighlightedOrange : isSelected ? styles.fieldInputHighlighted : ''}`}
             readOnly={!isEditing}
@@ -496,10 +497,13 @@ export default function DetailFieldsDiv({
               onClick={() => onFieldSelect?.('qualifiedDivs')}
               style={{ cursor: 'pointer' }}
             >
-              <span className={`${styles.fieldLabel} ${flaggedFields['qualifiedDivs'] && !reviewedFields?.has('qualifiedDivs') ? styles.fieldLabelFlagged : ''}`}>
+              <DestinationFieldLabel
+                fieldKey="qualifiedDivs"
+                className={`${styles.fieldLabel} ${flaggedFields['qualifiedDivs'] && !reviewedFields?.has('qualifiedDivs') ? styles.fieldLabelFlagged : ''}`}
+              >
                 {flaggedFields['qualifiedDivs'] && !reviewedFields?.has('qualifiedDivs') && <span className={styles.issueIndicator} />}
                 (1b) Qualified dividends
-              </span>
+              </DestinationFieldLabel>
               <input
                 className={`${styles.fieldInput} ${styles.fieldInputSmall} ${editingField === 'qualifiedDivs' ? styles.fieldInputEditing : flaggedFields['qualifiedDivs'] && !reviewedFields?.has('qualifiedDivs') ? styles.fieldInputHighlightedOrange : selectedField === 'qualifiedDivs' ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`}
                 readOnly={editingField !== 'qualifiedDivs'}

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { CircleCheck, Comment } from '@design-systems/icons'
 import Tooltip from './Tooltip'
+import { DestinationFieldLabel } from './DestinationFieldLabel'
 import { CLIENT_ADDRESS } from '../../data/clientAddress'
 import { parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
 import styles from '../../styles/data-review/DetailFields.module.css'
@@ -369,10 +370,13 @@ export default function DetailFields1099({
         onClick={() => onFieldSelect?.(fieldKey)}
         style={{ cursor: 'pointer' }}
       >
-        <span className={`${styles.fieldLabel} ${flagUnresolved ? styles.fieldLabelFlagged : ''}`}>
+        <DestinationFieldLabel
+          fieldKey={fieldKey}
+          className={`${styles.fieldLabel} ${flagUnresolved ? styles.fieldLabelFlagged : ''}`}
+        >
           {flagUnresolved && <span className={styles.issueIndicator} />}
           {label}
-        </span>
+        </DestinationFieldLabel>
         <input
           className={`${styles.fieldInput} ${inputClass} ${isEditing ? styles.fieldInputEditing : flagUnresolved ? styles.fieldInputHighlightedOrange : isSelected ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`}
           readOnly={!isEditing}
@@ -485,10 +489,13 @@ export default function DetailFields1099({
               onClick={() => onFieldSelect?.('taxableInterest')}
               style={{ cursor: 'pointer' }}
             >
-              <span className={`${styles.fieldLabel} ${flaggedFields['taxableInterest'] && !reviewedFields?.has('taxableInterest') ? styles.fieldLabelFlagged : ''}`}>
+              <DestinationFieldLabel
+                fieldKey="taxableInterest"
+                className={`${styles.fieldLabel} ${flaggedFields['taxableInterest'] && !reviewedFields?.has('taxableInterest') ? styles.fieldLabelFlagged : ''}`}
+              >
                 {flaggedFields['taxableInterest'] && !reviewedFields?.has('taxableInterest') && <span className={styles.issueIndicator} />}
                 (1) Interest income
-              </span>
+              </DestinationFieldLabel>
               <input
                 className={`${styles.fieldInput} ${styles.fieldInputSmall} ${editingField === 'taxableInterest' ? styles.fieldInputEditing : flaggedFields['taxableInterest'] && !reviewedFields?.has('taxableInterest') ? styles.fieldInputHighlightedOrange : selectedField === 'taxableInterest' ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`}
                 readOnly={editingField !== 'taxableInterest'}

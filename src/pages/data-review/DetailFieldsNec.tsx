@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { CircleCheck, Comment } from '@design-systems/icons'
 import Tooltip from './Tooltip'
+import { DestinationFieldLabel } from './DestinationFieldLabel'
 import { CLIENT_ADDRESS } from '../../data/clientAddress'
 import { NEC_SOURCE_AMOUNT, parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
 import styles from '../../styles/data-review/DetailFields.module.css'
@@ -226,7 +227,9 @@ export default function DetailFieldsNec({
         onClick={() => onFieldSelect?.(select)}
         style={{ cursor: 'pointer' }}
       >
-        <span className={styles.fieldLabel}>{label}</span>
+        <DestinationFieldLabel fieldKey={fieldKey} className={styles.fieldLabel}>
+          {label}
+        </DestinationFieldLabel>
         <input
           className={`${styles.fieldInput} ${inputClass} ${isEditing ? styles.fieldInputEditing : isSelected ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`}
           readOnly={!isEditing}

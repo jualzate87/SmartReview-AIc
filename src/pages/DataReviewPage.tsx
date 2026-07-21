@@ -181,6 +181,7 @@ export default function DataReviewPage() {
   const [continueDiagnosticsCoach, setContinueDiagnosticsCoach] = useState(false)
   /** One-shot nudge after Phase 2 diagnostics are all reviewed */
   const [outputFormsCoach, setOutputFormsCoach] = useState(false)
+  const [outputSourcesCoach, setOutputSourcesCoach] = useState(false)
   /** Explicit left-panel px width during Summary collapse/expand (null = natural flex). */
   const [leftAnimWidth, setLeftAnimWidth] = useState<number | null>(null)
   /** Keep doc|Details side-by-side during Summary toggle so flexDirection doesn't flip mid-motion. */
@@ -307,18 +308,31 @@ export default function DataReviewPage() {
     setOutputFormsCoach(false)
   }, [])
 
-  // Hide-summary coach tip once sources are open in Phase 1
+  const dismissOutputSourcesCoach = useCallback(() => {
+    markCoachTipShown('outputSources')
+    setOutputSourcesCoach(false)
+  }, [])
+
+  // First tip: teach output→source flyouts while Summary is visible, BEFORE source docs open
+  useEffect(() => {
+    if (phase !== 'import' || !show1040) return
+    if (readCoachTipShown('outputSources')) return
+    setOutputSourcesCoach(true)
+  }, [phase, show1040])
+
+  // Second tip: Hide Summary / outputs — only after source docs are open
   useEffect(() => {
     if (phase !== 'import' || !importsStarted || !rightPanelVisible) return
     if (!readCoachTipShown('hideSummary')) {
       if (show1040) {
+        // Wait until sources tip is done so tips don’t stack
+        if (outputSourcesCoach || !readCoachTipShown('outputSources')) return
         setCoachTip('hideSummary')
       } else {
         markCoachTipShown('hideSummary')
       }
     }
-  }, [phase, importsStarted, rightPanelVisible, show1040])
-
+  }, [phase, importsStarted, rightPanelVisible, show1040, outputSourcesCoach])
   // Continue-to-diagnostics nudge when Phase 1 is fully complete
   useEffect(() => {
     if (phase !== 'import' || !phase1FullyComplete) return
@@ -685,9 +699,8 @@ export default function DataReviewPage() {
     })
   }, [previewHeight, previewSideBySide, beginPanelDrag])
 
-  // While Summary is animating or collapsed, right panel flex-fills so it grows/shrinks
-  // as the left width transitions — avoids a px→flex mode flip mid-collapse.
-  const rightPanelFills = inImportPhase && (!show1040 || leftAnimWidth !== null)
+  // While Summary is animating or collapsed, right/agent panel flex-fills
+  const rightPanelFills = (!show1040 || leftAnimWidth !== null) && (rightPanelVisible || agentView !== 'idle')
 
   const handleHideSummary = useCallback(() => {
     const body = bodyRef.current
@@ -862,26 +875,25 @@ export default function DataReviewPage() {
             the chevron points right (expand) / left (collapse) rather than up/down. Left
             panel stays mounted and animates width/opacity (same pattern as .rightPanel)
             so the transition is smooth. */}
-        {inImportPhase && (
-          <div
-            className={styles.form1040HandleWrap}
-            style={{
-              width: show1040 ? 0 : SHOW_SUMMARY_HANDLE_WIDTH,
-              opacity: show1040 ? 0 : 1,
-              pointerEvents: show1040 ? 'none' : 'auto',
-              transition: panelResizing ? 'none' : undefined,
-            }}
+        {/* Collapsed "Show outputs" edge tab — available in import and AI phases */}
+        <div
+          className={styles.form1040HandleWrap}
+          style={{
+            width: show1040 ? 0 : SHOW_SUMMARY_HANDLE_WIDTH,
+            opacity: show1040 ? 0 : 1,
+            pointerEvents: show1040 ? 'none' : 'auto',
+            transition: panelResizing ? 'none' : undefined,
+          }}
+        >
+          <button
+            className={styles.form1040Handle}
+            onClick={handleShowSummary}
+            aria-label="Show outputs"
           >
-            <button
-              className={styles.form1040Handle}
-              onClick={handleShowSummary}
-              aria-label="Show 1040"
-            >
-              <ChevronRight size="small" className={styles.form1040HandleIcon} />
-              <span className={styles.form1040HandleLabel}>Show Summary</span>
-            </button>
-          </div>
-        )}
+            <ChevronRight size="small" className={styles.form1040HandleIcon} />
+            <span className={styles.form1040HandleLabel}>Show outputs</span>
+          </button>
+        </div>
         <div
           ref={leftPanelRef}
           className={styles.leftPanel}
@@ -890,24 +902,24 @@ export default function DataReviewPage() {
                interpolate together; otherwise flex:1 grows into remaining space. */
             flex: leftAnimWidth !== null
               ? `0 0 ${leftAnimWidth}px`
-              : (inImportPhase && !show1040) ? '0 0 0px' : 1,
+              : !show1040 ? '0 0 0px' : 1,
             width: leftAnimWidth !== null
               ? leftAnimWidth
-              : (inImportPhase && !show1040) ? 0 : undefined,
-            opacity: (inImportPhase && !show1040) ? 0 : 1,
+              : !show1040 ? 0 : undefined,
+            opacity: !show1040 ? 0 : 1,
             /* Keep Summary ≥ 795.7px so Return Breakdown labels aren’t truncated.
-               Collapse animation / Hide Summary still use minWidth 0. */
-            minWidth: leftAnimWidth !== null || (inImportPhase && !show1040)
+               Collapse animation / Hide outputs still use minWidth 0. */
+            minWidth: leftAnimWidth !== null || !show1040
               ? 0
               : LEFT_PANEL_MIN_WIDTH,
             transition: panelResizing ? 'none' : undefined,
           }}
         >
-          {inImportPhase && show1040 && (rightPanelVisible || notesOpen) && (
+          {show1040 && (rightPanelVisible || notesOpen || (!inImportPhase && agentView !== 'idle')) && (
             <CoachTip
               open={coachTip === 'hideSummary'}
-              title="Hide the Summary"
-              message="Need more room for source documents? Use Hide Summary to collapse this panel. You can bring it back anytime with Show Summary."
+              title="Hide outputs"
+              message="Need more room for source documents? Hide outputs to collapse this panel. You can bring it back anytime with Show outputs."
               onClose={() => dismissCoachTip('hideSummary')}
               position="bottom"
               alignment="left"
@@ -920,9 +932,9 @@ export default function DataReviewPage() {
                   if (coachTip === 'hideSummary') dismissCoachTip('hideSummary')
                   handleHideSummary()
                 }}
-                aria-label="Hide Summary"
+                aria-label="Hide outputs"
               >
-                <ChevronLeft size="small" /> Hide Summary
+                <ChevronLeft size="small" /> Hide outputs
               </Button>
             </CoachTip>
           )}
@@ -951,6 +963,8 @@ export default function DataReviewPage() {
             onOutputFormChange={setOutputFormId}
             outputFormsCoachOpen={outputFormsCoach}
             onDismissOutputFormsCoach={dismissOutputFormsCoach}
+            outputSourcesCoachOpen={outputSourcesCoach}
+            onDismissOutputSourcesCoach={dismissOutputSourcesCoach}
             onAddFieldNote={(text, context) => handleAddNote(text, context)}
             onNavigateToSourceDoc={handleNavigateToSourceDoc}
             onNavigateSource={handleNavigateSource}
@@ -1005,11 +1019,11 @@ export default function DataReviewPage() {
                 role="separator"
                 aria-orientation="vertical"
                 aria-label="Resize Summary and Source Documents"
-                aria-hidden={inImportPhase && !show1040}
+                aria-hidden={!show1040}
                 style={{
-                  width: (inImportPhase && !show1040) ? 0 : PANEL_DRAG_HANDLE_WIDTH,
-                  opacity: (inImportPhase && !show1040) ? 0 : 1,
-                  pointerEvents: (inImportPhase && !show1040) ? 'none' : 'auto',
+                  width: !show1040 ? 0 : PANEL_DRAG_HANDLE_WIDTH,
+                  opacity: !show1040 ? 0 : 1,
+                  pointerEvents: !show1040 ? 'none' : 'auto',
                   transition: panelResizing ? 'none' : undefined,
                 }}
               >
@@ -1435,7 +1449,7 @@ export default function DataReviewPage() {
             </div>
 
             {/* Drag handle between left panel and agent panel — only when agent open */}
-            {agentView !== 'idle' && (
+            {agentView !== 'idle' && show1040 && (
               <div
                 className={dragStyles.handleVertical}
                 onPointerDown={handleAgentDrag}
@@ -1447,11 +1461,14 @@ export default function DataReviewPage() {
               </div>
             )}
 
-            {/* Agent panel — always mounted, width animates between 0 and agentPanelWidth */}
+            {/* Agent panel — always mounted, width animates between 0 and agentPanelWidth.
+                When outputs are hidden, flex-fill so AI review uses the freed space. */}
             <div
               className={styles.agentPanelWrapper}
               style={{
-                width: agentView === 'idle' ? 0 : agentPanelWidth,
+                width: agentView === 'idle' ? 0 : (!show1040 ? undefined : agentPanelWidth),
+                flex: (agentView !== 'idle' && !show1040) ? '1 1 0%' : '0 0 auto',
+                minWidth: 0,
                 transition: panelResizing ? 'none' : undefined,
               }}
             >

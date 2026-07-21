@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { CircleCheck, Comment } from '@design-systems/icons'
 import Tooltip from './Tooltip'
+import { DestinationFieldLabel } from './DestinationFieldLabel'
 import styles from '../../styles/data-review/DetailFields.module.css'
 import { getBox12SubRowKeys, isBox12FlagResolved } from './phase1FieldSync'
 
@@ -228,12 +229,18 @@ export default function DetailFields({
   // Renders label text with an orange dot when the field is flagged by an AI issue
   const FlaggedLabel = ({ fieldKey, children }: { fieldKey: string; children: string }) => {
     const issue = flaggedFields[fieldKey]
-    if (!issue) return <span className={styles.fieldLabel}>{children}</span>
+    if (!issue) {
+      return (
+        <DestinationFieldLabel fieldKey={fieldKey} className={styles.fieldLabel}>
+          {children}
+        </DestinationFieldLabel>
+      )
+    }
     return (
-      <span className={`${styles.fieldLabel} ${styles.fieldLabelFlagged}`}>
+      <DestinationFieldLabel fieldKey={fieldKey} className={`${styles.fieldLabel} ${styles.fieldLabelFlagged}`}>
         <span className={styles.issueIndicator} />
         {children}
-      </span>
+      </DestinationFieldLabel>
     )
   }
 
@@ -382,12 +389,14 @@ export default function DetailFields({
         style={{ cursor: 'pointer' }}
       >
         {flaggedFields[fieldKey] ? (
-          <span className={`${styles.fieldLabel} ${isFlagged ? styles.fieldLabelFlagged : ''}`}>
+          <DestinationFieldLabel fieldKey={key} className={`${styles.fieldLabel} ${isFlagged ? styles.fieldLabelFlagged : ''}`}>
             {isFlagged && <span className={styles.issueIndicator} />}
             {label}
-          </span>
+          </DestinationFieldLabel>
         ) : (
-          <span className={styles.fieldLabel}>{label}</span>
+          <DestinationFieldLabel fieldKey={key} className={styles.fieldLabel}>
+            {label}
+          </DestinationFieldLabel>
         )}
         <input
           className={`${styles.fieldInput} ${inputClass} ${isEditing ? styles.fieldInputEditing : ''}`}
@@ -766,7 +775,9 @@ export default function DetailFields({
           style={{ cursor: 'pointer', flexDirection: 'column', alignItems: 'stretch', gap: 8, paddingTop: 10, paddingBottom: 10 }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span className={styles.fieldLabel}>(13) Box 13</span>
+            <DestinationFieldLabel fieldKey="box13" className={styles.fieldLabel}>
+              (13) Box 13
+            </DestinationFieldLabel>
             {flaggedFields['box13'] && !reviewedFields?.has('box13') && (
               <span className={styles.issueIndicator} />
             )}
