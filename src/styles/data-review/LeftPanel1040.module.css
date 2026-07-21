@@ -828,13 +828,15 @@
 }
 
 /*
- * Wide panels: fixed label column + value group (flex: 1) that fills the card.
- * space-between spreads CY / PY / Change $ / Change % / actions across remaining
- * width (min 24px gap). Label does not grow. Below 949px @container compresses.
+ * Wide panels: fixed label column; value columns flatten via display:contents so
+ * justify-content: space-between on the row distributes extra width evenly
+ * across ALL gaps (label → CY included). Label does not grow. Below 949px
+ * @container re-groups values and uses fixed gaps.
  */
 .summaryColHeaders {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   width: 100%;
   padding: 5px 32px;
   border-top: 1px solid #f1f3f7;
@@ -851,17 +853,18 @@
   max-width: 200px;
 }
 
-/* Group col labels + actions spacer — mirrors .summaryRowRight layout */
+/* Flatten so header labels participate in .summaryColHeaders flex (wide) */
 .summaryColValues {
-  display: flex;
-  align-items: center;
-  flex: 1;
-  justify-content: space-between;
-  gap: 24px;
-  min-width: 0;
+  display: contents;
 }
 
-/* Width set via inline style in TSX to match value columns exactly */
+/* Column widths — align with .summaryCurrVal / .summaryPriorVal / etc. */
+.summaryColHeaders > .summaryColLabel:nth-child(2) { width: 108px; }
+.summaryColHeaders > .summaryColLabel:nth-child(3) { width: 80px; }
+.summaryColHeaders > .summaryColLabel:nth-child(4) { width: 72px; }
+.summaryColHeaders > .summaryColLabel:nth-child(5) { width: 52px; }
+.summaryColHeaders > .summaryColLabel:nth-child(6) { width: 96px; }
+
 .summaryColLabel {
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-x-small); /* 12px */
@@ -883,6 +886,7 @@
   width: 100%;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 10px 32px;
   background: #f7f8fa;
   border: none;
@@ -930,14 +934,9 @@
   min-width: 0;
 }
 
-/* ── Value columns — ALL share the same font-size/weight; only color varies ── */
+/* Flatten so value columns participate in row flex (wide) */
 .summaryRowRight {
-  display: flex;
-  align-items: center;
-  flex: 1;
-  justify-content: space-between;
-  gap: 24px;
-  min-width: 0;
+  display: contents;
 }
 
 /* Current year — value + info icon; comments live in end actions */
@@ -1119,6 +1118,7 @@
 .summarySubRow {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   width: 100%;
   padding: 8px 32px 8px 52px; /* 52px left = 32px margin + 20px indent */
   border-top: 1px solid #f1f3f7;
@@ -1612,6 +1612,7 @@
   .summaryColHeaders,
   .summarySectionRow,
   .summarySubRow {
+    justify-content: flex-start;
     gap: 20px;
     padding-left: 16px;
     padding-right: 16px;
@@ -1621,8 +1622,12 @@
   }
   .summaryColValues,
   .summaryRowRight {
+    display: flex;
+    align-items: center;
+    flex: 1;
     justify-content: flex-start;
     gap: 20px;
+    min-width: 0;
   }
   .summaryColSpacer,
   .summaryRowLeft {
