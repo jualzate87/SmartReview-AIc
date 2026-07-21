@@ -122,7 +122,7 @@ function fmt(n: number) {
 }
 
 const SUMMARY_INFO_DISCOVERY_TOOLTIP =
-  'Click to see which documents feed this output amount'
+  'Explore which source documents feed this line.'
 
 export default function LeftPanel1040({
   selectedField,
@@ -187,6 +187,13 @@ export default function LeftPanel1040({
     onOutputFormChange?.(id)
     if (controlledOutputFormId === undefined) setInternalOutputFormId(id)
   }
+
+  // Keep the first-run sources tip visible — scroll W-2 wages into view when it opens
+  useEffect(() => {
+    if (!outputSourcesCoachOpen || outputFormId !== 'summary') return
+    const row = document.querySelector('[data-field-row="wages"]') as HTMLElement | null
+    row?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  }, [outputSourcesCoachOpen, outputFormId])
   const view: 'table' | 'form' = outputFormId === 'summary' ? 'table' : 'form'
 
   // Detail-field keys may differ from 1040 row keys (e.g. fedTaxWithheld ↔ withholding).
@@ -1074,11 +1081,11 @@ export default function LeftPanel1040({
                                     return (
                                       <CoachTip
                                         open
-                                        title="See where amounts come from"
-                                        message="Click an output row to see the source documents that feed that field. Open a document from the flyout."
+                                        title="Source documents"
+                                        message="Explore which source documents feed this line."
                                         onClose={() => onDismissOutputSourcesCoach?.()}
-                                        position="left"
-                                        alignment="middle"
+                                        position="top"
+                                        alignment="center"
                                       >
                                         <span className={styles.summaryInfoCoachAnchor}>
                                           {infoBtn}

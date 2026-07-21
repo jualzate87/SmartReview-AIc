@@ -309,14 +309,15 @@ export default function DataReviewPage() {
   }, [])
 
   const dismissOutputSourcesCoach = useCallback(() => {
-    markCoachTipShown('outputSources')
+    markCoachTipShown('outputSourcesFirst')
     setOutputSourcesCoach(false)
   }, [])
 
-  // First tip: teach output→source flyouts while Summary is visible, BEFORE source docs open
+  // First tip as soon as review starts: teach output→source on Summary (before docs open)
   useEffect(() => {
     if (phase !== 'import' || !show1040) return
-    if (readCoachTipShown('outputSources')) return
+    if (readCoachTipShown('outputSourcesFirst')) return
+    setOutputFormId('summary')
     setOutputSourcesCoach(true)
   }, [phase, show1040])
 
@@ -326,7 +327,7 @@ export default function DataReviewPage() {
     if (!readCoachTipShown('hideSummary')) {
       if (show1040) {
         // Wait until sources tip is done so tips don’t stack
-        if (outputSourcesCoach || !readCoachTipShown('outputSources')) return
+        if (outputSourcesCoach || !readCoachTipShown('outputSourcesFirst')) return
         setCoachTip('hideSummary')
       } else {
         markCoachTipShown('hideSummary')
@@ -775,8 +776,12 @@ export default function DataReviewPage() {
           onBegin={() => {
             setPhase('import')
             setShow1040(true)
+            setOutputFormId('summary')
             setRightPanelVisible(false)
             setImportsStarted(false)
+            // Fresh review — always show the sources tip first
+            try { sessionStorage.removeItem('protoc-coach-tip:outputSourcesFirst') } catch { /* ignore */ }
+            setOutputSourcesCoach(true)
           }}
         />
       </div>
