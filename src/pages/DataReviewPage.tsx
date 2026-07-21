@@ -85,10 +85,9 @@ const SOURCE_PANEL_EXIT_MS = 500
 const SUMMARY_TOGGLE_MS = 500
 /** Collapsed "Show Summary" edge tab width */
 const SHOW_SUMMARY_HANDLE_WIDTH = 44
-/** Soft floor for Summary when dragging the splitter — layout uses min-width:0
- *  so Summary + Sources always fit the viewport (no page horizontal scroll).
- *  Below ~949px Summary uses tighter 20px column gaps (see LeftPanel1040 CSS). */
-const LEFT_PANEL_MIN_WIDTH = 360
+/** Hard floor for Summary so Return Breakdown labels aren’t truncated.
+ *  Below this width the first column gets ellipsized (“eaten”). */
+const LEFT_PANEL_MIN_WIDTH = 795.7
 /** Absolute min Sources width when both panels are open */
 const RIGHT_PANEL_MIN_WIDTH = 360
 /** Matches DragHandle.module.css .handleVertical width */
@@ -281,12 +280,11 @@ export default function DataReviewPage() {
       : window.innerWidth
     setBodyWidth(bodyW)
     // ~65% of body for Sources; Details stays full-width of Sources while
-    // Summary is open (stacked). Clamp so Summary still fits beside Sources.
+    // Summary is open (stacked). Clamp so Summary stays ≥ LEFT_PANEL_MIN_WIDTH.
     const preferred = Math.round(bodyW * 0.65)
-    const preferredMax = bodyW - LEFT_PANEL_MIN_WIDTH - PANEL_DRAG_HANDLE_WIDTH
-    const hardMax = Math.max(RIGHT_PANEL_MIN_WIDTH, bodyW - PANEL_DRAG_HANDLE_WIDTH)
-    const maxRight = preferredMax >= RIGHT_PANEL_MIN_WIDTH ? preferredMax : hardMax
-    setRightPanelWidth(Math.min(Math.max(RIGHT_PANEL_MIN_WIDTH, preferred), maxRight))
+    const maxRight = Math.max(0, bodyW - LEFT_PANEL_MIN_WIDTH - PANEL_DRAG_HANDLE_WIDTH)
+    const floor = Math.min(RIGHT_PANEL_MIN_WIDTH, maxRight)
+    setRightPanelWidth(Math.max(floor, Math.min(preferred, maxRight)))
     setRightPanelVisible(true)
     requestAnimationFrame(() => requestAnimationFrame(() => {
       setRightPanelAnimating(true)
@@ -597,8 +595,7 @@ export default function DataReviewPage() {
   }, [])
 
   // Horizontal drag between left panel and agent panel (resizes agent panel px width).
-  // Prefer keeping Summary ≥ LEFT_PANEL_MIN_WIDTH; if the viewport is tighter, allow
-  // Summary to shrink so the row never overflows horizontally.
+  // Keep Summary ≥ LEFT_PANEL_MIN_WIDTH (795.7px) so breakdown labels aren’t truncated.
   const handleAgentDrag = useCallback((e: React.PointerEvent) => {
     const body = bodyRef.current
     if (!body) return
@@ -608,19 +605,15 @@ export default function DataReviewPage() {
       const delta = startX - clientX // dragging left = wider agent panel
       const bodyW = body.getBoundingClientRect().width
       const preferredMax = bodyW - LEFT_PANEL_MIN_WIDTH - PANEL_DRAG_HANDLE_WIDTH
-      const hardMax = Math.max(360, bodyW - PANEL_DRAG_HANDLE_WIDTH)
-      const upper = Math.min(
-        bodyW * 0.7,
-        preferredMax >= 360 ? preferredMax : hardMax,
-      )
+      const upper = Math.min(bodyW * 0.7, Math.max(0, preferredMax))
+      const floor = Math.min(360, upper)
       const next = startPanelWidth + delta
-      setAgentPanelWidth(Math.max(360, Math.min(upper, next)))
+      setAgentPanelWidth(Math.max(floor, Math.min(upper, next)))
     })
   }, [agentPanelWidth, beginPanelDrag])
 
   // Horizontal drag between left panel and right panel (resizes rightPanelWidth).
-  // Prefer keeping Summary ≥ LEFT_PANEL_MIN_WIDTH; if the viewport is tighter, allow
-  // Summary to shrink so the row never overflows horizontally.
+  // Keep Summary ≥ LEFT_PANEL_MIN_WIDTH (795.7px) so breakdown labels aren’t truncated.
   const handleRightPanelDrag = useCallback((e: React.PointerEvent) => {
     const body = bodyRef.current
     if (!body) return
@@ -630,13 +623,10 @@ export default function DataReviewPage() {
       const delta = startX - clientX // dragging left = wider right panel
       const bodyW = body.getBoundingClientRect().width
       const preferredMax = bodyW - LEFT_PANEL_MIN_WIDTH - PANEL_DRAG_HANDLE_WIDTH
-      const hardMax = Math.max(RIGHT_PANEL_MIN_WIDTH, bodyW - PANEL_DRAG_HANDLE_WIDTH)
-      const upper = Math.min(
-        bodyW * 0.75,
-        preferredMax >= RIGHT_PANEL_MIN_WIDTH ? preferredMax : hardMax,
-      )
+      const upper = Math.min(bodyW * 0.75, Math.max(0, preferredMax))
+      const floor = Math.min(RIGHT_PANEL_MIN_WIDTH, upper)
       const next = startPanelWidth + delta
-      setRightPanelWidth(Math.max(RIGHT_PANEL_MIN_WIDTH, Math.min(upper, next)))
+      setRightPanelWidth(Math.max(floor, Math.min(upper, next)))
     })
   }, [rightPanelWidth, beginPanelDrag])
 
@@ -653,21 +643,25 @@ export default function DataReviewPage() {
     return () => ro.disconnect()
   }, [phase])
 
-  // Clamp Sources width when the viewport shrinks so Summary + Sources stay in-bounds.
+  // Clamp Sources width when the viewport shrinks so Summary stays ≥ LEFT_PANEL_MIN_WIDTH.
   useEffect(() => {
     if (bodyWidth <= 0 || !rightPanelVisible) return
-    const preferredMax = bodyWidth - LEFT_PANEL_MIN_WIDTH - PANEL_DRAG_HANDLE_WIDTH
-    const hardMax = Math.max(RIGHT_PANEL_MIN_WIDTH, bodyWidth - PANEL_DRAG_HANDLE_WIDTH)
-    const maxRight = preferredMax >= RIGHT_PANEL_MIN_WIDTH ? preferredMax : hardMax
+    const maxRight = Math.max(0, bodyWidth - LEFT_PANEL_MIN_WIDTH - PANEL_DRAG_HANDLE_WIDTH)
     setRightPanelWidth((w) => Math.min(w, maxRight))
   }, [bodyWidth, rightPanelVisible])
 
-  // Side-by-side (doc | Details) only when Summary is hidden — Sources then has
-  // the full body width. When both Summary + Sources are open, always stack
-  // (preview TOP / Details BOTTOM) so the Details form keeps the full Sources
-  // column width and never needs horizontal page scroll to stay readable.
+  // Side-by-side (doc LEFT / Details RIGHT) when:
+  //   1. Hide Summary (!show1040), OR
+  //   2. Sources (right) panel is >60% of review body width
+  // Stacked (preview TOP / Details BOTTOM) when Summary is visible AND
+  // Sources panel is ≤60% of body.
   // freezePreviewSideBySide holds orientation steady during Hide/Show Summary.
-  const previewSideBySide = freezePreviewSideBySide || !show1040
+  const sourcesPanelWide =
+    rightPanelVisible &&
+    !rightPanelExiting &&
+    bodyWidth > 0 &&
+    rightPanelWidth / bodyWidth > 0.6
+  const previewSideBySide = freezePreviewSideBySide || !show1040 || sourcesPanelWide
   const inImportPhase = phase === 'import'
 
   // Resize drag between the document preview and detail fields. Axis is frozen
@@ -901,9 +895,11 @@ export default function DataReviewPage() {
               ? leftAnimWidth
               : (inImportPhase && !show1040) ? 0 : undefined,
             opacity: (inImportPhase && !show1040) ? 0 : 1,
-            /* Always allow shrink so dual-panel fits the viewport; soft floor is
-               enforced only while dragging the splitter (LEFT_PANEL_MIN_WIDTH). */
-            minWidth: 0,
+            /* Keep Summary ≥ 795.7px so Return Breakdown labels aren’t truncated.
+               Collapse animation / Hide Summary still use minWidth 0. */
+            minWidth: leftAnimWidth !== null || (inImportPhase && !show1040)
+              ? 0
+              : LEFT_PANEL_MIN_WIDTH,
             transition: panelResizing ? 'none' : undefined,
           }}
         >

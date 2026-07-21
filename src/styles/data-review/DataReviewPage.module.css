@@ -122,8 +122,7 @@
 }
 
 /* Left panel — flex:1, smoothly grows/shrinks as panels open/close.
-   min-width:0 is required so dual-panel fits the viewport; Summary content
-   scrolls inside LeftPanel1040 when the column is narrower than the form. */
+   Visible Summary enforces min-width 795.7px in DataReviewPage (labels stay readable). */
 .leftPanel {
   display: flex;
   flex-direction: column;

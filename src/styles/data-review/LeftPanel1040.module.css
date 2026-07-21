@@ -828,43 +828,37 @@
 }
 
 /*
- * Wide panels: fixed label column; value columns flatten via display:contents so
- * justify-content: space-between on the row distributes extra width evenly
- * across ALL gaps (label → CY included). Label does not grow. Below 949px
- * @container re-groups values and uses fixed gaps.
+ * Typography rule: ALL value columns use the same font-size and weight.
+ * Only COLOR differentiates them — current year = dark, prior = muted, diff = colored.
+ *
+ * Column widths (fixed, px) + ~80px gap so numeric cols use available width
+ * instead of clustering on the right.
+ * Both header and data rows share these widths/gaps exactly.
  */
 .summaryColHeaders {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  width: 100%;
   padding: 5px 32px;
   border-top: 1px solid #f1f3f7;
   background: #fafbfc;
-  gap: 24px;
-  box-sizing: border-box;
+  gap: 40px; /* matches gap between .summaryRowLeft and .summaryRowRight */
+}
+
+/* Spacer stretches to fill the same space as .summaryRowLeft in data rows */
+.summaryColSpacer {
+  flex: 1;
   min-width: 0;
 }
 
-/* Matches .summaryRowLeft width so headers line up with data rows */
-.summaryColSpacer {
-  flex: 0 1 160px;
-  min-width: 96px;
-  max-width: 200px;
-}
-
-/* Flatten so header labels participate in .summaryColHeaders flex (wide) */
+/* Group the 4 col labels to mirror .summaryRowRight layout exactly */
 .summaryColValues {
-  display: contents;
+  display: flex;
+  align-items: center;
+  gap: 80px; /* matches .summaryRowRight gap */
+  flex-shrink: 0;
 }
 
-/* Column widths — align with .summaryCurrVal / .summaryPriorVal / etc. */
-.summaryColHeaders > .summaryColLabel:nth-child(2) { width: 108px; }
-.summaryColHeaders > .summaryColLabel:nth-child(3) { width: 80px; }
-.summaryColHeaders > .summaryColLabel:nth-child(4) { width: 72px; }
-.summaryColHeaders > .summaryColLabel:nth-child(5) { width: 52px; }
-.summaryColHeaders > .summaryColLabel:nth-child(6) { width: 96px; }
-
+/* Width set via inline style in TSX to match value columns exactly */
 .summaryColLabel {
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-x-small); /* 12px */
@@ -893,9 +887,8 @@
   border-top: 1px solid #eef0f3;
   cursor: pointer;
   text-align: left;
-  gap: 24px;
+  gap: 40px;
   box-sizing: border-box;
-  min-width: 0;
 }
 .summarySectionRow:focus-visible {
   outline: 2px solid var(--color-action-standard, #0077c5);
@@ -909,9 +902,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  flex: 0 1 160px;
-  min-width: 96px;
-  max-width: 200px;
+  flex: 1;
+  min-width: 0;
 }
 
 .summaryChevron {
@@ -928,15 +920,14 @@
   font-size: var(--font-size-component-small); /* 14px */
   font-weight: var(--font-weight-component-bold); /* 600 */
   color: #1c202a;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
 }
 
-/* Flatten so value columns participate in row flex (wide) */
+/* ── Value columns — ALL share the same font-size/weight; only color varies ── */
 .summaryRowRight {
-  display: contents;
+  display: flex;
+  align-items: center;
+  gap: 80px;
+  flex-shrink: 0;
 }
 
 /* Current year — value + info icon; comments live in end actions */
@@ -1119,14 +1110,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
   padding: 8px 32px 8px 52px; /* 52px left = 32px margin + 20px indent */
   border-top: 1px solid #f1f3f7;
-  gap: 24px;
+  gap: 40px;
   transition: background 80ms;
   background: #fff;
-  min-width: 0;
-  box-sizing: border-box;
 }
 .summarySubRowClickable { cursor: pointer; }
 .summarySubRowClickable:hover { background: #f8f9fb; }
@@ -1151,10 +1139,6 @@
   align-items: center;
   gap: 5px;
   line-height: var(--line-height-component);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
 }
 .summarySubLabelCalc {
   color: #6b6c72;
@@ -1612,7 +1596,6 @@
   .summaryColHeaders,
   .summarySectionRow,
   .summarySubRow {
-    justify-content: flex-start;
     gap: 20px;
     padding-left: 16px;
     padding-right: 16px;
@@ -1622,18 +1605,7 @@
   }
   .summaryColValues,
   .summaryRowRight {
-    display: flex;
-    align-items: center;
-    flex: 1;
-    justify-content: flex-start;
     gap: 20px;
-    min-width: 0;
-  }
-  .summaryColSpacer,
-  .summaryRowLeft {
-    flex-basis: 120px;
-    max-width: 140px;
-    min-width: 80px;
   }
   .summaryCardHeader {
     padding-left: 16px;
