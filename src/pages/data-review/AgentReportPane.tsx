@@ -191,7 +191,7 @@ const NIIT_FORM8960_ISSUE: IssueCard = {
         { label: 'Taxable interest (1099-INT)', tab: '1099-ints', field: 'taxableInterest' },
         { label: 'Ordinary dividends (1099-DIV)', tab: '1099-divs', field: 'ordinaryDivs' },
         { label: 'Qualified dividends (1099-DIV)', tab: '1099-divs', field: 'qualifiedDivs' },
-        { label: 'Summary — investment lines', field: 'ordinaryDivs' },
+        { label: 'Summary — investment lines', field: 'ordinaryDivs', summaryOnly: true },
       ],
     },
   ],
@@ -484,7 +484,8 @@ export default function AgentReportPane({
     const field = action?.field ?? fallback?.field
     const qId = (action?.questionnaireResponseId as QuestionnaireResponseId | undefined)
       ?? fallback?.questionnaireResponseId
-    const summaryOnly = fallback?.summaryOnly && !tab
+    // Per-action summaryOnly (e.g. "Summary — investment lines") wins over issue default
+    const summaryOnly = Boolean(action?.summaryOnly || (fallback?.summaryOnly && !tab))
     // reviewSource → document preview; goToInput → Details field focus
     const focus: 'preview' | 'details' =
       fallback?.focus

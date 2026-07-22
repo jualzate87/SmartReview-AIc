@@ -1512,12 +1512,24 @@ export default function DataReviewPage() {
                         setActiveTopTab('w2s')
                       }}
                       onNavigateToTab={(tab, subTab, field, questionnaireResponseId, focus) => {
-                        // Summary-only CTAs (e.g. NIIT investment income): highlight CY
-                        // Summary without opening Sources on a stale tab like prior-1040.
+                        // Summary-only CTAs (e.g. NIIT “Summary — investment lines”):
+                        // switch to Summary, highlight the CY line, scroll it into view —
+                        // do not open Sources on a stale tab.
                         if (!tab && field) {
                           setSelectedField(field)
                           setActiveIssueField(field)
                           setQuestionnaireHighlightId(null)
+                          setOutputFormId('summary')
+                          setShow1040(true)
+                          const rowKey = get1040HighlightField(field) ?? field
+                          requestAnimationFrame(() => {
+                            requestAnimationFrame(() => {
+                              const row = document.querySelector(
+                                `[data-field-row="${rowKey}"]`,
+                              ) as HTMLElement | null
+                              row?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+                            })
+                          })
                           return
                         }
                         if (tab) {

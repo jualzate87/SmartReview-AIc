@@ -12,6 +12,8 @@ export type IssueActionMenuItem = {
   label: string
   tab?: string
   field?: string
+  /** Highlight Summary / output only — do not switch Sources tabs */
+  summaryOnly?: boolean
 }
 
 export type IssueAction = {
@@ -23,6 +25,8 @@ export type IssueAction = {
   tab?: string
   field?: string
   questionnaireResponseId?: string
+  /** Highlight Summary / output only — do not switch Sources tabs */
+  summaryOnly?: boolean
   /** When set, render as a dropdown of destinations instead of a single button */
   menuItems?: IssueActionMenuItem[]
 }
@@ -361,6 +365,7 @@ export default function IssueDetailPane({
                           label: item.label,
                           tab: item.tab,
                           field: item.field,
+                          summaryOnly: item.summaryOnly,
                         })
                       }}
                     >
