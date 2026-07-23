@@ -472,13 +472,9 @@
 
 /* ── Manually checked state (preparer verified) ── */
 /* Slightly different green to distinguish from AI-reviewed */
-.rowChecked {
-  box-shadow: inset 3px 0 0 #0f766e;
-}
-
 .valueBoxChecked {
-  border-color: #0f766e !important;
-  background: #f0fdfa !important;
+  border-color: var(--color-ui-positive, #108000) !important;
+  background: #f0faf4 !important;
 }
 
 .valueBoxCommentOpen {
@@ -487,7 +483,11 @@
 }
 
 .valueNumChecked {
-  color: #0f766e;
+  color: var(--color-ui-positive, #108000);
+}
+
+.rowChecked {
+  box-shadow: inset 3px 0 0 var(--color-ui-positive, #108000);
 }
 
 .checkedIcon {
@@ -858,7 +858,7 @@
   flex-shrink: 0;
 }
 
-/* Width set via inline style in TSX to match value columns exactly */
+/* Width set via column modifier classes to match value columns exactly */
 .summaryColLabel {
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-x-small); /* 12px */
@@ -869,7 +869,15 @@
   text-align: right;
   white-space: nowrap;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
+
+/* Must match .summaryCurrVal / .summaryPriorVal / .summaryDiffVal / .summaryPctVal / .summaryRowEndActions */
+.summaryColCurr { width: 108px; }
+.summaryColPrior { width: 80px; }
+.summaryColDiff { width: 72px; }
+.summaryColPct { width: 52px; }
+.summaryColActions { width: 96px; }
 
 .summaryBody {
   border-top: 1px solid #f1f3f7;
@@ -1127,7 +1135,9 @@
 .summarySubRowClickable:hover { background: #f8f9fb; }
 .summarySubRowBlue   { background: #f0f5ff; }
 .summarySubRowOrange { background: #fff8f3; }
-.summarySubRowReviewed { opacity: 0.65; }
+.summarySubRowChecked .summaryCurrValText {
+  color: var(--color-ui-positive, #108000);
+}
 
 .summarySubLabelGroup {
   display: flex;

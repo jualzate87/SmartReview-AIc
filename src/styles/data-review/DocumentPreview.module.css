@@ -25,11 +25,17 @@
 }
 
 .imageAreaInner {
+  /* Grow with zoomed content so .imageArea can scroll both axes.
+     min-width:100% keeps small zooms centered-looking; width:max-content
+     lets >100% zoom expand past the viewport instead of clipping. */
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   min-height: 100%;
+  width: max-content;
+  min-width: 100%;
+  box-sizing: border-box;
 }
 
 .documentImage {

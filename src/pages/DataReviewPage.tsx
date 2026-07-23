@@ -61,6 +61,7 @@ import {
 } from './data-review/phase1FieldSync'
 import { getPhase2Progress } from './data-review/phase2FlagSync'
 import { PHASE1_FLAG_MESSAGES } from './data-review/phase1FlagMessages'
+import { buildYoyInputFlags, mergeInputFlags } from './data-review/yoyInputFlags'
 import { computeLiveReturn } from '../data/liveReturn'
 import { navigationForSourceDoc } from '../data/sourceDocuments'
 import img1040PriorPage1 from '../assets/jessica-1040-2024-variant-1.png'
@@ -129,6 +130,7 @@ export default function DataReviewPage() {
   const liveTotals = computeLiveReturn(amounts)
   const total1a = liveTotals.wages
   const totalWithholding = liveTotals.totalWithholding
+  const yoyInputFlags = buildYoyInputFlags(liveTotals, amounts)
   const updateField = (key: keyof typeof fieldValues, value: number | { techCircle: number }) =>
     updateFieldValue(key, value)
   // Agent panel width in px when open (default 588px, user-resizable)
@@ -261,6 +263,9 @@ export default function DataReviewPage() {
     }
   }, [rightPanelVisible])
 
+  /** Collapse outputs when focusing source docs; pink pointer on Show outputs. */
+  const hideOutputsForSourceFocusRef = useRef<() => void>(() => {})
+
   /** Hide the imported-documents panel with the same slide-out used by the toolbar toggle */
   const handleCloseSourcePanel = useCallback(() => {
     if (!rightPanelVisible || rightPanelExiting) return
@@ -273,8 +278,6 @@ export default function DataReviewPage() {
 
   const startReviewingImports = useCallback(() => {
     setImportsStarted(true)
-    // Keep Summary visible so the Hide Summary coach tip can teach the control
-    setShow1040(true)
     const body = bodyRef.current
     const bodyW = body
       ? (body.clientWidth || body.getBoundingClientRect().width)
@@ -290,6 +293,8 @@ export default function DataReviewPage() {
     requestAnimationFrame(() => requestAnimationFrame(() => {
       setRightPanelAnimating(true)
       setTimeout(() => setRightPanelAnimating(false), SOURCE_PANEL_ENTER_MS)
+      // Give documents the room — outputs collapse; Show outputs gets the pink pointer
+      hideOutputsForSourceFocusRef.current()
     }))
   }, [])
 
@@ -313,7 +318,7 @@ export default function DataReviewPage() {
     setOutputSourcesCoach(false)
   }, [])
 
-  // First tip as soon as review starts: teach output→source on Summary (before docs open)
+  // First tip as soon as review starts: pink pointer on Summary (i) — no panel open
   useEffect(() => {
     if (phase !== 'import' || !show1040) return
     if (readCoachTipShown('outputSourcesFirst')) return
@@ -321,19 +326,13 @@ export default function DataReviewPage() {
     setOutputSourcesCoach(true)
   }, [phase, show1040])
 
-  // Second tip: Hide Summary / outputs — only after source docs are open
+  // Second tip: Hide outputs pink pointer — after first tip is dismissed (Sources stay closed)
   useEffect(() => {
-    if (phase !== 'import' || !importsStarted || !rightPanelVisible) return
-    if (!readCoachTipShown('hideSummary')) {
-      if (show1040) {
-        // Wait until sources tip is done so tips don’t stack
-        if (outputSourcesCoach || !readCoachTipShown('outputSourcesFirst')) return
-        setCoachTip('hideSummary')
-      } else {
-        markCoachTipShown('hideSummary')
-      }
-    }
-  }, [phase, importsStarted, rightPanelVisible, show1040, outputSourcesCoach])
+    if (phase !== 'import' || !show1040) return
+    if (readCoachTipShown('hideSummary')) return
+    if (outputSourcesCoach || !readCoachTipShown('outputSourcesFirst')) return
+    setCoachTip('hideSummary')
+  }, [phase, show1040, outputSourcesCoach])
   // Continue-to-diagnostics nudge when Phase 1 is fully complete
   useEffect(() => {
     if (phase !== 'import' || !phase1FullyComplete) return
@@ -352,6 +351,9 @@ export default function DataReviewPage() {
   useEffect(() => {
     if (!show1040 && coachTip === 'hideSummary') {
       dismissCoachTip('hideSummary')
+    }
+    if (show1040 && coachTip === 'showOutputs') {
+      dismissCoachTip('showOutputs')
     }
   }, [show1040, coachTip, dismissCoachTip])
 
@@ -445,8 +447,10 @@ export default function DataReviewPage() {
       setAgentView('closing')
       setYoyExpanded(false)
       setTimeout(() => setAgentView('idle'), 350)
+      hideOutputsForSourceFocusRef.current()
     } else {
       ensureSourcePanelVisible()
+      hideOutputsForSourceFocusRef.current()
     }
   }, [
     agentView,
@@ -474,13 +478,10 @@ export default function DataReviewPage() {
       setSelectedField(null)
       return
     }
+    // Selection / highlight only — do not open Sources unless user follows a source link or (i) flyout action
     const mapped = field1040ToDetail(field1040)
-    if (mapped) {
-      applyVerifyNavigation(mapped.field)
-    } else {
-      setSelectedField(field1040)
-    }
-  }, [applyVerifyNavigation, setSelectedField])
+    setSelectedField(mapped?.field ?? field1040)
+  }, [setSelectedField])
 
   const highlightField1040 = get1040HighlightField(selectedField)
 
@@ -736,6 +737,19 @@ export default function DataReviewPage() {
     }, SUMMARY_TOGGLE_MS)
   }, [previewSideBySide, rightPanelWidth])
 
+  /** When focusing source docs: collapse outputs and point at Show outputs. */
+  const hideOutputsForSourceFocus = useCallback(() => {
+    if (show1040) {
+      if (coachTip === 'hideSummary') dismissCoachTip('hideSummary')
+      else if (!readCoachTipShown('hideSummary')) markCoachTipShown('hideSummary')
+      handleHideSummary()
+    }
+    if (!readCoachTipShown('showOutputs')) {
+      setCoachTip('showOutputs')
+    }
+  }, [show1040, coachTip, dismissCoachTip, handleHideSummary])
+  hideOutputsForSourceFocusRef.current = hideOutputsForSourceFocus
+
   const handleShowSummary = useCallback(() => {
     const body = bodyRef.current
     const bodyW = body
@@ -890,14 +904,26 @@ export default function DataReviewPage() {
             transition: panelResizing ? 'none' : undefined,
           }}
         >
-          <button
-            className={styles.form1040Handle}
-            onClick={handleShowSummary}
-            aria-label="Show outputs"
+          <CoachTip
+            open={coachTip === 'showOutputs' && !show1040}
+            title="Show outputs"
+            message="Bring Summary back anytime with Show outputs."
+            onClose={() => dismissCoachTip('showOutputs')}
+            position="right"
+            alignment="middle"
           >
-            <ChevronRight size="small" className={styles.form1040HandleIcon} />
-            <span className={styles.form1040HandleLabel}>Show outputs</span>
-          </button>
+            <button
+              className={styles.form1040Handle}
+              onClick={() => {
+                if (coachTip === 'showOutputs') dismissCoachTip('showOutputs')
+                handleShowSummary()
+              }}
+              aria-label="Show outputs"
+            >
+              <ChevronRight size="small" className={styles.form1040HandleIcon} />
+              <span className={styles.form1040HandleLabel}>Show outputs</span>
+            </button>
+          </CoachTip>
         </div>
         <div
           ref={leftPanelRef}
@@ -920,7 +946,7 @@ export default function DataReviewPage() {
             transition: panelResizing ? 'none' : undefined,
           }}
         >
-          {show1040 && (rightPanelVisible || notesOpen || (!inImportPhase && agentView !== 'idle')) && (
+          {show1040 && (
             <CoachTip
               open={coachTip === 'hideSummary'}
               title="Hide outputs"
@@ -1314,12 +1340,12 @@ export default function DataReviewPage() {
                   verifiedDocs={verifiedDocs}
                   verifiedDocsMeta={verifiedDocsMeta}
                   onVerifyDoc={toggleVerifiedDoc}
-                  flaggedFields={{
+                  flaggedFields={mergeInputFlags({
                     ssn: PHASE1_FLAG_MESSAGES.w2.ssn,
                     wages: PHASE1_FLAG_MESSAGES.w2.wages,
                     box12: PHASE1_FLAG_MESSAGES.w2.box12,
                     ein: PHASE1_FLAG_MESSAGES.w2.ein,
-                  }}
+                  }, yoyInputFlags)}
                 />
               )}
               {activeTopTab === '1099-divs' && (
@@ -1346,12 +1372,12 @@ export default function DataReviewPage() {
                   onFieldOverride={setFieldOverride}
                   verifiedDocs={verifiedDocs}
                   onVerifyDoc={toggleVerifiedDoc}
-                  flaggedFields={{
+                  flaggedFields={mergeInputFlags({
                     divCollectibles: PHASE1_FLAG_MESSAGES.div.divCollectibles,
                     divNonDiv: PHASE1_FLAG_MESSAGES.div.divNonDiv,
                     fedTaxWithheld: PHASE1_FLAG_MESSAGES.div.fedTaxWithheld,
                     ordinaryDivs: PHASE1_FLAG_MESSAGES.div.ordinaryDivs,
-                  }}
+                  }, yoyInputFlags)}
                   onAddFieldNote={(text, context) => handleAddNote(text, context)}
                 />
               )}
@@ -1381,9 +1407,9 @@ export default function DataReviewPage() {
                   verifiedDocs={verifiedDocs}
                   verifiedDocsMeta={verifiedDocsMeta}
                   onVerifyDoc={toggleVerifiedDoc}
-                  flaggedFields={{
+                  flaggedFields={mergeInputFlags({
                     taxableInterest: PHASE1_FLAG_MESSAGES.int.taxableInterest,
-                  }}
+                  }, yoyInputFlags)}
                   onAddFieldNote={(text, context) => handleAddNote(text, context)}
                 />
               )}
@@ -1405,7 +1431,9 @@ export default function DataReviewPage() {
                   onFieldOverride={setFieldOverride}
                   verifiedDocs={verifiedDocs}
                   onVerifyDoc={toggleVerifiedDoc}
-                  flaggedFields={{ grossDistrib: PHASE1_FLAG_MESSAGES.r.grossDistrib }}
+                  flaggedFields={mergeInputFlags({
+                    grossDistrib: PHASE1_FLAG_MESSAGES.r.grossDistrib,
+                  }, yoyInputFlags)}
                   onAddFieldNote={(text, context) => handleAddNote(text, context)}
                 />
               )}
