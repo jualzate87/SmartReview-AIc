@@ -25,17 +25,21 @@
 }
 
 .imageAreaInner {
-  /* Grow with zoomed content so .imageArea can scroll both axes.
-     min-width:100% keeps small zooms centered-looking; width:max-content
-     lets >100% zoom expand past the viewport instead of clipping. */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
+  /* Width must stay 100% of .imageArea so zoom % is relative to the viewport,
+     not the image’s intrinsic size (max-content made 85% look massively cropped).
+     Vertical min-height keeps short pages centered; horizontal overflow scrolls
+     on .imageArea when zoom > 100%. */
+  display: block;
   min-height: 100%;
-  width: max-content;
-  min-width: 100%;
+  width: 100%;
   box-sizing: border-box;
+}
+
+.zoomWrap {
+  position: relative;
+  line-height: 0;
+  margin: 0 auto;
+  flex-shrink: 0;
 }
 
 .documentImage {

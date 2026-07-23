@@ -32,7 +32,7 @@ const HIDDEN_LOUPE: LoupeState = {
 }
 
 export default function DocumentPreview({ imageSrc, alt, customContent }: DocumentPreviewProps) {
-  const [zoomIndex, setZoomIndex] = useState(5) // default 85%
+  const [zoomIndex, setZoomIndex] = useState(6) // default 100% — fit to viewer width
   const zoom = ZOOM_LEVELS[zoomIndex]
   const images = imageSrc ? (Array.isArray(imageSrc) ? imageSrc : [imageSrc]) : []
   const canMagnify = !customContent && images.length > 0
@@ -178,7 +178,10 @@ export default function DocumentPreview({ imageSrc, alt, customContent }: Docume
         onPointerLeave={onPointerLeave}
       >
         <div className={styles.imageAreaInner}>
-          <div style={{ position: 'relative', width: customContent ? '100%' : `${zoom}%`, lineHeight: 0, flexShrink: 0 }}>
+          <div
+            className={styles.zoomWrap}
+            style={{ width: customContent ? '100%' : `${zoom}%` }}
+          >
             {customContent ?? images.map((src, i) => (
               <img
                 key={src}
