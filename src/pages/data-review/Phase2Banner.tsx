@@ -6,9 +6,22 @@ interface Phase2BannerProps {
   reviewed: number
   total: number
   complete: boolean
+  /** When agent is closed with work left — open AI Review from the counter link */
+  onOpenDiagnostics?: () => void
+  /** True while Review AI panel is open (counter stays plain text) */
+  diagnosticsOpen?: boolean
 }
 
-export default function Phase2Banner({ reviewed, total, complete }: Phase2BannerProps) {
+export default function Phase2Banner({
+  reviewed,
+  total,
+  complete,
+  onOpenDiagnostics,
+  diagnosticsOpen = false,
+}: Phase2BannerProps) {
+  const remaining = Math.max(0, total - reviewed)
+  const showProgressLink = !complete && !!onOpenDiagnostics && !diagnosticsOpen && remaining > 0
+
   return (
     <div className={`${styles.banner} ${complete ? styles.bannerComplete : ''}`}>
       <div className={styles.left}>
@@ -32,9 +45,20 @@ export default function Phase2Banner({ reviewed, total, complete }: Phase2Banner
 
       <div className={styles.right}>
         {!complete && (
-          <span className={styles.counter}>
-            <strong className={styles.counterNum}>{reviewed}</strong> of {total} diagnostics reviewed
-          </span>
+          showProgressLink ? (
+            <button
+              type="button"
+              className={styles.counterLink}
+              onClick={onOpenDiagnostics}
+              aria-label={`Open AI Review — ${reviewed} of ${total} diagnostics reviewed, ${remaining} remaining`}
+            >
+              <strong className={styles.counterNum}>{reviewed}</strong> of {total} diagnostics reviewed
+            </button>
+          ) : (
+            <span className={styles.counter}>
+              <strong className={styles.counterNum}>{reviewed}</strong> of {total} diagnostics reviewed
+            </span>
+          )
         )}
       </div>
 

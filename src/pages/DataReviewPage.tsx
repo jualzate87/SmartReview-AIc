@@ -737,16 +737,19 @@ export default function DataReviewPage() {
     }, SUMMARY_TOGGLE_MS)
   }, [previewSideBySide, rightPanelWidth])
 
-  /** When focusing source docs: collapse outputs and point at Show outputs. */
+  /**
+   * First-time only: collapse outputs and point at Show outputs when focusing
+   * source docs (banner CTA / popover). Later opens keep Summary visible.
+   */
   const hideOutputsForSourceFocus = useCallback(() => {
+    if (readCoachTipShown('showOutputs')) return
     if (show1040) {
       if (coachTip === 'hideSummary') dismissCoachTip('hideSummary')
       else if (!readCoachTipShown('hideSummary')) markCoachTipShown('hideSummary')
       handleHideSummary()
     }
-    if (!readCoachTipShown('showOutputs')) {
-      setCoachTip('showOutputs')
-    }
+    markCoachTipShown('showOutputs')
+    setCoachTip('showOutputs')
   }, [show1040, coachTip, dismissCoachTip, handleHideSummary])
   hideOutputsForSourceFocusRef.current = hideOutputsForSourceFocus
 
@@ -850,11 +853,19 @@ export default function DataReviewPage() {
           {!inImportPhase && (
             <button
               className={`${styles.intuitIntelBtn} ${agentView !== 'idle' ? styles.intuitIntelBtnActive : ''}`}
-              aria-label="Intuit Intelligence"
+              aria-label={
+                agentView === 'idle' && phase2Progress.remaining > 0
+                  ? `AI Review, ${phase2Progress.remaining} diagnostics remaining`
+                  : 'Intuit Intelligence'
+              }
+              style={{ position: 'relative' }}
               onClick={() => handleAgentOpen()}
             >
               <img src={intuitAssistIcon} alt="" className={styles.intuitIntelIcon} />
               <span className={styles.intuitIntelLabel}>AI Review</span>
+              {agentView === 'idle' && phase2Progress.remaining > 0 && (
+                <span className={styles.notesBadge}>{phase2Progress.remaining}</span>
+              )}
             </button>
           )}
         </div>
@@ -884,6 +895,8 @@ export default function DataReviewPage() {
           reviewed={phase2Reviewed}
           total={phase2Total}
           complete={phase2Complete}
+          diagnosticsOpen={agentView !== 'idle'}
+          onOpenDiagnostics={() => handleAgentOpen()}
         />
       )}
 

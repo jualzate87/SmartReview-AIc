@@ -70,6 +70,30 @@
   color: #21262a;
 }
 
+/* Progress note as link back to AI Review when diagnostics remain */
+.counterLink {
+  font-family: var(--font-family-component, sans-serif);
+  font-size: 13px;
+  color: #105c99;
+  white-space: nowrap;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.counterLink:hover {
+  color: #0b4573;
+}
+
+.counterLink .counterNum {
+  color: inherit;
+  font-size: 15px;
+  font-weight: 700;
+}
+
 /* Locked (hard-lock) — visible + explained */
 .lockedWrap {
   display: flex;
