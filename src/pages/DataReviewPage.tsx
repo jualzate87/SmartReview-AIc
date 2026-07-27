@@ -909,7 +909,7 @@ export default function DataReviewPage() {
             so the transition is smooth. */}
         {/* Collapsed "Show outputs" edge tab — available in import and AI phases */}
         <div
-          className={styles.form1040HandleWrap}
+          className={`${styles.form1040HandleWrap} ${coachTip === 'showOutputs' && !show1040 ? styles.form1040HandleWrapCoach : ''}`}
           style={{
             width: show1040 ? 0 : SHOW_SUMMARY_HANDLE_WIDTH,
             opacity: show1040 ? 0 : 1,
@@ -922,7 +922,7 @@ export default function DataReviewPage() {
             title="Show outputs"
             message="Bring Summary back anytime with Show outputs."
             onClose={() => dismissCoachTip('showOutputs')}
-            position="right"
+            position="left"
             alignment="middle"
           >
             <button
@@ -965,7 +965,7 @@ export default function DataReviewPage() {
               title="Hide outputs"
               message="Need more room for source documents? Hide outputs to collapse this panel. You can bring it back anytime with Show outputs."
               onClose={() => dismissCoachTip('hideSummary')}
-              position="bottom"
+              position="top"
               alignment="left"
             >
               <Button

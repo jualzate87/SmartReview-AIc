@@ -14,6 +14,34 @@ type CoachTipProps = {
   children: ReactElement
 }
 
+function dotPositionClass(
+  position: CoachTipProps['position'],
+  alignment: CoachTipProps['alignment'],
+): string {
+  const align = alignment === 'center' ? 'middle' : alignment ?? 'middle'
+
+  switch (position) {
+    case 'top':
+      if (align === 'left') return styles.dotPosTopAlignLeft
+      if (align === 'right') return styles.dotPosTopAlignRight
+      return styles.dotPosTop
+    case 'bottom':
+      if (align === 'left') return styles.dotPosBottomAlignLeft
+      if (align === 'right') return styles.dotPosBottomAlignRight
+      return styles.dotPosBottom
+    case 'left':
+      if (align === 'top') return styles.dotPosLeftAlignTop
+      if (align === 'bottom') return styles.dotPosLeftAlignBottom
+      return styles.dotPosLeft
+    case 'right':
+      if (align === 'top') return styles.dotPosRightAlignTop
+      if (align === 'bottom') return styles.dotPosRightAlignBottom
+      return styles.dotPosRight
+    default:
+      return styles.dotPosTopRight
+  }
+}
+
 /**
  * One-shot coachmark: pink pulse only (no GuidanceTooltip popover).
  * Dismisses when the user clicks the highlighted control.
@@ -22,6 +50,8 @@ export default function CoachTip({
   open,
   onClose,
   showDot = true,
+  position,
+  alignment,
   children,
 }: CoachTipProps) {
   const child = isValidElement(children)
@@ -35,10 +65,12 @@ export default function CoachTip({
       } as Record<string, unknown>)
     : children
 
+  const dotClass = dotPositionClass(position, alignment)
+
   return (
-    <span className={styles.wrap}>
+    <span className={`${styles.wrap} ${open ? styles.wrapOpen : ''}`}>
       {showDot && open && (
-        <span className={styles.dot} aria-hidden>
+        <span className={`${styles.dot} ${dotClass}`} aria-hidden>
           <span className={styles.dotPulse} />
         </span>
       )}

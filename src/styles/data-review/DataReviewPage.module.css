@@ -374,6 +374,11 @@
   .form1040HandleWrap { transition: none; }
 }
 
+/* Allow pink coach pointer to extend outside the collapsed column */
+.form1040HandleWrapCoach {
+  overflow: visible;
+}
+
 .form1040Handle {
   display: flex;
   flex-direction: column;

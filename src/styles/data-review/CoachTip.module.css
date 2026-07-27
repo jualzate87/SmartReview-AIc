@@ -5,7 +5,11 @@
   vertical-align: middle;
 }
 
-/* Pink attention pulse — sits at the top-right of the control */
+.wrapOpen {
+  z-index: 6;
+}
+
+/* Pink attention pulse — default: top-right of the control */
 .dot {
   position: absolute;
   top: -4px;
@@ -21,16 +25,170 @@
   position: absolute;
   inset: 2px;
   border-radius: 50%;
-  background: #e91e8c;
-  box-shadow: 0 0 0 2px #fff;
+  background: var(--color-pink-300, #e31c9e);
+  box-shadow: 0 0 0 2px var(--color-white, #fff);
 }
 
 .dotPulse {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: rgba(233, 30, 140, 0.45);
+  background: color-mix(in srgb, var(--color-pink-300, #e31c9e) 45%, transparent);
   animation: coachPulse 1.6s ease-out infinite;
+}
+
+/* Position variants — dot sits outside the control on the named side */
+.dotPosTopRight {
+  top: -4px;
+  right: -4px;
+  bottom: auto;
+  left: auto;
+  transform: none;
+}
+
+.dotPosTop {
+  top: -6px;
+  right: auto;
+  bottom: auto;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.dotPosTopAlignLeft {
+  top: -6px;
+  left: 8px;
+  right: auto;
+  bottom: auto;
+  transform: none;
+}
+
+.dotPosTopAlignRight {
+  top: -6px;
+  right: 8px;
+  left: auto;
+  bottom: auto;
+  transform: none;
+}
+
+.dotPosBottom {
+  bottom: -6px;
+  top: auto;
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+}
+
+.dotPosBottomAlignLeft {
+  bottom: -6px;
+  top: auto;
+  left: 8px;
+  right: auto;
+  transform: none;
+}
+
+.dotPosBottomAlignRight {
+  bottom: -6px;
+  top: auto;
+  right: 8px;
+  left: auto;
+  transform: none;
+}
+
+.dotPosLeft {
+  left: -6px;
+  top: 50%;
+  right: auto;
+  bottom: auto;
+  transform: translateY(-50%);
+}
+
+.dotPosLeftAlignTop {
+  left: -6px;
+  top: 8px;
+  right: auto;
+  bottom: auto;
+  transform: none;
+}
+
+.dotPosLeftAlignBottom {
+  left: -6px;
+  bottom: 8px;
+  top: auto;
+  right: auto;
+  transform: none;
+}
+
+.dotPosRight {
+  right: -6px;
+  top: 50%;
+  left: auto;
+  bottom: auto;
+  transform: translateY(-50%);
+}
+
+.dotPosRightAlignTop {
+  right: -6px;
+  top: 8px;
+  left: auto;
+  bottom: auto;
+  transform: none;
+}
+
+.dotPosRightAlignBottom {
+  right: -6px;
+  bottom: 8px;
+  top: auto;
+  left: auto;
+  transform: none;
+}
+
+/* Small beak pointing at the control from the dot */
+.dotPosLeft::before,
+.dotPosLeftAlignTop::before,
+.dotPosLeftAlignBottom::before {
+  content: '';
+  position: absolute;
+  right: -3px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 4px solid transparent;
+  border-left-color: var(--color-pink-300, #e31c9e);
+}
+
+.dotPosRight::before,
+.dotPosRightAlignTop::before,
+.dotPosRightAlignBottom::before {
+  content: '';
+  position: absolute;
+  left: -3px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 4px solid transparent;
+  border-right-color: var(--color-pink-300, #e31c9e);
+}
+
+.dotPosTop::before,
+.dotPosTopAlignLeft::before,
+.dotPosTopAlignRight::before {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: var(--color-pink-300, #e31c9e);
+}
+
+.dotPosBottom::before,
+.dotPosBottomAlignLeft::before,
+.dotPosBottomAlignRight::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-bottom-color: var(--color-pink-300, #e31c9e);
 }
 
 @keyframes coachPulse {
