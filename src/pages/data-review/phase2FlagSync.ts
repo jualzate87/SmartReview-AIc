@@ -7,7 +7,13 @@
  */
 import type { LiveAmounts, LiveReturnTotals } from '../../data/liveReturn'
 import { TOKEN_QUALIFIED_DIVS_RETURN } from '../../data/frozenReturn'
-import { PHASE1_FLAG_KEYS, isPhase1FlagResolved, type Phase1FlagKey } from './phase1FieldSync'
+import {
+  PHASE1_FLAG_KEYS,
+  get1040HighlightField,
+  isPhase1FlagResolved,
+  type Phase1FlagKey,
+} from './phase1FieldSync'
+import type { OutputFormId } from './outputForms'
 
 const PHASE1_FLAG_KEY_SET = new Set<string>(PHASE1_FLAG_KEYS)
 
@@ -223,6 +229,77 @@ export function isDiagnosticAutoDismissed(
 
 export function getActiveDiagnosticKeys(ctx: DiagnosticSyncContext): Phase2IssueKey[] {
   return PHASE2_DIAGNOSTIC_ORDER.filter(k => !isDiagnosticAutoDismissed(k, ctx))
+}
+
+/** Default Summary / 1040 row for each Phase 2 diagnostic (when detail pane is open). */
+export const DIAGNOSTIC_OUTPUT_FIELDS: Record<Phase2IssueKey, string> = {
+  importMismatches: 'wages',
+  underpaymentRisk: 'withholding',
+  necScheduleC: 'otherIncome',
+  niitForm8960: 'ordinaryDivs',
+  optItemize: 'stdDeduction',
+}
+
+/** Schedule / form line highlights when a diagnostic opens a non-Summary output form. */
+export const DIAGNOSTIC_FORM_LINE_HIGHLIGHTS: Partial<
+  Record<Phase2IssueKey, Partial<Record<OutputFormId, string>>>
+> = {
+  necScheduleC: { schC: 'schC-1', sch1: 'sch1-8' },
+  niitForm8960: { f8960: 'f8960-5a', '1040': 'niitTax' },
+  underpaymentRisk: { f2210: 'f2210-17', '1040': 'withholding' },
+  optItemize: { schA: 'schA-8a', '1040': 'stdDeduction' },
+  importMismatches: { '1040': 'wages' },
+}
+
+/** Map a detail / issue field key → Summary / 1040 row (shared with Phase 1). */
+export function resolveOutputFieldFromIssueField(issueField: string | null): string | null {
+  if (!issueField) return null
+  return get1040HighlightField(issueField) ?? issueField
+}
+
+/** Resolve the Summary / 1040 row to highlight for an active Phase 2 diagnostic. */
+export function resolveOutputFieldFromDiagnostic(
+  issueKey: Phase2IssueKey,
+  amounts?: LiveAmounts,
+  issueField?: string | null,
+): string {
+  if (issueField) {
+    return resolveOutputFieldFromIssueField(issueField) ?? DIAGNOSTIC_OUTPUT_FIELDS[issueKey]
+  }
+  if (issueKey === 'importMismatches' && amounts) {
+    const first = getOutstandingImportMismatches(amounts)[0]
+    if (first) {
+      return resolveOutputFieldFromIssueField(first.field) ?? DIAGNOSTIC_OUTPUT_FIELDS[issueKey]
+    }
+  }
+  return DIAGNOSTIC_OUTPUT_FIELDS[issueKey]
+}
+
+/** Highlight field id for schedule / form views (may differ from Summary row keys). */
+export function resolveFormLineHighlight(
+  formId: OutputFormId,
+  options: {
+    issueKey?: Phase2IssueKey | null
+    issueField?: string | null
+    sourceHighlight?: string | null
+    amounts?: LiveAmounts
+  },
+): string | null {
+  const { issueKey, issueField, sourceHighlight, amounts } = options
+
+  if (issueKey) {
+    const byForm = DIAGNOSTIC_FORM_LINE_HIGHLIGHTS[issueKey]?.[formId]
+    if (byForm) return byForm
+    const summaryField = resolveOutputFieldFromDiagnostic(issueKey, amounts, issueField)
+    if (formId === 'summary' || formId === '1040') return summaryField
+    return null
+  }
+
+  if (sourceHighlight && (formId === 'summary' || formId === '1040')) {
+    return sourceHighlight
+  }
+
+  return sourceHighlight ?? null
 }
 
 export function getPhase2Progress(ctx: DiagnosticSyncContext): {

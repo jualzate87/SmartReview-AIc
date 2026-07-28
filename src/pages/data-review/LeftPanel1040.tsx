@@ -17,6 +17,7 @@ import CoachTip from './CoachTip'
 import { TAX_CONTROL_ROWS, getControlSystemValues, type TaxControlDocEntry } from '../../data/sourceDocuments'
 import { CLIENT_ADDRESS, formatClientCityStateZip } from '../../data/clientAddress'
 import { summaryFieldHasUnresolvedFlags } from './phase1FieldSync'
+import { resolveFormLineHighlight, type Phase2IssueKey } from './phase2FlagSync'
 import {
   formatActivityMeta,
   type ActivityEntry,
@@ -62,6 +63,8 @@ interface LeftPanel1040Props {
   onSetFlagNote?: (fieldName: string, note: string) => void
   /** When true: this field is highlighted orange (active agent issue card) — takes precedence over blue */
   issueField?: string | null
+  /** Active Phase 2 diagnostic — drives schedule-form line highlights */
+  activeDiagnosticKey?: Phase2IssueKey | null
   /** Called when user clicks a source link in the field popover */
   onViewSource?: (fieldName: string, sourceLabel?: string) => void
   /** Navigate to a specific source document + highlight its detail field */
@@ -141,6 +144,7 @@ export default function LeftPanel1040({
   flagActivity = {},
   onSetFlagNote,
   issueField,
+  activeDiagnosticKey = null,
   onViewSource,
   onNavigateSource,
   onNavigateToSourceDoc,
@@ -198,6 +202,28 @@ export default function LeftPanel1040({
 
   // Detail-field keys may differ from 1040 row keys (e.g. fedTaxWithheld ↔ withholding).
   const activeHighlight = highlightField ?? selectedField
+  const formLineHighlight = resolveFormLineHighlight(outputFormId, {
+    issueKey: activeDiagnosticKey,
+    issueField: issueField ?? undefined,
+    sourceHighlight: highlightField ?? activeHighlight,
+    amounts: liveAmounts,
+  })
+  const scheduleLineIssue = activeDiagnosticKey
+    ? resolveFormLineHighlight(outputFormId, {
+        issueKey: activeDiagnosticKey,
+        amounts: liveAmounts,
+      })
+    : null
+
+  // Scroll diagnostic / issue row into view when agent highlights an output field
+  useEffect(() => {
+    const target = formLineHighlight ?? issueField ?? highlightField
+    if (!target) return
+    requestAnimationFrame(() => {
+      const row = document.querySelector(`[data-field-row="${target}"]`) as HTMLElement | null
+      row?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    })
+  }, [formLineHighlight, issueField, highlightField, outputFormId, activeDiagnosticKey])
 
   // Live totals from synced edits; seeds match Build Spec frozen anchors at session start.
   const wages1040           = liveTotals?.wages ?? total1a
@@ -603,8 +629,10 @@ export default function LeftPanel1040({
     owe?: boolean
   }) => {
     const commentable = !!field && !!onAddFieldNote
-    const isIssueHighlight = !!field && field === issueField
-    const isSelected       = !!field && activeHighlight === field
+    const isIssueRow     = !!field && !!issueField && field === issueField
+    const isSelected     = !!field && activeHighlight === field
+    const isOrange       = isIssueRow
+    const isBlue         = isSelected && !isIssueRow
     // Output checks are user-driven only (not Phase 1 “mark correct” on inputs)
     const isChecked        = !!field && checkedFields.has(field)
     const isHovered        = !!field && hoveredField === field
@@ -614,13 +642,8 @@ export default function LeftPanel1040({
     // Show check button on hover for any field with a value (kind set means it has data)
     const showCheckBtn     = !!field && !!kind && !!value && isHovered
 
-    // Blue selection: selected but NOT the active issue field
-    const isBlueSelected   = isSelected && !isIssueHighlight
-    // Orange selection: selected AND it's the issue field
-    const isOrangeSelected = isSelected && !!isIssueHighlight
-
-    // YoY tint: only when row is selected/hovered via issue interaction (orange mode)
-    const showYoyTint = isOrangeSelected
+    // YoY tint: only when row is highlighted via issue interaction (orange mode)
+    const showYoyTint = isOrange && isSelected
 
     const rowCls = [
       styles.row,
@@ -629,8 +652,8 @@ export default function LeftPanel1040({
       indent  ? styles.rowIndent  : '',
       subdued ? styles.rowSubdued : '',
       owe     ? styles.rowOwe     : '',
-      isOrangeSelected ? styles.rowSelected     : '',
-      isBlueSelected   ? styles.rowSelectedBlue : '',
+      isOrange ? styles.rowSelected     : '',
+      isBlue   ? styles.rowSelectedBlue : '',
       isChecked        ? styles.rowChecked      : '',
       showYoyTint      ? rowYoyClass(yoy!)      : '',
       clickable        ? styles.rowClickable    : '',
@@ -643,8 +666,8 @@ export default function LeftPanel1040({
       kind === 'source'   ? styles.valueBoxSource   : '',
       kind === 'calc'     ? styles.valueBoxCalc     : '',
       value === undefined ? styles.valueBoxEmpty    : '',
-      isOrangeSelected    ? styles.valueBoxSelected : '',
-      isBlueSelected      ? styles.valueBoxSelectedBlue : '',
+      isOrange ? styles.valueBoxSelected : '',
+      isBlue   ? styles.valueBoxSelectedBlue : '',
       isChecked && !isSelected ? styles.valueBoxChecked : '',
       isCommentOpen && !isSelected ? styles.valueBoxCommentOpen : '',
     ].filter(Boolean).join(' ')
@@ -653,8 +676,8 @@ export default function LeftPanel1040({
       styles.valueNum,
       kind === 'calc'   ? styles.valueNumCalc   : '',
       kind === 'source' ? styles.valueNumSource : '',
-      isOrangeSelected  ? styles.valueNumSelected   : '',
-      isBlueSelected    ? styles.valueNumSelectedBlue : '',
+      isOrange ? styles.valueNumSelected   : '',
+      isBlue   ? styles.valueNumSelectedBlue : '',
       isChecked && !isSelected ? styles.valueNumChecked : '',
     ].filter(Boolean).join(' ')
 
@@ -960,8 +983,8 @@ export default function LeftPanel1040({
                       const flagNote   = row.field ? (flagNotes[row.field] ?? '') : ''
                       const isSelected = !!row.field && activeHighlight === row.field
                       const isIssue    = !!row.field && row.field === issueField
+                      const isOrange   = isIssue
                       const isBlue     = isSelected && !isIssue
-                      const isOrange   = isSelected && !!isIssue
                       const clickable  = !!row.field
                       const hasPopover = !!row.field && fieldHasPopover(row.field)
                       // System Phase 1 import attention — informational only; not the user flag
@@ -1165,11 +1188,13 @@ export default function LeftPanel1040({
                 const pctChg = yoyPercent(oweAmount, priorOwed)
                 const isIssue = issueField === 'amountOwed'
                 const isSelected = activeHighlight === 'amountOwed'
+                const isOrange = isIssue
+                const isBlue = isSelected && !isIssue
                 const diffPos = diff > 0
                 const diffNeg = diff < 0
                 return (
               <div
-                className={`${styles.summarySubRow} ${styles.summaryOweRow} ${isIssue && isSelected ? styles.summarySubRowOrange : ''} ${isSelected && !isIssue ? styles.summarySubRowBlue : ''}`}
+                className={`${styles.summarySubRow} ${styles.summaryOweRow} ${isOrange ? styles.summarySubRowOrange : ''} ${isBlue ? styles.summarySubRowBlue : ''}`}
                 role="button"
                 tabIndex={0}
                 onClick={() => {
@@ -1265,6 +1290,8 @@ export default function LeftPanel1040({
             formId={outputFormId}
             live={originTotals}
             amounts={liveAmounts}
+            highlightField={formLineHighlight}
+            issueField={scheduleLineIssue}
             onNavigateSource={onNavigateSource}
             onNavigateToSourceDoc={onNavigateToSourceDoc}
           />

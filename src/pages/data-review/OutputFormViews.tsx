@@ -74,6 +74,8 @@ type LineRowProps = {
   amounts: LiveAmounts
   openFieldId: string | null
   onOpenFlyout: (fieldId: string, anchor: HTMLElement) => void
+  highlightField?: string | null
+  issueField?: string | null
 }
 
 function LineRow({
@@ -89,21 +91,49 @@ function LineRow({
   amounts,
   openFieldId,
   onOpenFlyout,
+  highlightField,
+  issueField,
 }: LineRowProps) {
   const display = typeof value === 'number' ? fmt(value) : value
   const flyout = getScheduleLineFlyout(formId, fieldId, live, amounts)
   const hasFlyout = !!flyout
   const isOpen = openFieldId === fieldId
+  const isIssueRow = fieldId === issueField
+  const isSelected = fieldId === highlightField
+  const isOrange = isIssueRow
+  const isBlue = isSelected && !isIssueRow
 
   const openFromRow = (rowEl: HTMLElement) => {
     if (!hasFlyout) return
     onOpenFlyout(fieldId, rowEl)
   }
 
+  const rowCls = [
+    styles.row,
+    bold ? styles.rowBold : '',
+    hasFlyout ? styles.rowClickable : '',
+    isOrange ? styles.rowSelected : '',
+    isBlue ? styles.rowSelectedBlue : '',
+  ].filter(Boolean).join(' ')
+
+  const valueBoxCls = [
+    styles.valueBox,
+    kind === 'source' ? styles.valueBoxSource : styles.valueBoxCalc,
+    isOrange ? styles.valueBoxSelected : '',
+    isBlue ? styles.valueBoxSelectedBlue : '',
+  ].filter(Boolean).join(' ')
+
+  const valueNumCls = [
+    styles.valueNum,
+    kind === 'source' ? styles.valueNumSource : styles.valueNumCalc,
+    isOrange ? styles.valueNumSelected : '',
+    isBlue ? styles.valueNumSelectedBlue : '',
+  ].filter(Boolean).join(' ')
+
   return (
     <tr
-      className={`${styles.row} ${bold ? styles.rowBold : ''} ${hasFlyout ? styles.rowClickable : ''}`}
-      data-field-row={hasFlyout ? fieldId : undefined}
+      className={rowCls}
+      data-field-row={fieldId}
       onMouseDown={hasFlyout ? e => e.stopPropagation() : undefined}
       onClick={hasFlyout ? e => openFromRow(e.currentTarget) : undefined}
       style={hasFlyout ? { cursor: 'pointer' } : undefined}
@@ -121,9 +151,9 @@ function LineRow({
       <td className={styles.cellValue}>
         <div className={styles.cellValueInner}>
           <div
-            className={`${styles.valueBox} ${kind === 'source' ? styles.valueBoxSource : styles.valueBoxCalc}`}
+            className={valueBoxCls}
           >
-            <span className={`${styles.valueNum} ${kind === 'source' ? styles.valueNumSource : styles.valueNumCalc}`}>
+            <span className={valueNumCls}>
               {display}
             </span>
           </div>
@@ -705,6 +735,8 @@ interface OutputFormViewsProps {
   formId: OutputFormId
   live: LiveReturnTotals
   amounts: LiveAmounts
+  highlightField?: string | null
+  issueField?: string | null
   onNavigateSource?: (source: FieldOriginSource) => void
   onNavigateToSourceDoc?: (docId: string) => void
 }
@@ -714,6 +746,8 @@ export default function OutputFormViews({
   formId,
   live,
   amounts,
+  highlightField,
+  issueField,
   onNavigateSource,
   onNavigateToSourceDoc,
 }: OutputFormViewsProps) {
@@ -750,6 +784,8 @@ export default function OutputFormViews({
     amounts,
     openFieldId: flyoutField,
     onOpenFlyout: openFlyout,
+    highlightField,
+    issueField,
   }
 
   let body: React.ReactNode = null

@@ -50,7 +50,9 @@ interface AgentReportPaneProps {
     /** preview = document source panel; details = focus/highlight Details input */
     focus?: 'preview' | 'details',
   ) => void
-  onHighlightField?: (field: string | null) => void
+  onHighlightField?: (field: string | null, issueKey?: IssueKey | null) => void
+  /** Fired when a diagnostic detail pane opens or closes (for output highlight sync). */
+  onDiagnosticFocus?: (issueKey: IssueKey | null) => void
   fieldValues?: { withholding: number; box12: number; taxableInterest: number; qualifiedDivs: number }
   onFieldValueChange?: (key: 'withholding' | 'box12' | 'taxableInterest' | 'qualifiedDivs', value: number) => void
   liveTotals?: LiveReturnTotals
@@ -384,6 +386,7 @@ export default function AgentReportPane({
   embedded = false,
   onNavigateToTab,
   onHighlightField,
+  onDiagnosticFocus,
   liveTotals,
   amounts = SEED_AMOUNTS,
   onOpenForm,
@@ -420,22 +423,34 @@ export default function AgentReportPane({
     prevAllReviewed.current = allReviewed
   }, [allReviewed])
 
+  const resolveHighlightField = (key: string): string | null => {
+    const issue = getIssueConfig(key)
+    if (key === 'importMismatches') {
+      const first = getOutstandingImportMismatches(amounts)[0]
+      return first?.field ?? ISSUE_FIELD[key as IssueKey] ?? null
+    }
+    return issue?.viewSourceField ?? ISSUE_FIELD[key as IssueKey] ?? null
+  }
+
   useEffect(() => {
     if (issueDetailOpen && !activeOrder.includes(issueDetailOpen as IssueKey)) {
       setIssueDetailOpen(null)
-      onHighlightField?.(null)
+      onHighlightField?.(null, null)
+      onDiagnosticFocus?.(null)
     }
-  }, [activeOrder, issueDetailOpen, onHighlightField])
+  }, [activeOrder, issueDetailOpen, onHighlightField, onDiagnosticFocus])
 
   const openDetail = (key: string) => {
-    const field = ISSUE_FIELD[key as IssueKey] ?? null
-    onHighlightField?.(field)
+    const field = resolveHighlightField(key)
+    onHighlightField?.(field, key as IssueKey)
+    onDiagnosticFocus?.(key as IssueKey)
     setIssueDetailOpen(key)
   }
 
   const handleCloseIssueDetail = () => {
     setIssueDetailClosing(true)
-    onHighlightField?.(null)
+    onHighlightField?.(null, null)
+    onDiagnosticFocus?.(null)
     setTimeout(() => { setIssueDetailOpen(null); setIssueDetailClosing(false) }, 200)
   }
 
@@ -611,8 +626,17 @@ export default function AgentReportPane({
                           role="button"
                           tabIndex={0}
                           className={`${styles.findingInner} ${isReviewed ? styles.findingInnerReviewed : ''}`}
-                          onClick={() => onHighlightField?.(ISSUE_FIELD[key as IssueKey] ?? null)}
-                          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onHighlightField?.(ISSUE_FIELD[key as IssueKey] ?? null) } }}
+                          onClick={() => {
+                            const field = resolveHighlightField(key)
+                            onHighlightField?.(field, key as IssueKey)
+                          }}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault()
+                              const field = resolveHighlightField(key)
+                              onHighlightField?.(field, key as IssueKey)
+                            }
+                          }}
                         >
                           <div className={styles.findingTitleRow}>
                             {isReviewed ? <span className={styles.findingCheckIcon}><CircleCheck size="small" /></span> : <span className={styles.findingDot} style={{ background: issue.dotColor === 'blue' ? '#0077c5' : issue.dotColor === 'orange' ? '#d68000' : '#c22929' }} />}

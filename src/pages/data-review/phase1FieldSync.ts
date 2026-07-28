@@ -102,6 +102,11 @@ export function get1040HighlightField(selectedField: string | null): string | nu
   return detailTo1040Field(selectedField) ?? selectedField
 }
 
+/** Map a source-doc detail field key → Summary / 1040 row field for output highlight sync. */
+export function resolveOutputFieldFromSource(detailField: string | null): string | null {
+  return get1040HighlightField(detailField)
+}
+
 /** Box 12 sub-row reviewed keys for Tech Circle (multi-code W-2 layout). */
 export function getBox12SubRowKeys(employer: W2Employer): string[] {
   if (employer === 'techCircle') {

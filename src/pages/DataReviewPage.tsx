@@ -59,7 +59,12 @@ import {
   isPhase1FlagResolved,
   navigationForDetailField,
 } from './data-review/phase1FieldSync'
-import { getPhase2Progress } from './data-review/phase2FlagSync'
+import {
+  getPhase2Progress,
+  resolveOutputFieldFromDiagnostic,
+  resolveOutputFieldFromIssueField,
+  type Phase2IssueKey,
+} from './data-review/phase2FlagSync'
 import { PHASE1_FLAG_MESSAGES } from './data-review/phase1FlagMessages'
 import { buildYoyInputFlags, mergeInputFlags } from './data-review/yoyInputFlags'
 import { computeLiveReturn } from '../data/liveReturn'
@@ -360,23 +365,29 @@ export default function DataReviewPage() {
   // Field that the agent flagged as an issue — drives orange highlight mode
   // Set when navigating to source docs from any issue detail pane
   const [activeIssueField, setActiveIssueField] = useState<string | null>(null)
+  /** Phase 2 diagnostic with an open detail pane — output highlight follows this when set. */
+  const [activeDiagnosticKey, setActiveDiagnosticKey] = useState<Phase2IssueKey | null>(null)
 
-  // Maps doc-overlay field keys → 1040 field keys (when they differ)
-  const DOC_FIELD_TO_1040: Record<string, string> = {
-    earlyWithdrawal: 'taxableInterest', // Box 2 flows to same 1040 line 2b
-  }
+  const agentOutputHighlightActive =
+    agentView === 'report' || agentView === 'closing' || fromAgent
 
-  // issueField: the 1040 field currently flagged by the active agent issue
+  // issueField: Summary / 1040 row for the active diagnostic (orange) — takes precedence over blue selection
   const issueField = (() => {
-    if (activeIssueField && (agentView === 'report' || agentView === 'closing' || fromAgent)) {
-      return DOC_FIELD_TO_1040[activeIssueField] ?? activeIssueField
+    if (!agentOutputHighlightActive) return null
+    if (agentSubView === 'yoyDetail') return 'wages'
+    if (activeIssueField) {
+      return resolveOutputFieldFromIssueField(activeIssueField)
     }
-    if (agentSubView === 'yoyDetail' && (agentView === 'report' || agentView === 'closing')) return 'wages'
+    if (activeDiagnosticKey) {
+      return resolveOutputFieldFromDiagnostic(activeDiagnosticKey, amounts)
+    }
     return null
   })()
+
+  const selectedOutputField = resolveOutputFieldFromIssueField(selectedField)
   const highlightMode: 'orange' | 'blue' = phase === 'import'
     ? 'blue'
-    : (selectedField && (selectedField === issueField || DOC_FIELD_TO_1040[selectedField] === issueField)) ? 'orange' : 'blue'
+    : (selectedOutputField && issueField && selectedOutputField === issueField) ? 'orange' : 'blue'
 
   const applyVerifyNavigation = useCallback((field: string) => {
     const nav = navigationForDetailField(field)
@@ -416,6 +427,7 @@ export default function DataReviewPage() {
     if (next.intPayer) setActiveIntPayer(next.intPayer)
     setSelectedField(null)
     setActiveIssueField(null)
+    setActiveDiagnosticKey(null)
     if (next.tab === 'questionnaire') setQuestionnaireHighlightId(null)
   }, [
     importsStarted, startReviewingImports, ensureSourcePanelVisible,
@@ -430,6 +442,21 @@ export default function DataReviewPage() {
       else ensureSourcePanelVisible()
     }
   }, [phase, setSelectedField, importsStarted, startReviewingImports, ensureSourcePanelVisible])
+
+  const highlightField1040 = resolveOutputFieldFromIssueField(selectedField)
+
+  // Scroll the mapped output row into view when a source field is selected and outputs are visible
+  useEffect(() => {
+    if (!show1040 || !highlightField1040) return
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const row = document.querySelector(
+          `[data-field-row="${highlightField1040}"]`,
+        ) as HTMLElement | null
+        row?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+      })
+    })
+  }, [show1040, highlightField1040, selectedField])
 
   const handleNavigateToSourceDoc = useCallback((docId: string) => {
     const nav = navigationForSourceDoc(docId)
@@ -482,8 +509,6 @@ export default function DataReviewPage() {
     const mapped = field1040ToDetail(field1040)
     setSelectedField(mapped?.field ?? field1040)
   }, [setSelectedField])
-
-  const highlightField1040 = get1040HighlightField(selectedField)
 
   const sourceDocPreview = getSourceDocPreview({
     activeTopTab,
@@ -540,6 +565,7 @@ export default function DataReviewPage() {
     if (!preserveSelection) {
       setSelectedField(null)
       setActiveIssueField(null)
+      setActiveDiagnosticKey(null)
     }
     // Step 1: agent plays panelSlideOut (350ms)
     // Step 2: switch to idle (display:flex appears on right panel)
@@ -1000,6 +1026,7 @@ export default function DataReviewPage() {
             flagActivity={summaryFlagActivity}
             onSetFlagNote={setSummaryFlagNote}
             issueField={issueField}
+            activeDiagnosticKey={activeDiagnosticKey}
             liveTotals={liveTotals}
             liveAmounts={amounts}
             editedFields={editedFields}
@@ -1143,6 +1170,7 @@ export default function DataReviewPage() {
                   setFromAgent(false)
                   setSelectedField(null)
                   setActiveIssueField(null)
+                  setActiveDiagnosticKey(null)
                 }}
               />
 
@@ -1608,9 +1636,16 @@ export default function DataReviewPage() {
                         ensureSourcePanelVisible()
                         handleAgentClose(true)
                       }}
-                      onHighlightField={(field) => {
+                      onHighlightField={(field, issueKey) => {
                         setSelectedField(field)
                         setActiveIssueField(field)
+                        setActiveDiagnosticKey(issueKey ?? null)
+                      }}
+                      onDiagnosticFocus={(issueKey) => {
+                        setActiveDiagnosticKey(issueKey)
+                        if (!issueKey) {
+                          setActiveIssueField(null)
+                        }
                       }}
                       fieldValues={{ ...fieldValues, withholding: totalWithholding }}
                       liveTotals={liveTotals}

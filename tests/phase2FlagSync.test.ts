@@ -121,6 +121,34 @@ describe('study-static diagnostics remain until Phase 2 review', () => {
   })
 })
 
+describe('resolveOutputFieldFromDiagnostic', () => {
+  it('maps detail issue fields to 1040 rows', async () => {
+    const {
+      resolveOutputFieldFromDiagnostic,
+      resolveOutputFieldFromIssueField,
+    } = await import('../src/pages/data-review/phase2FlagSync')
+
+    expect(resolveOutputFieldFromIssueField('fedTaxWithheld')).toBe('withholding')
+    expect(resolveOutputFieldFromIssueField('nec-box1')).toBe('otherIncome')
+    expect(resolveOutputFieldFromDiagnostic('underpaymentRisk')).toBe('withholding')
+    expect(resolveOutputFieldFromDiagnostic('necScheduleC')).toBe('otherIncome')
+  })
+
+  it('uses first import mismatch field when amounts differ', async () => {
+    const { resolveOutputFieldFromDiagnostic } = await import('../src/pages/data-review/phase2FlagSync')
+    const field = resolveOutputFieldFromDiagnostic('importMismatches', SEED_AMOUNTS)
+    expect(field).toBe('wages')
+  })
+
+  it('resolves schedule line highlights per form', async () => {
+    const { resolveFormLineHighlight } = await import('../src/pages/data-review/phase2FlagSync')
+
+    expect(resolveFormLineHighlight('schC', { issueKey: 'necScheduleC' })).toBe('schC-1')
+    expect(resolveFormLineHighlight('f8960', { issueKey: 'niitForm8960' })).toBe('f8960-5a')
+    expect(resolveFormLineHighlight('summary', { issueKey: 'necScheduleC' })).toBe('otherIncome')
+  })
+})
+
 describe('getActiveDiagnosticKeys / getPhase2Progress', () => {
   it('starts with the full diagnostic catalog', () => {
     const progress = getPhase2Progress(ctx())
