@@ -668,7 +668,6 @@ export default function LeftPanel1040({
       value === undefined ? styles.valueBoxEmpty    : '',
       isOrange ? styles.valueBoxSelected : '',
       isBlue   ? styles.valueBoxSelectedBlue : '',
-      isChecked && !isSelected ? styles.valueBoxChecked : '',
       isCommentOpen && !isSelected ? styles.valueBoxCommentOpen : '',
     ].filter(Boolean).join(' ')
 
@@ -678,7 +677,6 @@ export default function LeftPanel1040({
       kind === 'source' ? styles.valueNumSource : '',
       isOrange ? styles.valueNumSelected   : '',
       isBlue   ? styles.valueNumSelectedBlue : '',
-      isChecked && !isSelected ? styles.valueNumChecked : '',
     ].filter(Boolean).join(' ')
 
     return (
@@ -1016,7 +1014,6 @@ export default function LeftPanel1040({
                         styles.summarySubRow,
                         isOrange ? styles.summarySubRowOrange : '',
                         isBlue   ? styles.summarySubRowBlue   : '',
-                        isChecked ? styles.summarySubRowChecked : '',
                         clickable  ? styles.summarySubRowClickable : '',
                       ].filter(Boolean).join(' ')
 

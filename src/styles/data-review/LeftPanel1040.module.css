@@ -470,20 +470,9 @@
   background: #f0faf4 !important;
 }
 
-/* ── Manually checked state (preparer verified) ── */
-/* Slightly different green to distinguish from AI-reviewed */
-.valueBoxChecked {
-  border-color: var(--color-ui-positive, #108000) !important;
-  background: #f0faf4 !important;
-}
-
 .valueBoxCommentOpen {
   border-color: #205ea3 !important;
   border-width: 2px !important;
-}
-
-.valueNumChecked {
-  color: var(--color-ui-positive, #108000);
 }
 
 .rowChecked {
@@ -954,7 +943,7 @@
   font-family: var(--font-family-component);
   font-size: var(--font-size-component-small); /* 14px */
   font-weight: var(--font-weight-component-bold); /* 600 */
-  color: #1c202a;
+  color: var(--color-text-primary);
   font-variant-numeric: tabular-nums;
   text-align: right;
   white-space: nowrap;
@@ -1135,9 +1124,6 @@
 .summarySubRowClickable:hover { background: #f8f9fb; }
 .summarySubRowBlue   { background: #f0f5ff; }
 .summarySubRowOrange { background: #fff8f3; }
-.summarySubRowChecked .summaryCurrValText {
-  color: var(--color-ui-positive, #108000);
-}
 
 .summarySubLabelGroup {
   display: flex;
