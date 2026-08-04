@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { CircleCheck, CircleInfo, Comment, Flag } from '@design-systems/icons'
+import { ChevronLeft, CircleCheck, CircleInfo, Comment, Flag } from '@design-systems/icons'
+import { Button } from '@ids-ts/button'
+import '@ids-ts/button/dist/main.css'
+import { DropdownButton, MenuItem } from '@ids-ts/dropdown-button'
+import '@ids-ts/dropdown-button/dist/main.css'
 import FieldPopover, { FIELD_META } from './FieldPopover'
 import TaxControlDocPopover, {
   docsToSummaryItems,
@@ -85,6 +89,12 @@ interface LeftPanel1040Props {
   /** Controlled output form / summary selection (Summary, 1040, Sch C, …) */
   outputFormId?: OutputFormId
   onOutputFormChange?: (id: OutputFormId) => void
+  /** When true, show Hide output panel in the toolbar (both Return Summary + Sources open) */
+  showHideOutputs?: boolean
+  onHideOutputs?: () => void
+  /** One-shot coach tip on Hide output panel — only when showHideOutputs */
+  hideOutputsCoachOpen?: boolean
+  onDismissHideOutputsCoach?: () => void
   /** One-shot coach tip on output form dropdown after Phase 2 diagnostics complete */
   outputFormsCoachOpen?: boolean
   onDismissOutputFormsCoach?: () => void
@@ -154,6 +164,10 @@ export default function LeftPanel1040({
   onAddFieldNote,
   outputFormId: controlledOutputFormId,
   onOutputFormChange,
+  showHideOutputs = false,
+  onHideOutputs,
+  hideOutputsCoachOpen = false,
+  onDismissHideOutputsCoach,
   outputFormsCoachOpen = false,
   onDismissOutputFormsCoach,
   outputSourcesCoachOpen = false,
@@ -187,6 +201,8 @@ export default function LeftPanel1040({
   const flagNoteRef = useRef<HTMLDivElement>(null)
 
   const outputFormId = controlledOutputFormId ?? internalOutputFormId
+  const currentFormLabel =
+    OUTPUT_FORM_OPTIONS.find(opt => opt.id === outputFormId)?.label ?? 'Return Summary'
   const setOutputFormId = (id: OutputFormId) => {
     onOutputFormChange?.(id)
     if (controlledOutputFormId === undefined) setInternalOutputFormId(id)
@@ -842,49 +858,84 @@ export default function LeftPanel1040({
     },
   ]
 
+  const outputFormDropdown = (
+    <CoachTip
+      open={outputFormsCoachOpen}
+      title="Review output forms"
+      message="Review Schedules and Forms 8960 / 2210 before finishing."
+      onClose={() => onDismissOutputFormsCoach?.()}
+      position="bottom"
+      alignment="left"
+    >
+      <DropdownButton
+        label={currentFormLabel}
+        buttonPriority="secondary"
+        buttonPurpose="passive"
+        buttonSize="medium"
+        automationId="output-form-select"
+        aria-label="Select return form or schedule"
+        className={styles.formNavDropdown}
+        stylePosition={{ zIndex: 10000 }}
+        onSelect={(e: { target?: { value?: string } }) => {
+          const id = e?.target?.value as OutputFormId | undefined
+          if (!id) return
+          setOutputFormId(id)
+          if (id !== 'summary') onDismissOutputFormsCoach?.()
+        }}
+      >
+        {OUTPUT_FORM_OPTIONS.map(opt => (
+          <MenuItem key={opt.id} value={opt.id}>
+            {opt.label}
+          </MenuItem>
+        ))}
+      </DropdownButton>
+    </CoachTip>
+  )
+
+  const showOutputToolbar = showHideOutputs && onHideOutputs
+
   return (
     <div className={styles.leftPanel}>
 
-      {/* ── Output form navigator ── */}
+      {/* ── Toolbar: Hide output panel ── */}
+      {showOutputToolbar && (
       <div className={styles.viewToggle}>
-        <label className={styles.formNavLabel} htmlFor="output-form-select">
-          View
-        </label>
-        <CoachTip
-          open={outputFormsCoachOpen}
-          title="Review output forms"
-          message="Review Schedules and Forms 8960 / 2210 before finishing."
-          onClose={() => onDismissOutputFormsCoach?.()}
-          position="bottom"
-          alignment="left"
-        >
-          <select
-            id="output-form-select"
-            className={styles.formNavSelect}
-            value={outputFormId}
-            onChange={e => {
-              const id = e.target.value as OutputFormId
-              setOutputFormId(id)
-              if (id !== 'summary') onDismissOutputFormsCoach?.()
-            }}
-            aria-label="Select return form or schedule"
+        <div className={styles.viewToggleLeft}>
+          <CoachTip
+            open={hideOutputsCoachOpen}
+            title="Hide output panel"
+            message="Need more room for source documents? Hide output panel to collapse this panel. You can bring it back anytime with Show outputs."
+            onClose={() => onDismissHideOutputsCoach?.()}
+            position="bottom"
+            alignment="left"
           >
-            {OUTPUT_FORM_OPTIONS.map(opt => (
-              <option key={opt.id} value={opt.id}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </CoachTip>
+            <Button
+              priority="secondary"
+              size="small"
+              className={styles.hideOutputsBtn}
+              onClick={() => {
+                onDismissHideOutputsCoach?.()
+                onHideOutputs?.()
+              }}
+              aria-label="Hide output panel"
+            >
+              <ChevronLeft size="small" /> Hide output panel
+            </Button>
+          </CoachTip>
+        </div>
       </div>
+      )}
 
       {/* ── SUMMARY TABLE VIEW — Figma ProConnect style ── */}
       {view === 'table' && (
         <div className={styles.summaryWrapper}>
           <div className={styles.summaryCard}>
             <div className={styles.summaryCardHeader}>
-              <span className={styles.summaryCardLabel}>RETURN BREAKDOWN</span>
-              <span className={styles.summaryCardSub}>Line-by-line · 2025 return</span>
+              {outputFormDropdown}
+              <div className={styles.summaryCardHeaderTitles}>
+                <span className={styles.summaryCardLabel}>RETURN BREAKDOWN</span>
+                <span className={styles.summaryCardSub}>Line-by-line · 2025 return</span>
+              </div>
             </div>
 
             {/* Column headers — fixed widths match .summaryCurrVal / Prior / Diff / Pct / EndActions */}
@@ -1282,18 +1333,27 @@ export default function LeftPanel1040({
       )}
 
       <div className={styles.documentViewer} style={{ display: view === 'table' ? 'none' : undefined }}>
+        <div className={styles.formOutputColumn}>
         {outputFormId !== 'summary' && outputFormId !== '1040' ? (
-          <OutputFormViews
-            formId={outputFormId}
-            live={originTotals}
-            amounts={liveAmounts}
-            highlightField={formLineHighlight}
-            issueField={scheduleLineIssue}
-            onNavigateSource={onNavigateSource}
-            onNavigateToSourceDoc={onNavigateToSourceDoc}
-          />
+          <>
+            <div className={styles.outputPanelHeader}>
+              {outputFormDropdown}
+            </div>
+            <OutputFormViews
+              formId={outputFormId}
+              live={originTotals}
+              amounts={liveAmounts}
+              highlightField={formLineHighlight}
+              issueField={scheduleLineIssue}
+              onNavigateSource={onNavigateSource}
+              onNavigateToSourceDoc={onNavigateToSourceDoc}
+            />
+          </>
         ) : (
         <div className={styles.formDoc}>
+          <div className={styles.summaryCardHeader}>
+            {outputFormDropdown}
+          </div>
 
           {/* ── IRS Header ── */}
           <div className={styles.irsHeader}>
@@ -1430,6 +1490,7 @@ export default function LeftPanel1040({
 
         </div>
         )}
+        </div>
       </div>
 
       {/* ── Field popover — fixed-positioned so it escapes overflow:hidden ── */}
