@@ -50,7 +50,7 @@ export default function AgentLoadingPane({
         <div className={styles.headerLeft} />
         <div className={styles.headerTitle}>
           <img src={intuitAssistIcon} alt="" className={styles.assistIcon} />
-          <span className={styles.titleText}>Review AI</span>
+          <span className={styles.titleText}>AI diagnostics</span>
         </div>
         <div className={styles.headerRight}>
           <button className={styles.iconBtn} aria-label="Close" onClick={onClose}>
@@ -70,7 +70,7 @@ export default function AgentLoadingPane({
                 <div className={styles.spinningIcon}>
                   <img
                     src={intuitAssistIcon}
-                    alt="Review AI is assessing the return"
+                    alt="AI diagnostics is assessing the return"
                     className={styles.greetingIconImg}
                   />
                 </div>

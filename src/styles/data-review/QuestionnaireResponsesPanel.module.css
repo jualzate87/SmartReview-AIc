@@ -8,7 +8,7 @@
 
 .pageHeader {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: var(--space-200, 12px);
   padding: var(--space-300, 16px) var(--space-300, 16px) var(--space-200, 12px);
@@ -37,37 +37,6 @@
   font-size: var(--font-size-body-3, 14px);
   color: var(--color-text-secondary, #5d686f);
   line-height: 1.4;
-}
-
-.markVerifiedBtn {
-  flex-shrink: 0;
-  font-family: var(--font-family-component);
-  font-size: var(--font-size-component-small, 14px);
-  font-weight: var(--font-weight-component-semibold, 500);
-  color: var(--color-text-primary, #21262a);
-  background: transparent;
-  border: 1px solid var(--color-divider-tertiary, #c3ced5);
-  border-radius: 4px;
-  padding: 6px 12px;
-  cursor: pointer;
-}
-
-.markVerifiedBtn:hover {
-  background: #f0f4f7;
-}
-
-.verifiedBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-family: var(--font-family-component);
-  font-size: var(--font-size-component-small, 14px);
-  font-weight: var(--font-weight-component-semibold, 500);
-  color: #108000;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 6px 0;
 }
 
 .list {

@@ -5,6 +5,7 @@ import Tooltip from './Tooltip'
 import { DestinationFieldLabel } from './DestinationFieldLabel'
 import { CLIENT_ADDRESS } from '../../data/clientAddress'
 import { parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
+import DocVerifyHeaderActions from './DocVerifyHeaderActions'
 import styles from '../../styles/data-review/DetailFields.module.css'
 
 function CheckIcon() {
@@ -140,6 +141,9 @@ interface DetailFieldsDivProps {
   /** Persist a static field edit (also stamps Edited badge) */
   onFieldOverride?: (fieldKey: string, value: string) => void
   verifiedDocs?: Set<string>
+  verifiedDocsMeta?: Map<string, { by: string; at: string }>
+  reviewerConfirmedDocs?: Set<string>
+  reviewerConfirmedDocsMeta?: Map<string, { by: string; at: string }>
   onVerifyDoc?: (docKey: string) => void
   flaggedFields?: Record<string, string>
   onAddFieldNote?: (text: string, context: string) => void
@@ -161,6 +165,9 @@ export default function DetailFieldsDiv({
   fieldOverrides = {},
   onFieldOverride,
   verifiedDocs,
+  verifiedDocsMeta,
+  reviewerConfirmedDocs,
+  reviewerConfirmedDocsMeta,
   onVerifyDoc,
   flaggedFields = {},
   onAddFieldNote,
@@ -429,7 +436,6 @@ export default function DetailFieldsDiv({
   const payer = PAYER_DATA[activePayer]
   const form = FORM_DATA[activePayer]
   const docKey = divVerifiedDocKey(activePayer)
-  const divVerified = verifiedDocs?.has(docKey)
   const isPrimary = activePayer === 'tokenFinancial'
 
   return (
@@ -437,26 +443,27 @@ export default function DetailFieldsDiv({
       {/* Page header */}
       <div className={styles.pageHeader}>
         <div className={styles.headerActions}>
-          <h2 style={{ fontFamily: 'var(--font-family-component)', fontSize: 18, fontWeight: 500, color: '#21262a', margin: 0, flex: 1, textAlign: 'left' }}>Details: Dividend Income (1099-DIV)</h2>
-          {divVerified ? (
-            <button className={styles.verifiedBadge} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, gap: 4, display: 'flex', alignItems: 'center' }} onClick={() => onVerifyDoc?.(docKey)}><CheckIcon /> Verified</button>
-          ) : (
-            <button className={styles.markVerifiedBtn} onClick={() => {
-              onVerifyDoc?.(docKey)
+          <h2 className={styles.headerTitle}>Details: Dividend Income (1099-DIV)</h2>
+          <DocVerifyHeaderActions
+            docKey={docKey}
+            verifiedDocs={verifiedDocs}
+            verifiedDocsMeta={verifiedDocsMeta}
+            reviewerConfirmedDocs={reviewerConfirmedDocs}
+            reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
+            onVerifyDoc={onVerifyDoc}
+            onPreparerMarkVerified={() => {
               const p = activePayer
-              const docFieldKeys = [
+              onMarkReviewedBulk?.([
                 `payerEin-${p}`, `payerName-${p}`, `payerStreet-${p}`, `payerCityStateZip-${p}`, `payerPhone-${p}`,
                 `recipientSsn-${p}`, `recipientName-${p}`, `recipientStreet-${p}`, `recipientCityStateZip-${p}`,
                 `ordinaryDivs-${p}`,
-                // Phase 1 flag key (reviewedKeyOverride) — not the same as ordinaryDivs-northmarkIndex
                 ...(p === 'northmarkIndex' ? ['ordinaryDivs-northmark'] : []),
                 ...(isPrimary ? ['qualifiedDivs', 'divCollectibles', 'divNonDiv', 'fedTaxWithheld'] : [`qualifiedDivs-${p}`, `divCollectibles-${p}`, `divNonDiv-${p}`, `fedTaxWithheld-${p}`]),
                 `totalCapGain-${p}`, `unrecap1250-${p}`, `sec1202-${p}`, `sec199A-${p}`, `investExpenses-${p}`,
                 `foreignTaxPaid-${p}`, `foreignCountry-${p}`, `cashLiquidation-${p}`, `nonCashLiquidation-${p}`,
-              ]
-              onMarkReviewedBulk?.(docFieldKeys)
-            }}>Mark as verified</button>
-          )}
+              ])
+            }}
+          />
         </div>
       </div>
 

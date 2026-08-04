@@ -50,7 +50,7 @@ export default function Phase2Banner({
               type="button"
               className={styles.counterLink}
               onClick={onOpenDiagnostics}
-              aria-label={`Open AI Review — ${reviewed} of ${total} diagnostics reviewed, ${remaining} remaining`}
+              aria-label={`Open AI diagnostics — ${reviewed} of ${total} diagnostics reviewed, ${remaining} diagnostics remaining`}
             >
               <strong className={styles.counterNum}>{reviewed}</strong> of {total} diagnostics reviewed
             </button>

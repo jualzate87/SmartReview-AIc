@@ -62,6 +62,18 @@ const CHANNEL_NAME = 'protoc-data-review-sync'
 const STATE_VERSION = 20
 const STORAGE_KEY = 'protoc-data-review-state-v' + STATE_VERSION
 export const PREPARER_NAME = 'Sara Chen'
+export const REVIEWER_NAME = 'Jordan Lee'
+
+/** Who stamps checks/flags/edits — defaults to preparer in Proto C */
+let currentActorName = PREPARER_NAME
+
+export function setReviewActor(name: string) {
+  currentActorName = name
+}
+
+export function getReviewActor(): string {
+  return currentActorName
+}
 
 export function formatActivityTimestamp(date: Date = new Date()): string {
   return date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })

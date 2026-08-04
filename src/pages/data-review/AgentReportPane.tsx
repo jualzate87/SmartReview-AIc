@@ -536,7 +536,7 @@ export default function AgentReportPane({
           <div className={styles.headerLeft} />
           <div className={styles.headerTitle}>
             <img src={intuitAssistIcon} alt="" className={styles.assistIcon} />
-            <span className={styles.titleText}>Review AI</span>
+            <span className={styles.titleText}>AI diagnostics</span>
           </div>
           <div className={styles.headerRight}>
             <button className={styles.iconBtn} aria-label="Close" onClick={onClose}>

@@ -5,6 +5,7 @@ import Tooltip from './Tooltip'
 import { DestinationFieldLabel } from './DestinationFieldLabel'
 import { CLIENT_ADDRESS } from '../../data/clientAddress'
 import { parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
+import DocVerifyHeaderActions from './DocVerifyHeaderActions'
 import styles from '../../styles/data-review/DetailFields.module.css'
 
 function CheckIcon() {
@@ -60,6 +61,9 @@ interface DetailFields1099RProps {
   /** Persist a static field edit (also stamps Edited badge) */
   onFieldOverride?: (fieldKey: string, value: string) => void
   verifiedDocs?: Set<string>
+  verifiedDocsMeta?: Map<string, { by: string; at: string }>
+  reviewerConfirmedDocs?: Set<string>
+  reviewerConfirmedDocsMeta?: Map<string, { by: string; at: string }>
   onVerifyDoc?: (docKey: string) => void
   onAddFieldNote?: (text: string, context?: string) => void
   flaggedFields?: Record<string, string>
@@ -78,6 +82,9 @@ export default function DetailFields1099R({
   fieldOverrides = {},
   onFieldOverride,
   verifiedDocs,
+  verifiedDocsMeta,
+  reviewerConfirmedDocs,
+  reviewerConfirmedDocsMeta,
   onVerifyDoc,
   onAddFieldNote,
   flaggedFields = {},
@@ -308,30 +315,27 @@ export default function DetailFields1099R({
     )
   }
 
-  const rVerified = verifiedDocs?.has('1099-r')
-
   return (
     <div className={styles.container}>
       <div className={styles.pageHeader}>
         <div className={styles.headerActions}>
-          <h2 style={{ fontFamily: 'var(--font-family-component)', fontSize: 18, fontWeight: 500, color: '#21262a', margin: 0, flex: 1, textAlign: 'left' }}>Details: Retirement Distribution (1099-R)</h2>
-          {rVerified ? (
-            <button className={styles.verifiedBadge} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, gap: 4, display: 'flex', alignItems: 'center' }} onClick={() => onVerifyDoc?.('1099-r')}><CheckIcon /> Verified</button>
-          ) : (
-            <button className={styles.markVerifiedBtn} onClick={() => {
-              onVerifyDoc?.('1099-r')
-              const docFieldKeys = [
-                'r-ein', 'r-payerName', 'r-street', 'r-cityStateZip',
-                'r-ssn', 'r-recipientName', 'r-recipientStreet', 'r-recipientCityStateZip',
-                'r-grossDistrib',
-                // Phase 1 flag resolveKey for Box 1 — required to clear orange
-                'grossDistrib-meridian',
-                'r-taxableAmt', 'r-capitalGain', 'r-fedTaxWithheld',
-                'r-employeeContrib', 'r-distCode',
-              ]
-              onMarkReviewedBulk?.(docFieldKeys)
-            }}>Mark as verified</button>
-          )}
+          <h2 className={styles.headerTitle}>Details: Retirement Distribution (1099-R)</h2>
+          <DocVerifyHeaderActions
+            docKey="1099-r"
+            verifiedDocs={verifiedDocs}
+            verifiedDocsMeta={verifiedDocsMeta}
+            reviewerConfirmedDocs={reviewerConfirmedDocs}
+            reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
+            onVerifyDoc={onVerifyDoc}
+            onPreparerMarkVerified={() => onMarkReviewedBulk?.([
+              'r-ein', 'r-payerName', 'r-street', 'r-cityStateZip',
+              'r-ssn', 'r-recipientName', 'r-recipientStreet', 'r-recipientCityStateZip',
+              'r-grossDistrib',
+              'grossDistrib-meridian',
+              'r-taxableAmt', 'r-capitalGain', 'r-fedTaxWithheld',
+              'r-employeeContrib', 'r-distCode',
+            ])}
+          />
         </div>
       </div>
 

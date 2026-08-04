@@ -37,6 +37,7 @@ import { resolveOutputFormFromAction } from './data-review/outputForms'
 import AgentReportPane from './data-review/AgentReportPane'
 import CoachTip, { markCoachTipShown, readCoachTipShown, type CoachTipId } from './data-review/CoachTip'
 import AgentLoadingPane from './data-review/AgentLoadingPane'
+import AttentionCountBadge from './data-review/AttentionCountBadge'
 import WelcomePane from './data-review/WelcomePane'
 import Phase1Banner from './data-review/Phase1Banner'
 import Phase1IssueBanner from './data-review/Phase1IssueBanner'
@@ -253,6 +254,8 @@ export default function DataReviewPage() {
   /** Right-panel width to restore when Show Summary expands again. */
   const preCollapseRightWidthRef = useRef<number | null>(null)
   const summaryToggleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  /** Tracks prior right-rail open state for empty-canvas auto-restore. */
+  const prevRightPanelOpenRef = useRef(false)
 
   useEffect(() => () => {
     if (summaryToggleTimerRef.current) clearTimeout(summaryToggleTimerRef.current)
@@ -728,6 +731,12 @@ export default function DataReviewPage() {
   }, [previewHeight, previewSideBySide, beginPanelDrag])
 
   // While Summary is animating or collapsed, right/agent panel flex-fills
+  const rightPanelOpen =
+    rightPanelVisible ||
+    rightPanelExiting ||
+    agentView !== 'idle' ||
+    notesOpen ||
+    notesClosing
   const rightPanelFills = (!show1040 || leftAnimWidth !== null) && (rightPanelVisible || agentView !== 'idle')
 
   const handleHideSummary = useCallback(() => {
@@ -809,6 +818,42 @@ export default function DataReviewPage() {
     }, SUMMARY_TOGGLE_MS)
   }, [])
 
+  /**
+   * Lighter empty-canvas fix: when the user closes the last right-rail panel while
+   * outputs are hidden, restore Return Summary. Only fires on panel close (open→closed),
+   * not when hiding outputs with the panel already closed — preserves full-width Sources
+   * and coach-tip hide/show flows.
+   */
+  useEffect(() => {
+    const wasOpen = prevRightPanelOpenRef.current
+    const isOpen = rightPanelOpen
+    prevRightPanelOpenRef.current = isOpen
+
+    if (!wasOpen || isOpen || show1040) return
+
+    const timer = setTimeout(() => {
+      if (
+        show1040 ||
+        rightPanelOpen ||
+        leftAnimWidth !== null
+      ) {
+        return
+      }
+      handleShowSummary()
+    }, 50)
+
+    return () => clearTimeout(timer)
+  }, [rightPanelOpen, show1040, leftAnimWidth, handleShowSummary])
+
+  /** Source Documents toolbar badge — uncleared flags, then unreviewed docs. */
+  const sourceDocsBadgeCount = (() => {
+    if (inImportPhase) {
+      if (phase1Remaining > 0) return phase1Remaining
+      return unreviewedDocCount
+    }
+    return 0
+  })()
+
   // ProtoC: welcome/orientation screen is the entry point (no header chrome)
   if (phase === 'welcome') {
     return (
@@ -842,19 +887,28 @@ export default function DataReviewPage() {
 
           <button
             className={`${styles.intuitIntelBtn} ${notesOpen ? styles.intuitIntelBtnActive : ''}`}
-            aria-label="Comments"
+            aria-label={
+              notes.length > 0
+                ? `Comments, ${notes.length} comment${notes.length === 1 ? '' : 's'}`
+                : 'Comments'
+            }
             style={{ position: 'relative' }}
             onClick={notesOpen ? handleCloseNotes : handleOpenNotes}
           >
             <Comment size="medium" />
             <span className={styles.intuitIntelLabel}>Comments</span>
             {notes.length > 0 && (
-              <span className={styles.notesBadge}>{notes.length}</span>
+              <AttentionCountBadge count={notes.length} className={styles.toolbarBadge} aria-hidden />
             )}
           </button>
           <button
             className={`${styles.intuitIntelBtn} ${rightPanelVisible && agentView === 'idle' ? styles.intuitIntelBtnActive : ''}`}
-            aria-label="Toggle panel"
+            aria-label={
+              sourceDocsBadgeCount > 0
+                ? `Source Documents, ${sourceDocsBadgeCount} item${sourceDocsBadgeCount === 1 ? '' : 's'} need attention`
+                : 'Toggle panel'
+            }
+            style={{ position: 'relative' }}
             onClick={() => {
               if (agentView !== 'idle') {
                 handleAgentClose()
@@ -874,6 +928,9 @@ export default function DataReviewPage() {
           >
             <Panel size="medium" />
             <span className={styles.intuitIntelLabel}>Source Documents</span>
+            {sourceDocsBadgeCount > 0 && (
+              <AttentionCountBadge count={sourceDocsBadgeCount} className={styles.toolbarBadge} aria-hidden />
+            )}
           </button>
           {/* ProtoC: AI Review is Phase 2 only — hidden during Phase 1 (import accuracy) */}
           {!inImportPhase && (
@@ -881,16 +938,16 @@ export default function DataReviewPage() {
               className={`${styles.intuitIntelBtn} ${agentView !== 'idle' ? styles.intuitIntelBtnActive : ''}`}
               aria-label={
                 agentView === 'idle' && phase2Progress.remaining > 0
-                  ? `AI Review, ${phase2Progress.remaining} diagnostics remaining`
-                  : 'Intuit Intelligence'
+                  ? `AI diagnostics, ${phase2Progress.reviewed} of ${phase2Progress.total} diagnostics reviewed, ${phase2Progress.remaining} diagnostics remaining`
+                  : 'AI diagnostics'
               }
               style={{ position: 'relative' }}
               onClick={() => handleAgentOpen()}
             >
               <img src={intuitAssistIcon} alt="" className={styles.intuitIntelIcon} />
-              <span className={styles.intuitIntelLabel}>AI Review</span>
+              <span className={styles.intuitIntelLabel}>AI diagnostics</span>
               {agentView === 'idle' && phase2Progress.remaining > 0 && (
-                <span className={styles.notesBadge}>{phase2Progress.remaining}</span>
+                <AttentionCountBadge count={phase2Progress.remaining} className={styles.toolbarBadge} aria-hidden />
               )}
             </button>
           )}
@@ -1412,6 +1469,7 @@ export default function DataReviewPage() {
                   fieldOverrides={fieldOverrides}
                   onFieldOverride={setFieldOverride}
                   verifiedDocs={verifiedDocs}
+                  verifiedDocsMeta={verifiedDocsMeta}
                   onVerifyDoc={toggleVerifiedDoc}
                   flaggedFields={mergeInputFlags({
                     divCollectibles: PHASE1_FLAG_MESSAGES.div.divCollectibles,
@@ -1471,6 +1529,7 @@ export default function DataReviewPage() {
                   fieldOverrides={fieldOverrides}
                   onFieldOverride={setFieldOverride}
                   verifiedDocs={verifiedDocs}
+                  verifiedDocsMeta={verifiedDocsMeta}
                   onVerifyDoc={toggleVerifiedDoc}
                   flaggedFields={mergeInputFlags({
                     grossDistrib: PHASE1_FLAG_MESSAGES.r.grossDistrib,
@@ -1495,6 +1554,7 @@ export default function DataReviewPage() {
                   fieldOverrides={fieldOverrides}
                   onFieldOverride={setFieldOverride}
                   verifiedDocs={verifiedDocs}
+                  verifiedDocsMeta={verifiedDocsMeta}
                   onVerifyDoc={toggleVerifiedDoc}
                   onAddFieldNote={(text, context) => handleAddNote(text, context)}
                 />
@@ -1508,12 +1568,14 @@ export default function DataReviewPage() {
                   reviewedFields={reviewedFields}
                   onAddFieldNote={(text, context) => handleAddNote(text, context)}
                   verifiedDocs={verifiedDocs}
+                  verifiedDocsMeta={verifiedDocsMeta}
                   onVerifyDoc={toggleVerifiedDoc}
                 />
               )}
               {activeTopTab === 'questionnaire' && (
                 <QuestionnaireResponsesPanel
                   verifiedDocs={verifiedDocs}
+                  verifiedDocsMeta={verifiedDocsMeta}
                   onVerifyDoc={toggleVerifiedDoc}
                   highlightResponseId={questionnaireHighlightId}
                 />

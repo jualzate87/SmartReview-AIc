@@ -5,6 +5,7 @@ import Tooltip from './Tooltip'
 import { DestinationFieldLabel } from './DestinationFieldLabel'
 import { CLIENT_ADDRESS } from '../../data/clientAddress'
 import { parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
+import DocVerifyHeaderActions from './DocVerifyHeaderActions'
 import styles from '../../styles/data-review/DetailFields.module.css'
 
 function CheckIcon() {
@@ -143,6 +144,8 @@ interface DetailFields1099Props {
   onFieldOverride?: (fieldKey: string, value: string) => void
   verifiedDocs?: Set<string>
   verifiedDocsMeta?: Map<string, { by: string; at: string }>
+  reviewerConfirmedDocs?: Set<string>
+  reviewerConfirmedDocsMeta?: Map<string, { by: string; at: string }>
   onVerifyDoc?: (docKey: string) => void
   flaggedFields?: Record<string, string>
   onAddFieldNote?: (text: string, context: string) => void
@@ -166,6 +169,8 @@ export default function DetailFields1099({
   onFieldOverride,
   verifiedDocs,
   verifiedDocsMeta,
+  reviewerConfirmedDocs,
+  reviewerConfirmedDocsMeta,
   onVerifyDoc,
   flaggedFields = {},
   onAddFieldNote,
@@ -422,11 +427,6 @@ export default function DetailFields1099({
   const payer = PAYER_DATA[activePayer]
   const form = FORM_DATA[activePayer]
   const docKey = intVerifiedDocKey(activePayer)
-  const intVerified = verifiedDocs?.has(docKey)
-  const verifiedMeta = verifiedDocsMeta?.get(docKey)
-  const verifiedTooltip = verifiedMeta
-    ? `Verified · ${verifiedMeta.by} · ${verifiedMeta.at}`
-    : 'Click to unmark verified'
   const isPrimary = activePayer === 'unwaverIngFinancial'
 
   return (
@@ -434,26 +434,26 @@ export default function DetailFields1099({
       {/* Page header */}
       <div className={styles.pageHeader}>
         <div className={styles.headerActions}>
-          <h2 style={{ fontFamily: 'var(--font-family-component)', fontSize: 18, fontWeight: 500, color: '#21262a', margin: 0, flex: 1, textAlign: 'left' }}>Details: Interest Income (1099-INT)</h2>
-          {intVerified ? (
-            <Tooltip text={verifiedTooltip} placement="top">
-              <button className={styles.verifiedBadge} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, gap: 4, display: 'flex', alignItems: 'center' }} onClick={() => onVerifyDoc?.(docKey)}><CheckIcon /> Verified</button>
-            </Tooltip>
-          ) : (
-            <button className={styles.markVerifiedBtn} onClick={() => {
-              onVerifyDoc?.(docKey)
+          <h2 className={styles.headerTitle}>Details: Interest Income (1099-INT)</h2>
+          <DocVerifyHeaderActions
+            docKey={docKey}
+            verifiedDocs={verifiedDocs}
+            verifiedDocsMeta={verifiedDocsMeta}
+            reviewerConfirmedDocs={reviewerConfirmedDocs}
+            reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
+            onVerifyDoc={onVerifyDoc}
+            onPreparerMarkVerified={() => {
               const p = activePayer
-              const docFieldKeys = [
+              onMarkReviewedBulk?.([
                 `payerEin-${p}`, `payerName-${p}`, `payerStreet-${p}`, `payerCityStateZip-${p}`, `payerPhone-${p}`,
                 `recipientSsn-${p}`, `recipientName-${p}`, `recipientStreet-${p}`, `recipientCityStateZip-${p}`,
                 ...(isPrimary ? ['taxableInterest'] : [`taxableInterest-${p}`]),
                 `earlyPenalty-${p}`, `usBonds-${p}`, `fedTaxWithheld-${p}`, `investExpenses-${p}`,
                 `foreignTax-${p}`, `foreignCountry-${p}`, `taxExempt-${p}`, `specPrivActivity-${p}`,
                 `marketDiscount-${p}`, `bondPremium-${p}`, `stateTaxId-${p}`, `stateTax-${p}`, `stateIncome-${p}`,
-              ]
-              onMarkReviewedBulk?.(docFieldKeys)
-            }}>Mark as verified</button>
-          )}
+              ])
+            }}
+          />
         </div>
       </div>
 

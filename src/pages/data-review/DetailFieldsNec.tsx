@@ -5,6 +5,7 @@ import Tooltip from './Tooltip'
 import { DestinationFieldLabel } from './DestinationFieldLabel'
 import { CLIENT_ADDRESS } from '../../data/clientAddress'
 import { NEC_SOURCE_AMOUNT, parseAmountDraft, type LiveAmounts } from '../../data/liveReturn'
+import DocVerifyHeaderActions from './DocVerifyHeaderActions'
 import styles from '../../styles/data-review/DetailFields.module.css'
 
 function CheckIcon() {
@@ -63,6 +64,9 @@ interface DetailFieldsNecProps {
   /** Persist a static field edit (also stamps Edited badge) */
   onFieldOverride?: (fieldKey: string, value: string) => void
   verifiedDocs?: Set<string>
+  verifiedDocsMeta?: Map<string, { by: string; at: string }>
+  reviewerConfirmedDocs?: Set<string>
+  reviewerConfirmedDocsMeta?: Map<string, { by: string; at: string }>
   onVerifyDoc?: (docKey: string) => void
   onAddFieldNote?: (text: string, context?: string) => void
 }
@@ -80,6 +84,9 @@ export default function DetailFieldsNec({
   fieldOverrides = {},
   onFieldOverride,
   verifiedDocs,
+  verifiedDocsMeta,
+  reviewerConfirmedDocs,
+  reviewerConfirmedDocsMeta,
   onVerifyDoc,
   onAddFieldNote,
 }: DetailFieldsNecProps) {
@@ -276,27 +283,25 @@ export default function DetailFieldsNec({
     )
   }
 
-  const necVerified = verifiedDocs?.has(DOC_KEY)
-
   return (
     <div className={styles.container}>
       {/* Page header */}
       <div className={styles.pageHeader}>
         <div className={styles.headerActions}>
-          <h2 style={{ fontFamily: 'var(--font-family-component)', fontSize: 18, fontWeight: 500, color: '#21262a', margin: 0, flex: 1, textAlign: 'left' }}>Details: Nonemployee Comp (1099-NEC)</h2>
-          {necVerified ? (
-            <button className={styles.verifiedBadge} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, gap: 4, display: 'flex', alignItems: 'center' }} onClick={() => onVerifyDoc?.(DOC_KEY)}><CheckIcon /> Verified</button>
-          ) : (
-            <button className={styles.markVerifiedBtn} onClick={() => {
-              onVerifyDoc?.(DOC_KEY)
-              const docFieldKeys = [
-                'nec-ein', 'nec-payerName', 'nec-street', 'nec-cityStateZip', 'nec-phone',
-                'nec-ssn', 'nec-recipientName', 'nec-recipientStreet', 'nec-recipientCityStateZip',
-                'nec-box1', 'nec-fedTaxWithheld', 'nec-stateTaxId', 'nec-stateTax', 'nec-stateIncome',
-              ]
-              onMarkReviewedBulk?.(docFieldKeys)
-            }}>Mark as verified</button>
-          )}
+          <h2 className={styles.headerTitle}>Details: Nonemployee Comp (1099-NEC)</h2>
+          <DocVerifyHeaderActions
+            docKey={DOC_KEY}
+            verifiedDocs={verifiedDocs}
+            verifiedDocsMeta={verifiedDocsMeta}
+            reviewerConfirmedDocs={reviewerConfirmedDocs}
+            reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
+            onVerifyDoc={onVerifyDoc}
+            onPreparerMarkVerified={() => onMarkReviewedBulk?.([
+              'nec-ein', 'nec-payerName', 'nec-street', 'nec-cityStateZip', 'nec-phone',
+              'nec-ssn', 'nec-recipientName', 'nec-recipientStreet', 'nec-recipientCityStateZip',
+              'nec-box1', 'nec-fedTaxWithheld', 'nec-stateTaxId', 'nec-stateTax', 'nec-stateIncome',
+            ])}
+          />
         </div>
       </div>
 

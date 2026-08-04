@@ -1,14 +1,18 @@
 import { useEffect, useRef } from 'react'
-import { CircleCheck } from '@design-systems/icons'
+import DocVerifyHeaderActions from './DocVerifyHeaderActions'
 import {
   QUESTIONNAIRE_DOC_KEY,
   QUESTIONNAIRE_RESPONSES,
   type QuestionnaireResponseId,
 } from './questionnaireData'
+import type { ActivityEntry } from '../../hooks/useSyncedReviewState'
 import styles from '../../styles/data-review/QuestionnaireResponsesPanel.module.css'
 
 interface QuestionnaireResponsesPanelProps {
   verifiedDocs?: Set<string>
+  verifiedDocsMeta?: Map<string, ActivityEntry>
+  reviewerConfirmedDocs?: Set<string>
+  reviewerConfirmedDocsMeta?: Map<string, ActivityEntry>
   onVerifyDoc?: (docKey: string) => void
   /** Scroll/highlight a seeded Q&A card (from Phase 2 View client response) */
   highlightResponseId?: QuestionnaireResponseId | null
@@ -16,11 +20,13 @@ interface QuestionnaireResponsesPanelProps {
 
 export default function QuestionnaireResponsesPanel({
   verifiedDocs,
+  verifiedDocsMeta,
+  reviewerConfirmedDocs,
+  reviewerConfirmedDocsMeta,
   onVerifyDoc,
   highlightResponseId = null,
 }: QuestionnaireResponsesPanelProps) {
   const cardRefs = useRef<Partial<Record<QuestionnaireResponseId, HTMLElement | null>>>({})
-  const isVerified = verifiedDocs?.has(QUESTIONNAIRE_DOC_KEY) ?? false
 
   useEffect(() => {
     if (!highlightResponseId) return
@@ -38,23 +44,14 @@ export default function QuestionnaireResponsesPanel({
             Jessica Drake&apos;s Tax Organizer responses (read-only for this review).
           </p>
         </div>
-        {isVerified ? (
-          <button
-            type="button"
-            className={styles.verifiedBadge}
-            onClick={() => onVerifyDoc?.(QUESTIONNAIRE_DOC_KEY)}
-          >
-            <CircleCheck size="small" /> Verified
-          </button>
-        ) : (
-          <button
-            type="button"
-            className={styles.markVerifiedBtn}
-            onClick={() => onVerifyDoc?.(QUESTIONNAIRE_DOC_KEY)}
-          >
-            Mark as verified
-          </button>
-        )}
+        <DocVerifyHeaderActions
+          docKey={QUESTIONNAIRE_DOC_KEY}
+          verifiedDocs={verifiedDocs}
+          verifiedDocsMeta={verifiedDocsMeta}
+          reviewerConfirmedDocs={reviewerConfirmedDocs}
+          reviewerConfirmedDocsMeta={reviewerConfirmedDocsMeta}
+          onVerifyDoc={onVerifyDoc}
+        />
       </div>
 
       <div className={styles.list}>
