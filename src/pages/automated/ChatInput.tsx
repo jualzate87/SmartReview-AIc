@@ -6,9 +6,13 @@ import styles from '../../styles/automated/ChatInput.module.css'
 
 interface ChatInputProps {
   onSend: (text: string) => void
+  placeholder?: string
 }
 
-export default function ChatInput({ onSend }: ChatInputProps) {
+export default function ChatInput({
+  onSend,
+  placeholder = 'Ask {Agent / product name}',
+}: ChatInputProps) {
   const [value, setValue] = useState('')
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -35,7 +39,7 @@ export default function ChatInput({ onSend }: ChatInputProps) {
         <div className={styles.textArea}>
           <textarea
             className={styles.textAreaInput}
-            placeholder="Ask {Agent / product name}"
+            placeholder={placeholder}
             value={value}
             onChange={e => setValue(e.target.value)}
             onKeyDown={handleKeyDown}

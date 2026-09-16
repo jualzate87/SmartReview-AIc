@@ -100,7 +100,22 @@ const RIGHT_PANEL_MIN_WIDTH = 360
 /** Matches DragHandle.module.css .handleVertical width */
 const PANEL_DRAG_HANDLE_WIDTH = 16
 
-export default function DataReviewPage() {
+type ReviewPhase = 'welcome' | 'import' | 'diagnostics'
+
+export interface DataReviewPageProps {
+  /** When true, renders inside the Intuit Agent Chat shell (no standalone welcome). */
+  embedded?: boolean
+  /** Starting phase — defaults to welcome standalone, import when embedded. */
+  initialPhase?: ReviewPhase
+}
+
+export default function DataReviewPage({
+  embedded = false,
+  initialPhase,
+}: DataReviewPageProps = {}) {
+  const resolvedInitialPhase: ReviewPhase = embedded
+    ? (initialPhase === 'welcome' ? 'import' : initialPhase ?? 'import')
+    : (initialPhase ?? 'welcome')
   // Source-doc review state — flags, reviewed fields, active tab, editable field
   // values — persisted in sessionStorage via useSyncedReviewState.
   const {
@@ -177,8 +192,7 @@ export default function DataReviewPage() {
   // 'welcome'     → Intuit Assist orientation screen
   // 'import'      → Phase 1: Import Accuracy (source-doc experience)
   // 'diagnostics' → Phase 2: AI Diagnostics (agent panel primary)
-  type ReviewPhase = 'welcome' | 'import' | 'diagnostics'
-  const [phase, setPhase] = useState<ReviewPhase>('welcome')
+  const [phase, setPhase] = useState<ReviewPhase>(resolvedInitialPhase)
   // Phase 1: Summary visible by default; sources hidden until Start reviewing imports
   const [show1040, setShow1040] = useState(true)
   const [outputFormId, setOutputFormId] = useState<OutputFormId>('summary')
@@ -534,6 +548,18 @@ export default function DataReviewPage() {
     setSelectedField(null)
   }, [])
 
+  // Embedded in agent shell — skip standalone welcome; initialize Phase 1 like onBegin
+  useEffect(() => {
+    if (!embedded || resolvedInitialPhase !== 'import') return
+    setShow1040(true)
+    setOutputFormId('summary')
+    setRightPanelVisible(false)
+    setImportsStarted(false)
+    try { sessionStorage.removeItem('protoc-coach-tip:outputSourcesFirst') } catch { /* ignore */ }
+    setOutputSourcesCoach(true)
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- one-time embedded bootstrap
+  }, [embedded, resolvedInitialPhase])
+
   // ProtoC: the agent panel is driven by the phase model (opens on entering Phase 2),
   // not by the ?agent=true entry param. See handleBeginDiagnostics below.
 
@@ -863,7 +889,7 @@ export default function DataReviewPage() {
   })()
 
   // ProtoC: welcome/orientation screen is the entry point (no header chrome)
-  if (phase === 'welcome') {
+  if (phase === 'welcome' && !embedded) {
     return (
       <div className={styles.page}>
         <WelcomePane
@@ -885,7 +911,7 @@ export default function DataReviewPage() {
   }
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} ${embedded ? styles.pageEmbedded : ''}`}>
       {/* Header */}
       <div className={styles.header}>
         <div className={styles.headerLeft}>

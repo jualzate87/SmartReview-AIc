@@ -2,17 +2,24 @@ import { useNavigate } from 'react-router-dom'
 import {
   Question, Notification, Settings, Lock, PersonThree,
   CircleInfo, ChevronDown, List, Edit, Checklist,
-  Send, CloudUpload, AlarmClock, Rocket,
+  Send, CloudUpload, Rocket, NewWindow,
 } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
+import sparklesIcon from '../assets/icons/sparkles.svg'
 import styles from '../styles/SmartReturnHeader.module.css'
 
 interface SmartReturnHeaderProps {
   activeTab?: 'smartreturn' | 'checkreturns'
+  onSourceDocuments?: () => void
+  onAiReview?: () => void
 }
 
-export default function SmartReturnHeader({ activeTab = 'smartreturn' }: SmartReturnHeaderProps) {
+export default function SmartReturnHeader({
+  activeTab = 'smartreturn',
+  onSourceDocuments,
+  onAiReview,
+}: SmartReturnHeaderProps) {
   const navigate = useNavigate()
   return (
     <div className={styles.header}>
@@ -121,11 +128,20 @@ export default function SmartReturnHeader({ activeTab = 'smartreturn' }: SmartRe
           <span className={styles.tabMeta}>
             <CloudUpload size="small" /> Saved at 11:34 AM
           </span>
-          <span className={styles.tabMeta}>
-            <AlarmClock size="small" /> Prep time: 0 mins
-          </span>
-          {/* Refresh forms — IDS secondary button */}
-          <Button priority="secondary">Refresh forms</Button>
+          {activeTab === 'checkreturns' ? (
+            <>
+              <button type="button" className={styles.subheaderBtn} onClick={onSourceDocuments}>
+                Source documents
+                <NewWindow size="small" />
+              </button>
+              <button type="button" className={styles.aiReviewBtn} onClick={onAiReview}>
+                <img src={sparklesIcon} alt="" className={styles.aiReviewIcon} />
+                AI review
+              </button>
+            </>
+          ) : (
+            <Button priority="secondary">Refresh forms</Button>
+          )}
         </div>
       </div>
 

@@ -7,6 +7,11 @@
   overflow: hidden;
 }
 
+.pageEmbedded {
+  height: 100%;
+  min-height: 0;
+}
+
 /* Header — 68px total height, 16px vertical padding */
 .header {
   display: flex;

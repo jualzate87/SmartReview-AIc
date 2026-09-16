@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, CircleCheckFill, NewWindow, Notification, Settings, Lock, ChevronDown, List, Rocket, Edit, Checklist, Send, CloudUpload, CircleClock } from '@design-systems/icons'
+import { ArrowLeft, CircleCheckFill, NewWindow, Notification, Settings, Lock, ChevronDown, List, Rocket, Edit, Checklist, Send, CloudUpload } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import { H6, B3 } from '@ids-ts/typography'
@@ -36,7 +36,7 @@ export default function SmartReturnPage() {
   }, [])
 
   const handleReviewReturn = () => {
-    window.open(`${window.location.origin}${window.location.pathname}#/data-review?agent=true`, '_blank')
+    navigate('/ai-review')
   }
 
   return (
@@ -118,7 +118,6 @@ export default function SmartReturnPage() {
           <div className={openStyles.tabsRowRight}>
             <div className={openStyles.tabsMeta}>
               <div className={openStyles.tabsMetaItem}><CloudUpload size="small" />Saved at 11:34 AM</div>
-              <div className={openStyles.tabsMetaItem}><CircleClock size="small" />Prep time: 0 mins</div>
             </div>
             <button className={openStyles.refreshFormsBtn}>Refresh forms</button>
           </div>

@@ -37,7 +37,11 @@ export default function CheckReturnPage() {
 
   return (
     <div className={styles.page} data-theme="intuit">
-      <SmartReturnHeader activeTab="checkreturns" />
+      <SmartReturnHeader
+        activeTab="checkreturns"
+        onSourceDocuments={() => navigate('/import-hub')}
+        onAiReview={() => navigate('/ai-review')}
+      />
 
       <div className={styles.body}>
         <LeftNavPTO />

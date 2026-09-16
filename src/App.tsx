@@ -7,6 +7,9 @@ import { FUSION_CONFIG } from './navigation'
 import OpenReturnPage from './pages/OpenReturnPage'
 import DataReviewPage from './pages/DataReviewPage'
 import SmartReturnPage from './pages/SmartReturnPage'
+import CheckReturnPage from './pages/CheckReturnPage'
+import ReturnInsightsPage from './pages/ReturnInsightsPage'
+import AgentReviewPage from './pages/AgentReviewPage'
 import WorkspacePage from './pages/WorkspacePage'
 import HomePage from './pages/HomePage'
 import NotFoundPage from './pages/NotFoundPage'
@@ -29,9 +32,12 @@ export default function App() {
         <FusionProvider pathPrefix={FUSION_CONFIG.pathPrefix || ''}>
           <Routes>
             {/* SmartReview prototype — outside the QBO Fusion shell */}
-            <Route path="/" element={<Navigate to="/data-review" replace />} />
+            <Route path="/" element={<Navigate to="/check-return" replace />} />
             <Route path="/import-hub" element={<OpenReturnPage />} />
             <Route path="/smart-return" element={<SmartReturnPage />} />
+            <Route path="/check-return" element={<CheckReturnPage />} />
+            <Route path="/check-return/insights" element={<ReturnInsightsPage />} />
+            <Route path="/ai-review" element={<AgentReviewPage />} />
             <Route path="/data-review" element={<DataReviewPage />} />
 
             <Route element={<AppLayout />}>

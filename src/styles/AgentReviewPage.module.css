@@ -1,0 +1,78 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  background: var(--color-container-background-primary, #ffffff);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  min-height: 60px;
+  padding: var(--space-container-padding-small, 16px);
+  border-bottom: 1px solid var(--color-container-border-primary, #d4d7dc);
+  flex-shrink: 0;
+}
+
+.wordmark {
+  height: 15.5px;
+  width: auto;
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.threadRail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-x-small, 8px);
+  width: 68px;
+  flex-shrink: 0;
+  padding: var(--space-component-inline-padding-xxx-large, 20px) var(--space-component-inline-padding-xx-large, 16px);
+  border-right: 1px solid var(--color-container-border-primary, #d4d7dc);
+  background: var(--color-container-background-primary, #ffffff);
+}
+
+.railBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 37px;
+  padding: var(--space-container-padding-xx-small, 8px);
+  border: none;
+  border-radius: var(--radius-large, 8px);
+  background: transparent;
+  color: var(--color-icon-primary, #393a3d);
+  cursor: pointer;
+}
+
+.railBtn:hover {
+  background: var(--color-action-passive-subtle-hover, rgba(107, 108, 114, 0.08));
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--color-container-background-primary, #ffffff);
+}
+
+.pane {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
