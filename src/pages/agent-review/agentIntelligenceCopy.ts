@@ -30,7 +30,7 @@ export const INTELLIGENCE_LEGAL_DISCLAIMER =
 /* ── Welcome ── */
 
 export const STARTER_PROMPT_FULL_REVIEW = 'Review this return'
-export const STARTER_PROMPT_CATCH_UP = 'Catch me up on this return'
+export const STARTER_PROMPT_CATCH_UP = 'Get review summary'
 
 export const STARTER_PROMPTS = [
   STARTER_PROMPT_FULL_REVIEW,
@@ -52,10 +52,16 @@ export const CTA_VIEW_UPDATED_RETURN = 'View updated return'
 export const CTA_VIEW_SOURCE_DOCUMENTS = 'View source documents'
 export const CTA_VIEW_RETURN_SUMMARY = 'View return summary'
 
+export const CTA_UPDATED_RETURN_SHORT = 'Updated return'
+export const CTA_SOURCE_DOCUMENTS_SHORT = 'Source documents'
+
+export const INTELLIGENCE_COMPLETION_FOOTER =
+  'Jump to the documents directly, or ask me to help with your review.'
+
 export const CTA_SHOW_THINKING = 'Show thinking'
 
 export const LABEL_SUGGESTED_NEXT_STEPS = 'Recommended next steps'
-export const LABEL_NEED_ACTION = 'NEED ACTION'
+export const LABEL_NEED_ACTION = 'NEEDS ACTION'
 
 /* ── Loading ── */
 

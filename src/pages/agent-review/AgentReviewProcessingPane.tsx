@@ -1,13 +1,10 @@
 import { useMemo, useState } from 'react'
 import { ChevronDown, CircleCheck, Document } from '@design-systems/icons'
 import intuitAssistSparkle from '../../assets/icons/intuit-assist-sparkle.svg'
+import AgentReviewSummaryFooter from './AgentReviewSummaryFooter'
 import {
   CTA_SHOW_THINKING,
-  CTA_VIEW_RETURN_SUMMARY,
-  CTA_VIEW_SOURCE_DOCUMENTS,
-  CTA_VIEW_UPDATED_RETURN,
   getActiveIntelligenceIssues,
-  INTELLIGENCE_CATCH_UP_SUMMARY,
   INTELLIGENCE_NEED_ACTION_COPY,
   INTELLIGENCE_PROGRESS_ITEMS,
   INTELLIGENCE_REASONING_STEPS,
@@ -19,7 +16,6 @@ import {
   intelligenceProcessingIntro,
   intelligenceResultsLead,
   LABEL_NEED_ACTION,
-  STARTER_PROMPT_CATCH_UP,
 } from './agentIntelligenceCopy'
 import { useAgentProcessingAnimation } from './useAgentProcessingAnimation'
 import styles from '../../styles/agent-review/AgentReviewProcessingPane.module.css'
@@ -38,8 +34,6 @@ export default function AgentReviewProcessingPane({
   onGetCaughtUp,
 }: AgentReviewProcessingPaneProps) {
   const [thinkingExpanded, setThinkingExpanded] = useState(false)
-  const [catchUpVisible, setCatchUpVisible] = useState(false)
-
   const { issues, issueCount, totalWithholding } = useMemo(
     () => getActiveIntelligenceIssues(),
     [],
@@ -57,10 +51,7 @@ export default function AgentReviewProcessingPane({
     showSuggestionChips,
   } = useAgentProcessingAnimation()
 
-  const handleGetCaughtUp = () => {
-    setCatchUpVisible(true)
-    onGetCaughtUp()
-  }
+  const showSummaryFooter = resultsSectionsVisible >= 6
 
   return (
     <div className={styles.container}>
@@ -185,26 +176,16 @@ export default function AgentReviewProcessingPane({
                     </div>
                   )}
 
-                  {resultsSectionsVisible >= 6 && (
-                    <div className={`${styles.footerLinks} ${styles.revealIn}`}>
-                      <button type="button" className={styles.footerLink} onClick={onViewUpdatedReturn}>
-                        {CTA_VIEW_UPDATED_RETURN}
-                      </button>
-                      <button type="button" className={styles.footerLink} onClick={onViewSourceDocuments}>
-                        {CTA_VIEW_SOURCE_DOCUMENTS}
-                      </button>
-                      <button type="button" className={styles.footerLink} onClick={onViewReturnSummary}>
-                        {CTA_VIEW_RETURN_SUMMARY}
-                      </button>
+                  {showSummaryFooter && (
+                    <div className={styles.revealIn}>
+                      <AgentReviewSummaryFooter
+                        onViewUpdatedReturn={onViewUpdatedReturn}
+                        onViewSourceDocuments={onViewSourceDocuments}
+                        onPrimaryAction={onGetCaughtUp}
+                      />
                     </div>
                   )}
                 </div>
-
-                {catchUpVisible && (
-                  <div className={`${styles.catchUpCard} ${styles.revealIn}`}>
-                    <p className={styles.catchUpText}>{INTELLIGENCE_CATCH_UP_SUMMARY}</p>
-                  </div>
-                )}
               </div>
             )}
           </div>
@@ -237,10 +218,10 @@ export default function AgentReviewProcessingPane({
         </div>
       </div>
 
-      {showSuggestionChips && (
+      {showSuggestionChips && !showSummaryFooter && (
         <div className={`${styles.suggestionRow} ${styles.revealIn}`}>
-          <button type="button" className={styles.suggestionChip} onClick={handleGetCaughtUp}>
-            {STARTER_PROMPT_CATCH_UP}
+          <button type="button" className={styles.suggestionChip} onClick={onGetCaughtUp}>
+            Get review summary
           </button>
         </div>
       )}
