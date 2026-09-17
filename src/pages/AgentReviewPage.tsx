@@ -96,7 +96,7 @@ export default function AgentReviewPage() {
       <header className={styles.header}>
         <img src={intuitWordmark} alt="Intuit" className={styles.wordmark} />
         <IconControl
-          label="Close AI review"
+          aria-label="Close AI review"
           size="medium"
           shape="square"
           onClick={handleClose}
