@@ -7,11 +7,13 @@ import styles from '../../styles/automated/ChatInput.module.css'
 interface ChatInputProps {
   onSend: (text: string) => void
   placeholder?: string
+  legalDisclaimer?: string
 }
 
 export default function ChatInput({
   onSend,
   placeholder = 'Ask {Agent / product name}',
+  legalDisclaimer = 'Important information about how we use generative AI',
 }: ChatInputProps) {
   const [value, setValue] = useState('')
 
@@ -77,9 +79,7 @@ export default function ChatInput({
         </div>
       </div>
 
-      <span className={styles.legal}>
-        Important information about how we use generative AI
-      </span>
+      <span className={styles.legal}>{legalDisclaimer}</span>
     </div>
   )
 }

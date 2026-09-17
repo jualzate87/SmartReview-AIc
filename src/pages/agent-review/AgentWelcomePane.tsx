@@ -1,5 +1,9 @@
 import intuitAssistGif from '../../assets/intuit-assist-animation.gif'
-import { STARTER_PROMPTS } from './agentReviewConstants'
+import {
+  STARTER_PROMPTS,
+  WELCOME_GREETING_NAME,
+  WELCOME_GREETING_PROMPT,
+} from './agentIntelligenceCopy'
 import styles from '../../styles/agent-review/AgentWelcomePane.module.css'
 
 interface AgentWelcomePaneProps {
@@ -8,7 +12,7 @@ interface AgentWelcomePaneProps {
 }
 
 export default function AgentWelcomePane({
-  preparerName = 'Jordan',
+  preparerName = WELCOME_GREETING_NAME,
   onPromptClick,
 }: AgentWelcomePaneProps) {
   return (
@@ -19,7 +23,7 @@ export default function AgentWelcomePane({
 
       <div className={styles.greeting}>
         <span className={styles.greetingName}>Hi, {preparerName}</span>
-        <span className={styles.greetingSubtitle}>How may I help you?</span>
+        <span className={styles.greetingSubtitle}>{WELCOME_GREETING_PROMPT}</span>
       </div>
 
       <div className={styles.promptsRow}>

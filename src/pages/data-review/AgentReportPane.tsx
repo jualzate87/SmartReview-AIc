@@ -75,7 +75,7 @@ const CARD_ICONS = [
 
 const fmtUsd = (n: number) => `$${n.toLocaleString()}`
 
-type IssueCard = {
+export type IssueCard = {
   issueKey: IssueKey
   dotColor: 'red' | 'orange' | 'blue'
   title: string
@@ -367,7 +367,7 @@ export const ISSUE_FIELD: Partial<Record<IssueKey, string>> = {
   optItemize: 'stdDeduction',
 }
 
-function buildAllIssues(live: LiveReturnTotals, amounts: LiveAmounts): IssueCard[] {
+export function buildPhase2Issues(live: LiveReturnTotals, amounts: LiveAmounts): IssueCard[] {
   return [
     buildImportMismatchesIssue(amounts),
     buildUnderpaymentRiskIssue(live),
@@ -392,7 +392,7 @@ export default function AgentReportPane({
   onOpenForm,
 }: AgentReportPaneProps) {
   const live = liveTotals ?? computeLiveReturn(amounts)
-  const ALL_ISSUES = buildAllIssues(live, amounts)
+  const ALL_ISSUES = buildPhase2Issues(live, amounts)
   const phase2Progress = getPhase2Progress({ reviewedFields, live, amounts })
   const activeOrder = phase2Progress.activeKeys
   const reviewedCount = phase2Progress.reviewed

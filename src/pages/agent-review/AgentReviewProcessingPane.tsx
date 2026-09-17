@@ -1,58 +1,28 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { ChevronDown, CircleCheck, Document } from '@design-systems/icons'
 import intuitAssistSparkle from '../../assets/icons/intuit-assist-sparkle.svg'
-import { STARTER_PROMPT_CATCH_UP } from './agentReviewConstants'
+import {
+  CTA_SHOW_THINKING,
+  CTA_VIEW_RETURN_SUMMARY,
+  CTA_VIEW_SOURCE_DOCUMENTS,
+  CTA_VIEW_UPDATED_RETURN,
+  getActiveIntelligenceIssues,
+  INTELLIGENCE_CATCH_UP_SUMMARY,
+  INTELLIGENCE_NEED_ACTION_COPY,
+  INTELLIGENCE_PROGRESS_ITEMS,
+  INTELLIGENCE_REASONING_STEPS,
+  INTELLIGENCE_REASONING_TITLE,
+  INTELLIGENCE_SHELL_TITLE,
+  INTELLIGENCE_SUMMARY_SECTIONS,
+  intelligenceBadge,
+  intelligenceCardTitle,
+  intelligenceProcessingIntro,
+  intelligenceResultsLead,
+  LABEL_NEED_ACTION,
+  STARTER_PROMPT_CATCH_UP,
+} from './agentIntelligenceCopy'
 import { useAgentProcessingAnimation } from './useAgentProcessingAnimation'
 import styles from '../../styles/agent-review/AgentReviewProcessingPane.module.css'
-
-const PROGRESS_ITEMS = [
-  { id: 'import', label: 'Import mismatches' },
-  { id: 'withholding', label: 'Withholding gap' },
-  { id: 'mortgage', label: 'Mortgage interest added' },
-  { id: 'final', label: 'Final review items' },
-] as const
-
-const REASONING_STEPS = [
-  {
-    title: 'Context assessment',
-    body: 'Confirming the return topics, client context, and which diagnostics need automated fixes versus CPA sign-off.',
-  },
-  {
-    title: 'Content planning',
-    body: 'Mapping each diagnostic to source documents, questionnaire answers, and the forms that need updates.',
-  },
-  {
-    title: 'Response generation',
-    body: 'Applying fixes, drafting the progress summary, and flagging anything that still needs your confirmation.',
-  },
-] as const
-
-const SUMMARY_SECTIONS = [
-  {
-    title: 'Import mismatches fixed',
-    items: [
-      { doc: 'W-2 Tech Circle.pdf', detail: 'Wages $118,542 → $148,940' },
-      { doc: '1099-DIV Token.pdf', detail: 'Qualified dividends corrected to match source' },
-      { doc: '1099-R Meridian.pdf', detail: 'Federal withholding $0 → $30,000' },
-    ],
-  },
-  {
-    title: 'Withholding gap resolved',
-    items: [
-      { doc: '1099-R Meridian.pdf', detail: 'Withholding posted to return' },
-      { doc: 'Form 2210', detail: 'Safe harbor recalculated' },
-    ],
-  },
-  {
-    title: 'Form 1098 mortgage interest added',
-    items: [
-      { doc: 'Form 1098', detail: 'Mortgage interest deduction applied to Schedule A' },
-    ],
-  },
-] as const
-
-const CATCH_UP_SUMMARY =
-  'Since your last session: import fixes were applied on W-2 and 1099 sources, withholding was restored on the 1099-R, and Schedule A now includes estimated Form 1098 mortgage interest. One item still needs your sign-off before filing.'
 
 interface AgentReviewProcessingPaneProps {
   onViewUpdatedReturn: () => void
@@ -69,6 +39,11 @@ export default function AgentReviewProcessingPane({
 }: AgentReviewProcessingPaneProps) {
   const [thinkingExpanded, setThinkingExpanded] = useState(false)
   const [catchUpVisible, setCatchUpVisible] = useState(false)
+
+  const { issues, issueCount, totalWithholding } = useMemo(
+    () => getActiveIntelligenceIssues(),
+    [],
+  )
 
   const {
     phase,
@@ -94,34 +69,27 @@ export default function AgentReviewProcessingPane({
           <div className={styles.mainColumn}>
             <div className={styles.lockup}>
               <img src={intuitAssistSparkle} alt="" className={styles.sparkleIcon} />
-              <h1 className={styles.title}>Return review by Intuit Intelligence</h1>
+              <h1 className={styles.title}>{INTELLIGENCE_SHELL_TITLE}</h1>
             </div>
 
-            <p className={styles.intro}>
-              We analyzed Jordan&apos;s 2025 return and found 4 issues to resolve. We compared
-              source documents, questionnaire answers, and return inputs. Review each diagnostic
-              below, then tell me how you&apos;d like to proceed.
-            </p>
+            <p className={styles.intro}>{intelligenceProcessingIntro(issueCount)}</p>
 
             <div className={styles.cardList}>
-              <article className={styles.card}>
-                <div className={styles.cardHeaderStatic}>
-                  <span className={styles.cardTitle}>Import mismatches detected</span>
-                  <span className={`${styles.badge} ${styles.badge_orange}`}>IMPORT MISMATCHES</span>
-                </div>
-              </article>
-              <article className={styles.card}>
-                <div className={styles.cardHeaderStatic}>
-                  <span className={styles.cardTitle}>Import mismatches detected</span>
-                  <span className={`${styles.badge} ${styles.badge_orange}`}>IMPORT MISMATCHES</span>
-                </div>
-              </article>
-              <article className={styles.card}>
-                <div className={styles.cardHeaderStatic}>
-                  <span className={styles.cardTitle}>Withholding falls $72,264 short of safe harbor</span>
-                  <span className={`${styles.badge} ${styles.badge_green}`}>DEDUCTIONS</span>
-                </div>
-              </article>
+              {issues.map(issue => {
+                const badge = intelligenceBadge(issue)
+                return (
+                  <article key={issue.issueKey} className={styles.card}>
+                    <div className={styles.cardHeaderStatic}>
+                      <span className={styles.cardTitle}>
+                        {intelligenceCardTitle(issue, totalWithholding)}
+                      </span>
+                      <span className={`${styles.badge} ${styles[`badge_${badge.tone}`]}`}>
+                        {badge.label}
+                      </span>
+                    </div>
+                  </article>
+                )
+              })}
             </div>
 
             {phase === 'reasoning' && (
@@ -132,10 +100,10 @@ export default function AgentReviewProcessingPane({
                   className={`${styles.reasoningHeader} ${reasoningHeaderVisible ? styles.revealIn : styles.revealHidden}`}
                 >
                   <img src={intuitAssistSparkle} alt="" className={styles.reasoningSparkle} />
-                  <span className={styles.reasoningTitle}>Response generation</span>
+                  <span className={styles.reasoningTitle}>{INTELLIGENCE_REASONING_TITLE}</span>
                 </div>
                 <ol className={styles.reasoningSteps}>
-                  {REASONING_STEPS.map((step, index) => (
+                  {INTELLIGENCE_REASONING_STEPS.map((step, index) => (
                     <li
                       key={step.title}
                       className={`${styles.reasoningStep} ${index < visibleSteps ? styles.revealIn : styles.revealHidden}`}
@@ -157,7 +125,7 @@ export default function AgentReviewProcessingPane({
                   aria-expanded={thinkingExpanded}
                   onClick={() => setThinkingExpanded(v => !v)}
                 >
-                  Show thinking
+                  {CTA_SHOW_THINKING}
                   <ChevronDown
                     size="small"
                     className={`${styles.chevron} ${thinkingExpanded ? styles.chevronUp : ''}`}
@@ -166,7 +134,7 @@ export default function AgentReviewProcessingPane({
 
                 {thinkingExpanded && (
                   <ol className={styles.reasoningSteps}>
-                    {REASONING_STEPS.map((step, index) => (
+                    {INTELLIGENCE_REASONING_STEPS.map((step, index) => (
                       <li
                         key={step.title}
                         className={`${styles.reasoningStep} ${styles.revealIn}`}
@@ -181,12 +149,12 @@ export default function AgentReviewProcessingPane({
 
                 {resultsSectionsVisible >= 1 && (
                   <p className={`${styles.resultsLead} ${styles.revealIn}`}>
-                    I&apos;ve resolved all 3 diagnostics; here is the progress summary.
+                    {intelligenceResultsLead(INTELLIGENCE_SUMMARY_SECTIONS.length)}
                   </p>
                 )}
 
                 <div className={styles.summaryBox}>
-                  {SUMMARY_SECTIONS.map((section, sectionIndex) => (
+                  {INTELLIGENCE_SUMMARY_SECTIONS.map((section, sectionIndex) => (
                     resultsSectionsVisible >= sectionIndex + 2 ? (
                       <div
                         key={section.title}
@@ -212,24 +180,21 @@ export default function AgentReviewProcessingPane({
 
                   {resultsSectionsVisible >= 5 && (
                     <div className={`${styles.needActionBox} ${styles.revealIn}`}>
-                      <span className={styles.needActionBadge}>NEED ACTION</span>
-                      <p className={styles.needActionText}>
-                        Confirm the estimated Form 1098 mortgage interest amount against Jessica&apos;s
-                        actual source certificate before filing.
-                      </p>
+                      <span className={styles.needActionBadge}>{LABEL_NEED_ACTION}</span>
+                      <p className={styles.needActionText}>{INTELLIGENCE_NEED_ACTION_COPY}</p>
                     </div>
                   )}
 
                   {resultsSectionsVisible >= 6 && (
                     <div className={`${styles.footerLinks} ${styles.revealIn}`}>
                       <button type="button" className={styles.footerLink} onClick={onViewUpdatedReturn}>
-                        View updated return
+                        {CTA_VIEW_UPDATED_RETURN}
                       </button>
                       <button type="button" className={styles.footerLink} onClick={onViewSourceDocuments}>
-                        View source documents
+                        {CTA_VIEW_SOURCE_DOCUMENTS}
                       </button>
                       <button type="button" className={styles.footerLink} onClick={onViewReturnSummary}>
-                        View return summary
+                        {CTA_VIEW_RETURN_SUMMARY}
                       </button>
                     </div>
                   )}
@@ -237,7 +202,7 @@ export default function AgentReviewProcessingPane({
 
                 {catchUpVisible && (
                   <div className={`${styles.catchUpCard} ${styles.revealIn}`}>
-                    <p className={styles.catchUpText}>{CATCH_UP_SUMMARY}</p>
+                    <p className={styles.catchUpText}>{INTELLIGENCE_CATCH_UP_SUMMARY}</p>
                   </div>
                 )}
               </div>
@@ -246,10 +211,10 @@ export default function AgentReviewProcessingPane({
 
           <aside className={styles.progressRail} aria-label="Run progress">
             <span className={styles.progressLabel}>
-              PROGRESS {completedProgress}/{PROGRESS_ITEMS.length}
+              PROGRESS {completedProgress}/{INTELLIGENCE_PROGRESS_ITEMS.length}
             </span>
             <ol className={styles.progressList}>
-              {PROGRESS_ITEMS.map((item, index) => {
+              {INTELLIGENCE_PROGRESS_ITEMS.map((item, index) => {
                 const done = index < completedProgress
                 const active = index === activeProgressIndex
                 return (

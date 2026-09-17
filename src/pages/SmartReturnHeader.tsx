@@ -7,6 +7,7 @@ import {
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import sparklesIcon from '../assets/icons/sparkles.svg'
+import { INTELLIGENCE_SUBHEADER_CTA } from './agent-review/agentIntelligenceCopy'
 import styles from '../styles/SmartReturnHeader.module.css'
 
 interface SmartReturnHeaderProps {
@@ -48,7 +49,7 @@ export default function SmartReturnHeader({
       {/* ── Row 2: Client sub-header 63px ── */}
       <div className={styles.row2}>
         <div className={styles.row2Left}>
-          <div className={styles.clientName}>Jessica<br />Drake</div>
+          <div className={styles.clientName}>Jordan<br />Wells</div>
           <Lock size="small" className={styles.lockIcon} />
           <button className={styles.clientProfileBtn}>
             <PersonThree size="small" />
@@ -136,7 +137,7 @@ export default function SmartReturnHeader({
               </button>
               <button type="button" className={styles.aiReviewBtn} onClick={onAiReview}>
                 <img src={sparklesIcon} alt="" className={styles.aiReviewIcon} />
-                AI review
+                {INTELLIGENCE_SUBHEADER_CTA}
               </button>
             </>
           ) : (

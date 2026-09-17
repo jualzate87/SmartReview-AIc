@@ -3,31 +3,89 @@ import { ChevronDown } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import intuitAssistSparkle from '../../assets/icons/intuit-assist-sparkle.svg'
-import { computeLiveReturn, SEED_AMOUNTS } from '../../data/liveReturn'
+import { SEED_AMOUNTS } from '../../data/liveReturn'
+import type { IssueCard } from '../data-review/AgentReportPane'
+import type { Phase2IssueKey } from '../data-review/phase2FlagSync'
 import {
-  getOutstandingImportMismatches,
-  SAFE_HARBOR_2024,
-} from '../data-review/phase2FlagSync'
+  CTA_ACCEPT_ALL_FIXES,
+  CTA_FIX_ISSUE,
+  CTA_FIX_ONE_BY_ONE,
+  CTA_VIEW_SOURCE,
+  getActiveIntelligenceIssues,
+  INTELLIGENCE_SHELL_TITLE,
+  intelligenceBadge,
+  intelligenceCardTitle,
+  intelligenceIntro,
+  intelligenceSuggestedFixes,
+  intelligenceSummary,
+  intelligenceTableHeaders,
+  intelligenceTableRows,
+  LABEL_SUGGESTED_NEXT_STEPS,
+} from './agentIntelligenceCopy'
+import tableStyles from '../../styles/data-review/YoYDetailPane.module.css'
 import styles from '../../styles/agent-review/AgentReviewDiagnosticsPane.module.css'
 
-export type DiagnosticCardId =
-  | 'importMismatches'
-  | 'underpaymentRisk'
-  | 'necScheduleC'
-  | 'niitForm8960'
-
-interface DiagnosticCard {
-  id: DiagnosticCardId
-  title: string
-  badge: string
-  badgeTone: 'orange' | 'green' | 'blue'
-  body: string
-}
+export type DiagnosticCardId = Phase2IssueKey
 
 interface AgentReviewDiagnosticsPaneProps {
   onFixIssue: (issueId: DiagnosticCardId) => void
   onFixIndividually: () => void
   onAcceptAll: () => void
+}
+
+function DiagnosticTable({
+  issue,
+  tableHeaders,
+  tableRows,
+}: {
+  issue: IssueCard
+  tableHeaders: string[]
+  tableRows: IssueCard['tableRows']
+}) {
+  const hasBadge = tableRows.some(r => r.badge)
+  const colCount = tableHeaders.length - 1
+  const gridCols = hasBadge
+    ? `1fr repeat(${colCount - 1}, minmax(64px, auto)) minmax(56px, auto)`
+    : `1fr repeat(${colCount}, minmax(72px, auto))`
+
+  return (
+    <div className={tableStyles.tableCard}>
+      <div
+        className={`${tableStyles.tableRow} ${tableStyles.tableHeaderRow}`}
+        style={{ gridTemplateColumns: gridCols }}
+      >
+        {tableHeaders.map((h, i) => (
+          <span key={h} className={i === 0 ? tableStyles.cellLabel : tableStyles.cellValue}>
+            {h}
+          </span>
+        ))}
+      </div>
+      {tableRows.map((row, i) => (
+        <div
+          key={row.label}
+          className={`${tableStyles.tableRow} ${i < tableRows.length - 1 ? tableStyles.tableRowBorder : ''} ${row.total ? tableStyles.tableRowTotal : ''}`}
+          style={{ gridTemplateColumns: gridCols }}
+        >
+          <span className={tableStyles.cellLabel}>{row.label}</span>
+          {row.cols.map((val, ci) => (
+            <span key={`${row.label}-${ci}`} className={tableStyles.cellValue}>
+              {row.badge && ci === row.cols.length - 1 ? (
+                <span
+                  className={`${tableStyles.deltaBadge} ${tableStyles[`deltaBadge${row.badge.charAt(0).toUpperCase()}${row.badge.slice(1)}`]}`}
+                >
+                  {val}
+                </span>
+              ) : val === CTA_VIEW_SOURCE ? (
+                <span className={styles.viewSourceLink}>{val}</span>
+              ) : (
+                val
+              )}
+            </span>
+          ))}
+        </div>
+      ))}
+    </div>
+  )
 }
 
 export default function AgentReviewDiagnosticsPane({
@@ -37,42 +95,10 @@ export default function AgentReviewDiagnosticsPane({
 }: AgentReviewDiagnosticsPaneProps) {
   const [expandedId, setExpandedId] = useState<DiagnosticCardId | null>(null)
 
-  const cards = useMemo((): DiagnosticCard[] => {
-    const live = computeLiveReturn(SEED_AMOUNTS)
-    const gapCount = getOutstandingImportMismatches(SEED_AMOUNTS).length
-    const shortfall = Math.max(0, SAFE_HARBOR_2024 - live.totalWithholding)
-
-    return [
-      {
-        id: 'importMismatches',
-        title: 'Import mismatches detected',
-        badge: 'IMPORT MISMATCHES',
-        badgeTone: 'orange',
-        body: `${gapCount} fields don't match source documents. Some were marked correct during import without fixing amounts, and I found gaps the import missed.`,
-      },
-      {
-        id: 'underpaymentRisk',
-        title: `Withholding falls $${shortfall.toLocaleString()} short of safe harbor`,
-        badge: 'DEDUCTIONS',
-        badgeTone: 'green',
-        body: `Combined federal withholding is $${live.totalWithholding.toLocaleString()} against $${live.totalTax.toLocaleString()} total tax. Line 26 shows $0 estimated payments.`,
-      },
-      {
-        id: 'necScheduleC',
-        title: '1099-NEC income without Schedule C or expenses',
-        badge: 'COMPLIANCE',
-        badgeTone: 'orange',
-        body: 'Summit Advisory Partners 1099-NEC is on the return, but no Schedule C or business expenses are applied. Jessica reported deductible expenses for that work.',
-      },
-      {
-        id: 'niitForm8960',
-        title: 'Review Form 8960 — Net Investment Income Tax',
-        badge: 'COMPLIANCE',
-        badgeTone: 'blue',
-        body: 'Investment income is substantial. Form 8960 is on the return — verify the NIIT computation matches interest and dividends.',
-      },
-    ]
-  }, [])
+  const { issues, issueCount, totalWithholding, live } = useMemo(
+    () => getActiveIntelligenceIssues(),
+    [],
+  )
 
   const toggleCard = (id: DiagnosticCardId) => {
     setExpandedId(prev => (prev === id ? null : id))
@@ -84,52 +110,76 @@ export default function AgentReviewDiagnosticsPane({
         <div className={styles.content}>
           <div className={styles.lockup}>
             <img src={intuitAssistSparkle} alt="" className={styles.sparkleIcon} />
-            <h1 className={styles.title}>Return review by Intuit Intelligence</h1>
+            <h1 className={styles.title}>{INTELLIGENCE_SHELL_TITLE}</h1>
           </div>
 
-          <p className={styles.intro}>
-            I&apos;ve analyzed Jordan&apos;s 2025 return and found {cards.length} issues to resolve.
-            I compared source documents, questionnaire answers, and return inputs. Review each
-            diagnostic below, then tell me how you&apos;d like to proceed.
-          </p>
+          <p className={styles.intro}>{intelligenceIntro(issueCount)}</p>
 
           <div className={styles.cardList}>
-            {cards.map(card => {
-              const isExpanded = expandedId === card.id
+            {issues.map(issue => {
+              const isExpanded = expandedId === issue.issueKey
+              const badge = intelligenceBadge(issue)
               return (
-                <article key={card.id} className={styles.card}>
+                <article
+                  key={issue.issueKey}
+                  className={`${styles.card} ${isExpanded ? styles.cardExpanded : ''}`}
+                >
                   <button
                     type="button"
                     className={styles.cardHeader}
                     aria-expanded={isExpanded}
-                    onClick={() => toggleCard(card.id)}
+                    onClick={() => toggleCard(issue.issueKey)}
                   >
-                    <span className={styles.cardTitle}>{card.title}</span>
-                    <span className={styles.cardHeaderRight}>
-                      <span className={`${styles.badge} ${styles[`badge_${card.badgeTone}`]}`}>
-                        {card.badge}
+                    <div className={styles.cardHeaderMain}>
+                      <span className={styles.cardTitle}>
+                        {intelligenceCardTitle(issue, totalWithholding)}
                       </span>
-                      <ChevronDown
-                        size="small"
-                        className={`${styles.chevron} ${isExpanded ? styles.chevronUp : ''}`}
-                      />
-                    </span>
+                      <span className={`${styles.badge} ${styles[`badge_${badge.tone}`]}`}>
+                        {badge.label}
+                      </span>
+                    </div>
+                    <ChevronDown
+                      size="small"
+                      className={`${styles.chevron} ${isExpanded ? styles.chevronUp : ''}`}
+                    />
                   </button>
 
+                  <p className={styles.cardSummary}>
+                    {intelligenceSummary(issue.issueKey, live, SEED_AMOUNTS)}
+                  </p>
+
                   {isExpanded && (
-                    <div className={styles.cardBody}>
-                      <p className={styles.cardBodyText}>{card.body}</p>
-                      <div className={styles.cardActions}>
-                        <Button
-                          priority="primary"
-                          size="small"
-                          onClick={() => onFixIssue(card.id)}
-                        >
-                          Fix this
-                        </Button>
-                      </div>
+                    <div className={styles.expandedBody}>
+                      <DiagnosticTable
+                        issue={issue}
+                        tableHeaders={intelligenceTableHeaders(issue)}
+                        tableRows={intelligenceTableRows(issue)}
+                      />
+                      {intelligenceSuggestedFixes(issue.issueKey).length > 0 && (
+                        <div className={styles.suggestedFix}>
+                          <div className={styles.suggestedFixHeader}>
+                            <img src={intuitAssistSparkle} alt="" className={styles.suggestedFixIcon} />
+                            <span className={styles.suggestedFixTitle}>{LABEL_SUGGESTED_NEXT_STEPS}</span>
+                          </div>
+                          <ul className={styles.suggestedFixList}>
+                            {intelligenceSuggestedFixes(issue.issueKey).map(action => (
+                              <li key={action}>{action}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
                   )}
+
+                  <div className={styles.cardActions}>
+                    <Button
+                      priority="primary"
+                      size="small"
+                      onClick={() => onFixIssue(issue.issueKey)}
+                    >
+                      {CTA_FIX_ISSUE}
+                    </Button>
+                  </div>
                 </article>
               )
             })}
@@ -139,10 +189,10 @@ export default function AgentReviewDiagnosticsPane({
 
       <div className={styles.suggestionRow}>
         <button type="button" className={styles.suggestionChip} onClick={onAcceptAll}>
-          Accept all four
+          {CTA_ACCEPT_ALL_FIXES}
         </button>
         <button type="button" className={styles.suggestionChip} onClick={onFixIndividually}>
-          Fix each issue individually
+          {CTA_FIX_ONE_BY_ONE}
         </button>
       </div>
     </div>

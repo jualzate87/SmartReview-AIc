@@ -4,7 +4,7 @@ import intuitAssistIcon from '../../assets/icons/intuit-assist.svg'
 import styles from '../../styles/data-review/AgentLoadingPane.module.css'
 
 interface AgentLoadingPaneProps {
-  onClose: () => void
+  onClose?: () => void
   /** True only while agentView === 'loading' — timers start here, not on mount */
   isLoading?: boolean
   /** When true the body crossfades from loading content → report content */
@@ -13,6 +13,10 @@ interface AgentLoadingPaneProps {
   closing?: boolean
   /** The report pane to fade in once loading is done */
   reportContent?: ReactNode
+  /** Hides header and slide-in animation — used inside Intuit Intelligence shell */
+  embedded?: boolean
+  loadingTitle?: string
+  loadingSubtext?: string
 }
 
 // Loading phases (timers only run while isLoading — not while idle/mounted):
@@ -26,6 +30,9 @@ export default function AgentLoadingPane({
   showReport = false,
   closing = false,
   reportContent,
+  embedded = false,
+  loadingTitle = 'Assessing the return…',
+  loadingSubtext = 'Preparing diagnostics…',
 }: AgentLoadingPaneProps) {
   const [phase, setPhase] = useState<'spinning' | 'greeting' | 'exiting'>('spinning')
 
@@ -43,21 +50,22 @@ export default function AgentLoadingPane({
   const showLoader = isLoading && !showReport
 
   return (
-    <div className={`${styles.panel} ${closing ? styles.panelClosing : ''}`}>
+    <div className={`${embedded ? styles.panelEmbedded : styles.panel} ${closing && !embedded ? styles.panelClosing : ''}`}>
 
-      {/* ── Header — always static, never re-animates ── */}
-      <div className={styles.header}>
-        <div className={styles.headerLeft} />
-        <div className={styles.headerTitle}>
-          <img src={intuitAssistIcon} alt="" className={styles.assistIcon} />
-          <span className={styles.titleText}>AI diagnostics</span>
+      {!embedded && (
+        <div className={styles.header}>
+          <div className={styles.headerLeft} />
+          <div className={styles.headerTitle}>
+            <img src={intuitAssistIcon} alt="" className={styles.assistIcon} />
+            <span className={styles.titleText}>AI diagnostics</span>
+          </div>
+          <div className={styles.headerRight}>
+            <button className={styles.iconBtn} aria-label="Close" onClick={onClose}>
+              <Close size="small" />
+            </button>
+          </div>
         </div>
-        <div className={styles.headerRight}>
-          <button className={styles.iconBtn} aria-label="Close" onClick={onClose}>
-            <Close size="small" />
-          </button>
-        </div>
-      </div>
+      )}
 
       {/* ── Body — loading content crossfades to report content ── */}
       <div className={styles.body}>
@@ -83,10 +91,8 @@ export default function AgentLoadingPane({
                   <img src={intuitAssistIcon} alt="" className={styles.greetingIconImg} />
                 </div>
                 <div className={styles.greetingText}>
-                  <h2 className={styles.greetingTitle}>Assessing the return…</h2>
-                  <p className={styles.greetingSubtext}>
-                    Preparing diagnostics…
-                  </p>
+                  <h2 className={styles.greetingTitle}>{loadingTitle}</h2>
+                  <p className={styles.greetingSubtext}>{loadingSubtext}</p>
                 </div>
               </div>
             )}

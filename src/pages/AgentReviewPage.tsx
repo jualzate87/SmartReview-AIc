@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Close,
@@ -9,21 +9,33 @@ import {
 import { IconControl } from '@ids-ts/icon-control'
 import '@ids-ts/icon-control/dist/main.css'
 import intuitWordmark from '../assets/intuit-wordmark.svg'
-import { STARTER_PROMPT_CATCH_UP, STARTER_PROMPT_FULL_REVIEW } from './agent-review/agentReviewConstants'
+import {
+  INTELLIGENCE_CHAT_PLACEHOLDER,
+  INTELLIGENCE_LEGAL_DISCLAIMER,
+  INTELLIGENCE_LOADING_SUBTEXT,
+  INTELLIGENCE_LOADING_TITLE,
+  STARTER_PROMPT_CATCH_UP,
+  STARTER_PROMPT_FULL_REVIEW,
+} from './agent-review/agentIntelligenceCopy'
 import AgentWelcomePane from './agent-review/AgentWelcomePane'
 import AgentReviewDiagnosticsPane, {
   type DiagnosticCardId,
 } from './agent-review/AgentReviewDiagnosticsPane'
 import AgentReviewProcessingPane from './agent-review/AgentReviewProcessingPane'
+import AgentLoadingPane from './data-review/AgentLoadingPane'
 import ChatInput from './automated/ChatInput'
 import DataReviewPage from './DataReviewPage'
 import styles from '../styles/AgentReviewPage.module.css'
 
 type AgentStep = 'welcome' | 'diagnostics' | 'processing' | 'workspace'
 
+const ASSESSING_MS = 3200
+
 export default function AgentReviewPage() {
   const navigate = useNavigate()
   const [step, setStep] = useState<AgentStep>('welcome')
+  const [isAssessing, setIsAssessing] = useState(false)
+  const assessTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     const el = document.documentElement
@@ -37,6 +49,7 @@ export default function AgentReviewPage() {
       el.style.removeProperty('--color-action-standard')
       el.style.removeProperty('--color-action-standard-hover')
       el.style.removeProperty('--color-action-standard-active')
+      if (assessTimerRef.current) clearTimeout(assessTimerRef.current)
     }
   }, [])
 
@@ -44,8 +57,18 @@ export default function AgentReviewPage() {
     navigate('/check-return')
   }
 
+  const startAssessing = () => {
+    setIsAssessing(true)
+    if (assessTimerRef.current) clearTimeout(assessTimerRef.current)
+    assessTimerRef.current = setTimeout(() => {
+      setIsAssessing(false)
+      assessTimerRef.current = null
+    }, ASSESSING_MS)
+  }
+
   const beginDiagnostics = () => {
     setStep('diagnostics')
+    startAssessing()
   }
 
   const beginProcessing = () => {
@@ -66,7 +89,7 @@ export default function AgentReviewPage() {
     }
   }
 
-  const showChatInput = step !== 'workspace'
+  const showChatInput = step !== 'workspace' && !(step === 'diagnostics' && isAssessing)
 
   return (
     <div className={styles.shell} data-theme="intuit">
@@ -101,10 +124,19 @@ export default function AgentReviewPage() {
               <AgentWelcomePane onPromptClick={handlePromptClick} />
             )}
             {step === 'diagnostics' && (
-              <AgentReviewDiagnosticsPane
-                onFixIssue={openWorkspace}
-                onFixIndividually={() => openWorkspace()}
-                onAcceptAll={beginProcessing}
+              <AgentLoadingPane
+                embedded
+                loadingTitle={INTELLIGENCE_LOADING_TITLE}
+                loadingSubtext={INTELLIGENCE_LOADING_SUBTEXT}
+                isLoading={isAssessing}
+                showReport={!isAssessing}
+                reportContent={
+                  <AgentReviewDiagnosticsPane
+                    onFixIssue={openWorkspace}
+                    onFixIndividually={() => openWorkspace()}
+                    onAcceptAll={beginProcessing}
+                  />
+                }
               />
             )}
             {step === 'processing' && (
@@ -122,10 +154,11 @@ export default function AgentReviewPage() {
 
           {showChatInput && (
             <ChatInput
-              placeholder="Ask anything"
+              placeholder={INTELLIGENCE_CHAT_PLACEHOLDER}
+              legalDisclaimer={INTELLIGENCE_LEGAL_DISCLAIMER}
               onSend={() => {
                 if (step === 'welcome') beginDiagnostics()
-                else if (step === 'diagnostics') beginProcessing()
+                else if (step === 'diagnostics' && !isAssessing) beginProcessing()
               }}
             />
           )}
